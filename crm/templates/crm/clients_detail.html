@@ -1,0 +1,63 @@
+{% extends "crm/base.html" %}
+{% block nav %}
+{% endblock nav %}
+{% block content %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript">
+
+</script>
+<form action="/clients" id="clientsForm" method="POST">
+    <div class="container-fluid">
+        <div style="background-color: #FFFFFF;" class="sticky-top">
+            <div class="container-fluid">
+                <div class="media content-section">
+                    <input type="submit" name="edit" value="Сохранить изменения" class="btn btn-success w-25 mr-2">
+                    <input type="button" name="edit" value="Добавить клиента" class="btn btn-info add-table w-25">
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <div name="tablesdiv">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th scope="col">№</th>
+                                    <th scope="col">Клиент</th>
+                                    <th scope="col">Абонемент продажа/период действия</th>
+                                    <th scope="col">Тренировок посещено/всего</th>
+                                    <th scope="col">Баланс</th>
+                                    <th scope="col"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            {{ object.id }}
+                                        </td>
+                                        <td>
+                                            <p>
+                                                {{ object.firstname }}
+                                            {{ object.surname }}
+                                            {{ object.patronymic }}</p>
+                                            <p>email adress</p>
+                                            <p>phone number</p>
+                                        </td>
+                                        <td>
+                                        </td>
+                                        <td>
+                                        </td>
+                                        <td>
+                                        </td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+</form>
+{% endblock content %}

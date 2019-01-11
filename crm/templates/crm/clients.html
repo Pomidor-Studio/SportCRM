@@ -1,0 +1,63 @@
+{% extends "crm/base.html" %}
+{% block nav %}
+{% endblock nav %}
+{% block content %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript">
+</script>
+<form action="/clients" id="clientsForm" method="POST">
+    <div class="container-fluid">
+        <div style="background-color: #FFFFFF;" class="sticky-top">
+            <div class="container-fluid">
+                <div class="media content-section">
+                    <input type="submit" name="edit" value="Сохранить изменения" class="btn btn-success w-25 mr-2">
+                    <input type="button" name="edit" value="Добавить клиента" class="btn btn-info add-table w-25">
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    {% for client in clients %}
+                    <div name="client-div" class="container-fluid border border-success">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th scope="col">№</th>
+                                    <th scope="col">Имя</th>
+                                    <th scope="col">Email</th>
+                                    <th scope="col">Адрес</th>
+                                    <th scope="col">Дата рождения</th>
+                                    <th scope="col">Номер телефона</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        {{ client.id }}
+                                    </td>
+                                    <td>
+                                        {{ client.client_name }}
+                                    </td>
+                                    <td>
+                                        {{ client.email_adress }}
+                                    </td>
+                                    <td>
+                                        {{ client.address }}
+                                    </td>
+                                    <td>
+                                        {{ client.birthdate }}
+                                    </td>
+                                    <td>
+                                        {{ client.phone_number }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+</form>
+{% endblock content %}

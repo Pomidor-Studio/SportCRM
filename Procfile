@@ -1,0 +1,1 @@
+web: gunicorn sportcrm.wsgi --log-file -
