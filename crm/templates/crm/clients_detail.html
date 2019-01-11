@@ -22,42 +22,43 @@
                     <div name="tablesdiv">
                         <table class="table table-sm">
                             <thead>
-                                <tr>
-                                    <th scope="col">№</th>
-                                    <th scope="col">Клиент</th>
-                                    <th scope="col">Абонемент продажа/период действия</th>
-                                    <th scope="col">Тренировок посещено/всего</th>
-                                    <th scope="col">Баланс</th>
-                                    <th scope="col"></th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td>
-                                            {{ object.id }}
-                                        </td>
-                                        <td>
-                                            <p>
-                                                {{ object.firstname }}
-                                            {{ object.surname }}
-                                            {{ object.patronymic }}</p>
-                                            <p>email adress</p>
-                                            <p>phone number</p>
-                                        </td>
-                                        <td>
-                                        </td>
-                                        <td>
-                                        </td>
-                                        <td>
-                                        </td>
-                                        <td>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <tr>
+                                <th scope="col">№</th>
+                                <th scope="col">Клиент</th>
+                                <th scope="col">Абонемент продажа/период действия</th>
+                                <th scope="col">Тренировок посещено/всего</th>
+                                <th scope="col">Баланс</th>
+                                <th scope="col"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    {{ object.id }}
+                                </td>
+                                <td>
+                                    <p>
+                                        {{ object.firstname }}
+                                        {{ object.surname }}
+                                        {{ object.patronymic }}</p>
+                                    <p>email address</p>
+                                    <p>phone number</p>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 </form>
 {% endblock content %}

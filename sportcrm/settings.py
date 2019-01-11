@@ -32,6 +32,8 @@ ALLOWED_HOSTS = ['127.0.0.1', 'glacial-cove-31542.herokuapp.com']
 
 INSTALLED_APPS = [
     'crm.apps.CrmConfig',
+    'bootstrap_datepicker_plus',
+    'bootstrap4',    
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
