@@ -25,7 +25,7 @@ SECRET_KEY = '$+a*ui0^x+mdhq^$)vvl5aa+#9es)_bii00k!jqf4(_gcpmq1j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['blooming-brook-37631.herokuapp.com']
+ALLOWED_HOSTS = ['glacial-cove-31542.herokuapp.com']
 
 
 # Application definition
