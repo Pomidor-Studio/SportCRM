@@ -25,7 +25,7 @@ SECRET_KEY = '$+a*ui0^x+mdhq^$)vvl5aa+#9es)_bii00k!jqf4(_gcpmq1j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['glacial-cove-31542.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'glacial-cove-31542.herokuapp.com']
 
 
 # Application definition
@@ -82,6 +82,10 @@ DATABASES = {
     }
 }
 
+# ie if Heroku server
+if 'DATABASE_URL' in os.environ:
+    import dj_database_url
+    DATABASES['default'] = dj_database_url.config(conn_max_age=600, ssl_require=True)
 
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
