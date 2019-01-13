@@ -1,9 +1,9 @@
 from django.shortcuts import render
-from django.http import HttpResponse
 from django.views.generic import ListView, DetailView
-from .models import Client
+from django.views.generic.edit import CreateView, UpdateView
+from django.urls import reverse, reverse_lazy
 
-# Create your views here.
+from .models import Client, EventClass
 
 
 def home(request):
@@ -23,5 +23,24 @@ class ClientsListView(ListView):
     context_object_name = 'clients'
     ordering = ['id']
 
+
 class ClientDetailView(DetailView):
     model = Client
+
+
+class EventClassList(ListView):
+    # template_name = 'polls/index.html'
+    # context_object_name = 'latest_question_list'
+    model = EventClass
+
+
+class EventClassCreate(CreateView):
+    model = EventClass
+    fields = '__all__'
+    #fields = ['name']
+
+
+class EventClassUpdate(UpdateView):
+    model = EventClass
+    fields = '__all__'
+

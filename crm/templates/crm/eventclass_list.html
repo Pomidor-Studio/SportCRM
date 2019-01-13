@@ -1,0 +1,16 @@
+{% extends "crm/base.html" %}
+{% load static %}
+
+
+{% block content %}
+{% if eventclass_list %}
+    <ul>
+    {% for eventclass in eventclass_list %}
+        <li><a href="{% url 'crm:eventclass_update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No event_class are available.</p>
+{% endif %}
+    <a href="{% url 'crm:eventclass_create' %}">New eventclass</a>
+{% endblock content %}

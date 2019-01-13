@@ -1,0 +1,17 @@
+{% extends "crm/base.html" %}
+
+{% load static %}
+{% load bootstrap4 %}
+
+{% block content %}
+    <form action="" method="post">
+        {% csrf_token %}
+        {% bootstrap_form form %}
+        {# <table> #}
+        {# {{ form.as_table }} #}
+        {# </table> #}
+        <input type="submit" value="Submit" />
+
+    </form>
+
+{% endblock content %}
