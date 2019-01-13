@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 
 from .models import Client, EventClass
@@ -37,10 +37,13 @@ class EventClassList(ListView):
 class EventClassCreate(CreateView):
     model = EventClass
     fields = '__all__'
-    #fields = ['name']
 
 
 class EventClassUpdate(UpdateView):
     model = EventClass
     fields = '__all__'
 
+
+class EventClassDelete(DeleteView):
+    model = EventClass
+    success_url = reverse_lazy('crm:eventclass_list')

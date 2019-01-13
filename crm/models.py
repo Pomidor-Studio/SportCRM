@@ -4,7 +4,6 @@ from django.utils import timezone
 from django.urls import reverse_lazy
 
 
-
 class SubscriptionsType(models.Model):
     """Типы абонементов"""
     name = models.CharField(max_length=100)
@@ -66,6 +65,9 @@ class EventClass(models.Model):
     @staticmethod
     def get_absolute_url():
         return reverse_lazy('crm:eventclass_list')
+
+    def __str__(self):
+        return self.name
 
 
 class Event(models.Model):

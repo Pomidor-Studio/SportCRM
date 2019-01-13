@@ -3,14 +3,16 @@
 
 
 {% block content %}
+<h1>Классы мероприятий</h1>
+<a class="btn btn-primary" href="{% url 'crm:eventclass_create' %}">Новое мероприятие</a>
 {% if eventclass_list %}
     <ul>
     {% for eventclass in eventclass_list %}
-        <li><a href="{% url 'crm:eventclass_update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a></li>
+        <li><a href="{% url 'crm:eventclass_update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a> <a href="{% url 'crm:eventclass_delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a></li>
     {% endfor %}
     </ul>
 {% else %}
     <p>No event_class are available.</p>
 {% endif %}
-    <a href="{% url 'crm:eventclass_create' %}">New eventclass</a>
+
 {% endblock content %}
