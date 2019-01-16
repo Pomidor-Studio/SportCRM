@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.db import models
 from django.utils import timezone
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 
 class SubscriptionsType(models.Model):
@@ -11,6 +11,8 @@ class SubscriptionsType(models.Model):
     duration = models.PositiveIntegerField()
     visit_limit = models.PositiveIntegerField()
 
+    def get_absolute_url(self):
+        return reverse('crm-subscriptions')
 
 class Client(models.Model):
     name = models.CharField(max_length=100)
@@ -22,6 +24,8 @@ class Client(models.Model):
     email_address = models.CharField(max_length=50,
                                      blank=True)
 
+    def get_absolute_url(self):
+        return reverse('crm-clients')
 
 class ClientSubscriptions(models.Model):
     """Абонементы клиента"""
@@ -31,6 +35,9 @@ class ClientSubscriptions(models.Model):
                                      on_delete=models.PROTECT)
     purchase_date = models.DateTimeField(default=timezone.now)
     start_date = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['client_id']
 
 
 class Location(models.Model):

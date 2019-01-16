@@ -2,15 +2,15 @@
 {% block nav %}
 {% endblock nav %}
 {% block content %}
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <script type="text/javascript">
 </script>
 <form action="/clients" id="clientsForm" method="POST">
     <div class="container-fluid">
         <div style="background-color: #FFFFFF;" class="sticky-top">
-            <div class="container-fluid">
-                <div class="media content-section">
-                    <input type="submit" name="edit" value="Сохранить изменения" class="btn btn-success w-25 mr-2">
-                    <input type="button" name="edit" value="Добавить клиента" class="btn btn-info add-table w-25">
+            <div class="container-fluid mb-2">
+                <div class="container-fluid">
+                    <a name="add-new" href="{% url 'crm-client-new' %}" class="btn btn-sm btn-info">Добавить клиента</a>
                 </div>
             </div>
         </div>
@@ -18,7 +18,12 @@
             <div class="row">
                 <div class="col">
                     {% for client in clients %}
-                    <div name="client-div" class="container-fluid border border-success">
+                    <div name="client-div" class="container-fluid mb-4 border">
+                        <div class="mb-2 mt-2">
+                            <a name="edit" href="{% url 'crm-client-update' client.id %}" class="btn btn-sm btn-outline-info">Редактировать</a>
+                            <a name="subscribe" href="{% url 'crm-clientsubscription-new' client=client.id %}" class="btn btn-sm btn-outline-info">Добавить абонемент</a>
+                            <a name="remove" href="{% url 'crm-client-delete' client.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                        </div>
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
@@ -36,16 +41,16 @@
                                         {{ client.id }}
                                     </td>
                                     <td>
-                                        {{ client.client_name }}
+                                        {{ client.name }}
                                     </td>
                                     <td>
-                                        {{ client.email_adress }}
+                                        {{ client.email_address }}
                                     </td>
                                     <td>
                                         {{ client.address }}
                                     </td>
                                     <td>
-                                        {{ client.birthdate }}
+                                        {{ client.birthday }}
                                     </td>
                                     <td>
                                         {{ client.phone_number }}
@@ -53,11 +58,39 @@
                                 </tr>
                             </tbody>
                         </table>
+                        <div name="subscriptions-div" class="container-fluid">
+                            <h5>Абонементы:</h5>
+                            <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Название</th>
+                                    <th scope="col">Дата покупки</th>
+                                    <th scope="col">Дата начала</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for client_subscription in client_subscriptions %}
+                                {% if client.id == client_subscription.client.id %}
+                                <tr>
+                                    <td>
+                                        {{ client_subscription.subscription.name }}
+                                    </td>
+                                    <td>
+                                        {{ client_subscription.purchase_date }}
+                                    </td>
+                                    <td>
+                                        {{ client_subscription.start_date }}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        </div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
-    </div>
 </form>
 {% endblock content %}
