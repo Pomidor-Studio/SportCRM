@@ -91,7 +91,7 @@ class SubscriptionDetailView(DetailView):
 
 class ClientSubscriptionCreateView(CreateView):
     model = ClientSubscriptions
-    fields = ['subscription_id',
+    fields = ['subscription',
               'purchase_date', 'start_date']
     success_url = '/clients'
 
