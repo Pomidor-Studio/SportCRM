@@ -12,7 +12,7 @@ class SubscriptionsType(models.Model):
     visit_limit = models.PositiveIntegerField()
 
     def get_absolute_url(self):
-        return reverse('crm-subscriptions')
+        return reverse('crm:subscriptions')
 
 class Client(models.Model):
     name = models.CharField(max_length=100)
@@ -25,7 +25,7 @@ class Client(models.Model):
                                      blank=True)
 
     def get_absolute_url(self):
-        return reverse('crm-clients')
+        return reverse('crm:clients')
 
 class ClientSubscriptions(models.Model):
     """Абонементы клиента"""

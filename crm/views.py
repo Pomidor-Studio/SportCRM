@@ -41,6 +41,7 @@ class ClientsListView(ListView):
 
 class ClientCreateView(CreateView):
     model = Client
+    template_name = 'crm/client_form.html'
     fields = ['name', 'address',
               'birthday', 'phone_number', 'email_address']
 

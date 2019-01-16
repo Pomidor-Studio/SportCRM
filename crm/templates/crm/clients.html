@@ -10,7 +10,7 @@
         <div style="background-color: #FFFFFF;" class="sticky-top">
             <div class="container-fluid mb-2">
                 <div class="container-fluid">
-                    <a name="add-new" href="{% url 'crm-client-new' %}" class="btn btn-sm btn-info">Добавить клиента</a>
+                    <a name="add-new" href="{% url 'crm:client-new' %}" class="btn btn-sm btn-info">Добавить клиента</a>
                 </div>
             </div>
         </div>
@@ -20,9 +20,9 @@
                     {% for client in clients %}
                     <div name="client-div" class="container-fluid mb-4 border">
                         <div class="mb-2 mt-2">
-                            <a name="edit" href="{% url 'crm-client-update' client.id %}" class="btn btn-sm btn-outline-info">Редактировать</a>
-                            <a name="subscribe" href="{% url 'crm-clientsubscription-new' client=client.id %}" class="btn btn-sm btn-outline-info">Добавить абонемент</a>
-                            <a name="remove" href="{% url 'crm-client-delete' client.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                            <a name="edit" href="{% url 'crm:client-update' client.id %}" class="btn btn-sm btn-outline-info">Редактировать</a>
+                            <a name="subscribe" href="{% url 'crm:clientsubscription-new' client=client.id %}" class="btn btn-sm btn-outline-info">Добавить абонемент</a>
+                            <a name="remove" href="{% url 'crm:client-delete' client.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
                         </div>
                         <table class="table table-sm table-bordered">
                             <thead>
