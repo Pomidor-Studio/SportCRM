@@ -69,6 +69,14 @@ class EventClass(models.Model):
         # TODO: тут надо написать логику по определению входит ли дата в мероприятие
         return True
 
+    # TODO: Нужны методы:
+    #   - Создание нового event
+    #   - Получение списка event-ов по диапазону дат (как сохраненных, так и гипотетических).
+    #       +Получение на конкретную дату
+    #   - Валидация всех event (а можно ли редактировать описание тренировки, если они уже были?)
+    #
+
+
     @staticmethod
     def get_absolute_url():
         return reverse_lazy('crm:eventclass_list')
@@ -82,6 +90,7 @@ class Event(models.Model):
     event_date = models.DateField
     event_class = models.ForeignKey(EventClass,
                                     on_delete=models.PROTECT)
+    # TODO: Валидацию по event_class
 
 
 class Attendance(models.Model):
