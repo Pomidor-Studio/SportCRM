@@ -11,6 +11,9 @@ class SubscriptionsType(models.Model):
     duration = models.PositiveIntegerField()
     visit_limit = models.PositiveIntegerField()
 
+    def __str__(self):
+        return self.name
+
     def get_absolute_url(self):
         return reverse('crm:subscriptions')
 
