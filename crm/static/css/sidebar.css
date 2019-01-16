@@ -1,0 +1,49 @@
+/* Headbar */
+#button-wrapper{
+    position: top;
+    width: 100%;
+    overflow-y: hidden;
+    background: #8990b9;
+}
+
+/* Sidebar */
+#sidebar-wrapper{
+    z-index: 1;
+    position: absolute;
+    width: 250px;
+    height: 100%;
+    overflow-y: hidden;
+    background: #2C3E50;
+}
+
+/* Main content */
+#page-content-wrapper{
+    position: absolute;
+    padding-left: 250px;
+
+}
+
+/* Change the width of the sidebar to display it */
+#wrapper.menuDisplayed #sidebar-wrapper{
+    width: 51px;
+}
+#wrapper.menuDisplayed #page-content-wrapper{
+    padding-left: 51px;
+}
+
+/* Sidebar styling */
+.sidebar-nav{
+    padding: 0;
+    list-style: none;
+}
+.sidebar-nav i{
+    left-margin: 10px;
+}
+.sidebar-nav li a{
+    display: block;
+    text-decoration: none;
+    color: #ddd;
+}
+.sidebar-nav li a:hover{
+    background: #16A085;
+}
