@@ -11,7 +11,10 @@
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
 
+    <link rel="stylesheet" type="text/css" href="{% static 'css/sidebar.css' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
     {% if title %}
     <title>CRM - {{ title }}</title>
@@ -20,14 +23,28 @@
     {% endif %}
 </head>
 
-<body class="h-100 mt-4 ml-4">
-    <div class="sidenav">
-        {% block nav %}
-        {% endblock %}
+<body>
+
+    <div class="row">
+        <!--Horizontalbar-->
+        {% include 'crm/bars/horizontalbar.html' %}
     </div>
-    <main role="main" class="main">
-        {% block content %}{% endblock %}
-    </main>
+
+    <div class="row">
+        <!--Sidebar-->
+        <div class="sidebar col-xs-12 col-md-3">
+            {% include 'crm/bars/sidebar.html' %}
+        </div>
+
+        <!--Content-->
+        <div class="content col-xs-12 col-md-9">
+            <main role="main" class="main">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+
+    </div>
+
 </body>
 
 </html>
