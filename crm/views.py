@@ -117,16 +117,16 @@ class ClientSubscriptionCreateView(CreateView):
               'purchase_date', 'start_date']
 
     def get_success_url(self):
-        return reverse('crm:client_detail', args=[self.client.id])
+        return reverse('crm:client-detail', args=[self.сlient.id])
 
     def get_context_data(self, **kwargs):
-        self.country = get_object_or_404(Client, id=self.kwargs['client_id'])
+        self.client = Client.objects.get(id=self.kwargs['client_id'])
         kwargs['client'] = self.client
         return super().get_context_data(**kwargs)
 
     def form_valid(self, form):
-        self.country = get_object_or_404(Client, id=self.kwargs['client_id'])
-        form.instance.client = self.Client
+        self.сlient = Client.objects.get(id=self.kwargs['client_id'])
+        form.instance.client = self.сlient
         return super().form_valid(form)
 
 class EventClassList(ListView):
