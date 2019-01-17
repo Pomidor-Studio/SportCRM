@@ -2,63 +2,64 @@
 {% block nav %}
 {% endblock nav %}
 {% block content %}
-<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-<script type="text/javascript">
 
-</script>
-<form action="/clients" id="clientsForm" method="POST">
-    <div class="container-fluid">
-        <div style="background-color: #FFFFFF;" class="sticky-top">
-            <div class="container-fluid">
-                <div class="media content-section">
-                    <input type="submit" name="edit" value="Сохранить изменения" class="btn btn-success w-25 mr-2">
-                    <input type="button" name="edit" value="Добавить клиента" class="btn btn-info add-table w-25">
-                </div>
-            </div>
-        </div>
+<div class="container-fluid">
+    <div class="row mb-2">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col">
-                    <div name="tablesdiv">
-                        <table class="table table-sm">
-                            <thead>
-                            <tr>
-                                <th scope="col">№</th>
-                                <th scope="col">Клиент</th>
-                                <th scope="col">Абонемент продажа/период действия</th>
-                                <th scope="col">Тренировок посещено/всего</th>
-                                <th scope="col">Баланс</th>
-                                <th scope="col"></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>
-                                    {{ object.id }}
-                                </td>
-                                <td>
-                                    <p>
-                                        {{ object.firstname }}
-                                        {{ object.surname }}
-                                        {{ object.patronymic }}</p>
-                                    <p>email address</p>
-                                    <p>phone number</p>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                                <td>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            <a class="btn btn-sm btn-outline-info" href="{% url 'crm:client-update' object.id %}">Изменить</a>
+            <a class="btn btn-sm btn-outline-danger"  href="{% url 'crm:client-delete' object.id %}">Удалить</a>
         </div>
     </div>
-</form>
+    <div class="row">
+
+        <div class="col-2 border-right">
+            <div class="font-weight-bold">Имя:</div>
+            <div class="font-weight-bold">Адрес:</div>
+            <div class="font-weight-bold">Дата рождения:</div>
+            <div class="font-weight-bold">Номер телефона:</div>
+            <div class="font-weight-bold">Электронная почта:</div>
+        </div>
+        <div class="col">
+            <div>{{ object.name }}</div>
+            <div>{{ object.address }}</div>
+            <div>{{ object.birthday|date }}</div>
+            <div>{{ object.phone_number }}</div>
+            <div>{{ object.email_address }}</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <a class="font-weight-bold ">Абонементы: </a>
+            <div class="mb-2 mt-2">
+                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:clientsubscription-new' object.id %}">Добавить
+                    абонемент</a>
+            </div>
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Название</th>
+                    <th scope="col">Дата покупки</th>
+                    <th scope="col">Дата начала</th>
+                    <th style="width:5%" scope="col"></th>
+                    <th style="width:5%" scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for sub in object.clientsubscriptions_set.all %}
+                <tr>
+                    <td>{{ sub.subscription.name }}</td>
+                    <td>{{ sub.purchase_date|date }}</td>
+                    <td>{{ sub.start_date|date }}</td>
+                    <td >
+                        <a class="btn btn-sm btn-outline-info" href="{% url 'crm:clientsubscription-new' object.id %}">Изменить</a>
+                    </td>
+                    <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:clientsubscription-new' object.id %}">Удалить</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
 {% endblock content %}

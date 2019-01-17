@@ -28,5 +28,5 @@ urlpatterns = [
     path('subscriptions/<int:pk>/update/', SubscriptionUpdateView.as_view(), name='subscription-update'),
     path('subscriptions/<int:pk>/delete/', SubscriptionDeleteView.as_view(), name='subscription-delete'),
     path('subscriptions/new/', SubscriptionCreateView.as_view(), name='subscription-new'),
-    path(r'^add-client-subscription/(?P<client>\d+)/$', ClientSubscriptionCreateView.as_view(), name='clientsubscription-new'),
+    path('clients/<int:client_id>/addsubscription/', ClientSubscriptionCreateView.as_view(), name='clientsubscription-new'),
 ]

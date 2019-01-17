@@ -30,6 +30,10 @@ class Client(models.Model):
     def get_absolute_url(self):
         return reverse('crm:clients')
 
+    @property
+    def last_sub(self):
+        return self.clientsubscriptions_set.order_by('purchase_date').first
+
 class ClientSubscriptions(models.Model):
     """Абонементы клиента"""
     client = models.ForeignKey(Client,
@@ -40,7 +44,7 @@ class ClientSubscriptions(models.Model):
     start_date = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        ordering = ['client_id']
+        ordering = ['purchase_date']
 
 
 class Location(models.Model):
