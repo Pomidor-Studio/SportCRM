@@ -35,9 +35,9 @@ def gl(request): #url: https://mysite.ru/vkbot/
                 # confirmation_token from settings.py
                 return HttpResponse(confirmation_token, content_type="text/plain", status=200)
             if (data['type'] == 'message_new'):# if VK server send a message
-                session = vk.Session()
-                api = vk.API(session, v=5.5)
-                user_id = data['object']['user_id']
-                api.messages.send(access_token=token, user_id=str(user_id), message="Hello, I'm bot!")
-                #create_answer(data['object'], token)
+                #session = vk.Session()
+                #api = vk.API(session, v=5.5)
+                #user_id = data['object']['user_id']
+                #api.messages.send(access_token=token, user_id=str(user_id), message="Hello, I'm bot!")
+                create_answer(data['object'], token)
                 return HttpResponse('ok', content_type="text/plain", status=200)

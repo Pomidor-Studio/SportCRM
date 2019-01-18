@@ -56,6 +56,6 @@ def get_answer(body):
 
 def create_answer(data, token):
    load_modules()
-   user_id = data['user_id']
-   message, attachment = get_answer(data['body'].lower())
+   user_id = data['object']['user_id']
+   message, attachment = get_answer(data['object']['body'].lower())
    send_message(user_id, token, message, attachment)
