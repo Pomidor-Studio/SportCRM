@@ -25,24 +25,26 @@
 
 <body>
 
-    <div class="row">
-        <!--Horizontalbar-->
-        {% include 'crm/bars/horizontalbar.html' %}
-    </div>
-
-    <div class="row">
-        <!--Sidebar-->
-        <div class="sidebar col-xs-12 col-md-3">
-            {% include 'crm/bars/sidebar.html' %}
+    <div class="container-fluid">
+        <div class="row">
+            <!--Horizontalbar-->
+            {% include 'crm/bars/horizontalbar.html' %}
         </div>
 
-        <!--Content-->
-        <div class="content col-xs-12 col-md-9">
-            <main role="main" class="main">
-                {% block content %}{% endblock %}
-            </main>
-        </div>
+        <div class="row">
+            <!--Sidebar-->
+            <div class="sidebar col-3 col-sm-2 col-md-2 col-lg-1 col-xl-1">
+                {% include 'crm/bars/sidebar.html' %}
+            </div>
 
+            <!--Content-->
+            <div class="content col-9 col-sm-10 col-md-10 col-lg-11 col-xl-11">
+                <main role="main" class="main">
+                    {% block content %}{% endblock %}
+                </main>
+            </div>
+
+        </div>
     </div>
 
 </body>
