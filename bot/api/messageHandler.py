@@ -1,4 +1,4 @@
-from bot.api.vkapi import *
+from bot.api.vkapi import send_message
 import os
 import importlib
 from bot.api.command_system import command_list
