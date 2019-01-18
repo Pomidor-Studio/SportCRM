@@ -14,7 +14,7 @@ from . import views
 
 app_name = 'crm'
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.base, name='base'),
     path('clients/', views.ClientsListView.as_view(), name='clients'),
     path('clients/<int:pk>/', views.ClientDetailView.as_view(), name='client-detail'),
     path('eventclass/', views.EventClassList.as_view(), name='eventclass_list'),

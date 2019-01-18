@@ -9,8 +9,8 @@ from crm.forms import ClientForm
 from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions
 
 
-def home(request):
-    return render(request, 'crm/home.html')
+def base(request):
+    return render(request, 'crm/base.html')
 
 
 def clientsv(request):
@@ -118,7 +118,7 @@ class ClientSubscriptionUpdateView(UpdateView):
               'purchase_date', 'start_date']
 
 class EventClassList(ListView):
-    # template_name = 'polls/index.html'
+    # template_name = 'polls/bars.html'
     # context_object_name = 'latest_question_list'
     model = EventClass
 
