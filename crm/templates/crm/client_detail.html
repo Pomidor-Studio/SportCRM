@@ -51,9 +51,9 @@
                     <td>{{ sub.purchase_date|date }}</td>
                     <td>{{ sub.start_date|date }}</td>
                     <td >
-                        <a class="btn btn-sm btn-outline-info" href="{% url 'crm:clientsubscription-new' object.id %}">Изменить</a>
+                        <a class="btn btn-sm btn-outline-info" href="{% url 'crm:clientsubscription-update' sub.id %}">Изменить</a>
                     </td>
-                    <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:clientsubscription-new' object.id %}">Удалить</a></td>
+                    <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:clientsubscription-update' sub.id %}">Удалить</a></td>
                 </tr>
                 {% endfor %}
                 </tbody>

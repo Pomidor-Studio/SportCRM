@@ -4,6 +4,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
+from crm.forms import ClientForm
 
 from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions
 
@@ -27,23 +28,6 @@ def subscriptionsv(request):
     }
     return render(request, 'crm/subscriptions.html', context)
 
-class ClientForm(forms.ModelForm):
-    class Meta:
-        model = Client
-        template_name = 'crm/client_form.html'
-        fields = ['name', 'address',
-                  'birthday', 'phone_number', 'email_address']
-        labels = {
-            'name':'Имя',
-            'address':'Адрес',
-            'birthday':'Дата рождения',
-            'phone_number':'Номер телефона',
-            'email_address':'Электронный адрес',
-        }
-        widgets = {
-            'birthday': DatePickerInput()
-        }
-
 class ClientsListView(ListView):
     model = Client
     template_name = 'crm/clients.html'
@@ -63,8 +47,7 @@ class ClientCreateView(CreateView):
 
 class ClientUpdateView(UpdateView):
     model = Client
-    fields = ['name', 'address',
-              'birthday', 'phone_number', 'email_address']
+    form_class = ClientForm
 
 
 class ClientDeleteView(DeleteView):
@@ -128,6 +111,11 @@ class ClientSubscriptionCreateView(CreateView):
         self.сlient = Client.objects.get(id=self.kwargs['client_id'])
         form.instance.client = self.сlient
         return super().form_valid(form)
+
+class ClientSubscriptionUpdateView(UpdateView):
+    model = ClientSubscriptions
+    fields = ['subscription',
+              'purchase_date', 'start_date']
 
 class EventClassList(ListView):
     # template_name = 'polls/index.html'
