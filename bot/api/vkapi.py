@@ -1,10 +1,7 @@
 import vk
-import random
-from datetime import datetime, date, time
-import pytz
 
 session = vk.Session()
-api = vk.API(session, v=5.0)
+api = vk.API(session, v=5.5)
 
 
 def send_message(user_id, token, message, attachment=""):
