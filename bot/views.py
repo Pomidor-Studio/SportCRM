@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.http import HttpResponse
 from bot.api.settings import *
-from bot.api.messageHandler import *
+from bot.api.messageHandler import create_answer
 
 import json, vk # vk is library from VK
 
