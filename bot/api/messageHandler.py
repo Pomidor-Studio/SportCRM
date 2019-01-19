@@ -1,8 +1,7 @@
 from bot.api.vkapi import send_message
 import os
-import importlib
+from importlib import import_module
 from bot.api.command_system import command_list
-import info
 
 def damerau_levenshtein_distance(s1, s2):
    d = {}
@@ -32,7 +31,8 @@ def load_modules():
    files = os.listdir("commands")
    modules = filter(lambda x: x.endswith('.py'), files)
    for m in modules:
-       importlib.import_module("api.commands." + m[0:-3], package='bot')
+       j = 'commands.' + m[0:-3]
+       import_module(j)
 
 def get_answer(body):
    message = "Прости, не понимаю тебя. Напиши 'помощь', чтобы узнать мои команды"
@@ -56,6 +56,7 @@ def get_answer(body):
    return message, attachment
 
 def create_answer(data, token):
+   load_modules()
    user_id = data['object']['user_id']
    message, attachment = get_answer(data['object']['body'].lower())
    send_message(user_id, token, message, attachment)
