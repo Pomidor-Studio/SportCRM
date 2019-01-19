@@ -43,6 +43,9 @@ class ClientSubscriptions(models.Model):
     purchase_date = models.DateTimeField(default=timezone.now)
     start_date = models.DateTimeField(default=timezone.now)
 
+    def get_absolute_url(self):
+        return reverse('crm:client-detail', kwargs={'pk': self.client.id})
+
     class Meta:
         ordering = ['purchase_date']
 
