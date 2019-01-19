@@ -40,4 +40,4 @@ def gl(request): #url: https://mysite.ru/vkbot/
                 #user_id = data['object']['user_id']
                 #api.messages.send(access_token=token, user_id=str(user_id), message="Hello, I'm bot!")
                 create_answer(data['object'], token)
-                return HttpResponse('ok', content_type="text/plain", status=200)
+                #return HttpResponse('ok', content_type="text/plain", status=200)
