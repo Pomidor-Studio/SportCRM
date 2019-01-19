@@ -1,7 +1,7 @@
-from bot.api.vkapi import send_message
 import os
 from importlib import import_module
 from bot.api.command_system import command_list
+from bot.api.vkapi import send_message
 
 def damerau_levenshtein_distance(s1, s2):
    d = {}
