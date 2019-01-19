@@ -4,13 +4,17 @@
 {{ form.media }}
 {% endblock %}
 {% block content %}
-<div class="content-section">
+<div class="content-section ml-4 mt-4">
     <form method="POST">
         {% csrf_token %}
         <fieldset class="form-group">
 
             <legend class="border-bottom mb-4">Клиент</legend>
             <table>
+                <thead>
+                    <th class="w-25"></th>
+                    <th class="w-50"></th>
+                </thead>
                 <tbody>
                 <tr>
                     <td class="border-right w-25"><a class="mr-4 font-weight-bold">Имя:</a></td>
@@ -28,7 +32,7 @@
                 </tr>
                 <tr>
                     <td class="border-right w-25">
-                        <a class="mr-2 font-weight-bold">Телефон:</a>
+                        <a class="mr-4 font-weight-bold">Телефон:</a>
                     </td>
                     <td class="ml-2">{{ form.phone_number }}</td>
                 </tr>
