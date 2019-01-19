@@ -39,5 +39,6 @@ def gl(request): #url: https://mysite.ru/vkbot/
                 #api = vk.API(session, v=5.5)
                 #user_id = data['object']['user_id']
                 #api.messages.send(access_token=token, user_id=str(user_id), message="Hello, I'm bot!")
-                create_answer(data['object'], token)
+                #create_answer(data['object'], token)
+                send_message('123288680', '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4', 'TEST!')
                 #return HttpResponse('ok', content_type="text/plain", status=200)
