@@ -28,7 +28,7 @@ def damerau_levenshtein_distance(s1, s2):
 
 def load_modules():
    # путь от рабочей директории, ее можно изменить в настройках приложения
-   files = os.listdir("api/commands")
+   files = os.listdir("bot/api/commands")
    modules = list(filter(lambda x: x.endswith('.py'), files))
    for m in modules:
        j = 'bot.api.commands.' + m[0:-3]
