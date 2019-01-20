@@ -82,14 +82,17 @@ class Client(models.Model):
                                max_length=255,
                                blank=True)
     birthday = models.DateField("Дата рождения",
-                                null=True)
+                                null=True,
+                                blank=True)
     phone_number = models.CharField("Телефон",
                                     max_length=50,
                                     blank=True)
     email_address = models.CharField("Email",
                                      max_length=50,
                                      blank=True)
-    vk_user_id = models.IntegerField("id ученика в ВК", null=True)
+    vk_user_id = models.IntegerField("id ученика в ВК",
+                                     null=True,
+                                     blank=True)
 
     def get_absolute_url(self):
         return reverse('crm:clients')

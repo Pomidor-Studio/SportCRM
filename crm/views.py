@@ -34,12 +34,6 @@ class ClientsListView(ListView):
     template_name = 'crm/clients.html'
     context_object_name = 'clients'
 
-    def get_context_data(self, **kwargs):
-        context = super(ClientsListView, self).get_context_data(**kwargs)
-        context["clientsubscriptions"] = ClientSubscriptions.objects.all().order_by('id')
-        context["subscriptions"] = SubscriptionsType.objects.all()
-        return context
-
 
 class ClientCreateView(CreateView):
     model = Client
