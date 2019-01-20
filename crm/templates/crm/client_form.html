@@ -4,45 +4,12 @@
 {{ form.media }}
 {% endblock %}
 {% block content %}
-<div class="content-section ml-4 mt-4">
+<legend class="border-bottom mb-4">Клиент</legend>
+<div class="col-4 ml-4 mt-4">
     <form method="POST">
         {% csrf_token %}
-        <fieldset class="form-group">
+        {% bootstrap_form form %}
 
-            <legend class="border-bottom mb-4">Клиент</legend>
-            <table>
-                <thead>
-                    <th class="w-25"></th>
-                    <th class="w-50"></th>
-                </thead>
-                <tbody>
-                <tr>
-                    <td class="border-right w-25"><a class="mr-4 font-weight-bold">Имя:</a></td>
-                    <td class="ml-2">{{ form.name }}</td>
-                </tr>
-                <tr>
-                    <td class="border-right w-25"><a class="mr-4 font-weight-bold">Адрес:</a></td>
-                    <td class="ml-2">{{ form.address }}</td>
-                </tr>
-                <tr>
-                    <td class="border-right w-25"><a class="mr-4 font-weight-bold">Дата рождения:</a></td>
-                    <td class="ml-2">
-                        <div class="ml-4 mb-2 w-100">{{ form.birthday }}</div>
-                        </td>
-                </tr>
-                <tr>
-                    <td class="border-right w-25">
-                        <a class="mr-4 font-weight-bold">Телефон:</a>
-                    </td>
-                    <td class="ml-2">{{ form.phone_number }}</td>
-                </tr>
-                <tr>
-                    <td class="border-right w-25"><a class="mr-4 font-weight-bold">Электронный адрес:</a></td>
-                    <td class="ml-2">{{ form.email_address }}</td>
-                </tr>
-                </tbody>
-            </table>
-        </fieldset>
         <div class="form-group">
             <button class="btn btn-outline-info" type="submit">Добавить</button>
         </div>

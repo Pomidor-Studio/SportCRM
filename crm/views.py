@@ -4,7 +4,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
-from crm.forms import ClientForm
+from .forms import ClientForm
 
 from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions
 
@@ -27,6 +27,7 @@ def subscriptionsv(request):
         'subscriptions': Client.objects.all()
     }
     return render(request, 'crm/subscriptions.html', context)
+
 
 class ClientsListView(ListView):
     model = Client
@@ -112,10 +113,12 @@ class ClientSubscriptionCreateView(CreateView):
         form.instance.client = self.сlient
         return super().form_valid(form)
 
+
 class ClientSubscriptionUpdateView(UpdateView):
     model = ClientSubscriptions
     fields = ['subscription',
               'purchase_date', 'start_date']
+
 
 class EventClassList(ListView):
     # template_name = 'polls/bars.html'

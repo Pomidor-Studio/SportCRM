@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_datepicker_plus import DatePickerInput
-from crm.models import Client
+from .models import Client
 
 
 class ClientForm(forms.ModelForm):
@@ -8,7 +8,7 @@ class ClientForm(forms.ModelForm):
         model = Client
 
         fields = ['name', 'address',
-                  'birthday', 'phone_number', 'email_address']
+                  'birthday', 'phone_number', 'email_address', 'vk_user_id']
         widgets = {
             'birthday': DatePickerInput(format='%Y-%m-%d', attrs={"class": "form-control", "placeholder":"ГГГГ-ММ-ДД"}),
             'address': forms.TextInput(attrs={"class": "form-control ml-4 mb-2", "placeholder":"Адрес проживания"}),

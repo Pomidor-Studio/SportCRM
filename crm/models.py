@@ -17,15 +17,22 @@ class SubscriptionsType(models.Model):
     def get_absolute_url(self):
         return reverse('crm:subscriptions')
 
+
 class Client(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=255,
+    name = models.CharField("Имя",
+                            max_length=100)
+    address = models.CharField("Адресс",
+                               max_length=255,
                                blank=True)
-    birthday = models.DateField(null=True)
-    phone_number = models.CharField(max_length=50,
+    birthday = models.DateField("Дата рождения",
+                                null=True)
+    phone_number = models.CharField("Телефон",
+                                    max_length=50,
                                     blank=True)
-    email_address = models.CharField(max_length=50,
+    email_address = models.CharField("Email",
+                                     max_length=50,
                                      blank=True)
+    vk_user_id = models.IntegerField("id ученика в ВК", null=True)
 
     def get_absolute_url(self):
         return reverse('crm:clients')
@@ -33,6 +40,7 @@ class Client(models.Model):
     @property
     def last_sub(self):
         return self.clientsubscriptions_set.order_by('purchase_date').first
+
 
 class ClientSubscriptions(models.Model):
     """Абонементы клиента"""
