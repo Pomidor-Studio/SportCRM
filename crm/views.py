@@ -76,8 +76,7 @@ class SubscriptionsListView(ListView):
 
 class SubscriptionCreateView(CreateView):
     model = SubscriptionsType
-    fields = ['name', 'price',
-              'duration', 'visit_limit']
+    fields = '__all__'
 
 
 class SubscriptionUpdateView(UpdateView):
