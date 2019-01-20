@@ -29,7 +29,7 @@
     </div>
     <div class="row">
         <div class="col">
-            <a class="font-weight-bold ">Абонементы: </a>
+            <span class="font-weight-bold ">Абонементы: </span>
             <div class="mb-2 mt-2">
                 <a class="btn btn-sm btn-outline-info" href="{% url 'crm:clientsubscription-new' object.id %}">Добавить
                     абонемент</a>
@@ -54,6 +54,32 @@
                         <a class="btn btn-sm btn-outline-info" href="{% url 'crm:clientsubscription-update' sub.id %}">Изменить</a>
                     </td>
                     <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:clientsubscription-update' sub.id %}">Удалить</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+     <div class="row">
+        <div class="col">
+            <span class="font-weight-bold ">Посещения: </span>
+            <div class="mb-2 mt-2">
+                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:attendance-new' object.id %}">Отметить посещение</a>
+            </div>
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Тренировка</th>
+                    <th style="width:5%" scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for sub in object.attendance_set.all|dictsortreversed:"event.date"  %}
+                <tr>
+                    <td>{{ sub.event.date|date }}</td>
+                    <td>{{ sub.event.event_class }}</td>
+                    <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:attendance-delete' sub.id %}">Удалить</a></td>
                 </tr>
                 {% endfor %}
                 </tbody>

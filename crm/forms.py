@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_datepicker_plus import DatePickerInput
-from .models import Client, ClientSubscriptions
+from .models import Client, ClientSubscriptions, Attendance
 
 
 class ClientForm(forms.ModelForm):
@@ -21,4 +21,10 @@ class ClientForm(forms.ModelForm):
 class ClientSubscriptionForm(forms.ModelForm):
     class Meta:
         model = ClientSubscriptions
+        exclude = ('client',)
+
+
+class AttendanceForm(forms.ModelForm):
+    class Meta:
+        model = Attendance
         exclude = ('client',)

@@ -124,10 +124,12 @@ class ClientSubscriptions(models.Model):
 
 class Event(models.Model):
     """Конкретное мероприятие (тренировка)"""
-    event_date = models.DateField
+    date = models.DateField("Дата")
     event_class = models.ForeignKey(EventClass,
                                     on_delete=models.PROTECT,
                                     verbose_name="Тренировка")
+    def __str__(self):
+        return self.date.strftime("%Y-%m-%d") + " " + str(self.event_class)
     # TODO: Валидацию по event_class
 
 

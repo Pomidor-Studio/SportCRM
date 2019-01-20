@@ -9,7 +9,10 @@ from .views import (
     SubscriptionDeleteView,
     SubscriptionCreateView,
     ClientSubscriptionCreateView,
-    ClientSubscriptionUpdateView)
+    ClientSubscriptionUpdateView,
+    AttendanceCreateView,
+    AttendanceDelete
+)
 from . import views
 
 app_name = 'crm'
@@ -30,4 +33,7 @@ urlpatterns = [
     path('subscriptions/new/', SubscriptionCreateView.as_view(), name='subscription-new'),
     path('clients/<int:client_id>/addsubscription/', ClientSubscriptionCreateView.as_view(), name='clientsubscription-new'),
     path('clientsubscriptions/<int:pk>/update', ClientSubscriptionUpdateView.as_view(), name='clientsubscription-update'),
+    path('clients/<int:client_id>/addattendance/', AttendanceCreateView.as_view(), name='attendance-new'),
+    path('adattendance/<int:pk>/delete/', AttendanceDelete.as_view(), name='attendance-delete'),
+
 ]

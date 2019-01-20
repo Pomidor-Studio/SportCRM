@@ -4,9 +4,9 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
-from .forms import ClientForm, ClientSubscriptionForm
+from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm
 
-from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions
+from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions, Attendance
 
 
 def base(request):
@@ -98,7 +98,6 @@ class ClientSubscriptionCreateView(CreateView):
     form_class = ClientSubscriptionForm
     template_name = "crm/clientsubscriptions_form.html"
 
-
     def get_success_url(self):
         return reverse('crm:client-detail', args=[self.сlient.id])
 
@@ -137,3 +136,29 @@ class EventClassUpdate(UpdateView):
 class EventClassDelete(DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:eventclass_list')
+
+
+class AttendanceCreateView(CreateView):
+    model = Attendance
+    form_class = AttendanceForm
+    # def get_context_data(self, **kwargs):
+    #     context = super(AttendanceCreateView, self).get_context_data(**kwargs)
+    #     context['client_id'] = self.kwargs['client_id']
+    #     return context
+
+    def form_valid(self, form):
+        form.instance.client_id = self.kwargs['client_id']
+        return super(AttendanceCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('crm:client-detail', args=[self.kwargs['client_id']])
+
+
+class AttendanceDelete(DeleteView):
+    model = Attendance
+    template_name = "crm/common_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse('crm:client-detail', args=[self.object.client_id,])
+
+
