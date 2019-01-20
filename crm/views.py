@@ -99,17 +99,11 @@ class ClientSubscriptionCreateView(CreateView):
     template_name = "crm/clientsubscriptions_form.html"
 
     def get_success_url(self):
-        return reverse('crm:client-detail', args=[self.сlient.id])
-
-    def get_context_data(self, **kwargs):
-        self.client = Client.objects.get(id=self.kwargs['client_id'])
-        kwargs['client'] = self.client
-        return super().get_context_data(**kwargs)
+        return reverse('crm:client-detail', args=[self.kwargs['client_id']])
 
     def form_valid(self, form):
-        self.сlient = Client.objects.get(id=self.kwargs['client_id'])
-        form.instance.client = self.сlient
-        return super().form_valid(form)
+        form.instance.client_id = self.kwargs['client_id']
+        return super(ClientSubscriptionCreateView, self).form_valid(form)
 
 
 class ClientSubscriptionUpdateView(UpdateView):
@@ -159,6 +153,6 @@ class AttendanceDelete(DeleteView):
     template_name = "crm/common_confirm_delete.html"
 
     def get_success_url(self):
-        return reverse('crm:client-detail', args=[self.object.client_id,])
+        return reverse('crm:client-detail', args=[self.object.client_id, ])
 
 
