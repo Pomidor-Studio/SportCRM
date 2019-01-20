@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_datepicker_plus import DatePickerInput
-from .models import Client
+from .models import Client, ClientSubscriptions
 
 
 class ClientForm(forms.ModelForm):
@@ -16,3 +16,9 @@ class ClientForm(forms.ModelForm):
             'phone_number': forms.TextInput(attrs={"class": "form-control ml-4 mb-2", "placeholder":"Номер телефона"}),
             'email_address': forms.EmailInput(attrs={"class": "form-control ml-4 mb-2", "placeholder":"example@mail.com"}),
         }
+
+
+class ClientSubscriptionForm(forms.ModelForm):
+    class Meta:
+        model = ClientSubscriptions
+        exclude = ('client',)

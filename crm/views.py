@@ -4,7 +4,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
-from .forms import ClientForm
+from .forms import ClientForm, ClientSubscriptionForm
 
 from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions
 
@@ -95,9 +95,9 @@ class SubscriptionDetailView(DetailView):
 
 
 class ClientSubscriptionCreateView(CreateView):
-    model = ClientSubscriptions
-    fields = ['subscription',
-              'purchase_date', 'start_date']
+    form_class = ClientSubscriptionForm
+    template_name = "crm/clientsubscriptions_form.html"
+
 
     def get_success_url(self):
         return reverse('crm:client-detail', args=[self.сlient.id])
@@ -115,8 +115,7 @@ class ClientSubscriptionCreateView(CreateView):
 
 class ClientSubscriptionUpdateView(UpdateView):
     model = ClientSubscriptions
-    fields = ['subscription',
-              'purchase_date', 'start_date']
+    form_class = ClientSubscriptionForm
 
 
 class EventClassList(ListView):
