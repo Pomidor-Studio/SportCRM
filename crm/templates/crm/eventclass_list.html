@@ -1,9 +1,10 @@
 {% extends "crm/base.html" %}
 {% load static %}
-
-
 {% block content %}
-<h1>Классы мероприятий</h1>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<script type="text/javascript"></script>
+<script>window.page_name = "Классы мероприятий";</script>
+<h1>Типы мероприятий</h1>
 <a class="btn btn-primary" href="{% url 'crm:eventclass_create' %}">Новое мероприятие</a>
 {% if eventclass_list %}
     <ul>
