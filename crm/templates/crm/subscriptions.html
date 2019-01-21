@@ -10,51 +10,64 @@
         <div style="background-color: #FFFFFF;" class="sticky-top">
             <div class="container-fluid mb-2">
                 <div class="container-fluid">
-                    <a name="add-new" href="{% url 'crm:subscription-new' %}" class="btn btn-sm btn-info">Добавить абонемент</a>
+                    <a name="add-new" href="{% url 'crm:subscription-new' %}" class="btn btn-sm btn-info">Добавить
+                        абонемент</a>
                 </div>
             </div>
         </div>
         <div class="container-fluid">
             <div class="row">
                 <div class="col">
-                    {% for subscription in subscriptions %}
+
                     <div name="subscription-div" class="container-fluid">
                         <div class="mb-2">
-                            <a name="edit" href="{% url 'crm:subscription-update' subscription.id %}" class="btn btn-sm btn-outline-info">Редактировать</a>
-                            <a name="remove" href="{% url 'crm:subscription-delete' subscription.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+
+
                         </div>
                         <table class="table table-sm table-bordered">
                             <thead>
-                                <tr>
-                                    <th scope="col">№</th>
-                                    <th scope="col">Название</th>
-                                    <th scope="col">Цена</th>
-                                    <th scope="col">Продолжительность (Дней)</th>
-                                    <th scope="col">Лимит посещений</th>
-                                </tr>
+                            <tr>
+                                <th scope="col">№</th>
+                                <th scope="col">Название</th>
+                                <th scope="col">Цена</th>
+                                <th scope="col">Продолжительность (Дней)</th>
+                                <th scope="col">Лимит посещений</th>
+                                <th scope="col" style="width:5%"></th>
+                                <th scope="col" style="width:5%"></th>
+                            </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>
-                                        {{ subscription.id }}
-                                    </td>
-                                    <td>
-                                        {{ subscription.name }}
-                                    </td>
-                                    <td>
-                                        {{ subscription.price }}
-                                    </td>
-                                    <td>
-                                        {{ subscription.duration }}
-                                    </td>
-                                    <td>
-                                        {{ subscription.visit_limit }}
-                                    </td>
-                                </tr>
+                            {% for subscription in subscriptions %}
+                            <tr>
+                                <td>
+                                    {{ subscription.id }}
+                                </td>
+                                <td>
+                                    {{ subscription.name }}
+                                </td>
+                                <td>
+                                    {{ subscription.price }}
+                                </td>
+                                <td>
+                                    {{ subscription.duration }}
+                                </td>
+                                <td>
+                                    {{ subscription.visit_limit }}
+                                </td>
+                                <td>
+                                    <a name="edit" href="{% url 'crm:subscription-update' subscription.id %}"
+                                       class="btn btn-sm btn-outline-info">Редактировать</a>
+                                </td>
+                                <td>
+                                    <a name="remove" href="{% url 'crm:subscription-delete' subscription.id %}"
+                                       class="btn btn-sm btn-outline-danger">Удалить</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    {% endfor %}
+
                 </div>
             </div>
         </div>

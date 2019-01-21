@@ -13,6 +13,11 @@
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Добавить</button>
+                {% if object.client != null %}
+                    <a name="cancel" href="{% url 'crm:client-detail' object.client.id %}" class="btn btn-outline-info">Назад</a>
+                {% else %}
+                    <a name="cancel" href="{% url 'crm:client-detail' view.kwargs.client_id %}" class="btn btn-outline-info">Назад</a>
+                {% endif %}
             </div>
         </form>
     </div>

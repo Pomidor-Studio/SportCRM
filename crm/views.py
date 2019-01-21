@@ -99,7 +99,6 @@ class ClientSubscriptionCreateView(CreateView):
         form.instance.client_id = self.kwargs['client_id']
         return super(ClientSubscriptionCreateView, self).form_valid(form)
 
-
 class ClientSubscriptionUpdateView(UpdateView):
     model = ClientSubscriptions
     form_class = ClientSubscriptionForm

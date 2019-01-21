@@ -19,6 +19,11 @@
 
         <div class="form-group">
             <button class="btn btn-outline-info" type="submit">Добавить</button>
+            {% if object.id != null %}
+                <a name="cancel" href="{% url 'crm:client-detail' object.id %}" class="btn btn-outline-info">Назад</a>
+            {% else %}
+                <a name="cancel" href="{% url 'crm:clients' %}" class="btn btn-outline-info">Назад</a>
+            {% endif %}
         </div>
     </form>
 </div>

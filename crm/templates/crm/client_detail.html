@@ -7,6 +7,7 @@
     <div class="row mb-2">
         <div class="container-fluid">
             <a class="btn btn-sm btn-outline-info" href="{% url 'crm:client-update' object.id %}">Изменить</a>
+            <a name="cancel" href="{% url 'crm:clients' %}" class="btn btn-sm btn-outline-info">Назад</a>
             <a class="btn btn-sm btn-outline-danger"  href="{% url 'crm:client-delete' object.id %}">Удалить</a>
         </div>
     </div>
