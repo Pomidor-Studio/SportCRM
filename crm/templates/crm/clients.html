@@ -3,47 +3,44 @@
 {% endblock nav %}
 {% block content %}
 <script type="text/javascript"></script>
-<script>window.page_name = "Клиенты";</script>
-<h1>Клиенты</h1>
+<script>window.page_name = "Ученики";</script>
 <form action="/clients" id="clientsForm" method="POST" style="width: 100%;">
-    <div class="container-fluid mt-4">
+    <div class="ml-4 mt-4 mr-4">
+        <legend class="border-bottom mb-2">Ученики</legend>
         <div style="background-color: #FFFFFF;" class="sticky-top">
-            <div class="container-fluid mb-2">
-                <a name="add-new" href="{% url 'crm:client-new' %}" class="btn btn-sm btn-info">Добавить клиента</a>
-            </div>
+            <a name="add-new" href="{% url 'crm:client-new' %}" class="btn btn-sm btn-info mb-2">Добавить ученика</a>
         </div>
-        <div class="container-fluid">
-            <table class="table table-sm table-bordered">
-                <thead>
-                <tr>
-                    <th scope="col">№</th>
-                    <th scope="col">Инфо</th>
-                    <th scope="col">Абонемент</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for c in clients %}
-                <tr>
-                    <td>
-                        {{ c.id }}
-                    </td>
-                    <td>
-                        <a href="{% url 'crm:client-detail' c.id %}">
-                            <div class="font-weight-bold">{{ c.name }}</div>
-                            <div>{{ c.phone_number }}</div>
-                            <div>{{ c.email_address }}</div>
-                        </a>
-                    </td>
-                    <td>
+        <table class="table table-sm table-bordered">
+            <thead>
+            <tr>
+                <th scope="col">№</th>
+                <th scope="col">Инфо</th>
+                <th scope="col">Абонемент</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for c in clients %}
+            <tr>
+                <td>
+                    {{ c.id }}
+                </td>
+                <td>
+                    <a href="{% url 'crm:client-detail' c.id %}">
+                        <div class="font-weight-bold">{{ c.name }}</div>
+                        <div>{{ c.phone_number }}</div>
+                        <div>{{ c.email_address }}</div>
+                    </a>
+                </td>
+                <td>
 
-                        <div class="font-weight-bold">{{ c.clientsubscriptions__latest.name }}</div>
-                        <div>{{ c.last_sub.purchase_date | date }}</div>
-                    </td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                    <div class="font-weight-bold">{{ c.clientsubscriptions__latest.name }}</div>
+                    <div>{{ c.last_sub.purchase_date | date }}</div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
 
     </div>
 </form>

@@ -10,21 +10,24 @@
     $( document ).ready(function() {
         $("#id_phone_number").inputmask({"mask": "+7(999)999-99-99"});
     });
-</script>
-<div class="col-4 ml-4 mt-4">
-    <legend class="border-bottom mb-4">Клиент</legend>
-    <form method="POST">
-        {% csrf_token %}
-        {% bootstrap_form form %}
 
-        <div class="form-group">
-            <button class="btn btn-outline-info" type="submit">Добавить</button>
-            {% if object.id != null %}
+</script>
+<div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Ученик</legend>
+    <div class="w-25">
+        <form method="POST">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Добавить</button>
+                {% if object.id != null %}
                 <a name="cancel" href="{% url 'crm:client-detail' object.id %}" class="btn btn-outline-info">Назад</a>
-            {% else %}
+                {% else %}
                 <a name="cancel" href="{% url 'crm:clients' %}" class="btn btn-outline-info">Назад</a>
-            {% endif %}
-        </div>
-    </form>
+                {% endif %}
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock content %}

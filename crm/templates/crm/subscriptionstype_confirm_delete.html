@@ -1,11 +1,11 @@
 {% extends "crm/base.html" %}
 
 {% block content %}
-    <div class="content-section">
+    <div class="content-section mt-4 ml-4">
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Клиент</legend>
+                <legend class="border-bottom mb-2">Абонемент</legend>
                 <h2>Вы действительно хотете удалить абонемент "{{ object.name }}"?</h2>
             </fieldset>
             <div class="form-group">

@@ -4,21 +4,24 @@
 {{ form.media }}
 {% endblock %}
 {% block content %}
-    <div class="content-section ml-4 mt-4">
+<div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Абонемент</legend>
+    <div class="w-25">
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Абонемент</legend>
                 {% bootstrap_form form %}
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Добавить</button>
                 {% if object.client != null %}
-                    <a name="cancel" href="{% url 'crm:client-detail' object.client.id %}" class="btn btn-outline-info">Назад</a>
+                <a name="cancel" href="{% url 'crm:client-detail' object.client.id %}" class="btn btn-outline-info">Назад</a>
                 {% else %}
-                    <a name="cancel" href="{% url 'crm:client-detail' view.kwargs.client_id %}" class="btn btn-outline-info">Назад</a>
+                <a name="cancel" href="{% url 'crm:client-detail' view.kwargs.client_id %}"
+                   class="btn btn-outline-info">Назад</a>
                 {% endif %}
             </div>
         </form>
     </div>
+</div>
 {% endblock content %}
