@@ -1,7 +1,10 @@
 {% extends "crm/base.html" %}
 {% load bootstrap4 %}
+{% block extrahead %}
+{{ form.media }}
+{% endblock %}
 {% block content %}
-    <div class="content-section">
+    <div class="content-section ml-4 mt-4">
         <form method="POST">
             {% csrf_token %}
             <fieldset class="form-group">

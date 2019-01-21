@@ -4,8 +4,9 @@
 {{ form.media }}
 {% endblock %}
 {% block content %}
-<legend class="border-bottom mb-4">Клиент</legend>
+
 <div class="col-4 ml-4 mt-4">
+    <legend class="border-bottom mb-4">Клиент</legend>
     <form method="POST">
         {% csrf_token %}
         {% bootstrap_form form %}
