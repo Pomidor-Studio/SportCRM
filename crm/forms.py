@@ -2,7 +2,6 @@ from django import forms
 from bootstrap_datepicker_plus import DatePickerInput
 from .models import Client, ClientSubscriptions, Attendance
 
-
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client

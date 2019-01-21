@@ -2,9 +2,15 @@
 {% load bootstrap4 %}
 {% block extrahead %}
 {{ form.media }}
+<script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
+
 {% endblock %}
 {% block content %}
-
+<script>
+    $( document ).ready(function() {
+        $("#id_phone_number").inputmask({"mask": "+7(999)999-99-99"});
+    });
+</script>
 <div class="col-4 ml-4 mt-4">
     <legend class="border-bottom mb-4">Клиент</legend>
     <form method="POST">
