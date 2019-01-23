@@ -20,23 +20,35 @@ class ClientForm(forms.ModelForm):
         }
 
 
-class ChoiceFieldWithTitles(forms.ChoiceField):
-    widget = forms.Select
+class DataAttributesSelect(forms.Select):
 
-    def __init__(self, choices=(), *args, **kwargs):
-        choice_pairs = [(c[0], c[1]) for c in choices]
-        super(ChoiceFieldWithTitles, self).__init__(choices=choice_pairs, *args, **kwargs)
+    def __init__(self, attrs=None, choices=(), data={}):
+        super(DataAttributesSelect, self).__init__(attrs, choices)
+        self.data = data
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super(DataAttributesSelect, self).create_option(name, value, label, selected, index, subindex=None,
+                                                                 attrs=None)
+        for data_attr, values in self.data.items():
+            option['attrs'][data_attr] = values[option['value']]
+
+        return option
 
 
 class ClientSubscriptionForm(forms.ModelForm):
-    subscription = ChoiceFieldWithTitles()
 
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []
         for st in SubscriptionsType.objects.all():
-            choices.append((st.price, st.name))
-        self.fields['subscription'] = ChoiceFieldWithTitles(choices=choices)
+            choices.append((st.id, st.name))
+
+        data = {'price': {'': ''}, 'visit_limit': {'': ''}}
+        for f in SubscriptionsType.objects.all():
+            data['price'][f.id] = f.price
+            data['visit_limit'][f.id] = f.visit_limit
+
+        self.fields['subscription'].widget = DataAttributesSelect(choices=choices, data=data)
 
     class Meta:
         model = ClientSubscriptions
@@ -46,7 +58,7 @@ class ClientSubscriptionForm(forms.ModelForm):
             'start_date': DatePickerInput(format='%Y-%m-%d',
                                           attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
             'price': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
-            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": "Оставшееся кол-во занятий"}),
+            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
         }
         exclude = ('client',)
 

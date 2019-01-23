@@ -7,9 +7,12 @@
 
 <script language="javascript">
     $(function() {
-    $("#id_price").val($(this).find("option:selected").attr("value"));
+    $("#id_price").val($(this).find("option:selected").attr("price"));
+    $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
+
     $("#id_subscription").change(function() {
-        $("#id_price").val($(this).find("option:selected").attr("value"));
+        $("#id_price").val($(this).find("option:selected").attr("price"));
+        $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
     });
 });
 </script>
