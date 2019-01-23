@@ -4,6 +4,16 @@
 {{ form.media }}
 {% endblock %}
 {% block content %}
+
+<script language="javascript">
+    $(function() {
+    $("#id_price").val($(this).find("option:selected").attr("value"));
+    $("#id_subscription").change(function() {
+        $("#id_price").val($(this).find("option:selected").attr("value"));
+    });
+});
+</script>
+
 <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">Абонемент</legend>
     <div class="w-25">
@@ -12,6 +22,7 @@
             <fieldset class="form-group">
                 {% bootstrap_form form %}
             </fieldset>
+
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Добавить</button>
                 {% if object.client != null %}
