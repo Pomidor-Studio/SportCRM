@@ -1,10 +1,11 @@
 from crm.models import SubscriptionsType, Client, ClientSubscriptions
 from bot.api.command_system import Command
 
-id_client = 1
+id_client = 2
+id_sub = 1
 
 def test():
-    a = SubscriptionsType.objects.filter(id = id_client)
+    a = SubscriptionsType.objects.filter(id = id_sub)
     b = Client.objects.filter(id = id_client)
     c = ClientSubscriptions.objects.filter(client_id = id_client)
     k = {}
