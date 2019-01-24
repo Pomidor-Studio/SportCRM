@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['127.0.0.1', 'glacial-cove-31542.herokuapp.com', 'dream-team-vk
 # Application definition
 
 INSTALLED_APPS = [
+    'bot.apps.BotConfig',
     'crm.apps.CrmConfig',
     'bootstrap_datepicker_plus',
     'bootstrap4',    
