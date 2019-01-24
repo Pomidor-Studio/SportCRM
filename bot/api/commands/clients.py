@@ -3,7 +3,7 @@ from bot.api.command_system import Command
 
 def test():
     a = SubscriptionsType.objects.filter(id = 1)
-    k = []
+    k = {}
     i = 0
     for sub in a:
         c = sub.name
@@ -12,7 +12,7 @@ def test():
         j = sub.visit_limit
         k[i] = [c, b, d, j]
         i += 1
-    message = str(k)
+    message = str(k[0])
     return message, ''
 
 test_command = Command()
