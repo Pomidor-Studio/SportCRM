@@ -1,9 +1,9 @@
-from crm.models import Client
+from crm.models import SubscriptionsType
 from bot.api.command_system import Command
 
 def test():
-    a = Client.objects.filter(id = 1)
-    message = a
+    a = SubscriptionsType.objects.filter(id = 1)
+    message = str(a)
     return message, ''
 
 test_command = Command()
