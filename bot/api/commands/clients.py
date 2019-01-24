@@ -3,7 +3,7 @@ from bot.api.command_system import Command
 
 def test():
     a = SubscriptionsType.objects.all()
-    message = a + '\n gg'
+    message = a
     return message, ''
 
 test_command = Command()
