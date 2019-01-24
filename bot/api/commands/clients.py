@@ -3,7 +3,16 @@ from bot.api.command_system import Command
 
 def test():
     a = SubscriptionsType.objects.filter(id = 1)
-    message = str(a)
+    k = []
+    i = 0
+    for sub in a:
+        c = sub.name
+        b = sub.price
+        d = sub.duration
+        j = sub.visit_limit
+        k[i] = [c, b, d, j]
+        i += 1
+    message = str(k)
     return message, ''
 
 test_command = Command()
