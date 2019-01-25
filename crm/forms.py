@@ -35,8 +35,15 @@ class DataAttributesSelect(forms.Select):
         return option
 
 
-class ClientSubscriptionForm(forms.ModelForm):
+class ExtendClientSubscriptionForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.subscription = kwargs.pop('subscription')
+        super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
+        self.fields['visit_limit'].initial = self.subscription.subscription.visit_limit
+    visit_limit = forms.CharField(label='Добавить посещений')
 
+
+class ClientSubscriptionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []

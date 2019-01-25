@@ -1,10 +1,12 @@
 from bootstrap_datepicker_plus import DatePickerInput
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
-from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm
+from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm, ExtendClientSubscriptionForm
 
 from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions, Attendance
 
@@ -86,6 +88,18 @@ class SubscriptionDeleteView(DeleteView):
 
 class SubscriptionDetailView(DetailView):
     model = SubscriptionsType
+
+
+
+def ExtendSubscription(request, pk=None):
+    if request.method == 'POST':
+        print(request.POST)
+        ClientSubscriptions.objects.get(pk=request.POST['object_id']).extend_duration(request.POST['visit_limit'])
+        return HttpResponseRedirect(reverse('crm:client-detail', args=[request.POST['client_id']]))
+    else:
+        subscription = ClientSubscriptions.objects.get(pk=pk)
+        form = ExtendClientSubscriptionForm(subscription=subscription)
+    return render(request, 'crm/extend_subscription.html', {'form': form})
 
 
 class ClientSubscriptionCreateView(CreateView):

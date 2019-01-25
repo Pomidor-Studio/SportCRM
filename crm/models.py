@@ -118,6 +118,10 @@ class ClientSubscriptions(models.Model):
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
+    def extend_duration(self, visits_left_plus):
+        self.visits_left += int(visits_left_plus)
+        self.save()
+
     def get_absolute_url(self):
         return reverse('crm:client-detail', kwargs={'pk': self.client.id})
 
