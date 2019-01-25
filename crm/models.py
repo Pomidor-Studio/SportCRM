@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
@@ -114,12 +114,19 @@ class ClientSubscriptions(models.Model):
                                          default=timezone.now)
     start_date = models.DateTimeField("Дата начала",
                                       default=timezone.now)
+    end_date = models.DateTimeField(null=True)
     # TODO: Исследовать целесообразность отнаследовать клиентские абонементы от абонементов (или выделить общую часть)
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
+    def save(self, *args, **kwargs):
+        if not self.end_date:
+            self.end_date = self.start_date + timedelta(self.subscription.duration)
+        super(ClientSubscriptions, self).save(*args, **kwargs)
+
     def extend_duration(self, visits_left_plus):
         self.visits_left += int(visits_left_plus)
+        self.end_date = self.end_date + timedelta(self.subscription.duration)
         self.save()
 
     def get_absolute_url(self):

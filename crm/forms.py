@@ -67,7 +67,7 @@ class ClientSubscriptionForm(forms.ModelForm):
             'price': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
             'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
         }
-        exclude = ('client',)
+        exclude = ('client', 'end_date')
 
 
 class AttendanceForm(forms.ModelForm):

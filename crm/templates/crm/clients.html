@@ -35,7 +35,7 @@
                     {% if c.last_sub != null %}
                     <div class="font-weight-bold">{{ c.last_sub.subscription.name }}</div>
                     <div>Куплен {{ c.last_sub.purchase_date | date }}</div>
-                    <div>Действует с {{ c.last_sub.start_date | date }}</div>
+                    <div>Действует с {{ c.last_sub.start_date | date }} по {{ c.last_sub.end_date | date }}</div>
                     <div>Осталось {{ c.last_sub.visits_left }} посещений</div>
                     <a class="btn btn-sm btn-outline-info"
                        href="{% url 'crm:clientsubscription-extend' c.last_sub.id %}">Продлить</a>
