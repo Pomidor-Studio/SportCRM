@@ -25,7 +25,7 @@ class Coach(models.Model):
 
 class EventClass(models.Model):
     """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
-    name = models.CharField("Назвение",
+    name = models.CharField("Название",
                             max_length=100)
     location = models.ForeignKey(Location,
                                  on_delete=models.PROTECT,
@@ -117,7 +117,7 @@ class ClientSubscriptions(models.Model):
     end_date = models.DateTimeField(null=True)
     # TODO: Исследовать целесообразность отнаследовать клиентские абонементы от абонементов (или выделить общую часть)
     price = models.FloatField("Стоимость")
-    visits_left = models.PositiveIntegerField("Ост0аток посещений")
+    visits_left = models.PositiveIntegerField("Остаток посещений")
 
     def save(self, *args, **kwargs):
         if not self.end_date:
