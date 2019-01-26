@@ -117,7 +117,7 @@ class ClientSubscriptions(models.Model):
     end_date = models.DateTimeField(null=True)
     # TODO: Исследовать целесообразность отнаследовать клиентские абонементы от абонементов (или выделить общую часть)
     price = models.FloatField("Стоимость")
-    visits_left = models.PositiveIntegerField("Остаток посещений")
+    visits_left = models.PositiveIntegerField("Ост0аток посещений")
 
     def save(self, *args, **kwargs):
         if not self.end_date:
