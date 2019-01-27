@@ -1,0 +1,25 @@
+{% extends "crm/base.html" %}
+{% load bootstrap4 %}
+{% block extrahead %}
+{{ form.media }}
+{% endblock %}
+{% block content %}
+
+<div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Абонемент</legend>
+    <div class="w-25">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <input id="client_id" name="client_id" hidden="true" value="{{ form.subscription.client.id }}">
+                <input id="object_id" name="object_id" hidden="true" value="{{ form.subscription.id }}">
+                {% bootstrap_form form %}
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Продлить</button>
+                <a name="cancel" href="{% url 'crm:client-detail' form.subscription.client.id %}" class="btn btn-outline-info">Назад</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
