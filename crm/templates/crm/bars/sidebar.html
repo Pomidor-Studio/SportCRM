@@ -1,5 +1,9 @@
-<ul class="nav flex-column">
-    <li><a href="{% url 'crm:clients' %}">Clients</a></li>
-    <li><a href="{% url 'crm:eventclass_list' %}">Eventclasses</a></li>
-    <li><a href="{% url 'crm:subscriptions' %}">Subscriptions</a></li>
-</ul>
+{% load static %}
+<div id="sidebar">
+    <ul class="navbar-nav flex-column">
+        <li><a href="/" class="navbar-brand"><img src="{% static 'favicon/favicon-32x32.png' %}" width="32" height="32" alt="logo"></a></li>
+        <li><a href="{% url 'crm:clients' %}" name="Ученики">Ученики</a></li>
+        <li><a href="{% url 'crm:subscriptions' %}" name="Абонементы">Абонементы</a></li>
+        <li><a href="{% url 'crm:eventclass_list' %}" name="Типы мероприятий">Типы_мероприятий</a></li>
+    </ul>
+</div>

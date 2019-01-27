@@ -1,11 +1,14 @@
 from bootstrap_datepicker_plus import DatePickerInput
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.views import View
 from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
+from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm, ExtendClientSubscriptionForm
 
-from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions
+from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions, Attendance
 
 
 def base(request):
@@ -27,33 +30,11 @@ def subscriptionsv(request):
     }
     return render(request, 'crm/subscriptions.html', context)
 
-class ClientForm(forms.ModelForm):
-    class Meta:
-        model = Client
-        template_name = 'crm/client_form.html'
-        fields = ['name', 'address',
-                  'birthday', 'phone_number', 'email_address']
-        labels = {
-            'name':'Имя',
-            'address':'Адрес',
-            'birthday':'Дата рождения',
-            'phone_number':'Номер телефона',
-            'email_address':'Электронный адрес',
-        }
-        widgets = {
-            'birthday': DatePickerInput()
-        }
 
 class ClientsListView(ListView):
     model = Client
     template_name = 'crm/clients.html'
     context_object_name = 'clients'
-
-    def get_context_data(self, **kwargs):
-        context = super(ClientsListView, self).get_context_data(**kwargs)
-        context["clientsubscriptions"] = ClientSubscriptions.objects.all().order_by('id')
-        context["subscriptions"] = SubscriptionsType.objects.all()
-        return context
 
 
 class ClientCreateView(CreateView):
@@ -63,8 +44,7 @@ class ClientCreateView(CreateView):
 
 class ClientUpdateView(UpdateView):
     model = Client
-    fields = ['name', 'address',
-              'birthday', 'phone_number', 'email_address']
+    form_class = ClientForm
 
 
 class ClientDeleteView(DeleteView):
@@ -92,8 +72,7 @@ class SubscriptionsListView(ListView):
 
 class SubscriptionCreateView(CreateView):
     model = SubscriptionsType
-    fields = ['name', 'price',
-              'duration', 'visit_limit']
+    fields = '__all__'
 
 
 class SubscriptionUpdateView(UpdateView):
@@ -111,23 +90,41 @@ class SubscriptionDetailView(DetailView):
     model = SubscriptionsType
 
 
+
+def ExtendSubscription(request, pk=None):
+    if request.method == 'POST':
+        print(request.POST)
+        ClientSubscriptions.objects.get(pk=request.POST['object_id']).extend_duration(request.POST['visit_limit'])
+        return HttpResponseRedirect(reverse('crm:client-detail', args=[request.POST['client_id']]))
+    else:
+        subscription = ClientSubscriptions.objects.get(pk=pk)
+        form = ExtendClientSubscriptionForm(subscription=subscription)
+    return render(request, 'crm/extend_subscription.html', {'form': form})
+
+
 class ClientSubscriptionCreateView(CreateView):
-    model = ClientSubscriptions
-    fields = ['subscription',
-              'purchase_date', 'start_date']
+    form_class = ClientSubscriptionForm
+    template_name = "crm/clientsubscriptions_form.html"
 
     def get_success_url(self):
-        return reverse('crm:client-detail', args=[self.сlient.id])
-
-    def get_context_data(self, **kwargs):
-        self.client = Client.objects.get(id=self.kwargs['client_id'])
-        kwargs['client'] = self.client
-        return super().get_context_data(**kwargs)
+        return reverse('crm:client-detail', args=[self.kwargs['client_id']])
 
     def form_valid(self, form):
-        self.сlient = Client.objects.get(id=self.kwargs['client_id'])
-        form.instance.client = self.сlient
-        return super().form_valid(form)
+        form.instance.client_id = self.kwargs['client_id']
+        return super(ClientSubscriptionCreateView, self).form_valid(form)
+
+
+class ClientSubscriptionUpdateView(UpdateView):
+    model = ClientSubscriptions
+    form_class = ClientSubscriptionForm
+
+
+class ClientSubscriptionDeleteView(DeleteView):
+    model = ClientSubscriptions
+
+    def get_success_url(self):
+        return reverse('crm:client-detail', args=[self.object.client.id, ])
+
 
 class EventClassList(ListView):
     # template_name = 'polls/bars.html'
@@ -148,3 +145,28 @@ class EventClassUpdate(UpdateView):
 class EventClassDelete(DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:eventclass_list')
+
+
+class AttendanceCreateView(CreateView):
+    model = Attendance
+    form_class = AttendanceForm
+
+    # def get_context_data(self, **kwargs):
+    #     context = super(AttendanceCreateView, self).get_context_data(**kwargs)
+    #     context['client_id'] = self.kwargs['client_id']
+    #     return context
+
+    def form_valid(self, form):
+        form.instance.client_id = self.kwargs['client_id']
+        return super(AttendanceCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('crm:client-detail', args=[self.kwargs['client_id']])
+
+
+class AttendanceDelete(DeleteView):
+    model = Attendance
+    template_name = "crm/common_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse('crm:client-detail', args=[self.object.client_id, ])
