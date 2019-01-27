@@ -18,6 +18,8 @@ from .views import (
     EventCreateView,
     EventUpdateView,
     EventDeleteView,
+    EventDetailView,
+    EventAttendanceCreateView
 )
 
 from . import views
@@ -46,7 +48,9 @@ urlpatterns = [
     path('adattendance/<int:pk>/delete/', AttendanceDelete.as_view(), name='attendance-delete'),
     path('events/', EventList.as_view(), name='event-list'),
     path('events/create/', EventCreateView.as_view(), name='event-create'),
-    path('event/<int:pk>/update', EventUpdateView.as_view(), name='event-update'),
-    path('event/<int:pk>/delete', EventDeleteView.as_view(), name='event-delete'),
+    path('events/<int:pk>/update', EventUpdateView.as_view(), name='event-update'),
+    path('events/<int:pk>/delete', EventDeleteView.as_view(), name='event-delete'),
+    path('events/<int:pk>/', EventDetailView.as_view(), name='event-detail'),
+    path('events/<int:event_id>/addattendance/', EventAttendanceCreateView.as_view(), name='event-attendance-new'),
 
 ]

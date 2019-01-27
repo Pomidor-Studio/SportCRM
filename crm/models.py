@@ -110,6 +110,9 @@ class Client(models.Model):
     def last_sub(self):
         return self.clientsubscriptions_set.order_by('purchase_date').first
 
+    def __str__(self):
+        return self.name
+
 
 class ClientSubscriptions(models.Model):
     """Абонементы клиента"""
@@ -164,3 +167,6 @@ class Attendance(models.Model):
     event = models.ForeignKey(Event,
                               on_delete=models.PROTECT,
                               verbose_name="Тренировка")
+
+    def __str__(self):
+        return self.client.name + " " + str(self.event)

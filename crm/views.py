@@ -6,14 +6,21 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
-from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm, ExtendClientSubscriptionForm, EventClassForm
+
+from .forms import (ClientForm,
+                    ClientSubscriptionForm,
+                    AttendanceForm,
+                    ExtendClientSubscriptionForm,
+                    EventClassForm,
+                    EventAttendanceForm)
 
 from .models import (Client,
                      EventClass,
                      SubscriptionsType,
                      ClientSubscriptions,
                      Attendance,
-                     Event)
+                     Event,
+                     )
 
 
 def base(request):
@@ -159,11 +166,6 @@ class AttendanceCreateView(CreateView):
     model = Attendance
     form_class = AttendanceForm
 
-    # def get_context_data(self, **kwargs):
-    #     context = super(AttendanceCreateView, self).get_context_data(**kwargs)
-    #     context['client_id'] = self.kwargs['client_id']
-    #     return context
-
     def form_valid(self, form):
         form.instance.client_id = self.kwargs['client_id']
         return super(AttendanceCreateView, self).form_valid(form)
@@ -208,3 +210,20 @@ class EventDeleteView(DeleteView):
 
     def get_success_url(self):
         return reverse('crm:event-list')
+
+
+class EventDetailView(DetailView):
+    model = Event
+    context_object_name = 'event'
+
+
+class EventAttendanceCreateView(CreateView):
+    model = Attendance
+    form_class = EventAttendanceForm
+
+    def form_valid(self, form):
+        form.instance.event_id = self.kwargs['event_id']
+        return super(EventAttendanceCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('crm:event-detail', args=[self.kwargs['event_id']])

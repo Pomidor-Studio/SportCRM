@@ -21,7 +21,6 @@
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 
     {% block extrahead %}
@@ -37,11 +36,11 @@
 
 <body style="height: 100%;">
 
-    <div class="container-fluid" style="height: 100%;">
+    <div class="container-fluid">
 
-        <div class="row" style="height: 100%;">
+        <div class="row">
             <!--Sidebar-->
-            <div style="border-right: 1px solid;">
+            <div>
                 {% include 'crm/bars/sidebar.html' %}
             </div>
 

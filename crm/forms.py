@@ -75,6 +75,13 @@ class AttendanceForm(forms.ModelForm):
         model = Attendance
         exclude = ('client',)
 
+
+class EventAttendanceForm(forms.ModelForm):
+    class Meta:
+        model = Attendance
+        exclude = ('event',)
+
+
 class EventClassForm(forms.ModelForm):
     class Meta:
         model = EventClass
