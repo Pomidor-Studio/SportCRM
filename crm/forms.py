@@ -11,13 +11,19 @@ class ClientForm(forms.ModelForm):
         fields = ['name', 'address',
                   'birthday', 'phone_number', 'email_address', 'vk_user_id']
         widgets = {
-            'birthday': DatePickerInput(format='%Y-%m-%d',
-                                        attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
+            'birthday': DatePickerInput(format='%d.%m.%Y',
+                                        attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
             'address': forms.TextInput(attrs={"class": "form-control", "placeholder": "Адрес проживания"}),
             'name': forms.TextInput(attrs={"class": "form-control", "placeholder": "ФИО"}),
             'phone_number': forms.TextInput(attrs={"class": "form-control", "placeholder": "Номер телефона"}),
             'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@mail.com"}),
         }
+
+    # birthday = forms.DateField(
+    #     widget=DatePickerInput(format='%m/%d/%Y',
+    #                                     attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
+    #     # input_formats=('%m/%d/%Y',)
+    # )
 
 
 class DataAttributesSelect(forms.Select):
@@ -61,10 +67,10 @@ class ClientSubscriptionForm(forms.ModelForm):
     class Meta:
         model = ClientSubscriptions
         widgets = {
-            'purchase_date': DatePickerInput(format='%Y-%m-%d',
-                                             attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
-            'start_date': DatePickerInput(format='%Y-%m-%d',
-                                          attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
+            'purchase_date': DatePickerInput(format='%d.%m.%Y',
+                                             attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
+            'start_date': DatePickerInput(format='%d.%m.%Y',
+                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
             'price': forms.TextInput(attrs={"class": "form-control", "placeholder": "Стоимость в рублях"}),
             'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": "Кол-во посещений"}),
         }
