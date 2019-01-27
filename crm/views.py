@@ -8,7 +8,12 @@ from django.urls import reverse, reverse_lazy
 from django import forms
 from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm, ExtendClientSubscriptionForm, EventClassForm
 
-from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions, Attendance
+from .models import (Client,
+                     EventClass,
+                     SubscriptionsType,
+                     ClientSubscriptions,
+                     Attendance,
+                     Event)
 
 
 def base(request):
@@ -173,3 +178,33 @@ class AttendanceDelete(DeleteView):
 
     def get_success_url(self):
         return reverse('crm:client-detail', args=[self.object.client_id, ])
+
+
+class EventList(ListView):
+    # template_name = 'polls/bars.html'
+    # context_object_name = 'latest_question_list'
+    model = Event
+
+
+class EventCreateView(CreateView):
+    model = Event
+    fields = '__all__'
+
+    def get_success_url(self):
+        return reverse('crm:event-list')
+
+
+class EventUpdateView(UpdateView):
+    model = Event
+    fields = '__all__'
+
+    def get_success_url(self):
+        return reverse('crm:event-list')
+
+
+class EventDeleteView(DeleteView):
+    model = Event
+    template_name = "crm/common_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse('crm:event-list')

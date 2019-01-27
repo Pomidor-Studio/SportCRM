@@ -1,0 +1,15 @@
+{% extends "crm/base.html" %}
+
+{% load static %}
+{% load bootstrap4 %}
+
+{% block content %}
+<h1 class="border-bottom mb-2">Тренировка</h1>
+
+<form action="" method="post">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    <input type="submit" value="Submit" class="btn btn-primary"/>
+</form>
+
+{% endblock content %}

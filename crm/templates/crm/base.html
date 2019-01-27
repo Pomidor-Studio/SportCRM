@@ -32,16 +32,6 @@
     <title>CRM</title>
     {% endif %}
 
-    <style>
-        .row {
-            padding: 0;
-            margin: 0;
-        }
-        .container-fluid {
-            padding: 0;
-            margin: 0;
-        }
-    </style>
 
 </head>
 
@@ -57,15 +47,9 @@
 
             <div class="container no-gutters">
 
-                <!--Header-->
-                <div class="row">
-                    <!--{% include 'crm/bars/header.html' %}-->
-                </div>
-
                 <!--Content-->
-                <div class="row" style="height: 100%;">
-                    {% block content %}{% endblock %}
-                </div>
+                {% block content %}{% endblock %}
+
             </div>
 
         </div>

@@ -99,9 +99,12 @@ class Client(models.Model):
     vk_user_id = models.IntegerField("id ученика в ВК",
                                      null=True,
                                      blank=True)
+    balance = models.FloatField("Баланс",
+                                default=0)
 
     def get_absolute_url(self):
-        return reverse('crm:clients')
+        return reverse('crm:client-detail', kwargs={'pk':self.pk})
+
 
     @property
     def last_sub(self):
