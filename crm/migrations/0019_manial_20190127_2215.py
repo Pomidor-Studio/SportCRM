@@ -6,9 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('crm', '0018_auto_20190127_2152'),
+        ('crm', '0019_auto_20190127_2205'),
     ]
 
     operations = [
-        migrations.RunSQL("DELETE FROM crm_event;"),
+        migrations.AlterUniqueTogether(
+            name='event',
+            unique_together={('event_class', 'date')},
+        ),
     ]
