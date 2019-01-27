@@ -5,6 +5,7 @@ from bot.api.vkapi import send_message
 
 user_id1 = ''
 
+
 def damerau_levenshtein_distance(s1, s2):
    d = {}
    lenstr1 = len(s1)
@@ -28,6 +29,7 @@ def damerau_levenshtein_distance(s1, s2):
                d[(i, j)] = min(d[(i, j)], d[i - 2, j - 2] + cost)  # transposition
    return d[lenstr1 - 1, lenstr2 - 1]
 
+
 def load_modules():
    # путь от рабочей директории, ее можно изменить в настройках приложения
    files = os.listdir("bot/api/commands")
@@ -35,6 +37,7 @@ def load_modules():
    for m in modules:
        j = 'bot.api.commands.' + m[0:-3]
        import_module(j)
+
 
 def get_answer(body):
    message = "Прости, не понимаю тебя. Напиши 'помощь', чтобы узнать мои команды"
@@ -57,13 +60,16 @@ def get_answer(body):
        message = 'Я понял ваш запрос как "%s"\n\n' % key + message
    return message, attachment
 
+
 def create_answer(data, token):
    load_modules()
    user_id = set_user_id(data)
    message, attachment = get_answer(data['body'].lower())
    send_message(user_id, token, message, attachment)
 
+
 def set_user_id(data):
+    global user_id1
     user_id = data['user_id']
     user_id1 = user_id
     return user_id

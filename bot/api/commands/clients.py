@@ -1,8 +1,9 @@
 from crm.models import Client, ClientSubscriptions
 from bot.api.command_system import Command
-from bot.api.messageHandler import user_id1 
+from bot.api.messageHandler import user_id1
 
 vk_user_id = user_id1
+
 
 def get_info_abonements():
     client = Client.objects.filter(vk_user_id=vk_user_id)
@@ -39,6 +40,7 @@ def get_info_abonements():
 
     message = str(name + '!\n Информация о ваших абонементах:' + '\n' + sub_list)
     return message, ''
+
 
 test_command = Command()
 
