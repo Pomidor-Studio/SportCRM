@@ -1,7 +1,6 @@
 from django import forms
 from bootstrap_datepicker_plus import DatePickerInput
-
-from .models import Client, ClientSubscriptions, Attendance, SubscriptionsType
+from .models import Client, ClientSubscriptions, Attendance, EventClass, SubscriptionsType
 
 
 class ClientForm(forms.ModelForm):
@@ -16,7 +15,7 @@ class ClientForm(forms.ModelForm):
             'address': forms.TextInput(attrs={"class": "form-control", "placeholder": "Адрес проживания"}),
             'name': forms.TextInput(attrs={"class": "form-control", "placeholder": "ФИО"}),
             'phone_number': forms.TextInput(attrs={"class": "form-control", "placeholder": "Номер телефона"}),
-            'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@mail.com"}),
+            'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@email.com"}),
         }
 
 
@@ -74,4 +73,14 @@ class ClientSubscriptionForm(forms.ModelForm):
 class AttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
+        exclude = ('client',)
+
+class EventClassForm(forms.ModelForm):
+    class Meta:
+        model = EventClass
+        fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
+        widgets = {
+            'date_from': DatePickerInput(format='%Y-%m-%d', attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
+            'date_to': DatePickerInput(format='%Y-%m-%d', attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
+        }
         exclude = ('client',)

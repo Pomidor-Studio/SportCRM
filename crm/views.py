@@ -6,7 +6,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
-from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm, ExtendClientSubscriptionForm
+from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm, ExtendClientSubscriptionForm, EventClassForm
 
 from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions, Attendance
 
@@ -134,12 +134,15 @@ class EventClassList(ListView):
 
 class EventClassCreate(CreateView):
     model = EventClass
-    fields = '__all__'
+    template_name = 'crm/clients.html'
+    form_class = EventClassForm
+    #fields = '__all__'
 
 
 class EventClassUpdate(UpdateView):
     model = EventClass
-    fields = '__all__'
+    form_class = EventClassForm
+    #fields = '__all__'
 
 
 class EventClassDelete(DeleteView):

@@ -34,6 +34,12 @@ class EventClass(models.Model):
                               on_delete=models.PROTECT,
                               verbose_name="Тренер"
                               )
+    date_from = models.DateField("Дата с",
+                                 null=True,
+                                 blank=True)
+    date_to = models.DateField("Дата по",
+                               null=True,
+                               blank=True)
 
     def is_event_day(self, day: datetime) -> bool:
         """Входит ли переданный день в мероприятия (есть ли в этот день тренировка) """

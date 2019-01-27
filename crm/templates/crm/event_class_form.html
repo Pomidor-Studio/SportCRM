@@ -1,0 +1,213 @@
+{% extends "crm/base.html" %}
+{% load bootstrap4 %}
+{% block extrahead %}
+{{ form.media }}
+<script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
+
+{% endblock %}
+{% block content %}
+<div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Мероприятие</legend>
+    <div class="w-25">
+        <form method="POST">
+            {% csrf_token %}
+            {% bootstrap_form form %}
+
+            <div class="container-fluid">
+
+            <div>{{ object.date_from|date }}</div>
+            <div>{{ object.date_to|date }}</div>
+
+            <div class="row">
+                <div class="col">
+                    Дата с <br>
+                    <input id="datepicker"/>
+                    <script>
+                    $('#datepicker').datepicker({
+                        uiLibrary: 'bootstrap4'
+                    });
+                </script>
+                </div>
+                <div class="col">
+                    Дата по <br>
+                    <input id="datepicker1"/>
+                    <script>
+                    $('#datepicker1').datepicker({
+                        uiLibrary: 'bootstrap4'
+                    });
+                </script>
+                </div>
+            </div>
+            <div class="col">
+                <div class="row">
+                    <div class="col">
+
+                    </div>
+                    <div class="col">
+                        Время
+                    </div>
+                    <div class="col">
+                        Длительность
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <input type="checkbox">
+                        Понедельник
+                    </div>
+                    <div class="col">
+                        <input id="timepicker0"/>
+                    </div>
+                    <div class="col">
+                        <input id="timepicker1"/>
+                    </div>
+                    <script>
+                        $('#timepicker0').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                        $('#timepicker1').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                    </script>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <input type="checkbox">
+                        Вторник
+                    </div>
+                    <div class="col">
+                        <input id="timepicker2"/>
+                    </div>
+                    <div class="col">
+                        <input id="timepicker3"/>
+                    </div>
+                    <script>
+                        $('#timepicker2').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                        $('#timepicker3').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                    </script>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <input type="checkbox">
+                        Среда
+                    </div>
+                    <div class="col">
+                        <input id="timepicker4"/>
+                    </div>
+                    <div class="col">
+                        <input id="timepicker5"/>
+                    </div>
+                    <script>
+                        $('#timepicker4').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                        $('#timepicker5').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                    </script>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <input type="checkbox">
+                        Четверг
+                    </div>
+                    <div class="col">
+                        <input id="timepicker6"/>
+                    </div>
+                    <div class="col">
+                        <input id="timepicker7"/>
+                    </div>
+                    <script>
+                        $('#timepicker6').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                        $('#timepicker7').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                    </script>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <input type="checkbox">
+                        Пятница
+                    </div>
+                    <div class="col">
+                        <input id="timepicker8"/>
+                    </div>
+                    <div class="col">
+                        <input id="timepicker9"/>
+                    </div>
+                    <script>
+                        $('#timepicker8').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                        $('#timepicker9').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                    </script>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <input type="checkbox">
+                        Суббота
+                    </div>
+                    <div class="col">
+                        <input id="timepicker10"/>
+                    </div>
+                    <div class="col">
+                        <input id="timepicker11"/>
+                    </div>
+                    <script>
+                        $('#timepicker10').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                        $('#timepicker11').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                    </script>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <input type="checkbox">
+                        Воскресенье
+                    </div>
+                    <div class="col">
+                        <input id="timepicker12"/>
+                    </div>
+                    <div class="col">
+                        <input id="timepicker13"/>
+                    </div>
+                    <script>
+                        $('#timepicker12').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                        $('#timepicker13').timepicker({
+                            uiLibrary: 'bootstrap4'
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Добавить</button>
+                {% if object.id != null %}
+                <a name="cancel" href="{% url 'crm:eventclass_update' object.id %}" class="btn btn-outline-info">Назад</a>
+                {% else %}
+                <a name="cancel" href="{% url 'crm:eventclass_list' %}" class="btn btn-outline-info">Назад</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}

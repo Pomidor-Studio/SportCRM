@@ -32,7 +32,16 @@
     <title>CRM</title>
     {% endif %}
 
-
+    <style>
+        .row {
+            padding: 0;
+            margin: 0;
+        }
+        .container-fluid {
+            padding: 0;
+            margin: 0;
+        }
+    </style>
 
 </head>
 
@@ -42,19 +51,19 @@
 
         <div class="row" style="height: 100%;">
             <!--Sidebar-->
-            <div class="col-3 col-sm-2 col-md-2 col-lg-1 col-xl-1" id="sidebar" style="border-right: 1px solid;">
+            <div style="border-right: 1px solid;">
                 {% include 'crm/bars/sidebar.html' %}
             </div>
 
-            <div class="col-9 col-sm-10 col-md-10 col-lg-11 col-xl-11">
+            <div class="container no-gutters">
 
-                <!--Horizontalbar-->
+                <!--Header-->
                 <div class="row">
-                    <!--{% include 'crm/bars/horizontalbar.html' %}-->
+                    <!--{% include 'crm/bars/header.html' %}-->
                 </div>
 
                 <!--Content-->
-                <div class="row">
+                <div class="row" style="height: 100%;">
                     {% block content %}{% endblock %}
                 </div>
             </div>
