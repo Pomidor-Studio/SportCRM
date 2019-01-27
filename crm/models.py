@@ -23,6 +23,25 @@ class Coach(models.Model):
         return self.name
 
 
+Monday = 'Понедельник'
+Tuesday = 'Вторник'
+Wednesday = 'Среда'
+Thursday = 'Четверг'
+Friday = 'Пятница'
+Saturday = 'Суббота'
+Sunday = 'Воскресенье'
+
+DAY_OF_THE_WEEK = {
+    (Monday, 'Понедельник'),
+    (Tuesday, 'Вторник'),
+    (Wednesday, 'Среда'),
+    (Thursday, 'Четверг'),
+    (Friday, 'Пятница'),
+    (Saturday, 'Суббота'),
+    (Sunday, 'Воскресенье'),
+}
+
+
 class EventClass(models.Model):
     """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
     name = models.CharField("Название",
@@ -60,6 +79,14 @@ class EventClass(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class DayOfTheWeekClass(models.Model):
+    """Мероприятие в конкретный день недели, в определенное время, определенной продолжительности"""
+    day = models.CharField(max_length=11, choices=DAY_OF_THE_WEEK)
+    start_time = models.DateTimeField("Время начала тренировки")
+    duration = models.IntegerField(default=60)
+    event = models.ForeignKey(EventClass, on_delete=models.PROTECT)
 
 
 class SubscriptionsType(models.Model):

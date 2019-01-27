@@ -20,6 +20,7 @@ from .models import (Client,
                      ClientSubscriptions,
                      Attendance,
                      Event,
+                     DayOfTheWeekClass,
                      )
 
 
@@ -139,22 +140,17 @@ class ClientSubscriptionDeleteView(DeleteView):
 
 
 class EventClassList(ListView):
-    # template_name = 'polls/bars.html'
-    # context_object_name = 'latest_question_list'
     model = EventClass
 
 
 class EventClassCreate(CreateView):
     model = EventClass
-    template_name = 'crm/clients.html'
     form_class = EventClassForm
-    #fields = '__all__'
 
 
 class EventClassUpdate(UpdateView):
     model = EventClass
     form_class = EventClassForm
-    #fields = '__all__'
 
 
 class EventClassDelete(DeleteView):

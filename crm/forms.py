@@ -1,6 +1,6 @@
 from django import forms
 from bootstrap_datepicker_plus import DatePickerInput
-from .models import Client, ClientSubscriptions, Attendance, EventClass, SubscriptionsType
+from .models import Client, ClientSubscriptions, Attendance, EventClass, SubscriptionsType, DayOfTheWeekClass
 
 
 class ClientForm(forms.ModelForm):
