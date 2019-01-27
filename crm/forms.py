@@ -47,6 +47,7 @@ class ClientSubscriptionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []
+        choices.append(("", "--------------"))
         for st in SubscriptionsType.objects.all():
             choices.append((st.id, st.name))
 
@@ -64,8 +65,8 @@ class ClientSubscriptionForm(forms.ModelForm):
                                              attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
             'start_date': DatePickerInput(format='%Y-%m-%d',
                                           attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
-            'price': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
-            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
+            'price': forms.TextInput(attrs={"class": "form-control", "placeholder": "Стоимость в рублях"}),
+            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": "Кол-во посещений"}),
         }
         exclude = ('client', 'end_date')
 
