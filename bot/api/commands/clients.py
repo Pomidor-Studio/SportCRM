@@ -1,6 +1,6 @@
-from crm.models import SubscriptionsType, Client, ClientSubscriptions
+from crm.models import Client, ClientSubscriptions
 from bot.api.command_system import Command
-from bot.api.messageHandler import user_id1 #Обновить репозиторий, сделать по ВК_ИД, привести в нормальный вид, Список отправлять в нормальном виде
+from bot.api.messageHandler import user_id1 
 
 vk_user_id = user_id1
 
