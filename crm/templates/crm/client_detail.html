@@ -85,7 +85,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for sub in object.attendance_set.all|dictsortreversed:"event.date"  %}
+                {% for sub in object.attendance_set.all  %} {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
                 <tr>
                     <td>{{ sub.event.date|date }}</td>
                     <td>{{ sub.event.event_class }}</td>

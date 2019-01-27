@@ -79,7 +79,11 @@ class AttendanceForm(forms.ModelForm):
 class EventAttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
-        exclude = ('event',)
+        fields = '__all__'
+        widgets = {
+            'event': forms.HiddenInput,
+        }
+        # exclude = ('event',)
 
 
 class EventClassForm(forms.ModelForm):
@@ -87,7 +91,7 @@ class EventClassForm(forms.ModelForm):
         model = EventClass
         fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
         widgets = {
-            'date_from': DatePickerInput(format='%Y-%m-%d', attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
-            'date_to': DatePickerInput(format='%Y-%m-%d', attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
+            'date_from': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
+            'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
         }
         exclude = ('client',)

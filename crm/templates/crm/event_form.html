@@ -2,6 +2,9 @@
 
 {% load static %}
 {% load bootstrap4 %}
+{% block extrahead %}
+{{ form.media }}
+{% endblock extrahead%}
 
 {% block content %}
 <h1 class="border-bottom mb-2">Тренировка</h1>

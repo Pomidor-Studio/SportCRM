@@ -67,13 +67,6 @@ class ClientDeleteView(DeleteView):
 
 class ClientDetailView(DetailView):
     model = Client
-    context_object_name = 'clients'
-
-    def get_context_data(self, **kwargs):
-        context = super(ClientDetailView, self).get_context_data(**kwargs)
-        context["clientsubscriptions"] = ClientSubscriptions.objects.all().order_by('id')
-        context["subscriptions"] = SubscriptionsType.objects.all()
-        return context
 
 
 class SubscriptionsListView(ListView):
@@ -217,9 +210,15 @@ class EventAttendanceCreateView(CreateView):
     model = Attendance
     form_class = EventAttendanceForm
 
-    def form_valid(self, form):
-        form.instance.event_id = self.kwargs['event_id']
-        return super(EventAttendanceCreateView, self).form_valid(form)
+    def get_initial(self):
+        initial = super(EventAttendanceCreateView, self).get_initial()
+        event = get_object_or_404(Event, pk=self.kwargs.get('event_id'))
+        initial['event'] = event
+        return initial
+
+    # def form_valid(self, form):
+    #     form.instance.event_id = self.kwargs['event_id']
+    #     return super(EventAttendanceCreateView, self).form_valid(form)
 
     def get_success_url(self):
         return reverse('crm:event-detail', args=[self.kwargs['event_id']])
