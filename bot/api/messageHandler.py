@@ -3,6 +3,7 @@ from importlib import import_module
 from bot.api.command_system import command_list
 from bot.api.vkapi import send_message
 
+data1 = ''
 
 def damerau_levenshtein_distance(s1, s2):
    d = {}
@@ -60,12 +61,9 @@ def get_answer(body):
 
 
 def create_answer(data, token):
-   load_modules()
-   user_id = set_user_id(data)
-   message, attachment = get_answer(data['body'].lower())
-   send_message(user_id, token, message, attachment)
-
-
-def set_user_id(data):
+    global data1
+    data1 = data
+    load_modules()
     user_id = data['user_id']
-    return user_id
+    message, attachment = get_answer(data['body'].lower())
+    send_message(user_id, token, message, attachment)

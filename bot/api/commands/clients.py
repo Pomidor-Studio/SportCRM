@@ -1,8 +1,9 @@
 #комментарий
 from crm.models import Client, ClientSubscriptions
 from bot.api.command_system import Command
+from bot.api.messageHandler import data1
 
-vk_user_id = 123288680
+vk_user_id = int(data1['user_id'])
 
 
 def get_info_abonements():
