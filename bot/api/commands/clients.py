@@ -1,3 +1,4 @@
+#комментарий
 from crm.models import Client, ClientSubscriptions
 from bot.api.command_system import Command
 from bot.api.messageHandler import user_id1
