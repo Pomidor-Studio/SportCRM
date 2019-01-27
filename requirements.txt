@@ -1,6 +1,7 @@
 django
 gunicorn
 psycopg2-binary
+sqlparse
 dj_database_url
 django-heroku
 whitenoise

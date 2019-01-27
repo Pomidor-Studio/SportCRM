@@ -154,6 +154,10 @@ class Event(models.Model):
     event_class = models.ForeignKey(EventClass,
                                     on_delete=models.PROTECT,
                                     verbose_name="Тренировка")
+
+    class Meta:
+        unique_together = ('event_class', 'date',)
+
     def __str__(self):
         return self.date.strftime("%Y-%m-%d") + " " + str(self.event_class)
     # TODO: Валидацию по event_class
@@ -167,6 +171,9 @@ class Attendance(models.Model):
     event = models.ForeignKey(Event,
                               on_delete=models.PROTECT,
                               verbose_name="Тренировка")
+
+    class Meta:
+        unique_together = ('client', 'event',)
 
     def __str__(self):
         return self.client.name + " " + str(self.event)
