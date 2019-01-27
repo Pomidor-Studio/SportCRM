@@ -19,12 +19,6 @@ class ClientForm(forms.ModelForm):
             'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@mail.com"}),
         }
 
-    # birthday = forms.DateField(
-    #     widget=DatePickerInput(format='%m/%d/%Y',
-    #                                     attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
-    #     # input_formats=('%m/%d/%Y',)
-    # )
-
 
 class DataAttributesSelect(forms.Select):
 
