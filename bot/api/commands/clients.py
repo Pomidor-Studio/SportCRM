@@ -34,6 +34,7 @@ def get_info_abonements():
             continue
         if sub == '>':
             j = 1
+            continue
         if j == 1 and sub == ',':
             sub_list = sub_list + ', Остаток посещений: '
             j = 0
