@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
-
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class Location(models.Model):
     name = models.CharField("Название",
@@ -23,6 +24,25 @@ class Coach(models.Model):
         return self.name
 
 
+Monday = 'Понедельник'
+Tuesday = 'Вторник'
+Wednesday = 'Среда'
+Thursday = 'Четверг'
+Friday = 'Пятница'
+Saturday = 'Суббота'
+Sunday = 'Воскресенье'
+
+DAY_OF_THE_WEEK = {
+    (Monday, 'Понедельник'),
+    (Tuesday, 'Вторник'),
+    (Wednesday, 'Среда'),
+    (Thursday, 'Четверг'),
+    (Friday, 'Пятница'),
+    (Saturday, 'Суббота'),
+    (Sunday, 'Воскресенье'),
+}
+
+
 class EventClass(models.Model):
     """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
     name = models.CharField("Название",
@@ -34,10 +54,28 @@ class EventClass(models.Model):
                               on_delete=models.PROTECT,
                               verbose_name="Тренер"
                               )
+    date_from = models.DateField("Дата с",
+                                 null=True,
+                                 blank=True)
+    date_to = models.DateField("Дата по",
+                               null=True,
+                               blank=True)
 
     def is_event_day(self, day: datetime) -> bool:
         """Входит ли переданный день в мероприятия (есть ли в этот день тренировка) """
         # TODO: тут надо написать логику по определению входит ли дата в мероприятие
+        # Проверяем, входит ли проверяемый день в диапазон проводимых тренировок
+        if (self.date_from and self.date_from > day) or (self.date_to and self.date_to < day):
+            return False
+
+        # Проверяем, проходят ли в этот день недели тренировки
+        # for weekday in self.dayoftheweekclass_set:
+        #     if weekday.day == day.isoweekday():
+        #         break
+        # else:
+        #     return False # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
+
+
         return True
 
     # TODO: Нужны методы:
@@ -54,6 +92,18 @@ class EventClass(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class DayOfTheWeekClass(models.Model):
+    """Мероприятие в конкретный день недели, в определенное время, определенной продолжительности"""
+    # номер дня недели
+    day = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(7)])
+    start_time = models.DateTimeField("Время начала тренировки")
+    duration = models.IntegerField(default=60)
+    event = models.ForeignKey(EventClass, on_delete=models.PROTECT)
+
+    class Meta:
+        unique_together = ('day', 'event',)
 
 
 class SubscriptionsType(models.Model):
@@ -93,13 +143,19 @@ class Client(models.Model):
     vk_user_id = models.IntegerField("id ученика в ВК",
                                      null=True,
                                      blank=True)
+    balance = models.FloatField("Баланс",
+                                default=0)
 
     def get_absolute_url(self):
-        return reverse('crm:clients')
+        return reverse('crm:client-detail', kwargs={'pk':self.pk})
+
 
     @property
     def last_sub(self):
         return self.clientsubscriptions_set.order_by('purchase_date').first
+
+    def __str__(self):
+        return self.name
 
 
 class ClientSubscriptions(models.Model):
@@ -115,7 +171,6 @@ class ClientSubscriptions(models.Model):
     start_date = models.DateTimeField("Дата начала",
                                       default=timezone.now)
     end_date = models.DateTimeField(null=True)
-    # TODO: Исследовать целесообразность отнаследовать клиентские абонементы от абонементов (или выделить общую часть)
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
@@ -142,6 +197,15 @@ class Event(models.Model):
     event_class = models.ForeignKey(EventClass,
                                     on_delete=models.PROTECT,
                                     verbose_name="Тренировка")
+
+    class Meta:
+        unique_together = ('event_class', 'date',)
+
+    def clean(self):
+        # Проверяем пренадлижит ли указанная дата тренировке
+        if not self.event_class.is_event_day(self.date):
+            raise ValidationError({"date": "Дата не соответствует тренировке"})
+
     def __str__(self):
         return self.date.strftime("%Y-%m-%d") + " " + str(self.event_class)
     # TODO: Валидацию по event_class
@@ -155,3 +219,9 @@ class Attendance(models.Model):
     event = models.ForeignKey(Event,
                               on_delete=models.PROTECT,
                               verbose_name="Тренировка")
+
+    class Meta:
+        unique_together = ('client', 'event',)
+
+    def __str__(self):
+        return self.client.name + " " + str(self.event)

@@ -6,9 +6,22 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
-from .forms import ClientForm, ClientSubscriptionForm, AttendanceForm, ExtendClientSubscriptionForm
 
-from .models import Client, EventClass, SubscriptionsType, ClientSubscriptions, Attendance
+from .forms import (ClientForm,
+                    ClientSubscriptionForm,
+                    AttendanceForm,
+                    ExtendClientSubscriptionForm,
+                    EventClassForm,
+                    EventAttendanceForm)
+
+from .models import (Client,
+                     EventClass,
+                     SubscriptionsType,
+                     ClientSubscriptions,
+                     Attendance,
+                     Event,
+                     DayOfTheWeekClass,
+                     )
 
 
 def base(request):
@@ -67,13 +80,6 @@ class ClientDeleteView(DeleteView):
 
 class ClientDetailView(DetailView):
     model = Client
-    context_object_name = 'clients'
-
-    def get_context_data(self, **kwargs):
-        context = super(ClientDetailView, self).get_context_data(**kwargs)
-        context["clientsubscriptions"] = ClientSubscriptions.objects.all().order_by('id')
-        context["subscriptions"] = SubscriptionsType.objects.all()
-        return context
 
 
 class SubscriptionsListView(ListView):
@@ -139,19 +145,17 @@ class ClientSubscriptionDeleteView(DeleteView):
 
 
 class EventClassList(ListView):
-    # template_name = 'polls/bars.html'
-    # context_object_name = 'latest_question_list'
     model = EventClass
 
 
 class EventClassCreate(CreateView):
     model = EventClass
-    fields = '__all__'
+    form_class = EventClassForm
 
 
 class EventClassUpdate(UpdateView):
     model = EventClass
-    fields = '__all__'
+    form_class = EventClassForm
 
 
 class EventClassDelete(DeleteView):
@@ -162,11 +166,6 @@ class EventClassDelete(DeleteView):
 class AttendanceCreateView(CreateView):
     model = Attendance
     form_class = AttendanceForm
-
-    # def get_context_data(self, **kwargs):
-    #     context = super(AttendanceCreateView, self).get_context_data(**kwargs)
-    #     context['client_id'] = self.kwargs['client_id']
-    #     return context
 
     def form_valid(self, form):
         form.instance.client_id = self.kwargs['client_id']
@@ -182,3 +181,56 @@ class AttendanceDelete(DeleteView):
 
     def get_success_url(self):
         return reverse('crm:client-detail', args=[self.object.client_id, ])
+
+
+class EventList(ListView):
+    # template_name = 'polls/bars.html'
+    # context_object_name = 'latest_question_list'
+    model = Event
+
+
+class EventCreateView(CreateView):
+    model = Event
+    fields = '__all__'
+
+    def get_success_url(self):
+        return reverse('crm:event-list')
+
+
+class EventUpdateView(UpdateView):
+    model = Event
+    fields = '__all__'
+
+    def get_success_url(self):
+        return reverse('crm:event-list')
+
+
+class EventDeleteView(DeleteView):
+    model = Event
+    template_name = "crm/common_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse('crm:event-list')
+
+
+class EventDetailView(DetailView):
+    model = Event
+    context_object_name = 'event'
+
+
+class EventAttendanceCreateView(CreateView):
+    model = Attendance
+    form_class = EventAttendanceForm
+
+    def get_initial(self):
+        initial = super(EventAttendanceCreateView, self).get_initial()
+        event = get_object_or_404(Event, pk=self.kwargs.get('event_id'))
+        initial['event'] = event
+        return initial
+
+    # def form_valid(self, form):
+    #     form.instance.event_id = self.kwargs['event_id']
+    #     return super(EventAttendanceCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('crm:event-detail', args=[self.kwargs['event_id']])
