@@ -36,6 +36,19 @@ class ClientsListView(ListView):
     template_name = 'crm/clients.html'
     context_object_name = 'clients'
 
+    def get_queryset(self):
+        try:
+            a = self.request.GET.get('client', )
+        except KeyError:
+            a = None
+        if a:
+            clients_list = Client.objects.filter(
+                name__icontains=a,
+            )
+        else:
+            clients_list = Client.objects.all()
+        return clients_list
+
 
 class ClientCreateView(CreateView):
     model = Client
@@ -88,7 +101,6 @@ class SubscriptionDeleteView(DeleteView):
 
 class SubscriptionDetailView(DetailView):
     model = SubscriptionsType
-
 
 
 def ExtendSubscription(request, pk=None):
