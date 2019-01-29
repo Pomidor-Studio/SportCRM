@@ -3,7 +3,6 @@ from importlib import import_module
 from bot.api.command_system import command_list
 from bot.api.vkapi import send_message
 
-data1 = ''
 
 def damerau_levenshtein_distance(s1, s2):
    d = {}
@@ -38,7 +37,7 @@ def load_modules():
        import_module(j)
 
 
-def get_answer(body):
+def get_answer(body, user_id):
    message = "Прости, не понимаю тебя. Напиши 'помощь', чтобы узнать мои команды"
    attachment = ''
    distance = len(body)
@@ -52,7 +51,7 @@ def get_answer(body):
                command = c
                key = k
                if distance == 0:
-                   message, attachment = c.process()
+                   message, attachment = c.process(user_id)
                    return message, attachment
    if distance < len(body)*0.4:
        message, attachment = command.process()
@@ -61,10 +60,7 @@ def get_answer(body):
 
 
 def create_answer(data, token):
-    global data1
-    data1 = data
     load_modules()
     user_id = data['user_id']
-    message, attachment = get_answer(data['body'].lower())
+    message, attachment = get_answer(data['body'].lower(), user_id)
     send_message(user_id, token, message, attachment)
-    data1 = ''

@@ -1,7 +1,7 @@
 from bot.api.command_system import command_list
 from bot.api.command_system import Command
 
-def info():
+def info(user_id):
    message = 'Список команд:\n'
    for c in command_list:
         message += c.keys[0] + ' - ' + c.description + '\n'

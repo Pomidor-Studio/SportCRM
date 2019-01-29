@@ -1,6 +1,6 @@
 from bot.api.command_system import Command
 
-def hello():
+def hello(user_id):
    message = 'Привет, друг!\nЯ БОТ, создан для уведомления'
    return message, ''
 
