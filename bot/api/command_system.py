@@ -15,5 +15,5 @@ class Command:
        for k in mas:
            self.__keys.append(k.lower())
 
-   def process(self):
+   def process(user_id):
        pass
