@@ -1,4 +1,7 @@
-#комментарий
+#Сделать условие, Если НЕТ клиента в базе;
+#Сделать нормальный парсе списка;
+#Косяк с ботом, юзер айди тащит не правильный;
+
 from crm.models import Client, ClientSubscriptions
 from bot.api.command_system import Command
 from bot.api.messageHandler import data1

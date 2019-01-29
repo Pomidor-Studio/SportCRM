@@ -67,3 +67,4 @@ def create_answer(data, token):
     user_id = data['user_id']
     message, attachment = get_answer(data['body'].lower())
     send_message(user_id, token, message, attachment)
+    data1 = ''
