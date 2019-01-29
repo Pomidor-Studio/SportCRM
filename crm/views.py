@@ -12,7 +12,10 @@ from .forms import (ClientForm,
                     AttendanceForm,
                     ExtendClientSubscriptionForm,
                     EventClassForm,
-                    EventAttendanceForm)
+                    EventAttendanceForm,
+                    DayOfTheWeekClassFormSet,
+                    DayOfTheWeekClassForm
+                    )
 
 from .models import (Client,
                      EventClass,
@@ -51,12 +54,12 @@ class ClientsListView(ListView):
 
     def get_queryset(self):
         try:
-            a = self.request.GET.get('client', )
+            a = self.request.GET.get('client' )
         except KeyError:
             a = None
         if a:
             clients_list = Client.objects.filter(
-                name__icontains=a,
+                name__icontains=a
             )
         else:
             clients_list = Client.objects.all()
@@ -234,3 +237,117 @@ class EventAttendanceCreateView(CreateView):
 
     def get_success_url(self):
         return reverse('crm:event-detail', args=[self.kwargs['event_id']])
+
+#
+# def EventClass_t(request, pk=None):
+#
+#     if request.method == "POST":
+#         eventclass_form = EventClassForm(request.POST)
+#         if eventclass_form.is_valid():
+#             # eventClass = eventclass_form.save(commit=False)
+#             formset = DayOfTheWeekClassFormSet(request.POST, request.FILES, instance=eventclass_form.instance)
+#             if formset.is_valid():
+#                 eventclass_form.save()
+#                 formset.save()
+#                 # Do something. Should generally end with a redirect. For example:
+#                 # return reverse('crm:eventclass_list')
+#     else:
+#         if pk:
+#             eventClass = EventClass.objects.get(
+#                 pk=pk)  # if this is an edit form, replace the author instance with the existing one
+#         else:
+#             eventClass = EventClass()
+#         eventclass_form = EventClassForm(instance=eventClass)  # setup a form for the parent
+#         formset = DayOfTheWeekClassFormSet(instance=eventClass)
+#
+#     # if request.method == "POST":
+#     #     author_form = AuthorModelForm(request.POST)
+#     #
+#     #     if id:
+#     #         author_form = AuthorModelForm(request.POST, instance=author)
+#     #
+#     #     formset = BookInlineFormSet(request.POST, request.FILES)
+#     #
+#     #     if author_form.is_valid():
+#     #         created_author = author_form.save(commit=False)
+#     #         formset = BookInlineFormSet(request.POST, request.FILES, instance=created_author)
+#     #
+#     #         if formset.is_valid():
+#     #             created_author.save()
+#     #             formset.save()
+#     #             return HttpResponseRedirect(created_author.get_absolute_url())
+#
+#     return render(request, 'crm/eventClass_t.html', {
+#                   'eventclass_form':eventclass_form,
+#                   'formset':formset})
+
+
+def EventClass_t(request, pk=None):
+    weekdays = [None] * 7
+    if request.method == "POST":
+        if pk:
+            eventclass = get_object_or_404(EventClass, pk=pk)
+        else:
+            eventclass = None
+
+        eventclass_form = EventClassForm(request.POST, instance=eventclass)
+        eventclass = eventclass_form.save()
+        for weekday in eventclass.dayoftheweekclass_set.all():
+            weekdayform = DayOfTheWeekClassForm(request.POST, prefix='weekday'+str(weekday.day), instance=weekday)
+            if weekdayform.is_valid():
+                if weekdayform.cleaned_data['checked']:
+                    weekdayform.save()
+                else:
+                    weekday.delete()
+            weekdays[weekday.day] = weekdayform
+        for i in range(7):
+            if not weekdays[i]:
+                weekday = DayOfTheWeekClass(day=i)
+                weekdayform = DayOfTheWeekClassForm(request.POST, prefix='weekday' + str(i), instance=weekday)
+                if weekdayform.is_valid():
+                    if weekdayform.cleaned_data['checked']:
+                        weekdayform.instance.event = eventclass
+                        weekdayform.save()
+                weekdays[i] = weekdayform
+
+    else:
+        if pk:
+            eventclass = EventClass.objects.get(
+                pk=pk)  # if this is an edit form, replace the author instance with the existing one
+        else:
+            eventclass = EventClass()
+        eventclass_form = EventClassForm(instance=eventclass)  # setup a form for the parent
+
+    for weekday in eventclass.dayoftheweekclass_set.all():
+        weekdays[weekday.day] = DayOfTheWeekClassForm(instance=weekday,
+                                                      prefix='weekday'+str(weekday.day),
+                                                      initial={'checked': True})
+
+    for i in range(7):
+        if not weekdays[i]:
+            weekday = DayOfTheWeekClass()
+            weekday.event = eventclass
+            weekday.day = i
+            weekdays[i] = DayOfTheWeekClassForm(instance=weekday, prefix='weekday'+str(weekday.day))
+
+
+    # if request.method == "POST":
+    #     author_form = AuthorModelForm(request.POST)
+    #
+    #     if id:
+    #         author_form = AuthorModelForm(request.POST, instance=author)
+    #
+    #     formset = BookInlineFormSet(request.POST, request.FILES)
+    #
+    #     if author_form.is_valid():
+    #         created_author = author_form.save(commit=False)
+    #         formset = BookInlineFormSet(request.POST, request.FILES, instance=created_author)
+    #
+    #         if formset.is_valid():
+    #             created_author.save()
+    #             formset.save()
+    #             return HttpResponseRedirect(created_author.get_absolute_url())
+
+    return render(request, 'crm/eventClass_t.html', {
+                  'eventclass_form':eventclass_form,
+                  'weekdays':weekdays})

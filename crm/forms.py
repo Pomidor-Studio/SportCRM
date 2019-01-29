@@ -1,6 +1,13 @@
+import calendar
+from django.utils.translation import gettext as _
 from django import forms
-from bootstrap_datepicker_plus import DatePickerInput
-from .models import Client, ClientSubscriptions, Attendance, EventClass, SubscriptionsType, DayOfTheWeekClass
+from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
+from .models import (Client,
+                     ClientSubscriptions,
+                     Attendance,
+                     EventClass,
+                     SubscriptionsType,
+                     DayOfTheWeekClass)
 
 
 class ClientForm(forms.ModelForm):
@@ -95,3 +102,30 @@ class EventClassForm(forms.ModelForm):
             'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
         }
         exclude = ('client',)
+
+
+class DayOfTheWeekClassForm(forms.ModelForm):
+    # extra_field = forms.BooleanField(label='День')
+
+    checked = forms.BooleanField(label='qqq')
+
+    class Meta:
+        model = DayOfTheWeekClass
+        fields = ('checked', 'start_time', 'duration')
+        widgets = {
+            'start_time': TimePickerInput()
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'instance' in kwargs:
+            self.fields['checked'].label = _(calendar.day_name[kwargs['instance'].day])
+        for key, field in self.fields.items():
+            field.required = False
+
+
+
+
+
+DayOfTheWeekClassFormSet = forms.inlineformset_factory(EventClass, DayOfTheWeekClass,
+                                            form=DayOfTheWeekClassForm, extra=7)

@@ -69,12 +69,13 @@ class EventClass(models.Model):
             return False
 
         # Проверяем, проходят ли в этот день недели тренировки
-        # for weekday in self.dayoftheweekclass_set:
-        #     if weekday.day == day.isoweekday():
-        #         break
-        # else:
-        #     return False # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
-
+        weekdays = self.dayoftheweekclass_set.all();
+        if weekdays:
+            for weekday in weekdays:
+                if weekday.day == day.weekday():
+                    break
+            else:
+                return False # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
 
         return True
 
@@ -84,7 +85,6 @@ class EventClass(models.Model):
     #       +Получение на конкретную дату
     #   - Валидация всех event (а можно ли редактировать описание тренировки, если они уже были?)
     #
-
 
     @staticmethod
     def get_absolute_url():
@@ -96,11 +96,11 @@ class EventClass(models.Model):
 
 class DayOfTheWeekClass(models.Model):
     """Мероприятие в конкретный день недели, в определенное время, определенной продолжительности"""
+    event = models.ForeignKey(EventClass, on_delete=models.CASCADE, verbose_name="Мероприятие")
     # номер дня недели
-    day = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(7)])
-    start_time = models.DateTimeField("Время начала тренировки")
-    duration = models.IntegerField(default=60)
-    event = models.ForeignKey(EventClass, on_delete=models.PROTECT)
+    day = models.PositiveSmallIntegerField("День недели", validators=[MinValueValidator(0), MaxValueValidator(6)])
+    start_time = models.TimeField("Время начала тренировки")
+    duration = models.IntegerField("Продолжительность (мин.)", default=60)
 
     class Meta:
         unique_together = ('day', 'event',)

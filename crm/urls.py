@@ -30,9 +30,9 @@ urlpatterns = [
     path('clients/', views.ClientsListView.as_view(), name='clients'),
     path('clients/<int:pk>/', views.ClientDetailView.as_view(), name='client-detail'),
     path('eventclass/', views.EventClassList.as_view(), name='eventclass_list'),
-    path('eventclass/create/', views.EventClassCreate.as_view(template_name="crm/event_class_form.html"), name='eventclass_create'),
-    path('eventclass/<int:pk>/update/', views.EventClassUpdate.as_view(), name='eventclass_update'),
-    path('eventclass/<int:pk>/delete/', views.EventClassDelete.as_view(), name='eventclass_delete'),
+    # path('eventclass/create/', views.EventClassCreate.as_view(template_name="crm/event_class_form.html"), name='eventclass_create'),
+    # path('eventclass/<int:pk>/update/', views.EventClassUpdate.as_view(), name='eventclass_update'),
+    # path('eventclass/<int:pk>/delete/', views.EventClassDelete.as_view(), name='eventclass_delete'),
     path('clients/new/', ClientCreateView.as_view(), name='client-new'),
     path('clients/<int:pk>/update/', ClientUpdateView.as_view(), name='client-update'),
     path('clients/<int:pk>/delete/', ClientDeleteView.as_view(), name='client-delete'),
@@ -52,5 +52,12 @@ urlpatterns = [
     path('events/<int:pk>/delete', EventDeleteView.as_view(), name='event-delete'),
     path('events/<int:pk>/', EventDetailView.as_view(), name='event-detail'),
     path('events/<int:event_id>/addattendance/', EventAttendanceCreateView.as_view(), name='event-attendance-new'),
+
+    # path('eventclass_t/', views.EventClass_t, name='eventclass_t_create'),
+    # path('eventclass_t/<int:pk>/', views.EventClass_t, name='eventclass_t_update'),
+
+    path('eventclass/create/', views.EventClass_t, name='eventclass_create'),
+    path('eventclass/<int:pk>/update/', views.EventClass_t, name='eventclass_update'),
+    path('eventclass/<int:pk>/delete/', views.EventClassDelete.as_view(), name='eventclass_delete'),
 
 ]
