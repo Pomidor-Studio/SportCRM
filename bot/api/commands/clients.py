@@ -53,6 +53,18 @@ def get_info_abonements():
         sub_list = sub_list + sub
 
     message = str(name + '!\n Информация о ваших абонементах:' + '\n' + sub_list)
+
+    id = ''
+    name = ''
+    subscription = ''
+    visits_left = ''
+    k = {}
+    sub_list = ''
+    sub = ''
+    vk_user_id = ''
+    client = ''
+    subscription = ''
+
     return message, ''
 
 
