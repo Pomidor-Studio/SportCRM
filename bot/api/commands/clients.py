@@ -7,9 +7,9 @@ from bot.api.command_system import Command
 from bot.api.messageHandler import data1
 
 
-
 def get_info_abonements():
-    vk_user_id = int(data1)
+
+    vk_user_id = int(data1['user_id'])
 
     client = Client.objects.filter(vk_user_id=vk_user_id)
 

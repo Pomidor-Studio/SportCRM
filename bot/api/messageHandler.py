@@ -62,9 +62,9 @@ def get_answer(body):
 
 def create_answer(data, token):
     global data1
+    data1 = data
     load_modules()
     user_id = data['user_id']
-    data1 = user_id
     message, attachment = get_answer(data['body'].lower())
     send_message(user_id, token, message, attachment)
     data1 = ''
