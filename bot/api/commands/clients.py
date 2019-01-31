@@ -1,6 +1,5 @@
 #Сделать условие, Если НЕТ клиента в базе;
-#Сделать нормальный парсе списка;
-#Косяк с ботом, юзер айди тащит не правильный;
+#Сделать нормальный парсер списка;
 
 from crm.models import Client, ClientSubscriptions
 from bot.api.command_system import Command
@@ -12,6 +11,12 @@ def get_info_abonements(user_id):
 
     client = Client.objects.filter(vk_user_id=vk_user_id)
 
+    proverka = str(client)
+    proverka_len = len(proverka)
+    if proverka_len == 13:
+        message = 'Вас нет в базе!'
+        return message, ''
+
     k = {}
     sub_list = ''
     i = 0
@@ -21,6 +26,12 @@ def get_info_abonements(user_id):
         name = cl.name
 
     subscription = ClientSubscriptions.objects.filter(client_id=id)
+
+    proverka = str(subscription)
+    proverka_len = len(proverka)
+    if proverka_len == 13:
+        message = 'Вы еще не приобрели абонемент!'
+        return message, ''
 
     for sub in subscription:
         subscription = sub.subscription
