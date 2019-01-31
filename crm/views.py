@@ -6,6 +6,7 @@ from django.views.generic import ListView, DetailView
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse, reverse_lazy
 from django import forms
+from django.db import IntegrityError, transaction
 
 from .forms import (ClientForm,
                     ClientSubscriptionForm,
@@ -13,7 +14,6 @@ from .forms import (ClientForm,
                     ExtendClientSubscriptionForm,
                     EventClassForm,
                     EventAttendanceForm,
-                    DayOfTheWeekClassFormSet,
                     DayOfTheWeekClassForm
                     )
 
@@ -231,123 +231,67 @@ class EventAttendanceCreateView(CreateView):
         initial['event'] = event
         return initial
 
-    # def form_valid(self, form):
-    #     form.instance.event_id = self.kwargs['event_id']
-    #     return super(EventAttendanceCreateView, self).form_valid(form)
-
     def get_success_url(self):
         return reverse('crm:event-detail', args=[self.kwargs['event_id']])
 
-#
-# def EventClass_t(request, pk=None):
-#
-#     if request.method == "POST":
-#         eventclass_form = EventClassForm(request.POST)
-#         if eventclass_form.is_valid():
-#             # eventClass = eventclass_form.save(commit=False)
-#             formset = DayOfTheWeekClassFormSet(request.POST, request.FILES, instance=eventclass_form.instance)
-#             if formset.is_valid():
-#                 eventclass_form.save()
-#                 formset.save()
-#                 # Do something. Should generally end with a redirect. For example:
-#                 # return reverse('crm:eventclass_list')
-#     else:
-#         if pk:
-#             eventClass = EventClass.objects.get(
-#                 pk=pk)  # if this is an edit form, replace the author instance with the existing one
-#         else:
-#             eventClass = EventClass()
-#         eventclass_form = EventClassForm(instance=eventClass)  # setup a form for the parent
-#         formset = DayOfTheWeekClassFormSet(instance=eventClass)
-#
-#     # if request.method == "POST":
-#     #     author_form = AuthorModelForm(request.POST)
-#     #
-#     #     if id:
-#     #         author_form = AuthorModelForm(request.POST, instance=author)
-#     #
-#     #     formset = BookInlineFormSet(request.POST, request.FILES)
-#     #
-#     #     if author_form.is_valid():
-#     #         created_author = author_form.save(commit=False)
-#     #         formset = BookInlineFormSet(request.POST, request.FILES, instance=created_author)
-#     #
-#     #         if formset.is_valid():
-#     #             created_author.save()
-#     #             formset.save()
-#     #             return HttpResponseRedirect(created_author.get_absolute_url())
-#
-#     return render(request, 'crm/eventClass_t.html', {
-#                   'eventclass_form':eventclass_form,
-#                   'formset':formset})
+
+def eventclass_view(request, pk=None):
+    """редактирование типа события"""
 
 
-def EventClass_t(request, pk=None):
+    # инициализируем служебный массив 7 пустыми элементами
     weekdays = [None] * 7
     if request.method == "POST":
         if pk:
             eventclass = get_object_or_404(EventClass, pk=pk)
         else:
             eventclass = None
-
         eventclass_form = EventClassForm(request.POST, instance=eventclass)
         eventclass = eventclass_form.save()
-        for weekday in eventclass.dayoftheweekclass_set.all():
-            weekdayform = DayOfTheWeekClassForm(request.POST, prefix='weekday'+str(weekday.day), instance=weekday)
-            if weekdayform.is_valid():
-                if weekdayform.cleaned_data['checked']:
-                    weekdayform.save()
-                else:
-                    weekday.delete()
-            weekdays[weekday.day] = weekdayform
-        for i in range(7):
-            if not weekdays[i]:
-                weekday = DayOfTheWeekClass(day=i)
-                weekdayform = DayOfTheWeekClassForm(request.POST, prefix='weekday' + str(i), instance=weekday)
-                if weekdayform.is_valid():
-                    if weekdayform.cleaned_data['checked']:
-                        weekdayform.instance.event = eventclass
-                        weekdayform.save()
-                weekdays[i] = weekdayform
+        with transaction.atomic():
+            # сохраняем или удаляем дни недели, которые уже были у тренировки ранее
+            if pk:
+                for weekday in eventclass.dayoftheweekclass_set.all():
+                    weekdayform = DayOfTheWeekClassForm(request.POST, prefix='weekday'+str(weekday.day), instance=weekday)
+                    if weekdayform.is_valid():
+                        if weekdayform.cleaned_data['checked']:
+                            weekdayform.save()
+                        else:
+                            weekday.delete()
+                    weekdays[weekday.day] = weekdayform
+
+            # Проверяем все остальные дни
+            for i in range(7):
+                if not weekdays[i]:
+                    weekday = DayOfTheWeekClass(day=i)
+                    weekdayform = DayOfTheWeekClassForm(request.POST, prefix='weekday' + str(i), instance=weekday)
+                    if weekdayform.is_valid():
+                        if weekdayform.cleaned_data['checked']:
+                            weekdayform.instance.event = eventclass
+                            weekdayform.save()
+                    weekdays[i] = weekdayform
 
     else:
         if pk:
-            eventclass = EventClass.objects.get(
-                pk=pk)  # if this is an edit form, replace the author instance with the existing one
+            eventclass = get_object_or_404(EventClass, pk=pk)
+            # заполняем формы по сохраненным дням
+            for weekday in eventclass.dayoftheweekclass_set.all():
+                weekdays[weekday.day] = DayOfTheWeekClassForm(instance=weekday,
+                                                              prefix='weekday' + str(weekday.day),
+                                                              initial={'checked': True})
         else:
-            eventclass = EventClass()
-        eventclass_form = EventClassForm(instance=eventclass)  # setup a form for the parent
+            eventclass = None
 
-    for weekday in eventclass.dayoftheweekclass_set.all():
-        weekdays[weekday.day] = DayOfTheWeekClassForm(instance=weekday,
-                                                      prefix='weekday'+str(weekday.day),
-                                                      initial={'checked': True})
+        eventclass_form = EventClassForm(instance=eventclass)
 
-    for i in range(7):
-        if not weekdays[i]:
-            weekday = DayOfTheWeekClass()
-            weekday.event = eventclass
-            weekday.day = i
-            weekdays[i] = DayOfTheWeekClassForm(instance=weekday, prefix='weekday'+str(weekday.day))
+        # Заполняем форму по всем остальным дням
+        for i in range(7):
+            if not weekdays[i]:
+                weekday = DayOfTheWeekClass()
+                weekday.event = eventclass
+                weekday.day = i
+                weekdays[i] = DayOfTheWeekClassForm(instance=weekday, prefix='weekday'+str(weekday.day))
 
-
-    # if request.method == "POST":
-    #     author_form = AuthorModelForm(request.POST)
-    #
-    #     if id:
-    #         author_form = AuthorModelForm(request.POST, instance=author)
-    #
-    #     formset = BookInlineFormSet(request.POST, request.FILES)
-    #
-    #     if author_form.is_valid():
-    #         created_author = author_form.save(commit=False)
-    #         formset = BookInlineFormSet(request.POST, request.FILES, instance=created_author)
-    #
-    #         if formset.is_valid():
-    #             created_author.save()
-    #             formset.save()
-    #             return HttpResponseRedirect(created_author.get_absolute_url())
-
-    return render(request, 'crm/eventClass_t.html', {
+    return render(request, 'crm/eventclass_form.html', {
                   'eventclass_form':eventclass_form,
                   'weekdays':weekdays})

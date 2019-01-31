@@ -105,9 +105,8 @@ class EventClassForm(forms.ModelForm):
 
 
 class DayOfTheWeekClassForm(forms.ModelForm):
-    # extra_field = forms.BooleanField(label='День')
 
-    checked = forms.BooleanField(label='qqq')
+    checked = forms.BooleanField()
 
     class Meta:
         model = DayOfTheWeekClass
@@ -119,13 +118,10 @@ class DayOfTheWeekClassForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'instance' in kwargs:
+            # выставляем лейбл для чекбокса в зависимости от дня
             self.fields['checked'].label = _(calendar.day_name[kwargs['instance'].day])
+        # Все поля делаем необязательными
         for key, field in self.fields.items():
             field.required = False
+    # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
 
-
-
-
-
-DayOfTheWeekClassFormSet = forms.inlineformset_factory(EventClass, DayOfTheWeekClass,
-                                            form=DayOfTheWeekClassForm, extra=7)
