@@ -11,7 +11,7 @@
 
 {% block content %}
 <form action="" method="POST" >
-<!-- See above: We're using the author_id that was passed to template via views render of the edit_author(...) function -->
+
 {% csrf_token %} <!-- You're dealing with forms. csrf_token must come -->
 {% bootstrap_form eventclass_form %}
 {% bootstrap_form weekdays.0 layout='horizontal'%}
