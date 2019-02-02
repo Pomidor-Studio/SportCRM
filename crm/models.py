@@ -24,25 +24,6 @@ class Coach(models.Model):
         return self.name
 
 
-Monday = 'Понедельник'
-Tuesday = 'Вторник'
-Wednesday = 'Среда'
-Thursday = 'Четверг'
-Friday = 'Пятница'
-Saturday = 'Суббота'
-Sunday = 'Воскресенье'
-
-DAY_OF_THE_WEEK = {
-    (Monday, 'Понедельник'),
-    (Tuesday, 'Вторник'),
-    (Wednesday, 'Среда'),
-    (Thursday, 'Четверг'),
-    (Friday, 'Пятница'),
-    (Saturday, 'Суббота'),
-    (Sunday, 'Воскресенье'),
-}
-
-
 class EventClass(models.Model):
     """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
     name = models.CharField("Название",
@@ -86,6 +67,7 @@ class EventClass(models.Model):
     #   - Валидация всех event (а можно ли редактировать описание тренировки, если они уже были?)
     #
 
+
     @staticmethod
     def get_absolute_url():
         return reverse_lazy('crm:eventclass_list')
@@ -106,19 +88,53 @@ class DayOfTheWeekClass(models.Model):
         unique_together = ('day', 'event',)
 
 
+granularity = (
+    ('day', 'День'),
+    ('week', 'Неделя'),
+    ('month', 'Месяц'),
+    ('year', 'Год'),
+)
+
+
 class SubscriptionsType(models.Model):
     """Типы абонементов
     Описывает продолжительность действия, количество посещений, какие тренировки позволяет посещать"""
-    name = models.CharField("Название",
-                            max_length=100)
+    name = models.CharField("Название", max_length=100)
     price = models.FloatField("Стоимость")
-    duration = models.PositiveIntegerField("Продолжительность (дни)")
+    duration_type = models.CharField("Временные рамки абонемента", max_length=20, choices=granularity, default=granularity[0])
+    duration = models.PositiveIntegerField("Продолжительность")
+    rounding = models.BooleanField("Округление начала действия абонемента", default=False)
     visit_limit = models.PositiveIntegerField("Количество посещений")
-    event_class = models.ManyToManyField(EventClass,
-                                         verbose_name="Допустимые тренировки")
+    event_class = models.ManyToManyField(EventClass, verbose_name="Допустимые тренировки")
 
     def __str__(self):
-        return self.name
+        return 'name: (0), initial: (1)'.format(self.name, self.initial)
+
+    def rounding_to_weekday(rounding_date):
+        weekday = rounding_date.weekday()
+        monday = rounding_date - datetime.timedelta(weekday)
+        return monday.strftime("%Y-%m-%d 00:00:00")
+
+    def rounding_to_month(rounding_date):
+        month = datetime.datetime(rounding_date.year, rounding_date.month, 1)
+        return month.strftime("%Y-%m-%d 00:00:00")
+
+    def rounding_to_year(rounding_date):
+        year = datetime.datetime(rounding_date.year, 1, 1)
+        return year.strftime("%Y-%m-%d 00:00:00")
+
+    def get_end_date(self, rounding_date):
+        end_date = None
+        weekday = rounding_date.weekday()
+        if self.duration_type == 'day':
+            end_date = rounding_date
+        elif self.duration_type == 'week':
+            end_date = rounding_date + datetime.timedelta(7 - weekday)
+        elif self.duration_type == 'month':
+            end_date = datetime.datetime(rounding_date.year, rounding_date.month + 1, 1)
+        elif self.duration_type == 'year':
+            end_date = datetime.datetime(rounding_date.year + 1, 1, 1)
+        return end_date
 
     def get_absolute_url(self):
         return reverse('crm:subscriptions')
