@@ -61,8 +61,7 @@ def sub_client(sender, **kwargs):
     #         continue
     #     sub_list = sub_list + sub
 
-    message = str(client_subscription.client.name +'!\n Вы приобрели абонемент:' + ClientSubscriptions.subscription.name
-                  + '!\n Действующий до :' + ClientSubscriptions.end_date
-                  )
+    message = client_subscription.client.name +'!\n Вы приобрели абонемент:' + client_subscription.subscription.name + \
+              '!\n Действующий до :' + str(client_subscription.end_date)
 
     send_message(client_subscription.client.vk_user_id, token, message, '')
