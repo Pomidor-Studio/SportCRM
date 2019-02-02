@@ -8,7 +8,7 @@ from bot.api.vkapi import send_message
 
 @receiver(post_save, sender=ClientSubscriptions)
 def sub_client(sender, **kwargs):
-    ClientSubscription:ClientSubscriptions = kwargs['instance']
+    client_subscription:ClientSubscriptions = kwargs['instance']
 
     # id = ''
     # sub_list = ''
@@ -61,8 +61,8 @@ def sub_client(sender, **kwargs):
     #         continue
     #     sub_list = sub_list + sub
 
-    message = str(ClientSubscription.client.name +'!\n Вы приобрели абонемент:' + ClientSubscriptions.subscription.name
+    message = str(client_subscription.client.name +'!\n Вы приобрели абонемент:' + ClientSubscriptions.subscription.name
                   + '!\n Действующий до :' + ClientSubscriptions.end_date
                   )
 
-    send_message(ClientSubscription.client.vk_user_id, token, message, '')
+    send_message(client_subscription.client.vk_user_id, token, message, '')
