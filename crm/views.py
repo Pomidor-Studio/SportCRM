@@ -50,14 +50,9 @@ class ClientsListView(ListView):
     context_object_name = 'clients'
 
     def get_queryset(self):
-        try:
-            a = self.request.GET.get('client', )
-        except KeyError:
-            a = None
-        if a:
-            clients_list = Client.objects.filter(
-                name__icontains=a,
-            )
+        name_query = self.request.GET.get('client')
+        if name_query:
+            clients_list = Client.objects.filter(name__icontains=name_query)
         else:
             clients_list = Client.objects.all()
         return clients_list

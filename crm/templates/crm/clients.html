@@ -5,14 +5,27 @@
 <script type="text/javascript"></script>
 <script>window.page_name = "Ученики";</script>
 
+<script language="javascript">
+    $(function() {
+    $("#clear_search").click(function() {
+        $("#search_input").val("");
+    });
+});
+</script>
+
+
 <div class="ml-4 mt-4 mr-4 container-fluid">
     <legend class="border-bottom mb-2">Ученики</legend>
     <div style="background-color: #FFFFFF;" class="sticky-top">
         <form class="form-inline mb-2" action="{% url 'crm:clients' %}" method="GET">
             <a name="add-new" href="{% url 'crm:client-new' %}" class="btn btn-sm btn-info">Добавить ученика</a>
-            <input type="text"
-                   name="client" placeholder="Искать по ФИО" value="{{ request.GET.client }}"
-                   class=" ml-2 form-control form-control-sm w-25"/>
+            <div class="input-group  ml-2 w-25">
+                <input id="search_input" name="client" placeholder="Искать по ФИО" value="{{ request.GET.client }}" type="search" class="form-control form-control-sm">
+                <div class="input-group-append">
+                    <input id="clear_search" type="submit" value="X" class="btn btn-sm btn-outline-danger" type="button">
+                </div>
+            </div>
+
             <input type="submit"
                    value="Поиск" class=" ml-2 btn btn-sm btn-success"/>
         </form>
@@ -43,8 +56,6 @@
             <td>
                 {% if c.last_sub != null %}
                 <div class="font-weight-bold">{{ c.last_sub.subscription.name }}</div>
-                <div>Куплен {{ c.last_sub.purchase_date | date }}</div>
-                <div>Действует с {{ c.last_sub.start_date | date }} по {{ c.last_sub.end_date | date }}</div>
                 <div>Осталось {{ c.last_sub.visits_left }} посещений</div>
                 <a class="btn btn-sm btn-outline-info"
                    href="{% url 'crm:clientsubscription-extend' c.last_sub.id %}">Продлить</a>
