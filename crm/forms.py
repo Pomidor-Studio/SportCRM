@@ -1,6 +1,13 @@
+import calendar
+from django.utils.translation import gettext as _
 from django import forms
-from bootstrap_datepicker_plus import DatePickerInput
-from .models import Client, ClientSubscriptions, Attendance, EventClass, SubscriptionsType, DayOfTheWeekClass
+from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
+from .models import (Client,
+                     ClientSubscriptions,
+                     Attendance,
+                     EventClass,
+                     SubscriptionsType,
+                     DayOfTheWeekClass)
 
 
 class ClientForm(forms.ModelForm):
@@ -95,3 +102,26 @@ class EventClassForm(forms.ModelForm):
             'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
         }
         exclude = ('client',)
+
+
+class DayOfTheWeekClassForm(forms.ModelForm):
+
+    checked = forms.BooleanField()
+
+    class Meta:
+        model = DayOfTheWeekClass
+        fields = ('checked', 'start_time', 'duration')
+        widgets = {
+            'start_time': TimePickerInput()
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'instance' in kwargs:
+            # выставляем лейбл для чекбокса в зависимости от дня
+            self.fields['checked'].label = _(calendar.day_name[kwargs['instance'].day])
+        # Все поля делаем необязательными
+        for key, field in self.fields.items():
+            field.required = False
+    # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
+
