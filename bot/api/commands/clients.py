@@ -18,7 +18,7 @@ def get_info_abonements(user_id):
     for cl in client:
         id = cl.id
         name = cl.name
-    message = str(name) + '!\nИнформация о ваших абонементах:\n'
+    message = name + '!\nИнформация о ваших абонементах:\n'
 
     subscription = ClientSubscriptions.objects.filter(client_id=id)
 
@@ -31,8 +31,7 @@ def get_info_abonements(user_id):
     for sub in subscription:
         subscription = sub.subscription.name
         visits_left = sub.visits_left
-        end_date = str(sub.end_date)
-        end_date = end_date[0: -15]
+        end_date = '{:%d-%m-%Y}'.format(sub.end_date)
         message = message + str(i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + '\n Действующий до: ' + end_date + '\n'
         i += 1
 
