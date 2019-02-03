@@ -1,6 +1,3 @@
-#Сделать условие, Если НЕТ клиента в базе;
-#Сделать нормальный парсер списка;
-
 from crm.models import Client, ClientSubscriptions
 from bot.api.command_system import Command
 
@@ -17,58 +14,34 @@ def get_info_abonements(user_id):
         message = 'Вас нет в базе!'
         return message, ''
 
-    k = {}
-    sub_list = ''
     i = 0
 
-    for cl in client:
-        id = cl.id
-        name = cl.name
+    id = client.id
+    name = client.name
+    message = str(name) + '!\nИнформация о ваших абонементах:\n'
 
     subscription = ClientSubscriptions.objects.filter(client_id=id)
 
     proverka = str(subscription)
     proverka_len = len(proverka)
     if proverka_len == 13:
-        message = 'Вы еще не приобрели абонемент!'
+        message = name + '!\nВы еще не приобрели абонемент!'
         return message, ''
 
     for sub in subscription:
-        subscription = sub.subscription
+        subscription = sub.subscription.name
         visits_left = sub.visits_left
-        k[i] = [subscription, visits_left]
+        end_date = str(sub.end_date)
+        end_date = end_date[0: -15]
+        message = message + (i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + \
+            '\n Действующий до: ' + end_date + '\n'
         i += 1
-
-    sub = str(k)
-    i = 0
-    j = 0
-
-    for sub in sub:
-        if sub == '{' or sub == '[' or sub == '<' or sub == '}':
-            continue
-        if sub == '>':
-            j = 1
-            continue
-        if j == 1 and sub == ',':
-            sub_list = sub_list + ', Остаток посещений: '
-            j = 0
-            continue
-        if sub == ']':
-            i = 1
-            continue
-        if i == 1:
-            sub_list = sub_list + '\n'
-            i = 0
-            continue
-        sub_list = sub_list + sub
-
-    message = str(name + '!\n Информация о ваших абонементах:' + '\n' + sub_list)
 
     return message, ''
 
 
 test_command = Command()
 
-test_command.keys = ['информация', 'абонементы', 'мои абонементы', 'информация о моих абонементах']
+test_command.keys = ['абонементы', 'мои абонементы', 'информация о моих абонементах']
 test_command.description = 'Информация о Ваших абонементах'
 test_command.process = get_info_abonements
