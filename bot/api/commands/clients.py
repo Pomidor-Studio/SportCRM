@@ -33,8 +33,8 @@ def get_info_abonements(user_id):
         visits_left = sub.visits_left
         end_date = str(sub.end_date)
         end_date = end_date[0: -15]
-        message = message + (i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + \
-            '\n Действующий до: ' + end_date + '\n'
+        message = str(message + (i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + \
+            '\n Действующий до: ' + end_date + '\n')
         i += 1
 
     return message, ''
