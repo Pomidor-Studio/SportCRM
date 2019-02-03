@@ -15,9 +15,9 @@ def get_info_abonements(user_id):
         return message, ''
 
     i = 0
-
-    id = client.id
-    name = client.name
+    for cl in client:
+        id = cl.id
+        name = cl.name
     message = str(name) + '!\nИнформация о ваших абонементах:\n'
 
     subscription = ClientSubscriptions.objects.filter(client_id=id)
