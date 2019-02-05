@@ -23,6 +23,8 @@ class ClientForm(forms.ModelForm):
             'name': forms.TextInput(attrs={"class": "form-control", "placeholder": "ФИО"}),
             'phone_number': forms.TextInput(attrs={"class": "form-control", "placeholder": "Номер телефона"}),
             'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@email.com"}),
+            'vk_user_id': forms.HiddenInput(),
+
         }
 
 
