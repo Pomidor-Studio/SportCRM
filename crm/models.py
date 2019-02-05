@@ -1,4 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
+from calendar import calendar
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
@@ -110,31 +112,51 @@ class SubscriptionsType(models.Model):
     def __str__(self):
         return 'name: (0), initial: (1)'.format(self.name, self.initial)
 
-    def rounding_to_weekday(rounding_date):
-        weekday = rounding_date.weekday()
-        monday = rounding_date - datetime.timedelta(weekday)
-        return monday.strftime("%Y-%m-%d 00:00:00")
+    def get_start_date(self, rounding_date):
+        start_date = None
+        if self.rounding:
+            weekday = rounding_date.weekday()
+            if self.duration_type == granularity[0]:
+                start_date = rounding_date
+            elif self.duration_type == granularity[1]:
+                start_date = rounding_date - datetime.timedelta(weekday)
+            elif self.duration_type == granularity[2]:
+                start_date = datetime.datetime(rounding_date.year, rounding_date.month, 1)
+            elif self.duration_type == granularity[3]:
+                start_date = datetime.datetime(rounding_date.year, 1, 1)
+        else:
+            start_date = rounding_date
+        return start_date
 
-    def rounding_to_month(rounding_date):
-        month = datetime.datetime(rounding_date.year, rounding_date.month, 1)
-        return month.strftime("%Y-%m-%d 00:00:00")
-
-    def rounding_to_year(rounding_date):
-        year = datetime.datetime(rounding_date.year, 1, 1)
-        return year.strftime("%Y-%m-%d 00:00:00")
-
-    def get_end_date(self, rounding_date):
-        end_date = None
-        weekday = rounding_date.weekday()
-        if self.duration_type == 'day':
-            end_date = rounding_date
-        elif self.duration_type == 'week':
-            end_date = rounding_date + datetime.timedelta(7 - weekday)
-        elif self.duration_type == 'month':
-            end_date = datetime.datetime(rounding_date.year, rounding_date.month + 1, 1)
-        elif self.duration_type == 'year':
-            end_date = datetime.datetime(rounding_date.year + 1, 1, 1)
+    def get_end_date(self, start_date):
+        duration_in_days = self.subscribe_duration_in_days(start_date)
+        end_date = start_date + datetime.timedelta(duration_in_days)
         return end_date
+
+    def subscribe_duration_in_days(self, start_date):
+        duration_in_days = 0
+        if self == granularity[0]:
+            duration_in_days = 1 * self.duration
+        elif self == granularity[1]:
+            duration_in_days = 7 * self.duration
+        elif self == granularity[2]:
+            duration_in_days = self.month_or_year(start_date, granularity[2])
+        elif self == granularity[3]:
+            duration_in_days = self.month_or_year(start_date, granularity[3])
+        return duration_in_days
+
+    def month_or_year(self, start_date, m_or_y):
+        i = 0
+        duration_in_days = 0
+        factor = 1
+        if m_or_y == granularity[3]:
+            factor = 12
+        while i < self.duration * factor:
+            days_in_month = calendar.monthrange(start_date.year, start_date.month)[1]
+            duration_in_days = duration_in_days + days_in_month
+            start_date = start_date + datetime.timedelta(days_in_month)
+            i = i + 1
+        return duration_in_days
 
     def get_absolute_url(self):
         return reverse('crm:subscriptions')
@@ -191,8 +213,9 @@ class ClientSubscriptions(models.Model):
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
     def save(self, *args, **kwargs):
+        self.start_date = self.subscription.get_start_date(self.start_date)
         if not self.end_date:
-            self.end_date = self.start_date + timedelta(self.subscription.duration)
+            self.end_date = self.subscription.get_end_date(self.start_date)
         super(ClientSubscriptions, self).save(*args, **kwargs)
 
     def extend_duration(self, visits_left_plus):
