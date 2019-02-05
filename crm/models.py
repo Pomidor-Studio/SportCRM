@@ -113,24 +113,23 @@ class SubscriptionsType(models.Model):
         return 'name: (0), initial: (1)'.format(self.name, self.initial)
 
     def get_start_date(self, rounding_date):
-        start_date = None
         if self.rounding:
             weekday = rounding_date.weekday()
             if self.duration_type == granularity[0]:
                 start_date = rounding_date
             elif self.duration_type == granularity[1]:
-                start_date = rounding_date - datetime.timedelta(weekday)
+                start_date = rounding_date - timedelta(weekday)
             elif self.duration_type == granularity[2]:
-                start_date = datetime.datetime(rounding_date.year, rounding_date.month, 1)
+                start_date = datetime(rounding_date.year, rounding_date.month, 1)
             elif self.duration_type == granularity[3]:
-                start_date = datetime.datetime(rounding_date.year, 1, 1)
+                start_date = datetime(rounding_date.year, 1, 1)
         else:
             start_date = rounding_date
         return start_date
 
     def get_end_date(self, start_date):
         duration_in_days = self.subscribe_duration_in_days(start_date)
-        end_date = start_date + datetime.timedelta(duration_in_days)
+        end_date = start_date + timedelta(duration_in_days)
         return end_date
 
     def subscribe_duration_in_days(self, start_date):
@@ -213,7 +212,12 @@ class ClientSubscriptions(models.Model):
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
     def save(self, *args, **kwargs):
+        print('-------------------------------------------')
+        print(self.start_date)
+        print(self.subscription)
+        print('-------------------------------------------')
         self.start_date = self.subscription.get_start_date(self.start_date)
+        print(self.start_date)
         if not self.end_date:
             self.end_date = self.subscription.get_end_date(self.start_date)
         super(ClientSubscriptions, self).save(*args, **kwargs)
