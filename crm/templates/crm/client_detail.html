@@ -21,7 +21,7 @@
             url: 'https://api.vk.com/method/users.get',
             data: {
                 user_ids: id,
-                fields: "photo_200",
+                fields: "photo_200,domain",
                 access_token: access_token,
                 v: 5.63
             },
@@ -31,6 +31,9 @@
             async: false,
             success: function(data) {
                 $("#profile_pic").attr("src", data.response[0].photo_200);
+
+                $("#id_vk_url").text("vk.com/" + data.response[0].domain);
+                $("#id_vk_url").attr("href", "https://vk.com/" + data.response[0].domain);
             }
         });
     }
@@ -48,12 +51,13 @@
     </div>
     <div class="row">
         <label id="id_vk_user_id" hidden="true">{{ object.vk_user_id }}</label>
-        <div class="col-2 border-right">
+        <div class="col-3 border-right">
             <div class="font-weight-bold">Имя:</div>
             <div class="font-weight-bold">Адрес:</div>
             <div class="font-weight-bold">Дата рождения:</div>
             <div class="font-weight-bold">Номер телефона:</div>
             <div class="font-weight-bold">Электронная почта:</div>
+            <div class="font-weight-bold">Ссылка вк:</div>
         </div>
         <div class="col">
             <div>{{ object.name }}</div>
@@ -61,6 +65,7 @@
             <div>{{ object.birthday|date }}</div>
             <div>{{ object.phone_number }}</div>
             <div>{{ object.email_address }}</div>
+            <div ><a id="id_vk_url"></a></div>
         </div>
         <div class="col-2 border-right">
             <img id="profile_pic" class="rounded"/>
