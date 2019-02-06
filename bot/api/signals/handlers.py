@@ -11,7 +11,7 @@ def sub_client(sender, created, **kwargs):
 
     vk_user_id = client_subscription.client.vk_user_id
 
-    if vk_user_id == None:
+    if vk_user_id is None:
         return
 
     if created == 1:
