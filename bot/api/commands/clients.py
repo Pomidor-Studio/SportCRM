@@ -1,4 +1,4 @@
-from crm.models import Client, ClientSubscriptions
+from crm.models import Client
 from bot.api.command_system import Command
 
 
@@ -6,22 +6,24 @@ def get_info_subscription(user_id):
 
     vk_user_id = user_id
 
-    check = Client.objects.filter(vk_user_id=vk_user_id).exists()
-
-    if check == 0:
+    try:
+        client = Client.objects.get(vk_user_id=vk_user_id)
+    except Client.DoesNotExist:
         message = 'Вас нет в базе!'
         return message, ''
 
-    client = Client.objects.get(vk_user_id=vk_user_id)
-
     i = 0
 
-    id = client.id
     name = client.name
-    message = name + '!\nИнформация о ваших абонементах:\n'
+    balance = client.balance
 
-    subscription = ClientSubscriptions.objects.filter(client_id=id)
-    check = ClientSubscriptions.objects.filter(client_id=id).exists()
+    if balance > 0:
+        message = name + '!\nВаш баланс: ' + str(balance) + '\nИнформация о ваших абонементах:\n'
+    else:
+        message = name + '!\nИнформация о ваших абонементах:\n'
+
+    subscription = client.clientsubscriptions_set.all()
+    check = subscription.exists()
 
     if check == 0:
         message = name + '!\nВы еще не приобрели абонемент!'
