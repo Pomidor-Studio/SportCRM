@@ -1,7 +1,13 @@
+import calendar
+from django.utils.translation import gettext as _
 from django import forms
-from bootstrap_datepicker_plus import DatePickerInput
-
-from .models import Client, ClientSubscriptions, Attendance, SubscriptionsType
+from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
+from .models import (Client,
+                     ClientSubscriptions,
+                     Attendance,
+                     EventClass,
+                     SubscriptionsType,
+                     DayOfTheWeekClass)
 
 
 class ClientForm(forms.ModelForm):
@@ -11,12 +17,12 @@ class ClientForm(forms.ModelForm):
         fields = ['name', 'address',
                   'birthday', 'phone_number', 'email_address', 'vk_user_id']
         widgets = {
-            'birthday': DatePickerInput(format='%Y-%m-%d',
-                                        attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
+            'birthday': DatePickerInput(format='%d.%m.%Y',
+                                        attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
             'address': forms.TextInput(attrs={"class": "form-control", "placeholder": "Адрес проживания"}),
             'name': forms.TextInput(attrs={"class": "form-control", "placeholder": "ФИО"}),
             'phone_number': forms.TextInput(attrs={"class": "form-control", "placeholder": "Номер телефона"}),
-            'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@mail.com"}),
+            'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@email.com"}),
         }
 
 
@@ -47,6 +53,7 @@ class ClientSubscriptionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []
+        choices.append(("", "--------------"))
         for st in SubscriptionsType.objects.all():
             choices.append((st.id, st.name))
 
@@ -60,12 +67,12 @@ class ClientSubscriptionForm(forms.ModelForm):
     class Meta:
         model = ClientSubscriptions
         widgets = {
-            'purchase_date': DatePickerInput(format='%Y-%m-%d',
-                                             attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
-            'start_date': DatePickerInput(format='%Y-%m-%d',
-                                          attrs={"class": "form-control", "placeholder": "ГГГГ-ММ-ДД"}),
-            'price': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
-            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": ""}),
+            'purchase_date': DatePickerInput(format='%d.%m.%Y',
+                                             attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
+            'start_date': DatePickerInput(format='%d.%m.%Y',
+                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
+            'price': forms.TextInput(attrs={"class": "form-control", "placeholder": "Стоимость в рублях"}),
+            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": "Кол-во посещений"}),
         }
         exclude = ('client', 'end_date')
 
@@ -74,3 +81,46 @@ class AttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
         exclude = ('client',)
+
+
+class EventAttendanceForm(forms.ModelForm):
+    class Meta:
+        model = Attendance
+        fields = '__all__'
+        widgets = {
+            'event': forms.HiddenInput,
+        }
+        # exclude = ('event',)
+
+
+class EventClassForm(forms.ModelForm):
+    class Meta:
+        model = EventClass
+        fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
+        widgets = {
+            'date_from': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
+            'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
+        }
+        exclude = ('client',)
+
+
+class DayOfTheWeekClassForm(forms.ModelForm):
+
+    checked = forms.BooleanField()
+
+    class Meta:
+        model = DayOfTheWeekClass
+        fields = ('checked', 'start_time', 'duration')
+        widgets = {
+            'start_time': TimePickerInput()
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'instance' in kwargs:
+            # выставляем лейбл для чекбокса в зависимости от дня
+            self.fields['checked'].label = _(calendar.day_name[kwargs['instance'].day])
+        # Все поля делаем необязательными
+        for key, field in self.fields.items():
+            field.required = False
+    # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены

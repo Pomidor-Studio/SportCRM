@@ -21,7 +21,6 @@
     {% bootstrap_css %}
     {% bootstrap_javascript jquery='full' %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 
     {% block extrahead %}
@@ -33,30 +32,23 @@
     {% endif %}
 
 
-
 </head>
 
 <body style="height: 100%;">
 
-    <div class="container-fluid" style="height: 100%;">
+    <div class="container-fluid">
 
         <div class="row" style="height: 100%;">
             <!--Sidebar-->
-            <div class="col-3 col-sm-2 col-md-2 col-lg-1 col-xl-1" id="sidebar" style="border-right: 1px solid;">
+            <div>
                 {% include 'crm/bars/sidebar.html' %}
             </div>
 
-            <div class="col-9 col-sm-10 col-md-10 col-lg-11 col-xl-11">
-
-                <!--Horizontalbar-->
-                <div class="row">
-                    <!--{% include 'crm/bars/horizontalbar.html' %}-->
-                </div>
+            <div class="container no-gutters">
 
                 <!--Content-->
-                <div class="row">
-                    {% block content %}{% endblock %}
-                </div>
+                {% block content %}{% endblock %}
+
             </div>
 
         </div>

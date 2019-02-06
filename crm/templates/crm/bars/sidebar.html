@@ -3,7 +3,8 @@
     <ul class="navbar-nav flex-column">
         <li><a href="/" class="navbar-brand"><img src="{% static 'favicon/favicon-32x32.png' %}" width="32" height="32" alt="logo"></a></li>
         <li><a href="{% url 'crm:clients' %}" name="Ученики">Ученики</a></li>
+        <li><a href="{% url 'crm:eventclass_list' %}" name="Тренировки">Тренировки</a></li>
         <li><a href="{% url 'crm:subscriptions' %}" name="Абонементы">Абонементы</a></li>
-        <li><a href="{% url 'crm:eventclass_list' %}" name="Типы мероприятий">Типы_мероприятий</a></li>
+        <li><a href="{% url 'crm:event-list' %}" name="Абонементы">Календарь тренировок</a></li>
     </ul>
 </div>
