@@ -55,7 +55,12 @@
             </td>
             <td>
                 {% if c.last_sub != null %}
-                <div class="font-weight-bold">{{ c.last_sub.subscription.name }}</div>
+                <div class="font-weight-bold">
+                    {% if c.last_sub.is_expiring %}
+                            <i title="Абонемент скоро заканчивается" class="fas fa-exclamation-circle"></i>
+                        {% endif %}
+                    {{ c.last_sub.subscription.name }}
+                </div>
                 <div>Осталось {{ c.last_sub.visits_left }} посещений</div>
                 <a class="btn btn-sm btn-outline-info"
                    href="{% url 'crm:clientsubscription-extend' c.last_sub.id %}">Продлить</a>

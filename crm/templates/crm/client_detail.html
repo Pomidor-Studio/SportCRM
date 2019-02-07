@@ -60,11 +60,11 @@
             <div class="font-weight-bold">Ссылка вк:</div>
         </div>
         <div class="col">
-            <div>{{ object.name }}</div>
-            <div>{{ object.address }}</div>
-            <div>{{ object.birthday|date }}</div>
-            <div>{{ object.phone_number }}</div>
-            <div>{{ object.email_address }}</div>
+            <div>{{ object.name }} </div>
+            <div>{{ object.address }} </div>
+            <div>{{ object.birthday|date }} </div>
+            <div>{{ object.phone_number }} </div>
+            <div>{{ object.email_address }} </div>
             <div ><a id="id_vk_url"></a></div>
         </div>
         <div class="col-2 border-right">
@@ -94,7 +94,10 @@
                 <tbody>
                 {% for sub in object.clientsubscriptions_set.all %}
                 <tr>
-                    <td>{{ sub.subscription.name }}</td>
+                    <td>{% if sub.is_expiring %}
+                            <i title="Абонемент скоро заканчивается" class="fas fa-exclamation-circle"></i>
+                        {% endif %}
+                        {{ sub.subscription.name }}</td>
                     <td>{{ sub.purchase_date|date:'d N Y'}}</td>
                     <td>{{ sub.start_date|date:'d N Y' }}</td>
                     <td>{{ sub.end_date|date:'d N Y' }}</td>

@@ -224,6 +224,15 @@ class ClientSubscriptions(models.Model):
     def get_absolute_url(self):
         return reverse('crm:client-detail', kwargs={'pk': self.client.id})
 
+    def is_expiring(self):
+        current_date = datetime.now(timezone.utc)
+        end_date = self.end_date
+        delta = end_date - current_date
+        if (delta.days <= 7 or self.visits_left == 1):
+            return True
+        else:
+            return False
+
     class Meta:
         ordering = ['purchase_date']
 
