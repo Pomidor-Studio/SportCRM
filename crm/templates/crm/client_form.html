@@ -3,22 +3,73 @@
 {% block extrahead %}
 {{ form.media }}
 <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
-
+<script src="https://vk.com/js/api/openapi.js?160" type="text/javascript"></script>
 {% endblock %}
 {% block content %}
 <script>
+
     $( document ).ready(function() {
         $("#id_phone_number").inputmask({"mask": "+7(999)999-99-99"});
+        $("#vk_user_ref").inputmask({"mask": "https://vk.com/*{1,50}"});
+
+        $("#vk_user_ref").change(function() {
+            var idRe = new RegExp("vk.com\/(?<user_id>[A-Za-z0-9]+)");
+            var matchString = $("#vk_user_ref").val();
+
+            var matchObj = idRe.exec(matchString);
+            var id = matchObj.groups.user_id;
+            getUserData(id);
+        });
+
     });
 
+    function getUserData(id) {
+        var returnData;
+        var access_token = '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4'
+        $.ajax({
+            url: 'https://api.vk.com/method/users.get',
+            data: {
+                user_ids: id,
+                fields: "photo_100, bdate",
+                access_token: access_token,
+                v: 5.63
+            },
+            type: 'GET',
+            dataType: 'jsonp',
+            crossDomain: true,
+            async: false,
+            success: function(data) {
+                if (data.error) {
+                    $("#alert").append('<div id="alert_showed" class="alert alert-danger" role="alert">Ошибка! Такого пользователя не существует!</div>');
+                }
+                else {
+                    $("#alert_showed").remove();
+                    $("#id_name").val(data.response[0].first_name + ' ' + data.response[0].last_name);
+                    $("#id_vk_user_id").val(data.response[0].id);
+                    $("#profile_pic").attr("src", data.response[0].photo_100) }
+            },
+            error: function (data) {
+                alert('Error');
+            }
+        });
+        console.log(returnData);
+        return(returnData);
+    }
 </script>
 <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">Ученик</legend>
+    <div id="alert"></div>
     <div class="w-25">
+        <div class="form-group">
+            <img id="profile_pic" class="rounded"/>
+        </div>
+        <div class="form-group">
+            <label>Ссылка на профиль vk</label>
+            <input id="vk_user_ref" class="form-control" placeholder="Ссылка на профиль vk">
+        </div>
         <form method="POST">
             {% csrf_token %}
             {% bootstrap_form form %}
-
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Добавить</button>
                 {% if object.id != null %}

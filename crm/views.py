@@ -52,14 +52,9 @@ class ClientsListView(ListView):
     context_object_name = 'clients'
 
     def get_queryset(self):
-        try:
-            a = self.request.GET.get('client' )
-        except KeyError:
-            a = None
-        if a:
-            clients_list = Client.objects.filter(
-                name__icontains=a
-            )
+        name_query = self.request.GET.get('client')
+        if name_query:
+            clients_list = Client.objects.filter(name__icontains=name_query)
         else:
             clients_list = Client.objects.all()
         return clients_list
@@ -229,6 +224,10 @@ class EventAttendanceCreateView(CreateView):
         event = get_object_or_404(Event, pk=self.kwargs.get('event_id'))
         initial['event'] = event
         return initial
+
+    # def form_valid(self, form):
+    #     form.instance.event_id = self.kwargs['event_id']
+    #     return super(EventAttendanceCreateView, self).form_valid(form)
 
     def get_success_url(self):
         return reverse('crm:event-detail', args=[self.kwargs['event_id']])
