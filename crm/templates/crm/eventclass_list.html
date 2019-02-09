@@ -17,7 +17,10 @@
     {% if eventclass_list %}
         <ul>
         {% for eventclass in eventclass_list %}
-            <li><a href="{% url 'crm:eventclass_update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a> <a href="{% url 'crm:eventclass_delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a></li>
+            <li><a href="{% url 'crm:eventclass_update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a>
+                <a href="{% url 'crm:eventclass_delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a>
+                <a href="{% url 'crm:event-calendar' eventclass.pk %}" ><i class="far fa-calendar-alt"></i></a>
+            </li>
         {% endfor %}
         </ul>
     {% else %}

@@ -1,3 +1,5 @@
+from datetime import date
+
 from bootstrap_datepicker_plus import DatePickerInput
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
@@ -216,6 +218,17 @@ class EventDetailView(DetailView):
     context_object_name = 'event'
 
 
+def eventdate(request, event_class_id:int, year:int, month:int, day:int):
+    event_date = date(year, month, day)
+    try:
+        event = Event.objects.get(event_class_id=event_class_id, date=event_date)
+    except Event.DoesNotExist:
+        event_class = get_object_or_404(EventClass, pk=event_class_id)
+        event = Event(date=event_date, event_class=event_class)
+    return render(request, 'crm/event_detail.html', {
+        'event': event})
+
+
 class EventAttendanceCreateView(CreateView):
     model = Attendance
     form_class = EventAttendanceForm
@@ -234,10 +247,27 @@ class EventAttendanceCreateView(CreateView):
         return reverse('crm:event-detail', args=[self.kwargs['event_id']])
 
 
+def event_mark_view(request, event_class_id:int, year:int, month:int, day:int):
+
+    if request.method == "POST":
+        event_date = date(year, month, day)
+        event = Event.objects.get_or_create(event_class_id=event_class_id, date=event_date)[0]
+
+        attendance = Attendance(event=event)
+        attendanceform = EventAttendanceForm(request.POST, instance=attendance)
+        if attendanceform.is_valid():
+            attendanceform.save()
+        return HttpResponseRedirect(reverse('crm:class-event-date', kwargs={'event_class_id': event_class_id,
+                                                       'year': year,
+                                                       'month': month,
+                                                       'day': day}))
+    else:
+        return render(request, 'crm/attendance_form.html', {
+                      'form': EventAttendanceForm()})
+
+
 def eventclass_view(request, pk=None):
     """редактирование типа события"""
-
-
     # инициализируем служебный массив 7 пустыми элементами
     weekdays = [None] * 7
     if request.method == "POST":
@@ -294,3 +324,12 @@ def eventclass_view(request, pk=None):
     return render(request, 'crm/eventclass_form.html', {
                   'eventclass_form':eventclass_form,
                   'weekdays':weekdays})
+
+
+def eventcalendar(request, pk: int ):
+    event_class:EventClass = get_object_or_404(EventClass, pk=pk)
+    events = event_class.get_calendar(date(2019,1,1), date(2019,3,1))
+    return render(request, 'crm/eventcalendar.html', {
+        'event_class': event_class,
+        'events': events})
+

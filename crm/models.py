@@ -1,11 +1,12 @@
-from datetime import datetime
-from datetime import timedelta
+from typing import Dict, List
+from datetime import date, datetime, timedelta
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
 from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class Location(models.Model):
     name = models.CharField("Название",
@@ -26,6 +27,10 @@ class Coach(models.Model):
         return self.name
 
 
+class Event():
+    pass
+
+
 class EventClass(models.Model):
     """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
     name = models.CharField("Название",
@@ -44,9 +49,9 @@ class EventClass(models.Model):
                                null=True,
                                blank=True)
 
-    def is_event_day(self, day: datetime) -> bool:
+    def is_event_day(self, day: date) -> bool:
         """Входит ли переданный день в мероприятия (есть ли в этот день тренировка) """
-        # TODO: тут надо написать логику по определению входит ли дата в мероприятие
+
         # Проверяем, входит ли проверяемый день в диапазон проводимых тренировок
         if (self.date_from and self.date_from > day) or (self.date_to and self.date_to < day):
             return False
@@ -61,6 +66,20 @@ class EventClass(models.Model):
                 return False # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
 
         return True
+
+    def get_calendar(self, start_date: date, end_date: date) -> Dict[date, Event]:
+        """Возвращаем словарь занятий данного типа тренеровок"""
+        events = {event.date: event for event in self.event_set.all()}
+        # Решение влоб - перебор всех дней с проверкой входят ли они в календарь.
+        # TODO: переписать на генератор(yield) - EventClass может возвращать следующий день исходя из настроек
+        for n in range(int((end_date - start_date).days)):
+            curr_date = start_date + timedelta(n)
+            if not (curr_date in events):
+                if self.is_event_day(curr_date):
+                    events[curr_date] = Event(date=curr_date, event_class=self)
+
+        return events
+
 
     # TODO: Нужны методы:
     #   - Создание нового event
@@ -143,7 +162,9 @@ class SubscriptionsType(models.Model):
             end_date = start_date + relativedelta(years=self.duration)
         return end_date
 
-    def get_absolute_url(self):
+
+    @staticmethod
+    def get_absolute_url():
         return reverse('crm:subscriptions')
 
 

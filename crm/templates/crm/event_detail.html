@@ -10,7 +10,7 @@
     <div class="col">
         <span class="font-weight-bold ">Ученики: </span>
         <div class="mb-2 mt-2">
-            <a class="btn btn-sm btn-outline-info" href="{% url 'crm:event-attendance-new' event.id %}">Отметить посещение</a>
+            <a class="btn btn-sm btn-outline-info" href="{% url 'crm:event-attendance-mark' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить посещение</a>
         </div>
         <table class="table table-sm">
             <thead>

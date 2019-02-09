@@ -1,0 +1,19 @@
+{% extends "crm/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="ml-4 mt-4 mr-4">
+<h1 class="border-bottom mb-2">Календарь тренировок</h1>
+{% if events %}
+    <ul>
+    {% for date, event in events.items %}
+        <li><a href="{% url 'crm:class-event-date' event.event_class.id event.date.year event.date.month event.date.day %}">{{ event.date }} - {{ event.event_class.name }} - {{ event.event_class.location }} - {{ event.event_class.coach }}</a>
+           </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No event_class are available.</p>
+{% endif %}
+</div>
+
+{% endblock content %}

@@ -88,11 +88,7 @@ class AttendanceForm(forms.ModelForm):
 class EventAttendanceForm(forms.ModelForm):
     class Meta:
         model = Attendance
-        fields = '__all__'
-        widgets = {
-            'event': forms.HiddenInput,
-        }
-        # exclude = ('event',)
+        exclude = ('event',)
 
 
 class EventClassForm(forms.ModelForm):
