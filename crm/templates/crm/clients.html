@@ -61,6 +61,7 @@
                         {% endif %}
                     {{ c.last_sub.subscription.name }}
                 </div>
+                <div>Действует до {{ c.last_sub.end_date|date:'d N Y' }}</div>
                 <div>Осталось {{ c.last_sub.visits_left }} посещений</div>
                 <a class="btn btn-sm btn-outline-info"
                    href="{% url 'crm:clientsubscription-extend' c.last_sub.id %}">Продлить</a>
