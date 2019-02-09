@@ -7,4 +7,4 @@ django-heroku
 whitenoise
 django-bootstrap4
 django-bootstrap-datepicker-plus
-dateutil
+python-dateutil
