@@ -4,6 +4,7 @@ from calendar import monthrange
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
+from dateutil.relativedelta import relativedelta
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -113,6 +114,8 @@ class SubscriptionsType(models.Model):
         return 'name: (0)'.format(self.name)
 
     def get_start_date(self, rounding_date):
+        """Возвращает дату начала действия абонемента после округления.
+        rounding_date - дата начала действия абонемента до округления"""
         if self.rounding:
             weekday = rounding_date.weekday()
             if self.duration_type == granularity[0][0]:
@@ -128,34 +131,18 @@ class SubscriptionsType(models.Model):
         return start_date
 
     def get_end_date(self, start_date):
-        duration_in_days = self.subscribe_duration_in_days(start_date)
-        end_date = start_date + timedelta(duration_in_days)
-        return end_date
-
-    def subscribe_duration_in_days(self, start_date):
-        duration_in_days = 0
+        """Возвращает дату окончания действия абонемента.
+        start_date - дата начала действия абонемента"""
+        end_date = None
         if self.duration_type == granularity[0][0]:
-            duration_in_days = 1 * self.duration
+            end_date = start_date + relativedelta(days=self.duration)
         elif self.duration_type == granularity[1][0]:
-            duration_in_days = 7 * self.duration
+            end_date = start_date + relativedelta(days=7 * self.duration)
         elif self.duration_type == granularity[2][0]:
-            duration_in_days = self.month_or_year(start_date, granularity[2])
+            end_date = start_date + relativedelta(months=self.duration)
         elif self.duration_type == granularity[3][0]:
-            duration_in_days = self.month_or_year(start_date, granularity[3])
-        return duration_in_days
-
-    def month_or_year(self, start_date, m_or_y):
-        i = 0
-        duration_in_days = 0
-        factor = 1
-        if m_or_y == granularity[3]:
-            factor = 12
-        while i < self.duration * factor:
-            days_in_month = monthrange(start_date.year, start_date.month)[1]
-            duration_in_days = duration_in_days + days_in_month
-            start_date = start_date + timedelta(days_in_month)
-            i = i + 1
-        return duration_in_days
+            end_date = start_date + relativedelta(years=self.duration)
+        return end_date
 
     def get_absolute_url(self):
         return reverse('crm:subscriptions')
