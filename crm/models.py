@@ -99,7 +99,8 @@ class DayOfTheWeekClass(models.Model):
     event = models.ForeignKey(EventClass, on_delete=models.CASCADE, verbose_name="Мероприятие")
     # номер дня недели
     day = models.PositiveSmallIntegerField("День недели", validators=[MinValueValidator(0), MaxValueValidator(6)])
-    start_time = models.TimeField("Время начала тренировки")
+    start_time = models.TimeField("Время начала тренировки", default=timezone.now)
+    end_time = models.TimeField("Время окнчания тренировки", default=timezone.now)
     duration = models.IntegerField("Продолжительность (мин.)", default=60)
 
     class Meta:
@@ -205,10 +206,8 @@ class ClientSubscriptions(models.Model):
     subscription = models.ForeignKey(SubscriptionsType,
                                      on_delete=models.PROTECT,
                                      verbose_name="Тип Абонемента")
-    purchase_date = models.DateTimeField("Дата покупки",
-                                         default=timezone.now)
-    start_date = models.DateTimeField("Дата начала",
-                                      default=timezone.now)
+    purchase_date = models.DateTimeField("Дата покупки", default=timezone.now)
+    start_date = models.DateTimeField("Дата начала", default=timezone.now)
     end_date = models.DateTimeField(null=True)
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")

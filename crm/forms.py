@@ -108,9 +108,10 @@ class DayOfTheWeekClassForm(forms.ModelForm):
 
     class Meta:
         model = DayOfTheWeekClass
-        fields = ('checked', 'start_time', 'duration')
+        fields = ('checked', 'start_time', 'end_time')
         widgets = {
-            'start_time': TimePickerInput()
+            'start_time': TimePickerInput(),
+            'end_time': TimePickerInput()
         }
 
     def __init__(self, *args, **kwargs):
