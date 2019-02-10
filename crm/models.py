@@ -27,6 +27,7 @@ class Coach(models.Model):
         return self.name
 
 
+# forward declaration
 class Event():
     pass
 
@@ -80,14 +81,10 @@ class EventClass(models.Model):
 
         return events
 
-
     # TODO: Нужны методы:
     #   - Создание нового event
-    #   - Получение списка event-ов по диапазону дат (как сохраненных, так и гипотетических).
     #       +Получение на конкретную дату
     #   - Валидация всех event (а можно ли редактировать описание тренировки, если они уже были?)
-    #
-
 
     @staticmethod
     def get_absolute_url():
@@ -162,7 +159,6 @@ class SubscriptionsType(models.Model):
             end_date = start_date + relativedelta(years=self.duration)
         return end_date
 
-
     @staticmethod
     def get_absolute_url():
         return reverse('crm:subscriptions')
@@ -192,7 +188,6 @@ class Client(models.Model):
 
     def get_absolute_url(self):
         return reverse('crm:client-detail', kwargs={'pk':self.pk})
-
 
     @property
     def last_sub(self):

@@ -218,7 +218,8 @@ class EventDetailView(DetailView):
     context_object_name = 'event'
 
 
-def eventdate(request, event_class_id:int, year:int, month:int, day:int):
+def event_date_view(request, event_class_id:int, year:int, month:int, day:int):
+    """Обработка событиея по типу и дате"""
     event_date = date(year, month, day)
     try:
         event = Event.objects.get(event_class_id=event_class_id, date=event_date)
@@ -248,15 +249,18 @@ class EventAttendanceCreateView(CreateView):
 
 
 def event_mark_view(request, event_class_id:int, year:int, month:int, day:int):
-
+    """Отметить посещение по событию"""
     if request.method == "POST":
         event_date = date(year, month, day)
+        # получаем требуемое события, если нет такого, то создаем
         event = Event.objects.get_or_create(event_class_id=event_class_id, date=event_date)[0]
 
+        # создаем посещение
         attendance = Attendance(event=event)
-        attendanceform = EventAttendanceForm(request.POST, instance=attendance)
-        if attendanceform.is_valid():
-            attendanceform.save()
+        # дополняем модель данными из формы
+        attendance_form = EventAttendanceForm(request.POST, instance=attendance)
+        if attendance_form.is_valid():
+            attendance_form.save()
         return HttpResponseRedirect(reverse('crm:class-event-date', kwargs={'event_class_id': event_class_id,
                                                        'year': year,
                                                        'month': month,
@@ -327,6 +331,7 @@ def eventclass_view(request, pk=None):
 
 
 def eventcalendar(request, pk: int ):
+    """Календарь одной тренеровки"""
     event_class:EventClass = get_object_or_404(EventClass, pk=pk)
     events = event_class.get_calendar(date(2019,1,1), date(2019,3,1))
     return render(request, 'crm/eventcalendar.html', {
