@@ -10,91 +10,107 @@
 {% endblock extrahead%}
 
 {% block content %}
-<form action="" method="POST" >
+<div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Тренировка</legend>
+    <div class="container-fluid">
+        <form action="" method="POST" >
 
-{% csrf_token %} <!-- You're dealing with forms. csrf_token must come -->
-{% bootstrap_form eventclass_form %}
+            {% csrf_token %} <!-- You're dealing with forms. csrf_token must come -->
+            {% bootstrap_form eventclass_form %}
 
-    <div class="row border-top">
-        <div class="col-2">
-            {% bootstrap_field weekdays.0.checked %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.0.start_time %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.0.end_time %}
-        </div>
-    </div>
-    <div class="row border-top">
-        <div class="col-2">
-            {% bootstrap_field weekdays.1.checked %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.1.start_time %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.1.end_time %}
-        </div>
-    </div>
-    <div class="row border-top">
-        <div class="col-2">
-            {% bootstrap_field weekdays.2.checked %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.2.start_time %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.2.end_time %}
-        </div>
-    </div>
-    <div class="row border-top">
-        <div class="col-2">
-            {% bootstrap_field weekdays.3.checked %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.3.start_time %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.3.end_time %}
-        </div>
-    </div>
-    <div class="row border-top">
-        <div class="col-2">
-            {% bootstrap_field weekdays.4.checked %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.4.start_time %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.4.end_time %}
-        </div>
-    </div>
-    <div class="row border-top">
-        <div class="col-2">
-            {% bootstrap_field weekdays.5.checked %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.5.start_time %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.5.end_time %}
-        </div>
-    </div>
-    <div class="row border-top">
-        <div class="col-2">
-            {% bootstrap_field weekdays.6.checked %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.6.start_time %}
-        </div>
-        <div class="col">
-            {% bootstrap_field weekdays.6.end_time %}
-        </div>
-    </div>
+            <div class="row">
+                <div class="col-2">
 
-    <div class="row">
-        <input type="submit" class="btn btn-outline-info"  value="Добавить">
+                </div>
+                <div class="col">
+                    Время начала тренировки
+                </div>
+                <div class="col">
+                    Время окнчания тренировки
+                </div>
+            </div>
+            <div class="row border-top">
+                <div class="col-2 mt-4">
+                    {% bootstrap_field weekdays.0.checked %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.0.start_time show_label=False %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.0.end_time show_label=False %}
+                </div>
+            </div>
+            <div class="row border-top">
+                <div class="col-2 mt-4">
+                    {% bootstrap_field weekdays.1.checked %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.1.start_time show_label=False %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.1.end_time show_label=False %}
+                </div>
+            </div>
+            <div class="row border-top">
+                <div class="col-2 mt-4">
+                    {% bootstrap_field weekdays.2.checked %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.2.start_time show_label=False %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.2.end_time show_label=False %}
+                </div>
+            </div>
+            <div class="row border-top">
+                <div class="col-2 mt-4">
+                    {% bootstrap_field weekdays.3.checked %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.3.start_time show_label=False %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.3.end_time show_label=False %}
+                </div>
+            </div>
+            <div class="row border-top">
+                <div class="col-2 mt-4">
+                    {% bootstrap_field weekdays.4.checked %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.4.start_time show_label=False %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.4.end_time show_label=False %}
+                </div>
+            </div>
+            <div class="row border-top">
+                <div class="col-2 mt-4">
+                    {% bootstrap_field weekdays.5.checked %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.5.start_time show_label=False %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.5.end_time show_label=False %}
+                </div>
+            </div>
+            <div class="row border-top">
+                <div class="col-2 mt-4">
+                    {% bootstrap_field weekdays.6.checked %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.6.start_time show_label=False %}
+                </div>
+                <div class="col mt-3">
+                    {% bootstrap_field weekdays.6.end_time show_label=False %}
+                </div>
+            </div>
+
+            <div class="row">
+                <input type="submit" class="btn btn-outline-info"  value="Добавить">
+            </div>
+        </form>
     </div>
-</form>
+</div>
 {% endblock content %}
