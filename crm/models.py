@@ -101,7 +101,6 @@ class DayOfTheWeekClass(models.Model):
     day = models.PositiveSmallIntegerField("День недели", validators=[MinValueValidator(0), MaxValueValidator(6)])
     start_time = models.TimeField("Время начала тренировки", default=timezone.now)
     end_time = models.TimeField("Время окнчания тренировки", default=timezone.now)
-    duration = models.IntegerField("Продолжительность (мин.)", default=60)
 
     class Meta:
         unique_together = ('day', 'event',)
