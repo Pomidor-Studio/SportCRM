@@ -35,7 +35,6 @@
     <table class="table table-sm table-bordered">
         <thead>
         <tr>
-            <th scope="col">№</th>
             <th scope="col">Инфо</th>
             <th scope="col">Абонемент</th>
         </tr>
@@ -43,9 +42,6 @@
         <tbody>
         {% for c in clients %}
         <tr>
-            <td>
-                {{ c.id }}
-            </td>
             <td>
                 <a href="{% url 'crm:client-detail' c.id %}">
                     <div class="font-weight-bold">{{ c.name }}</div>
