@@ -41,7 +41,7 @@
 
 
 <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Ученик</legend>
+    <legend class="border-bottom mb-2">{{ object.name }}</legend>
     <div class="row mb-2">
         <div class="container-fluid">
             <a class="btn btn-sm btn-outline-info" href="{% url 'crm:client-update' object.id %}">Изменить</a>
@@ -52,12 +52,24 @@
     <div class="row">
         <label id="id_vk_user_id" hidden="true">{{ object.vk_user_id }}</label>
         <div class="col-3 border-right">
-            <div class="font-weight-bold">Имя:</div>
-            <div class="font-weight-bold">Адрес:</div>
-            <div class="font-weight-bold">Дата рождения:</div>
-            <div class="font-weight-bold">Номер телефона:</div>
-            <div class="font-weight-bold">Электронная почта:</div>
-            <div class="font-weight-bold">Ссылка вк:</div>
+            {% if object.name != '' %}
+                <div class="font-weight-bold">Имя:</div>
+            {% endif %}
+            {% if object.address != '' %}
+                <div class="font-weight-bold">Адрес:</div>
+            {% endif %}
+            {% if object.birthday is not null %}
+                <div class="font-weight-bold">Дата рождения:</div>
+            {% endif %}
+            {% if object.phone_number != '' %}
+                <div class="font-weight-bold">Номер телефона:</div>
+            {% endif %}
+            {% if object.email_address != '' %}
+                <div class="font-weight-bold">Электронная почта:</div>
+            {% endif %}
+            {% if object.vk_user_id is not null %}
+                <div class="font-weight-bold">Ссылка вк:</div>
+            {% endif %}
         </div>
         <div class="col">
             <div>{{ object.name }} </div>
@@ -71,7 +83,7 @@
             <img id="profile_pic" class="rounded"/>
         </div>
     </div>
-    <div class="row">
+    <div class="row border-top">
         <div class="col">
             <span class="font-weight-bold ">Абонементы: </span>
             <div class="mb-2 mt-2">
