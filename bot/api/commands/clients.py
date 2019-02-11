@@ -4,37 +4,46 @@ from bot.api.command_system import Command
 
 def get_info_subscription(user_id):
 
+    message = ''
+
     vk_user_id = user_id
 
-    try:
-        client = Client.objects.get(vk_user_id=vk_user_id)
-    except Client.DoesNotExist:
+    client = Client.objects.filter(vk_user_id=vk_user_id)
+    check_cl = client.count()
+
+    if check_cl == 0:
         message = 'Вас нет в базе!'
         return message, ''
 
-    i = 0
+    if check_cl > 1:
+        message = 'На ваш аккаунт зарегистрировано несколько учеников!\n'
 
-    name = client.name
-    balance = client.balance
+    for cl in client:
+        i = 0
+        message = message + '\n'
+        name = cl.name
+        balance = cl.balance
 
-    if balance > 0:
-        message = name + '!\nВаш баланс: ' + str(balance) + '\nИнформация о ваших абонементах:\n'
-    else:
-        message = name + '!\nИнформация о ваших абонементах:\n'
+        if balance != 0:
+            message = message + name + '!\nВаш баланс: ' + str(balance) + '\nИнформация о ваших абонементах:\n'
+        else:
+            message = message + name + '!\nИнформация о ваших абонементах:\n'
 
-    subscription = client.clientsubscriptions_set.all()
-    check = subscription.exists()
+        subscription = cl.clientsubscriptions_set.all()
+        check_sub = subscription.exists()
 
-    if check == 0:
-        message = name + '!\nВы еще не приобрели абонемент!'
-        return message, ''
+        if check_sub == 0 and check_cl == 1:
+            message = name + '!\nВы еще не приобрели абонемент!'
+            return message, ''
+        elif check_sub == 0:
+            message = message + '!\nВы еще не приобрели абонемент!'
 
-    for sub in subscription:
-        subscription = sub.subscription.name
-        visits_left = sub.visits_left
-        end_date = '{:%d-%m-%Y}'.format(sub.end_date)
-        message = message + str(i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + '\n Действующий до: ' + end_date + '\n'
-        i += 1
+        for sub in subscription:
+            subscription = sub.subscription.name
+            visits_left = sub.visits_left
+            end_date = '{:%d-%m-%Y}'.format(sub.end_date)
+            message = message + str(i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + '\n Действующий до: ' + end_date + '\n'
+            i += 1
 
     return message, ''
 
