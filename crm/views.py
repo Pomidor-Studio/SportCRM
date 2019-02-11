@@ -96,8 +96,7 @@ class SubscriptionCreateView(CreateView):
 
 class SubscriptionUpdateView(UpdateView):
     model = SubscriptionsType
-    fields = ['name', 'price',
-              'duration', 'visit_limit']
+    fields = '__all__'
 
 
 class SubscriptionDeleteView(DeleteView):
