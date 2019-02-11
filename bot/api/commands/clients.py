@@ -36,7 +36,7 @@ def get_info_subscription(user_id):
             message = name + '!\nВы еще не приобрели абонемент!'
             return message, ''
         elif check_sub == 0:
-            message = message + '!\nВы еще не приобрели абонемент!'
+            message = message + '\nВы еще не приобрели абонемент!\n'
 
         for sub in subscription:
             subscription = sub.subscription.name
