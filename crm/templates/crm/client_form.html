@@ -10,18 +10,32 @@
 
     $( document ).ready(function() {
         $("#id_phone_number").inputmask({"mask": "+7(999)999-99-99"});
-        $("#vk_user_ref").inputmask({"mask": "https://vk.com/*{1,50}"});
 
         $("#vk_user_ref").change(function() {
             var idRe = new RegExp("vk.com\/(?<user_id>[A-Za-z0-9]+)");
             var matchString = $("#vk_user_ref").val();
-
             var matchObj = idRe.exec(matchString);
-            var id = matchObj.groups.user_id;
-            getUserData(id);
+            try {
+                var id = matchObj.groups.user_id;
+                getUserData(id);
+            } catch (err) {
+                showError("Ошибка! Неверный формат ссылки вк!");
+            }
         });
 
     });
+
+    function showError(errorText) {
+        $("#id_name").val("");
+                $("#id_vk_user_id").val("");
+                $("#profile_pic").attr("src", "");
+                $("#profile_pic_container").hide();
+                $("#alert").text(errorText);
+                $("#alert").show();
+                $("#alert").fadeTo(2000, 500).slideUp(500, function(){
+                    $("#alert").hide();
+                });
+    }
 
     function getUserData(id) {
         var returnData;
@@ -40,27 +54,33 @@
             async: false,
             success: function(data) {
                 if (data.error) {
-                    $("#alert").append('<div id="alert_showed" class="alert alert-danger" role="alert">Ошибка! Такого пользователя не существует!</div>');
+                    showError("Ошибка! Такого пользователя не существует!");
                 }
                 else {
-                    $("#alert_showed").remove();
-                    $("#id_name").val(data.response[0].first_name + ' ' + data.response[0].last_name);
+                    $("#alert").hide();
+                    if ($("#id_name").val() == "") {
+                        $("#id_name").val(data.response[0].first_name + ' ' + data.response[0].last_name);
+                    }
+                    if ($("#id_birthday").val() == "") {
+                        try {
+                            $("#id_birthday").val(data.response[0].bdate);
+                        } catch (err) { }
+                    }
                     $("#id_vk_user_id").val(data.response[0].id);
-                    $("#profile_pic").attr("src", data.response[0].photo_100) }
+                    $("#profile_pic").attr("src", data.response[0].photo_100);
+                    $("#profile_pic_container").show();}
             },
             error: function (data) {
                 alert('Error');
             }
         });
-        console.log(returnData);
-        return(returnData);
     }
 </script>
 <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">Ученик</legend>
-    <div id="alert"></div>
+    <div id="alert" class="alert alert-danger" style="display: none" role="alert"></div>
     <div class="w-25">
-        <div class="form-group">
+        <div id="profile_pic_container" style="display: none" class="form-group">
             <img id="profile_pic" class="rounded"/>
         </div>
         <div class="form-group">
