@@ -8,5 +8,5 @@ trim_trailing_whitespace = true
 end_of_line = lf
 charset = utf-8
 
-[*.{json,yml,html}]
+[*.{json,yml,html,css}]
 indent_size = 2

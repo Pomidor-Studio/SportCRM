@@ -1,8 +1,12 @@
 from datetime import date, datetime, timedelta
-from typing import Dict
+from itertools import count
+from typing import Dict, Optional
+
+from transliterate import translit
 
 from dateutil.relativedelta import relativedelta
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -10,14 +14,53 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
 
+class CustomUserManager(UserManager):
+    def generate_uniq_username(self, first_name, last_name, prefix='user'):
+        for idx in count():
+            trans_f = translit(first_name, language_code='ru', reversed=True)
+            trans_l = translit(last_name, language_code='ru', reversed=True)
+            name = f'{prefix}_{idx}_{trans_f}_{trans_l}'.lower()[:150]
+            if not self.filter(username=name).exists():
+                return name
+
+    def create_coach(self, first_name, last_name):
+        return self.create_user(
+            self.generate_uniq_username(first_name, last_name, prefix='coach'),
+            first_name=first_name, last_name=last_name
+        )
+
+
 class User(AbstractUser):
+    objects = CustomUserManager()
+
     @property
-    def is_coach(self):
+    def is_coach(self) -> bool:
         return hasattr(self, 'coach')
 
     @property
-    def is_manager(self):
+    def is_manager(self) -> bool:
         return hasattr(self, 'manager')
+
+    @property
+    def has_vk_auth(self) -> bool:
+        return self.social_auth.filter(provider='vk-oauth2').exists()
+
+    @property
+    def vk_id(self) -> Optional[str]:
+        return self.vk_data('id')
+
+    @property
+    def vk_link(self) -> Optional[str]:
+        vkid = self.vk_id
+        return 'https://vk.com/id{}'.format(vkid) if vkid else None
+
+    def vk_data(self, data_key: str) -> Optional[str]:
+        try:
+            social = self.social_auth.get(provider='vk-oauth2')
+        except models.ObjectDoesNotExist:
+            return None
+
+        return social.extra_data.get(data_key)
 
 
 class Location(models.Model):
@@ -32,11 +75,26 @@ class Location(models.Model):
 
 
 class Coach(models.Model):
-    name = models.CharField("Имя",
-                            max_length=100)
+    """
+    Профиль тренера
+    """
+    user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
 
     def __str__(self):
-        return self.name
+        return self.user.get_full_name()
+
+    def get_absolute_url(self):
+        return reverse('crm:manager:coach:detail', kwargs={'pk': self.pk})
+
+
+class Manager(models.Model):
+    """
+    Профиль менеджера
+    """
+    user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.user.get_full_name()
 
 
 class EventClass(models.Model):

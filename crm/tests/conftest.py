@@ -1,6 +1,8 @@
 from pytest_factoryboy import register
 
-from .factories import UserFactory
+from . import factories
 
 
-register(UserFactory)
+register(factories.UserFactory)
+register(factories.CoachFactory)
+register(factories.ManagerFactory)

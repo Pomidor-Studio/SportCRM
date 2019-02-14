@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied
-from django.shortcuts import resolve_url
+from django.urls import reverse
 from django.views.generic import RedirectView
 
 
@@ -7,8 +7,8 @@ class SportCrmLoginRedirectView(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         if self.request.user.is_coach:
-            return resolve_url('crm:coach.home')
+            return reverse('crm:coach:home')
         elif self.request.user.is_manager:
-            return resolve_url('crm:base')
+            return reverse('crm:base')
         else:
             raise PermissionDenied()

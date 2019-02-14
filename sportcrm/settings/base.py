@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'sesame.middleware.AuthenticationMiddleware',
 ]
 
 ROOT_URLCONF = 'sportcrm.urls'
@@ -136,10 +137,13 @@ AUTH_USER_MODEL = 'crm.User'
 
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.vk.VKOAuth2',
+    'sesame.backends.ModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
+LOGIN_URL = reverse_lazy('crm:accounts:login')
 LOGIN_REDIRECT_URL = reverse_lazy('crm:accounts:login-redirect')
+LOGOUT_REDIRECT_URL = reverse_lazy('crm:accounts:login')
 
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
@@ -153,3 +157,5 @@ SOCIAL_AUTH_PIPELINE = (
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = ''
 SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
+
+SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days

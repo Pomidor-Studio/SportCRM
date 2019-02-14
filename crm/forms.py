@@ -1,13 +1,15 @@
 import calendar
-from django.utils.translation import gettext as _
-from django import forms
+
 from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
-from .models import (Client,
-                     ClientSubscriptions,
-                     Attendance,
-                     EventClass,
-                     SubscriptionsType,
-                     DayOfTheWeekClass)
+from django import forms
+from django.contrib.auth import get_user_model
+from django.utils.translation import gettext as _
+from betterforms.multiform import MultiModelForm
+
+from .models import (
+    Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
+    EventClass, SubscriptionsType,
+)
 
 
 class ClientForm(forms.ModelForm):
@@ -124,3 +126,22 @@ class DayOfTheWeekClassForm(forms.ModelForm):
             field.required = False
     # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
 
+
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ('first_name', 'last_name')
+
+
+class CoachForm(forms.ModelForm):
+    class Meta:
+        model = Coach
+        fields = '__all__'
+
+
+class CoachMultiForm(MultiModelForm):
+    form_classes = {
+        'user': UserForm,
+        # TODO: Add coach form after profile extending
+        # 'coach': CoachForm
+    }

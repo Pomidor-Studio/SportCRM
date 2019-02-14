@@ -1,19 +1,20 @@
 {% extends "crm/clean_base.html" %}
+
+{% load static %}
+
 {% block main %}
-    <div class="container-fluid">
-        <div class="row">
-            <!--Sidebar-->
-            <div>
-                {% include 'crm/bars/sidebar.html' %}
-            </div>
+  <div class="container-fluid">
+    <div class="row">
+      <!--Sidebar-->
+      {% include 'crm/bars/sidebar.html' %}
 
-            <div class="container no-gutters">
+      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
 
-                <!--Content-->
-                {% block content %}{% endblock %}
+        <!--Content-->
+        {% block content %}{% endblock %}
 
-            </div>
+      </main>
 
-        </div>
     </div>
+  </div>
 {% endblock %}

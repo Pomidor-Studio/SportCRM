@@ -1,10 +1,11 @@
 from datetime import date
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import DetailView, ListView
+from django.views.generic import DetailView, ListView, TemplateView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from ..forms import (
@@ -17,8 +18,8 @@ from ..models import (
 )
 
 
-def base(request):
-    return render(request, 'crm/base.html')
+class ManagerHomeView(LoginRequiredMixin, TemplateView):
+    template_name = 'crm/base.html'
 
 
 def clientsv(request):
