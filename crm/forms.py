@@ -132,6 +132,13 @@ class UserForm(forms.ModelForm):
         model = get_user_model()
         fields = ('first_name', 'last_name')
 
+    def __init__(self, *args, **kwargs):
+        super(UserForm, self).__init__(*args, **kwargs)
+        # Abstract user model dont't require names
+        # Bur coach creation does
+        self.fields['first_name'].required = True
+        self.fields['last_name'].required = True
+
 
 class CoachForm(forms.ModelForm):
     class Meta:
