@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 def get_info_subscription(user_id):
 
-    message = ''
+    messages = []
     current_date = datetime.now(timezone.utc)
 
     vk_user_id = user_id
@@ -13,42 +13,45 @@ def get_info_subscription(user_id):
     client = Client.objects.filter(vk_user_id=vk_user_id)
     check_cl = client.count()
 
-    if check_cl == 0:
-        message = 'Вас нет в базе!'
-        return message, ''
+    if not check_cl:
+        messages.append('Вас нет в базе!')
+        return ''.join(messages), ''
 
     if check_cl > 1:
-        message = 'На ваш аккаунт зарегистрировано несколько учеников!\n'
+        messages.append('На ваш аккаунт зарегистрировано несколько учеников!\n')        
 
-    for cl in client:
-        i = 0
-        message = message + '\n'
+    for cl in client:      
+        messages.append('\n')        
         name = cl.name
         balance = cl.balance
 
-        if balance != 0:
-            message = message + name + '!\nВаш баланс: ' + str(balance) + '\nИнформация о ваших абонементах:\n'
-        else:
-            message = message + name + '!\nИнформация о ваших абонементах:\n'
+        messages.extend([name, '!\n'])
+        if balance:
+            messages.extend(['Ваш баланс: ', str(balance), '\n'])            
+        
+        messages.append('Информация о ваших абонементах:\n')            
 
-        subscription = cl.clientsubscriptions_set.filter(end_date__gte=current_date, visits_left__gt=0)
+        subscriptions = cl.clientsubscriptions_set.filter(
+            end_date__gte=current_date, 
+            visits_left__gt=0).select_related('subscription__name')
         check_sub = subscription.exists()
 
-        if check_sub == 0 and check_cl == 1:
-            message = name + '!\nВы еще не приобрели абонемент!'
-            return message, ''
-        elif check_sub == 0:
-            message = message + '\nВы еще не приобрели абонемент!\n'
+        if not check_sub and check_cl == 1:            
+            messages = [name, '!\nВы еще не приобрели абонемент!']
+            #return ''.join(message), ''
+            # Строго говоря тут return не нужен, ибо и так из цикла вывалимся.
+        elif not check_sub:
+            messages.append('\nВы еще не приобрели абонемент!\n')                        
 
-        for sub in subscription:
-            subscription = sub.subscription.name
-            visits_left = sub.visits_left
-            end_date = '{:%d-%m-%Y}'.format(sub.end_date)
-            message = message + str(i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + \
-                '\nДействующий до: ' + end_date + '\n'
-            i += 1
-
-    return message, ''
+        for idx, sub in enumerate(subscriptions, start=1):
+            messages.extend([
+                str(idx), ') ', sub.subscription.name,
+                '\nОстаток посещений: ', str(sub.visits_left),
+                '\nДействующий до: ', 
+                '{:%d-%m-%Y}'.format(sub.end_date), '\n'
+            ])
+            
+    return ''.join(messages), ''
 
 
 clients_command = Command()
