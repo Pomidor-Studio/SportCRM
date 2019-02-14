@@ -1,11 +1,23 @@
-from typing import Dict, List
 from datetime import date, datetime, timedelta
-from django.db import models
-from django.utils import timezone
-from django.urls import reverse_lazy, reverse
+from typing import Dict
+
 from dateutil.relativedelta import relativedelta
+from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator, MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+
+
+class User(AbstractUser):
+    @property
+    def is_coach(self):
+        return hasattr(self, 'coach')
+
+    @property
+    def is_manager(self):
+        return hasattr(self, 'manager')
 
 
 class Location(models.Model):
@@ -25,11 +37,6 @@ class Coach(models.Model):
 
     def __str__(self):
         return self.name
-
-
-# forward declaration
-class Event():
-    pass
 
 
 class EventClass(models.Model):
@@ -68,7 +75,7 @@ class EventClass(models.Model):
 
         return True
 
-    def get_calendar(self, start_date: date, end_date: date) -> Dict[date, Event]:
+    def get_calendar(self, start_date: date, end_date: date) -> Dict[date, 'Event']:
         """Возвращаем словарь занятий данного типа тренеровок"""
         events = {event.date: event for event in self.event_set.all()}
         # Решение влоб - перебор всех дней с проверкой входят ли они в календарь.

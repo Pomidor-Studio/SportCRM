@@ -1,5 +1,7 @@
-from django.urls import path
+from django.contrib.auth import views as auth_views
+from django.urls import include, path
 
+from crm.views import coach as coach_views, auth as scrm_auth_views
 from .views import (
     ClientUpdateView,
     ClientDeleteView,
@@ -25,8 +27,29 @@ from .views import (
 from . import views
 
 app_name = 'crm'
+
+coach_urlpatterns = ([
+    path('', coach_views.HomePage.as_view(), name='home')
+], 'coach')
+
+auth_urlpatterns = ([
+    path(
+        'login/',
+        auth_views.LoginView.as_view(template_name='crm/auth/login.html'),
+        name='login'
+    ),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path(
+        'redirect/',
+        scrm_auth_views.SportCrmLoginRedirectView.as_view(),
+        name='login-redirect'
+    ),
+], 'accounts')
+
 urlpatterns = [
     path('', views.base, name='base'),
+    path('accounts/', include(auth_urlpatterns)),
+    path('coach/', include(coach_urlpatterns)),
     path('clients/', views.ClientsListView.as_view(), name='clients'),
     path('clients/<int:pk>/', views.ClientDetailView.as_view(), name='client-detail'),
     path('clients/new/', ClientCreateView.as_view(), name='client-new'),
