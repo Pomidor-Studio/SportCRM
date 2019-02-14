@@ -64,7 +64,7 @@ class EventClass(models.Model):
                 if weekday.day == day.weekday():
                     break
             else:
-                return False # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
+                return False  # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
 
         return True
 
@@ -119,7 +119,8 @@ class SubscriptionsType(models.Model):
     Описывает продолжительность действия, количество посещений, какие тренировки позволяет посещать"""
     name = models.CharField("Название", max_length=100)
     price = models.FloatField("Стоимость")
-    duration_type = models.CharField("Временные рамки абонемента", max_length=20, choices=granularity, default=granularity[0])
+    duration_type = models.CharField("Временные рамки абонемента", max_length=20, choices=granularity,
+                                     default=granularity[0])
     duration = models.PositiveIntegerField("Продолжительность")
     rounding = models.BooleanField("Округление начала действия абонемента", default=False)
     visit_limit = models.PositiveIntegerField("Количество посещений")
@@ -187,7 +188,7 @@ class Client(models.Model):
                                 default=0)
 
     def get_absolute_url(self):
-        return reverse('crm:client-detail', kwargs={'pk':self.pk})
+        return reverse('crm:client-detail', kwargs={'pk': self.pk})
 
     @property
     def last_sub(self):
@@ -216,8 +217,13 @@ class ClientSubscriptions(models.Model):
         self.end_date = self.subscription.get_end_date(self.start_date)
         super(ClientSubscriptions, self).save(*args, **kwargs)
 
-    def extend_duration(self, visits_left_plus):
-        self.visits_left += int(visits_left_plus)
+    def extend_duration(self, added_visits, reason=""):
+        ExtensionHistory.objects.create(
+            client_subscription = self,
+            reason = reason,
+            added_visits = added_visits
+        )
+        self.visits_left += int(added_visits)
         self.end_date = self.end_date + timedelta(self.subscription.duration)
         self.save()
 
@@ -235,6 +241,20 @@ class ClientSubscriptions(models.Model):
 
     class Meta:
         ordering = ['purchase_date']
+
+
+class ExtensionHistory(models.Model):
+    client_subscription = models.ForeignKey(ClientSubscriptions,
+                                            on_delete=models.PROTECT,
+                                            verbose_name="Абонемент клиента")
+    date_extended = models.DateTimeField("Дата продления", default=timezone.now)
+    reason = models.CharField("Причина продления",
+                              max_length=255,
+                              blank=True)
+    added_visits = models.PositiveIntegerField("Добавлено посещений")
+
+    class Meta:
+        ordering = ['date_extended']
 
 
 class Event(models.Model):

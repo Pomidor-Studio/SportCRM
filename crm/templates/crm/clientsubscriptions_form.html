@@ -12,27 +12,59 @@
         $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
     });
 });
+
+
+
 </script>
 
 <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">Абонемент</legend>
-    <div class="w-25">
-        <form method="POST">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                {% bootstrap_form form %}
-            </fieldset>
-
-            <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Добавить</button>
-                {% if object.client != null %}
-                <a name="cancel" href="{% url 'crm:client-detail' object.client.id %}" class="btn btn-outline-info">Назад</a>
-                {% else %}
-                <a name="cancel" href="{% url 'crm:client-detail' view.kwargs.client_id %}"
-                   class="btn btn-outline-info">Назад</a>
+    <div class="w-100">
+        <div class="row">
+            <div class="col-4">
+                <form method="POST">
+                    {% csrf_token %}
+                    <fieldset class="form-group">
+                        {% bootstrap_form form %}
+                    </fieldset>
+                    <div class="form-group">
+                        <button class="btn btn-outline-info" type="submit">Добавить</button>
+                        {% if object.client != null %}
+                        <a name="cancel" href="{% url 'crm:client-detail' object.client.id %}"
+                           class="btn btn-outline-info">Назад</a>
+                        {% else %}
+                        <a name="cancel" href="{% url 'crm:client-detail' view.kwargs.client_id %}"
+                           class="btn btn-outline-info">Назад</a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+            <div class="col">
+                {% if history %}
+                <div>История продлений:</div>
+                <div>
+                    <table class="table table-sm table-bordered">
+                        <thead>
+                        <tr>
+                            <th scope="col">Дата продления</th>
+                            <th scope="col">Причина продления</th>
+                            <th scope="col">Кол-во занятий</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for object in history %}
+                        <tr>
+                            <td>{{ object.date_extended }}</td>
+                            <td>{{ object.reason }}</td>
+                            <td>{{ object.added_visits }}</td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
                 {% endif %}
             </div>
-        </form>
+        </div>
     </div>
 </div>
 {% endblock content %}

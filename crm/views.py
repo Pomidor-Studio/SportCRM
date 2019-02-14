@@ -26,7 +26,7 @@ from .models import (Client,
                      Attendance,
                      Event,
                      DayOfTheWeekClass,
-                     )
+                     ExtensionHistory)
 
 
 def base(request):
@@ -53,6 +53,7 @@ class ClientsListView(ListView):
     model = Client
     template_name = 'crm/clients.html'
     context_object_name = 'clients'
+    paginate_by = 100
 
     def get_queryset(self):
         name_query = self.request.GET.get('client')
@@ -111,7 +112,8 @@ class SubscriptionDetailView(DetailView):
 def ExtendSubscription(request, pk=None):
     if request.method == 'POST':
         print(request.POST)
-        ClientSubscriptions.objects.get(pk=request.POST['object_id']).extend_duration(request.POST['visit_limit'])
+        client_subscription = ClientSubscriptions.objects.get(pk=request.POST['object_id'])
+        client_subscription.extend_duration(request.POST['visit_limit'], request.POST['reason'])
         return HttpResponseRedirect(reverse('crm:client-detail', args=[request.POST['client_id']]))
     else:
         subscription = ClientSubscriptions.objects.get(pk=pk)
@@ -134,6 +136,11 @@ class ClientSubscriptionCreateView(CreateView):
 class ClientSubscriptionUpdateView(UpdateView):
     model = ClientSubscriptions
     form_class = ClientSubscriptionForm
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(ClientSubscriptionUpdateView, self).get_context_data(*args, **kwargs)
+        context['history'] = ExtensionHistory.objects.filter(client_subscription=self.get_object().id)
+        return context
 
 
 class ClientSubscriptionDeleteView(DeleteView):

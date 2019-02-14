@@ -49,6 +49,7 @@ class ExtendClientSubscriptionForm(forms.Form):
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
         self.fields['visit_limit'].initial = self.subscription.subscription.visit_limit
     visit_limit = forms.CharField(label='Добавить посещений')
+    reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
 
 
 class ClientSubscriptionForm(forms.ModelForm):
