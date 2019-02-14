@@ -1,6 +1,10 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
-from .models import Client, SubscriptionsType, Coach, Location, ClientSubscriptions, Event, Attendance
+from .models import (
+    Attendance, Client, ClientSubscriptions, Coach, Event, Location,
+    SubscriptionsType, User, Manager
+)
 
 admin.site.register(Client)
 admin.site.register(SubscriptionsType)
@@ -9,6 +13,5 @@ admin.site.register(Coach)
 admin.site.register(Location)
 admin.site.register(Event)
 admin.site.register(Attendance)
-
-
-
+admin.site.register(User, UserAdmin)
+admin.site.register(Manager)
