@@ -13,6 +13,7 @@ class List(LoginRequiredMixin, UserManagerMixin, ListView):
     model = Client
     template_name = 'crm/manager/client/list.html'
     context_object_name = 'clients'
+    paginate_by = 25
 
     def get_queryset(self):
         name_query = self.request.GET.get('client')

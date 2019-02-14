@@ -1,6 +1,10 @@
 {% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
 {% block nav %}
 {% endblock nav %}
+
 {% block content %}
   <script type="text/javascript"></script>
   <script>window.page_name = "Ученики";</script>
@@ -74,6 +78,8 @@
       {% endfor %}
       </tbody>
     </table>
+
+    {% bootstrap_pagination page_obj %}
   </div>
 
 {% endblock content %}
