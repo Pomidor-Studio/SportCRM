@@ -1,0 +1,79 @@
+{% extends "crm/base.html" %}
+{% block nav %}
+{% endblock nav %}
+{% block content %}
+  <script type="text/javascript"></script>
+  <script>window.page_name = "Ученики";</script>
+
+  <script language="javascript">
+    $(function () {
+      $("#clear_search").click(function () {
+        $("#search_input").val("");
+      });
+    });
+  </script>
+
+
+  <div class="ml-4 mt-4 mr-4 container-fluid">
+    <legend class="border-bottom mb-2">Ученики</legend>
+    <div style="background-color: #FFFFFF;" class="sticky-top">
+      <form class="form-inline mb-2"
+            action="{% url 'crm:manager:client:list' %}" method="GET">
+        <a name="add-new" href="{% url 'crm:manager:client:new' %}"
+           class="btn btn-sm btn-info">Добавить ученика</a>
+        <div class="input-group  ml-2 w-25">
+          <input id="search_input" name="client" placeholder="Искать по ФИО"
+                 value="{{ request.GET.client }}" type="search"
+                 class="form-control form-control-sm">
+          <div class="input-group-append">
+            <input id="clear_search" type="submit" value="X"
+                   class="btn btn-sm btn-outline-danger" type="button">
+          </div>
+        </div>
+
+        <input type="submit"
+               value="Поиск" class=" ml-2 btn btn-sm btn-success"/>
+      </form>
+    </div>
+
+
+    <table class="table table-sm table-bordered">
+      <thead>
+      <tr>
+        <th scope="col">Инфо</th>
+        <th scope="col">Абонемент</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for client in clients %}
+        <tr>
+          <td>
+            <a href="{% url 'crm:manager:client:detail' client.id %}">
+              <div class="font-weight-bold">{{ client.name }}</div>
+              <div>{{ client.phone_number }}</div>
+              <div>{{ client.email_address }}</div>
+            </a>
+          </td>
+          <td>
+            {% if client.last_sub %}
+              <div class="font-weight-bold">
+                {% if client.last_sub.is_expiring %}
+                  <i title="Абонемент скоро заканчивается"
+                     class="fas fa-exclamation-circle"></i>
+                {% endif %}
+                {{ client.last_sub.subscription.name }}
+              </div>
+              <div>Действует
+                до {{ client.last_sub.end_date|date:'d N Y' }}</div>
+              <div>Осталось {{ client.last_sub.visits_left }} посещений</div>
+              <a class="btn btn-sm btn-outline-info"
+                 href="{% url 'crm:clientsubscription-extend' client.last_sub.id %}">Продлить</a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+{% endblock content %}

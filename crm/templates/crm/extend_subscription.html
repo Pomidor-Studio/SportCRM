@@ -17,7 +17,7 @@
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Продлить</button>
-                <a name="cancel" href="{% url 'crm:client-detail' form.subscription.client.id %}" class="btn btn-outline-info">Назад</a>
+                <a name="cancel" href="{% url 'crm:manager:client:detail' form.subscription.client.id %}" class="btn btn-outline-info">Назад</a>
             </div>
         </form>
     </div>

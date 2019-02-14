@@ -1,14 +1,17 @@
 {% extends "crm/base.html" %}
+
 {% load bootstrap4 %}
+
 {% block extrahead %}
 {{ form.media }}
 <script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
 <script src="https://vk.com/js/api/openapi.js?160" type="text/javascript"></script>
 {% endblock %}
+
 {% block content %}
 <script>
 
-    $( document ).ready(function() {
+    $(document).ready(function() {
         $("#id_phone_number").inputmask({"mask": "+7(999)999-99-99"});
 
         $("#vk_user_ref").change(function() {
@@ -27,19 +30,20 @@
 
     function showError(errorText) {
         $("#id_name").val("");
-                $("#id_vk_user_id").val("");
-                $("#profile_pic").attr("src", "");
-                $("#profile_pic_container").hide();
-                $("#alert").text(errorText);
-                $("#alert").show();
-                $("#alert").fadeTo(2000, 500).slideUp(500, function(){
-                    $("#alert").hide();
-                });
+        $("#id_vk_user_id").val("");
+        $("#profile_pic").attr("src", "");
+        $("#profile_pic_container").hide();
+        $("#alert")
+          .text(errorText)
+          .show()
+          .fadeTo(2000, 500).slideUp(500, function() {
+            $("#alert").hide();
+        });
     }
 
     function getUserData(id) {
         var returnData;
-        var access_token = '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4'
+        var access_token = '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4';
         $.ajax({
             url: 'https://api.vk.com/method/users.get',
             data: {
@@ -58,12 +62,15 @@
                 }
                 else {
                     $("#alert").hide();
-                    if ($("#id_name").val() == "") {
-                        $("#id_name").val(data.response[0].first_name + ' ' + data.response[0].last_name);
+                    var $name = $("#id_name");
+                    if ($name.val() === "") {
+                        $name.val(
+                          data.response[0].first_name + ' ' + data.response[0].last_name);
                     }
-                    if ($("#id_birthday").val() == "") {
+                    var $birthday = $("#id_birthday");
+                    if ($birthday.val() === "") {
                         try {
-                            $("#id_birthday").val(data.response[0].bdate);
+                            $birthday.val(data.response[0].bdate);
                         } catch (err) { }
                     }
                     $("#id_vk_user_id").val(data.response[0].id);
@@ -71,11 +78,12 @@
                     $("#profile_pic_container").show();}
             },
             error: function (data) {
-                alert('Error');
+                showError('Request error');
             }
         });
     }
 </script>
+
 <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">Ученик</legend>
     <div id="alert" class="alert alert-danger" style="display: none" role="alert"></div>
@@ -92,11 +100,12 @@
             {% bootstrap_form form %}
             <div class="form-group">
                 <button class="btn btn-outline-info" type="submit">Добавить</button>
-                {% if object.id != null %}
-                <a name="cancel" href="{% url 'crm:client-detail' object.id %}" class="btn btn-outline-info">Назад</a>
-                {% else %}
-                <a name="cancel" href="{% url 'crm:clients' %}" class="btn btn-outline-info">Назад</a>
-                {% endif %}
+                <a
+                  name="cancel"
+                  href="{% if object.id %}{% url 'crm:manager:client:detail' object.id %}{% else %}{% url 'crm:manager:client:list' %}{% endif %}"
+                  class="btn btn-outline-info">
+                      Назад
+                </a>
             </div>
         </form>
     </div>

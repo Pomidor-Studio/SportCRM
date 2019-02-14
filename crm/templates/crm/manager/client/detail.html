@@ -1,0 +1,180 @@
+{% extends "crm/base.html" %}
+
+{% block nav %}
+{% endblock nav %}
+
+{% block extrahead %}
+  <script
+    src="https://vk.com/js/api/openapi.js?160"
+    type="text/javascript">
+  </script>
+{% endblock extrahead %}
+
+{% block content %}
+
+  <script>
+    $(document).ready(function () {
+      var id = $("#id_vk_user_id").text();
+      getUserPicture(id);
+    });
+
+    function getUserPicture(id) {
+      var returnData;
+      var access_token = '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4';
+      $.ajax({
+        url: 'https://api.vk.com/method/users.get',
+        data: {
+          user_ids: id,
+          fields: "photo_200,domain",
+          access_token: access_token,
+          v: 5.63
+        },
+        type: 'GET',
+        dataType: 'jsonp',
+        crossDomain: true,
+        async: false,
+        success: function (data) {
+          $("#profile_pic").attr("src", data.response[0].photo_200);
+
+          $("#id_vk_url")
+            .text("vk.com/" + data.response[0].domain)
+            .attr("href", "https://vk.com/" + data.response[0].domain);
+        }
+      });
+    }
+  </script>
+
+
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">{{ object.name }}</legend>
+    <div class="row mb-2">
+      <div class="container-fluid">
+        <a class="btn btn-sm btn-outline-info"
+           href="{% url 'crm:manager:client:update' object.id %}">Изменить</a>
+        <a name="cancel" href="{% url 'crm:manager:client:list' %}"
+           class="btn btn-sm btn-outline-info">Назад</a>
+        <a class="btn btn-sm btn-outline-danger"
+           href="{% url 'crm:manager:client:delete' object.id %}">Удалить</a>
+      </div>
+    </div>
+    <div class="row">
+      <label id="id_vk_user_id" hidden="true">{{ object.vk_user_id }}</label>
+      <div class="col-3 border-right">
+        {% if object.address != '' %}
+          <div class="font-weight-bold">Адрес:</div>
+        {% endif %}
+        {% if object.birthday is not null %}
+          <div class="font-weight-bold">Дата рождения:</div>
+        {% endif %}
+        {% if object.phone_number != '' %}
+          <div class="font-weight-bold">Номер телефона:</div>
+        {% endif %}
+        {% if object.email_address != '' %}
+          <div class="font-weight-bold">Электронная почта:</div>
+        {% endif %}
+        {% if object.vk_user_id is not null %}
+          <div class="font-weight-bold">Ссылка вк:</div>
+        {% endif %}
+        <div class="font-weight-bold">Баланс:</div>
+      </div>
+      <div class="col">
+        <div>{{ object.address }} </div>
+        <div>{{ object.birthday|date }} </div>
+        <div>{{ object.phone_number }} </div>
+        <div>{{ object.email_address }} </div>
+        <div><a id="id_vk_url"></a></div>
+        <div>{{ object.balance }}₽</div>
+      </div>
+      <div class="col-2 border-right">
+        <img id="profile_pic" class="rounded"/>
+      </div>
+    </div>
+    <div class="row border-top">
+      <div class="col">
+        <span class="font-weight-bold ">Абонементы: </span>
+        <div class="mb-2 mt-2">
+          <a class="btn btn-sm btn-outline-info"
+             href="{% url 'crm:manager:client:new-subscription' object.id %}">
+            Продать абонемент
+          </a>
+        </div>
+        <table class="table table-sm">
+          <thead>
+          <tr>
+            <th scope="col">Название</th>
+            <th scope="col">Дата покупки</th>
+            <th scope="col">Дата начала</th>
+            <th scope="col">Дата окончания</th>
+            <th scope="col">Осталось посещений</th>
+            <th style="width:5%" scope="col"></th>
+            <th style="width:5%" scope="col"></th>
+            <th style="width:5%" scope="col"></th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for sub in object.clientsubscriptions_set.all %}
+            <tr>
+              <td>
+                {% if sub.is_expiring %}
+                  <i
+                    title="Абонемент скоро заканчивается"
+                    class="fas fa-exclamation-circle">
+                  </i>
+                {% endif %}
+                {{ sub.subscription.name }}
+              </td>
+              <td>{{ sub.purchase_date|date:'d N Y' }}</td>
+              <td>{{ sub.start_date|date:'d N Y' }}</td>
+              <td>{{ sub.end_date|date:'d N Y' }}</td>
+              <td>{{ sub.visits_left }}</td>
+              <td>
+                <a class="btn btn-sm btn-outline-info"
+                   href="{% url 'crm:clientsubscription-extend' sub.id %}">Продлить</a>
+              </td>
+              <td>
+                <a class="btn btn-sm btn-outline-info"
+                   href="{% url 'crm:clientsubscription-update' sub.id %}">Изменить</a>
+              </td>
+              <td><a class="btn btn-sm btn-outline-danger"
+                     href="{% url 'crm:clientsubscription-delete' sub.id %}">Удалить</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <span class="font-weight-bold ">Посещения: </span>
+        <div class="mb-2 mt-2">
+          <a class="btn btn-sm btn-outline-info"
+             href="{% url 'crm:manager:client:new-attendance' object.id %}">Отметить
+            посещение</a>
+        </div>
+        <table class="table table-sm">
+          <thead>
+          <tr>
+            <th scope="col">Дата</th>
+            <th scope="col">Тренировка</th>
+            <th style="width:5%" scope="col"></th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for sub in object.attendance_set.all %}
+            {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
+            <tr>
+              <td>{{ sub.event.date|date }}</td>
+              <td>{{ sub.event.event_class }}</td>
+              <td><a class="btn btn-sm btn-outline-danger"
+                     href="{% url 'crm:attendance-delete' sub.id %}">Удалить</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+{% endblock content %}

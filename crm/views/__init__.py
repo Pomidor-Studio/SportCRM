@@ -1,74 +1,20 @@
 from datetime import date
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import DetailView, ListView, TemplateView
+from django.views.generic import DetailView, ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from ..forms import (
-    AttendanceForm, ClientForm, ClientSubscriptionForm, DayOfTheWeekClassForm,
+    ClientSubscriptionForm, DayOfTheWeekClassForm,
     EventAttendanceForm, EventClassForm, ExtendClientSubscriptionForm,
 )
 from ..models import (
-    Attendance, Client, ClientSubscriptions, DayOfTheWeekClass, Event,
+    Attendance, ClientSubscriptions, DayOfTheWeekClass, Event,
     EventClass, SubscriptionsType,
 )
-
-
-class ManagerHomeView(LoginRequiredMixin, TemplateView):
-    template_name = 'crm/base.html'
-
-
-def clientsv(request):
-    context = {
-        'clients': Client.objects.all(),
-        'subscriptions': SubscriptionsType.objects.all(),
-        'client_subscriptions': ClientSubscriptions.objects.all()
-    }
-    return render(request, 'crm/clients.html', context)
-
-
-def subscriptionsv(request):
-    context = {
-        'subscriptions': Client.objects.all()
-    }
-    return render(request, 'crm/subscriptions.html', context)
-
-
-class ClientsListView(ListView):
-    model = Client
-    template_name = 'crm/clients.html'
-    context_object_name = 'clients'
-
-    def get_queryset(self):
-        name_query = self.request.GET.get('client')
-        if name_query:
-            clients_list = Client.objects.filter(name__icontains=name_query)
-        else:
-            clients_list = Client.objects.all()
-        return clients_list
-
-
-class ClientCreateView(CreateView):
-    model = Client
-    form_class = ClientForm
-
-
-class ClientUpdateView(UpdateView):
-    model = Client
-    form_class = ClientForm
-
-
-class ClientDeleteView(DeleteView):
-    model = Client
-    success_url = '/clients'
-
-
-class ClientDetailView(DetailView):
-    model = Client
 
 
 class SubscriptionsListView(ListView):
@@ -100,24 +46,19 @@ class SubscriptionDetailView(DetailView):
 def ExtendSubscription(request, pk=None):
     if request.method == 'POST':
         print(request.POST)
-        ClientSubscriptions.objects.get(pk=request.POST['object_id']).extend_duration(request.POST['visit_limit'])
-        return HttpResponseRedirect(reverse('crm:client-detail', args=[request.POST['client_id']]))
+        ClientSubscriptions.objects.get(
+            pk=request.POST['object_id']
+        ).extend_duration(request.POST['visit_limit'])
+        return HttpResponseRedirect(
+            reverse(
+                'crm:manager:client:detail',
+                args=[request.POST['client_id']]
+            )
+        )
     else:
         subscription = ClientSubscriptions.objects.get(pk=pk)
         form = ExtendClientSubscriptionForm(subscription=subscription)
     return render(request, 'crm/extend_subscription.html', {'form': form})
-
-
-class ClientSubscriptionCreateView(CreateView):
-    form_class = ClientSubscriptionForm
-    template_name = "crm/clientsubscriptions_form.html"
-
-    def get_success_url(self):
-        return reverse('crm:client-detail', args=[self.kwargs['client_id']])
-
-    def form_valid(self, form):
-        form.instance.client_id = self.kwargs['client_id']
-        return super(ClientSubscriptionCreateView, self).form_valid(form)
 
 
 class ClientSubscriptionUpdateView(UpdateView):
@@ -149,18 +90,6 @@ class EventClassUpdate(UpdateView):
 class EventClassDelete(DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:eventclass_list')
-
-
-class AttendanceCreateView(CreateView):
-    model = Attendance
-    form_class = AttendanceForm
-
-    def form_valid(self, form):
-        form.instance.client_id = self.kwargs['client_id']
-        return super(AttendanceCreateView, self).form_valid(form)
-
-    def get_success_url(self):
-        return reverse('crm:client-detail', args=[self.kwargs['client_id']])
 
 
 class AttendanceDelete(DeleteView):

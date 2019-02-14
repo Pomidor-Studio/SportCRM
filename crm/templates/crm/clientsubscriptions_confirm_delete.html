@@ -9,7 +9,7 @@
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-danger" type="submit">Удалить</button>
-                <a class="btn btn-outline-info" href="{% url 'crm:client-detail' object.client.id%}">Отмена</a>
+                <a class="btn btn-outline-info" href="{% url 'crm:manager:client:detail' object.client.id%}">Отмена</a>
             </div>
         </form>
     </div>

@@ -1,0 +1,40 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
+{% block extrahead %}
+  {{ form.media }}
+{% endblock %}
+
+{% block content %}
+
+  <script language="javascript">
+    $(function () {
+      $("#id_subscription").change(function () {
+        $("#id_price").val($(this).find("option:selected").attr("price"));
+        $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
+      });
+    });
+  </script>
+
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Абонемент</legend>
+    <div class="w-25">
+      <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+          {% bootstrap_form form %}
+        </fieldset>
+
+        <div class="form-group">
+          <button class="btn btn-outline-info" type="submit">Добавить</button>
+          <a name="cancel"
+             href="{% if object.client %}{% url 'crm:manager:client:detail' object.client.id %}{% else %}{% url 'crm:manager:client:detail' view.kwargs.client_id %}{% endif %}"
+             class="btn btn-outline-info">
+            Назад
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock content %}
