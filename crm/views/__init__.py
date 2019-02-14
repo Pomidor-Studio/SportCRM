@@ -17,32 +17,6 @@ from ..models import (
 )
 
 
-class SubscriptionsListView(ListView):
-    model = SubscriptionsType
-    template_name = 'crm/subscriptions.html'
-    context_object_name = 'subscriptions'
-    ordering = ['id']
-
-
-class SubscriptionCreateView(CreateView):
-    model = SubscriptionsType
-    fields = '__all__'
-
-
-class SubscriptionUpdateView(UpdateView):
-    model = SubscriptionsType
-    fields = '__all__'
-
-
-class SubscriptionDeleteView(DeleteView):
-    model = SubscriptionsType
-    success_url = '/subscriptions'
-
-
-class SubscriptionDetailView(DetailView):
-    model = SubscriptionsType
-
-
 def ExtendSubscription(request, pk=None):
     if request.method == 'POST':
         print(request.POST)

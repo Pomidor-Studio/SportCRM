@@ -180,22 +180,38 @@ granularity = (
 
 
 class SubscriptionsType(models.Model):
-    """Типы абонементов
-    Описывает продолжительность действия, количество посещений, какие тренировки позволяет посещать"""
+    """
+    Типы абонементов
+    Описывает продолжительность действия, количество посещений,
+    какие тренировки позволяет посещать
+    """
     name = models.CharField("Название", max_length=100)
     price = models.FloatField("Стоимость")
-    duration_type = models.CharField("Временные рамки абонемента", max_length=20, choices=granularity, default=granularity[0])
+    duration_type = models.CharField(
+        "Временные рамки абонемента",
+        max_length=20,
+        choices=granularity,
+        default=granularity[0]
+    )
     duration = models.PositiveIntegerField("Продолжительность")
-    rounding = models.BooleanField("Округление начала действия абонемента", default=False)
+    rounding = models.BooleanField(
+        "Округление начала действия абонемента",
+        default=False
+    )
     visit_limit = models.PositiveIntegerField("Количество посещений")
-    event_class = models.ManyToManyField(EventClass, verbose_name="Допустимые тренировки")
+    event_class = models.ManyToManyField(
+        EventClass,
+        verbose_name="Допустимые тренировки"
+    )
 
     def __str__(self):
         return 'name: (0)'.format(self.name)
 
     def get_start_date(self, rounding_date):
-        """Возвращает дату начала действия абонемента после округления.
-        rounding_date - дата начала действия абонемента до округления"""
+        """
+        Возвращает дату начала действия абонемента после округления.
+        rounding_date - дата начала действия абонемента до округления
+        """
         if self.rounding:
             weekday = rounding_date.weekday()
             if self.duration_type == granularity[0][0]:
@@ -211,8 +227,10 @@ class SubscriptionsType(models.Model):
         return start_date
 
     def get_end_date(self, start_date):
-        """Возвращает дату окончания действия абонемента.
-        start_date - дата начала действия абонемента"""
+        """
+        Возвращает дату окончания действия абонемента.
+        start_date - дата начала действия абонемента
+        """
         end_date = None
         if self.duration_type == granularity[0][0]:
             end_date = start_date + relativedelta(days=self.duration)
@@ -226,7 +244,7 @@ class SubscriptionsType(models.Model):
 
     @staticmethod
     def get_absolute_url():
-        return reverse('crm:subscriptions')
+        return reverse('crm:manager:subscription:list')
 
 
 class Client(models.Model):

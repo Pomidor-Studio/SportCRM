@@ -5,13 +5,10 @@ from crm.views import coach as coach_views, auth as scrm_auth_views
 from crm.views.manager import (
     core as manager_core_views,
     coach as manager_coach_views,
-    client as manager_client_views
+    client as manager_client_views,
+    subscription as manager_subs_views,
 )
 from .views import (
-    SubscriptionsListView,
-    SubscriptionUpdateView,
-    SubscriptionDeleteView,
-    SubscriptionCreateView,
     ClientSubscriptionUpdateView,
     ClientSubscriptionDeleteView,
     AttendanceDelete,
@@ -88,10 +85,26 @@ manager_clients_urlpatterns = ([
     ),
 ], 'client')
 
+manager_subscriptions_urlpatterns = ([
+    path('', manager_subs_views.List.as_view(), name='list'),
+    path(
+        '<int:pk>/update/',
+        manager_subs_views.Update.as_view(),
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete/',
+        manager_subs_views.Delete.as_view(),
+        name='delete'
+    ),
+    path('new/', manager_subs_views.Create.as_view(), name='new'),
+], 'subscription')
+
 manager_urlpaterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('coach/', include(manager_coach_urlpatterns)),
     path('clients/', include(manager_clients_urlpatterns)),
+    path('subscriptions/', include(manager_subscriptions_urlpatterns))
 ], 'manager')
 
 urlpatterns = [
@@ -99,11 +112,6 @@ urlpatterns = [
     path('accounts/', include(auth_urlpatterns)),
     path('coach/', include(coach_urlpatterns)),
     path('manager/', include(manager_urlpaterns)),
-
-    path('subscriptions/', SubscriptionsListView.as_view(), name='subscriptions'),
-    path('subscriptions/<int:pk>/update/', SubscriptionUpdateView.as_view(), name='subscription-update'),
-    path('subscriptions/<int:pk>/delete/', SubscriptionDeleteView.as_view(), name='subscription-delete'),
-    path('subscriptions/new/', SubscriptionCreateView.as_view(), name='subscription-new'),
 
     path('clientsubscriptions/<int:pk>/update', ClientSubscriptionUpdateView.as_view(), name='clientsubscription-update'),
     path('clientsubscriptions/<int:pk>/delete', ClientSubscriptionDeleteView.as_view(), name='clientsubscription-delete'),
