@@ -53,7 +53,7 @@ class ClientsListView(ListView):
     model = Client
     template_name = 'crm/clients.html'
     context_object_name = 'clients'
-    paginate_by = 100
+    paginate_by = 10
 
     def get_queryset(self):
         name_query = self.request.GET.get('client')
