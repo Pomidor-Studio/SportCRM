@@ -1,10 +1,12 @@
 from crm.models import Client
 from bot.api.command_system import Command
+from datetime import datetime, timezone
 
 
 def get_info_subscription(user_id):
 
     message = ''
+    current_date = datetime.now(timezone.utc)
 
     vk_user_id = user_id
 
@@ -29,7 +31,7 @@ def get_info_subscription(user_id):
         else:
             message = message + name + '!\nИнформация о ваших абонементах:\n'
 
-        subscription = cl.clientsubscriptions_set.all()
+        subscription = cl.clientsubscriptions_set.filter(end_date__gte=current_date, visits_left__gt=0)
         check_sub = subscription.exists()
 
         if check_sub == 0 and check_cl == 1:
@@ -42,7 +44,8 @@ def get_info_subscription(user_id):
             subscription = sub.subscription.name
             visits_left = sub.visits_left
             end_date = '{:%d-%m-%Y}'.format(sub.end_date)
-            message = message + str(i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + '\n Действующий до: ' + end_date + '\n'
+            message = message + str(i+1) + ') ' + subscription + '\nОстаток посещений: ' + str(visits_left) + \
+                '\nДействующий до: ' + end_date + '\n'
             i += 1
 
     return message, ''
