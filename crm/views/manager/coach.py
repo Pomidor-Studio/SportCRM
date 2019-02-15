@@ -91,5 +91,3 @@ class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
         self.object.delete()
         user.delete()
         return HttpResponseRedirect(success_url)
-
-

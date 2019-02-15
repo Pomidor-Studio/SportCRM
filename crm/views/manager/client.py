@@ -1,11 +1,16 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
 )
 
-from crm.forms import AttendanceForm, ClientForm, ClientSubscriptionForm
-from crm.models import Attendance, Client
+from crm.forms import (
+    AttendanceForm, ClientForm, ClientSubscriptionForm,
+    ExtendClientSubscriptionForm,
+)
+from crm.models import Attendance, Client, ClientSubscriptions
 from crm.views.mixin import UserManagerMixin
 
 
@@ -72,3 +77,38 @@ class AddAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
     def get_success_url(self):
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
+
+
+def ExtendSubscription(request, pk=None):
+    # TODO: Refacor to CBV!!!
+    if request.method == 'POST':
+        print(request.POST)
+        ClientSubscriptions.objects.get(
+            pk=request.POST['object_id']
+        ).extend_duration(request.POST['visit_limit'])
+        return HttpResponseRedirect(
+            reverse(
+                'crm:manager:client:detail',
+                args=[request.POST['client_id']]
+            )
+        )
+    else:
+        subscription = ClientSubscriptions.objects.get(pk=pk)
+        form = ExtendClientSubscriptionForm(subscription=subscription)
+    return render(
+        request, 'crm/manager/client/subscription_extend.html', {'form': form})
+
+
+class SubscriptionUpdate(LoginRequiredMixin, UserManagerMixin, UpdateView):
+    model = ClientSubscriptions
+    form_class = ClientSubscriptionForm
+    template_name = 'crm/manager/client/add-subscriptions.html'
+
+
+class SubscriptionDelete(LoginRequiredMixin, UserManagerMixin, DeleteView):
+    model = ClientSubscriptions
+    template_name = 'crm/manager/client/subscription_confirm_delete.html'
+
+    def get_success_url(self):
+        return reverse(
+            'crm:manager:client:detail', args=[self.object.client.id])

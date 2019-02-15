@@ -15,21 +15,21 @@ class List(LoginRequiredMixin, UserManagerMixin, ListView):
     template_name = 'crm/manager/event/list.html'
 
 
-class Create(LoginRequiredMixin, UserManagerMixin,CreateView):
+class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
     model = Event
     fields = '__all__'
     template_name = 'crm/manager/event/form.html'
     success_url = reverse_lazy('crm:manager:event:list')
 
 
-class Update(LoginRequiredMixin, UserManagerMixin,UpdateView):
+class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
     model = Event
     fields = '__all__'
     template_name = 'crm/manager/event/form.html'
     success_url = reverse_lazy('crm:manager:event:list')
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin,DeleteView):
+class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
     model = Event
     template_name = 'crm/manager/event/confirm_delete.html'
     success_url = reverse_lazy('crm:manager:event:list')

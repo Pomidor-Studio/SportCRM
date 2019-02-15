@@ -9,12 +9,7 @@ from crm.views.manager import (
     subscription as manager_subs_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
-)
-from .views import (
-    ClientSubscriptionUpdateView,
-    ClientSubscriptionDeleteView,
-    AttendanceDelete,
-    ExtendSubscription,
+    attendance as manager_attendance_views
 )
 
 app_name = 'crm'
@@ -53,6 +48,24 @@ manager_coach_urlpatterns = ([
     )
 ], 'coach')
 
+manager_client_subs_urlpatterns = ([
+    path(
+        '<int:pk>/update',
+        manager_client_views.SubscriptionUpdate.as_view(),
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete',
+        manager_client_views.SubscriptionDelete.as_view(),
+        name='delete'
+    ),
+    path(
+        '<int:pk>/extend',
+        manager_client_views.ExtendSubscription,
+        name='extend'
+    ),
+], 'subscription')
+
 manager_clients_urlpatterns = ([
     path('', manager_client_views.List.as_view(), name='list'),
     path('<int:pk>/', manager_client_views.Detail.as_view(), name='detail'),
@@ -77,6 +90,10 @@ manager_clients_urlpatterns = ([
         manager_client_views.AddAttendance.as_view(),
         name='new-attendance'
     ),
+    path(
+        'subscription/',
+        include(manager_client_subs_urlpatterns)
+    )
 ], 'client')
 
 manager_subscriptions_urlpatterns = ([
@@ -153,6 +170,13 @@ manager_event_class_urlpatterns = ([
         name='calendar'),
 ], 'event-class')
 
+manager_attendance_urlpatterns = ([
+    path(
+        '<int:pk>/delete/',
+        manager_attendance_views.Delete.as_view(),
+        name='delete'),
+], 'attendance')
+
 manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('coach/', include(manager_coach_urlpatterns)),
@@ -160,6 +184,7 @@ manager_urlpatterns = ([
     path('subscriptions/', include(manager_subscriptions_urlpatterns)),
     path('events/', include(manager_events_urlpatterns)),
     path('event-class/', include(manager_event_class_urlpatterns)),
+    path('attendance/', include(manager_attendance_urlpatterns)),
 ], 'manager')
 
 urlpatterns = [
@@ -167,10 +192,4 @@ urlpatterns = [
     path('accounts/', include(auth_urlpatterns)),
     path('coach/', include(coach_urlpatterns)),
     path('manager/', include(manager_urlpatterns)),
-
-    path('clientsubscriptions/<int:pk>/update', ClientSubscriptionUpdateView.as_view(), name='clientsubscription-update'),
-    path('clientsubscriptions/<int:pk>/delete', ClientSubscriptionDeleteView.as_view(), name='clientsubscription-delete'),
-    path('clientsubscriptions/<int:pk>/extend', ExtendSubscription, name='clientsubscription-extend'),
-
-    path('adattendance/<int:pk>/delete/', AttendanceDelete.as_view(), name='attendance-delete'),
 ]

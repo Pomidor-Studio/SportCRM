@@ -71,7 +71,7 @@
                 до {{ client.last_sub.end_date|date:'d N Y' }}</div>
               <div>Осталось {{ client.last_sub.visits_left }} посещений</div>
               <a class="btn btn-sm btn-outline-info"
-                 href="{% url 'crm:clientsubscription-extend' client.last_sub.id %}">Продлить</a>
+                 href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}">Продлить</a>
             {% endif %}
           </td>
         </tr>

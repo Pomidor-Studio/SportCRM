@@ -28,7 +28,7 @@
           <tr>
             <td>{{ attendance.client.name }}</td>
             <td><a class="btn btn-sm btn-outline-danger"
-                   href="{% url 'crm:attendance-delete' attendance.id %}">Удалить</a>
+                   href="{% url 'crm:manager:attendance:delete' attendance.id %}">Удалить</a>
             </td>
           </tr>
         {% endfor %}
