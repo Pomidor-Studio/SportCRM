@@ -3,15 +3,26 @@
   <div class="sidebar-sticky">
     <ul class="navbar-nav flex-column">
       <li class="nav-item">
-        <a class="nav-link" href="{% url 'crm:manager:coach:list' %}">Тренеры</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="{% url 'crm:manager:client:list' %}" name="Ученики">Ученики</a>
+        <a
+          class="nav-link"
+          href="{% url 'crm:manager:coach:list' %}"
+        >
+          Тренеры
+        </a>
       </li>
       <li class="nav-item">
         <a
           class="nav-link"
-          href="{% url 'crm:eventclass_list' %}"
+          href="{% url 'crm:manager:client:list' %}"
+          name="Ученики"
+        >
+          Ученики
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          href="{% url 'crm:manager:event-class:list' %}"
           name="Тренировки"
         >
             Тренировки

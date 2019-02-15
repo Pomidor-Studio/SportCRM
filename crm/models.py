@@ -98,49 +98,68 @@ class Manager(models.Model):
 
 
 class EventClass(models.Model):
-    """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
-    name = models.CharField("Название",
-                            max_length=100)
-    location = models.ForeignKey(Location,
-                                 on_delete=models.PROTECT,
-                                 verbose_name="Расположение")
-    coach = models.ForeignKey(Coach,
-                              on_delete=models.PROTECT,
-                              verbose_name="Тренер"
-                              )
-    date_from = models.DateField("Дата с",
-                                 null=True,
-                                 blank=True)
-    date_to = models.DateField("Дата по",
-                               null=True,
-                               blank=True)
+    """
+    Описание шаблона мероприятия (Класс вид).
+    Например, тренировки в зале бокса у Иванова по средам и пятницам
+    """
+    name = models.CharField("Название", max_length=100)
+    location = models.ForeignKey(
+        Location,
+        on_delete=models.PROTECT,
+        verbose_name="Расположение")
+    coach = models.ForeignKey(
+        Coach,
+        on_delete=models.PROTECT,
+        verbose_name="Тренер")
+    date_from = models.DateField("Дата с", null=True, blank=True)
+    date_to = models.DateField("Дата по", null=True, blank=True)
 
     def is_event_day(self, day: date) -> bool:
-        """Входит ли переданный день в мероприятия (есть ли в этот день тренировка) """
+        """
+        Возможна ли тренировка в указанный день
+
+        :param day: День который надо проверить
+        :return: Является ли указанный день - днем тренировки
+        """
 
         # Проверяем, входит ли проверяемый день в диапазон проводимых тренировок
-        if (self.date_from and self.date_from > day) or (self.date_to and self.date_to < day):
+        if (self.date_from and self.date_from > day) or \
+                (self.date_to and self.date_to < day):
             return False
 
         # Проверяем, проходят ли в этот день недели тренировки
-        weekdays = self.dayoftheweekclass_set.all();
+        weekdays = self.dayoftheweekclass_set.all()
         if weekdays:
             for weekday in weekdays:
                 if weekday.day == day.weekday():
                     break
             else:
-                return False # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
+                # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
+                return False
 
         return True
 
-    def get_calendar(self, start_date: date, end_date: date) -> Dict[date, 'Event']:
-        """Возвращаем словарь занятий данного типа тренеровок"""
+    def get_calendar(
+            self, start_date: date, end_date: date) -> Dict[date, 'Event']:
+        """
+        Создает полный календарь одного типа тренировки. Создается список
+        всех возможный дней трениовок, ограниченный диапазоном дат.
+
+        Сами события треннировки не создаются фактически, а могут появится лишь
+        когда на эту тренировку будут назначены ученики.
+
+        :param start_date: Начальная дата календаря
+        :param end_date: Конечная дата календаря
+        :return: Словарь из даты и возможной тренировки
+        """
         events = {event.date: event for event in self.event_set.all()}
-        # Решение влоб - перебор всех дней с проверкой входят ли они в календарь.
-        # TODO: переписать на генератор(yield) - EventClass может возвращать следующий день исходя из настроек
+        # Решение влоб - перебор всех дней с проверкой входят
+        # ли они в календарь.
+        # TODO: переписать на генератор(yield) -
+        #  EventClass может возвращать следующий день исходя из настроек
         for n in range(int((end_date - start_date).days)):
             curr_date = start_date + timedelta(n)
-            if not (curr_date in events):
+            if curr_date not in events:
                 if self.is_event_day(curr_date):
                     events[curr_date] = Event(date=curr_date, event_class=self)
 
@@ -149,11 +168,12 @@ class EventClass(models.Model):
     # TODO: Нужны методы:
     #   - Создание нового event
     #       +Получение на конкретную дату
-    #   - Валидация всех event (а можно ли редактировать описание тренировки, если они уже были?)
+    #   - Валидация всех event (а можно ли редактировать описание
+    #   тренировки, если они уже были?)
 
     @staticmethod
     def get_absolute_url():
-        return reverse_lazy('crm:eventclass_list')
+        return reverse_lazy('crm:manager:event-class:list')
 
     def __str__(self):
         return self.name

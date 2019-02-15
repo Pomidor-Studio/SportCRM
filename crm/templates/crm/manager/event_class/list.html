@@ -11,14 +11,14 @@
     <div class="ml-4 mt-4 mr-4">
     <legend class="border-bottom mb-2">Тренировки</legend>
         <div style="background-color: #FFFFFF;" class="sticky-top">
-            <a name="add-new" href="{% url 'crm:eventclass_create' %}" class="btn btn-sm btn-info mb-2">Новое мероприятие</a>
+            <a name="add-new" href="{% url 'crm:manager:event-class:new' %}" class="btn btn-sm btn-info mb-2">Новое мероприятие</a>
         </div>
     {% if eventclass_list %}
         <ul>
         {% for eventclass in eventclass_list %}
-            <li><a href="{% url 'crm:eventclass_update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a>
-                <a href="{% url 'crm:eventclass_delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a>
-                <a href="{% url 'crm:event-calendar' eventclass.pk %}" ><i class="far fa-calendar-alt"></i></a>
+            <li><a href="{% url 'crm:manager:event-class:update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a>
+                <a href="{% url 'crm:manager:event-class:delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a>
+                <a href="{% url 'crm:manager:event-class:calendar' eventclass.pk %}" ><i class="far fa-calendar-alt"></i></a>
             </li>
         {% endfor %}
         </ul>

@@ -8,6 +8,7 @@ from crm.views.manager import (
     client as manager_client_views,
     subscription as manager_subs_views,
     event as manager_event_views,
+    event_class as manager_event_class_views,
 )
 from .views import (
     ClientSubscriptionUpdateView,
@@ -15,8 +16,6 @@ from .views import (
     AttendanceDelete,
     ExtendSubscription,
 )
-
-from . import views
 
 app_name = 'crm'
 
@@ -120,12 +119,47 @@ manager_events_urlpatterns = ([
     ),
 ], 'event')
 
+manager_event_class_urlpatterns = ([
+    path(
+        '',
+        manager_event_class_views.List.as_view(),
+        name='list'
+    ),
+    path('new/', manager_event_class_views.eventclass_view, name='new'),
+    path(
+        '<int:pk>/update/',
+        manager_event_class_views.eventclass_view,
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete/',
+        manager_event_class_views.Delete.as_view(),
+        name='delete'
+    ),
+
+    path(
+        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/',
+        manager_event_class_views.EventByDate.as_view(),
+        name='event-by-date'
+    ),
+    path(
+        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/',
+        manager_event_class_views.MarkEventAttendance.as_view(),
+        name='mark-attendance'
+    ),
+    path(
+        '<int:pk>/calendar/',
+        manager_event_class_views.Calendar.as_view(),
+        name='calendar'),
+], 'event-class')
+
 manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('coach/', include(manager_coach_urlpatterns)),
     path('clients/', include(manager_clients_urlpatterns)),
     path('subscriptions/', include(manager_subscriptions_urlpatterns)),
     path('events/', include(manager_events_urlpatterns)),
+    path('event-class/', include(manager_event_class_urlpatterns)),
 ], 'manager')
 
 urlpatterns = [
@@ -139,15 +173,4 @@ urlpatterns = [
     path('clientsubscriptions/<int:pk>/extend', ExtendSubscription, name='clientsubscription-extend'),
 
     path('adattendance/<int:pk>/delete/', AttendanceDelete.as_view(), name='attendance-delete'),
-
-    path('eventclass/', views.EventClassList.as_view(), name='eventclass_list'),
-    path('eventclass/create/', views.eventclass_view, name='eventclass_create'),
-    path('eventclass/<int:pk>/update/', views.eventclass_view, name='eventclass_update'),
-    path('eventclass/<int:pk>/delete/', views.EventClassDelete.as_view(), name='eventclass_delete'),
-
-    path('eventclass/<int:event_class_id>/<int:year>/<int:month>/<int:day>/', views.event_date_view, name='class-event-date'),
-    path('eventclass/<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/', views.event_mark_view, name='event-attendance-mark'),
-
-    path('eventcalendar/<int:pk>/', views.eventcalendar, name='event-calendar'),
-
 ]
