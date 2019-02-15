@@ -32,13 +32,14 @@ class ClientForm(forms.ModelForm):
 
 class DataAttributesSelect(forms.Select):
 
-    def __init__(self, attrs=None, choices=(), data={}):
-        super(DataAttributesSelect, self).__init__(attrs, choices)
-        self.data = data
+    def __init__(self, attrs=None, choices=(), data=None):
+        super().__init__(attrs, choices)
+        self.data = data or {}
 
-    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
-        option = super(DataAttributesSelect, self).create_option(name, value, label, selected, index, subindex=None,
-                                                                 attrs=None)
+    def create_option(self, name, value, label, selected, index,
+                      subindex=None, attrs=None):
+        option = super().create_option(
+            name, value, label, selected, index, subindex=None, attrs=None)
         for data_attr, values in self.data.items():
             option['attrs'][data_attr] = values[option['value']]
 
