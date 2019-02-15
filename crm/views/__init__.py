@@ -4,7 +4,7 @@ from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
-from django.views.generic import DetailView, ListView
+from django.views.generic import ListView
 from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
 from ..forms import (
@@ -13,7 +13,7 @@ from ..forms import (
 )
 from ..models import (
     Attendance, ClientSubscriptions, DayOfTheWeekClass, Event,
-    EventClass, SubscriptionsType,
+    EventClass,
 )
 
 
@@ -74,41 +74,6 @@ class AttendanceDelete(DeleteView):
         return reverse('crm:client-detail', args=[self.object.client_id, ])
 
 
-class EventList(ListView):
-    # template_name = 'polls/bars.html'
-    # context_object_name = 'latest_question_list'
-    model = Event
-
-
-class EventCreateView(CreateView):
-    model = Event
-    fields = '__all__'
-
-    def get_success_url(self):
-        return reverse('crm:event-list')
-
-
-class EventUpdateView(UpdateView):
-    model = Event
-    fields = '__all__'
-
-    def get_success_url(self):
-        return reverse('crm:event-list')
-
-
-class EventDeleteView(DeleteView):
-    model = Event
-    template_name = "crm/common_confirm_delete.html"
-
-    def get_success_url(self):
-        return reverse('crm:event-list')
-
-
-class EventDetailView(DetailView):
-    model = Event
-    context_object_name = 'event'
-
-
 def event_date_view(request, event_class_id:int, year:int, month:int, day:int):
     """Обработка событиея по типу и дате"""
     event_date = date(year, month, day)
@@ -117,26 +82,8 @@ def event_date_view(request, event_class_id:int, year:int, month:int, day:int):
     except Event.DoesNotExist:
         event_class = get_object_or_404(EventClass, pk=event_class_id)
         event = Event(date=event_date, event_class=event_class)
-    return render(request, 'crm/event_detail.html', {
+    return render(request, 'crm/manager/event/detail.html', {
         'event': event})
-
-
-class EventAttendanceCreateView(CreateView):
-    model = Attendance
-    form_class = EventAttendanceForm
-
-    def get_initial(self):
-        initial = super(EventAttendanceCreateView, self).get_initial()
-        event = get_object_or_404(Event, pk=self.kwargs.get('event_id'))
-        initial['event'] = event
-        return initial
-
-    # def form_valid(self, form):
-    #     form.instance.event_id = self.kwargs['event_id']
-    #     return super(EventAttendanceCreateView, self).form_valid(form)
-
-    def get_success_url(self):
-        return reverse('crm:event-detail', args=[self.kwargs['event_id']])
 
 
 def event_mark_view(request, event_class_id:int, year:int, month:int, day:int):

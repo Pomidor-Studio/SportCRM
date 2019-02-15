@@ -7,18 +7,13 @@ from crm.views.manager import (
     coach as manager_coach_views,
     client as manager_client_views,
     subscription as manager_subs_views,
+    event as manager_event_views,
 )
 from .views import (
     ClientSubscriptionUpdateView,
     ClientSubscriptionDeleteView,
     AttendanceDelete,
     ExtendSubscription,
-    EventList,
-    EventCreateView,
-    EventUpdateView,
-    EventDeleteView,
-    EventDetailView,
-    EventAttendanceCreateView,
 )
 
 from . import views
@@ -100,31 +95,50 @@ manager_subscriptions_urlpatterns = ([
     path('new/', manager_subs_views.Create.as_view(), name='new'),
 ], 'subscription')
 
-manager_urlpaterns = ([
+manager_events_urlpatterns = ([
+    path('', manager_event_views.List.as_view(), name='list'),
+    path('new/', manager_event_views.Create.as_view(), name='new'),
+    path(
+        '<int:pk>/update/',
+        manager_event_views.Update.as_view(),
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete/',
+        manager_event_views.Delete.as_view(),
+        name='delete'
+    ),
+    path(
+        '<int:pk>/',
+        manager_event_views.Detail.as_view(),
+        name='detail'
+    ),
+    path(
+        '<int:event_id>/add-attendance/',
+        manager_event_views.EventAttendanceCreate.as_view(),
+        name='new-attendance'
+    ),
+], 'event')
+
+manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('coach/', include(manager_coach_urlpatterns)),
     path('clients/', include(manager_clients_urlpatterns)),
-    path('subscriptions/', include(manager_subscriptions_urlpatterns))
+    path('subscriptions/', include(manager_subscriptions_urlpatterns)),
+    path('events/', include(manager_events_urlpatterns)),
 ], 'manager')
 
 urlpatterns = [
     path('', scrm_auth_views.SportCrmLoginRedirectView.as_view()),
     path('accounts/', include(auth_urlpatterns)),
     path('coach/', include(coach_urlpatterns)),
-    path('manager/', include(manager_urlpaterns)),
+    path('manager/', include(manager_urlpatterns)),
 
     path('clientsubscriptions/<int:pk>/update', ClientSubscriptionUpdateView.as_view(), name='clientsubscription-update'),
     path('clientsubscriptions/<int:pk>/delete', ClientSubscriptionDeleteView.as_view(), name='clientsubscription-delete'),
     path('clientsubscriptions/<int:pk>/extend', ExtendSubscription, name='clientsubscription-extend'),
 
     path('adattendance/<int:pk>/delete/', AttendanceDelete.as_view(), name='attendance-delete'),
-
-    path('events/', EventList.as_view(), name='event-list'),
-    path('events/create/', EventCreateView.as_view(), name='event-create'),
-    path('events/<int:pk>/update', EventUpdateView.as_view(), name='event-update'),
-    path('events/<int:pk>/delete', EventDeleteView.as_view(), name='event-delete'),
-    path('events/<int:pk>/', EventDetailView.as_view(), name='event-detail'),
-    path('events/<int:event_id>/addattendance/', EventAttendanceCreateView.as_view(), name='event-attendance-new'),
 
     path('eventclass/', views.EventClassList.as_view(), name='eventclass_list'),
     path('eventclass/create/', views.eventclass_view, name='eventclass_create'),

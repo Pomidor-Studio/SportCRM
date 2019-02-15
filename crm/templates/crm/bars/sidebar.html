@@ -26,8 +26,15 @@
             Абонементы
         </a>
       </li>
-      <li class="nav-item"><a class="nav-link" href="{% url 'crm:event-list' %}" name="Абонементы">Календарь
-        тренировок</a></li>
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          href="{% url 'crm:manager:event:list' %}"
+          name="Календарь тренировок"
+        >
+          Календарь тренировок
+        </a>
+      </li>
     </ul>
   </div>
 </nav>
