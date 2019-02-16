@@ -2,8 +2,8 @@ from libs.django_multitenant.django_multitenant.utils import set_current_tenant
 
 
 def set_current_tenant_for_user(current_user):
-    if hasattr(current_user, 'company'):
-        current_tenant = current_user.company
+    if current_user.is_manager:
+        current_tenant = current_user.manager.company
     else:
         current_tenant = None
 

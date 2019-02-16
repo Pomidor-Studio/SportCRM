@@ -112,7 +112,7 @@ class EventAttendanceForm(forms.ModelForm):
         exclude = ('event',)
 
 
-class EventClassForm(forms.ModelForm):
+class EventClassForm(TenantModelForm):
     class Meta:
         model = EventClass
         fields = ['name', 'location', 'coach', 'date_from', 'date_to',]

@@ -73,6 +73,9 @@ class Company(models.Model):
                             max_length=100)
     tenant_id = 'id'
 
+    def __str__(self):
+        return self.name
+
 
 class CompanyObjectModel(TenantModel):
     """Абстрактный класс для разделяемых по компаниям моделей"""
@@ -85,7 +88,7 @@ class CompanyObjectModel(TenantModel):
         abstract = True
 
 
-class Location(models.Model):
+class Location(CompanyObjectModel):
     name = models.CharField("Название",
                             max_length=100)
     address = models.CharField("Адрес",
@@ -109,7 +112,7 @@ class Coach(models.Model):
         return reverse('crm:manager:coach:detail', kwargs={'pk': self.pk})
 
 
-class Manager(models.Model):
+class Manager(CompanyObjectModel):
     """
     Профиль менеджера
     """
