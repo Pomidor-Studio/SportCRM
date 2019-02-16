@@ -14,5 +14,5 @@ ALLOWED_HOSTS = [
 DATABASES['default'] = dj_database_url.config(
     conn_max_age=600, ssl_require=True,
     # django-multitenant db engine for foreign keys
-    engine='libs.django_multitenant.django_multitenant.backends.postgresql')
+    engine='django_multitenant.backends.postgresql')
 
