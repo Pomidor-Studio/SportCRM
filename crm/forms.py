@@ -47,11 +47,15 @@ class DataAttributesSelect(forms.Select):
 
 
 class ExtendClientSubscriptionForm(forms.Form):
+    visit_limit = forms.CharField(label='Добавить посещений')
+    reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
+
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
-        self.fields['visit_limit'].initial = self.subscription.subscription.visit_limit
-    visit_limit = forms.CharField(label='Добавить посещений')
+
+        self.fields['visit_limit'].initial = \
+            self.subscription.subscription.visit_limit
 
 
 class ClientSubscriptionForm(forms.ModelForm):

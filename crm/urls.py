@@ -61,7 +61,7 @@ manager_client_subs_urlpatterns = ([
     ),
     path(
         '<int:pk>/extend',
-        manager_client_views.ExtendSubscription,
+        manager_client_views.SubscriptionExtend.as_view(),
         name='extend'
     ),
 ], 'subscription')

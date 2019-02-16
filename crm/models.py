@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
@@ -319,10 +319,17 @@ class ClientSubscriptions(models.Model):
         self.end_date = self.subscription.get_end_date(self.start_date)
         super(ClientSubscriptions, self).save(*args, **kwargs)
 
-    def extend_duration(self, visits_left_plus):
-        self.visits_left += int(visits_left_plus)
-        self.end_date = self.end_date + timedelta(self.subscription.duration)
-        self.save()
+    def extend_duration(self, added_visits, reason=''):
+        with transaction.atomic():
+            ExtensionHistory.objects.create(
+                client_subscription=self,
+                reason=reason,
+                added_visits=added_visits
+            )
+            self.visits_left += int(added_visits)
+            self.end_date = self.end_date + timedelta(
+                self.subscription.duration)
+            self.save()
 
     def get_absolute_url(self):
         return reverse(
@@ -336,6 +343,21 @@ class ClientSubscriptions(models.Model):
 
     class Meta:
         ordering = ['purchase_date']
+
+
+class ExtensionHistory(models.Model):
+    client_subscription = models.ForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        verbose_name='Абонемент клиента')
+    date_extended = models.DateTimeField(
+        'Дата продления',
+        default=timezone.now)
+    reason = models.CharField('Причина продления', max_length=255, blank=False)
+    added_visits = models.PositiveIntegerField("Добавлено посещений")
+
+    class Meta:
+        ordering = ['date_extended']
 
 
 class Event(models.Model):

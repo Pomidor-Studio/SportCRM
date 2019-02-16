@@ -1,16 +1,15 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, ListView, UpdateView,
+    CreateView, DeleteView, DetailView, FormView, ListView, UpdateView,
 )
 
 from crm.forms import (
     AttendanceForm, ClientForm, ClientSubscriptionForm,
     ExtendClientSubscriptionForm,
 )
-from crm.models import Attendance, Client, ClientSubscriptions
+from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory
 from crm.views.mixin import UserManagerMixin
 
 
@@ -79,30 +78,50 @@ class AddAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
 
-def ExtendSubscription(request, pk=None):
-    # TODO: Refacor to CBV!!!
-    if request.method == 'POST':
-        print(request.POST)
-        ClientSubscriptions.objects.get(
-            pk=request.POST['object_id']
-        ).extend_duration(request.POST['visit_limit'])
-        return HttpResponseRedirect(
-            reverse(
-                'crm:manager:client:detail',
-                args=[request.POST['client_id']]
-            )
+class SubscriptionExtend(LoginRequiredMixin, UserManagerMixin, FormView):
+    form_class = ExtendClientSubscriptionForm
+    template_name = 'crm/manager/client/subscription_extend.html'
+    object: ClientSubscriptions = ...
+
+    def get_object(self):
+        self.object = get_object_or_404(
+            ClientSubscriptions, id=self.kwargs['pk'])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['subscription'] = self.object
+        return kwargs
+
+    def get(self, request, *args, **kwargs):
+        self.get_object()
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.get_object()
+        return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.object.extend_duration(
+            form['visit_limit'].data,
+            form['reason'].data
         )
-    else:
-        subscription = ClientSubscriptions.objects.get(pk=pk)
-        form = ExtendClientSubscriptionForm(subscription=subscription)
-    return render(
-        request, 'crm/manager/client/subscription_extend.html', {'form': form})
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse(
+            'crm:manager:client:detail', kwargs={'pk': self.object.client_id})
 
 
 class SubscriptionUpdate(LoginRequiredMixin, UserManagerMixin, UpdateView):
     model = ClientSubscriptions
     form_class = ClientSubscriptionForm
     template_name = 'crm/manager/client/add-subscriptions.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['history'] = ExtensionHistory.objects.filter(
+            client_subscription=self.object.id)
+        return context
 
 
 class SubscriptionDelete(LoginRequiredMixin, UserManagerMixin, DeleteView):
