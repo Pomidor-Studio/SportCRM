@@ -1,0 +1,20 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
+{% block extrahead %}
+  {{ form.media }}
+{% endblock extrahead %}
+
+{% block content %}
+  <div class="ml-4 mt-4 mr-4">
+    <h1 class="border-bottom mb-2">Тренировка</h1>
+
+    <form method="post">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+      <input type="submit" value="Сохранить" class="btn btn-primary"/>
+    </form>
+  </div>
+
+{% endblock content %}

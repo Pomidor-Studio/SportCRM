@@ -11,5 +11,3 @@ class HomePage(LoginRequiredMixin, UserCoachMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['coach'] = self.request.user.coach
         return context
-
-

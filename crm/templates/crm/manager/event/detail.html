@@ -1,0 +1,40 @@
+{% extends "crm/base.html" %}
+
+{% block nav %}
+{% endblock nav %}
+
+{% block content %}
+
+  {{ event.date }} - {{ event.event_class.name }} -
+  {{ event.event_class.location }} - {{ event.event_class.coach }}
+
+  <div class="row">
+    <div class="col">
+      <span class="font-weight-bold ">Ученики: </span>
+      <div class="mb-2 mt-2">
+        <a class="btn btn-sm btn-outline-info"
+           href="{% url 'crm:manager:event-class:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить
+          посещение</a>
+      </div>
+      <table class="table table-sm">
+        <thead>
+        <tr>
+          <th scope="col">ФИО</th>
+          <th scope="col"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for attendance in event.attendance_set.all|dictsort:"client.name" %}
+          <tr>
+            <td>{{ attendance.client.name }}</td>
+            <td><a class="btn btn-sm btn-outline-danger"
+                   href="{% url 'crm:manager:attendance:delete' attendance.id %}">Удалить</a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endblock content %}
