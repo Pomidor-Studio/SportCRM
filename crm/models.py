@@ -13,9 +13,11 @@ from django.db import models
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
-from libs.django_multitenant.django_multitenant.fields import *
+#from libs.django_multitenant.django_multitenant.fields import *
 #from libs.django_multitenant.django_multitenant.mixins import *
-from libs.django_multitenant.django_multitenant.models import TenantModel
+#from libs.django_multitenant.django_multitenant.models import TenantModel
+from django_multitenant.fields import *
+from django_multitenant.models import TenantModel
 
 
 class CustomUserManager(UserManager):

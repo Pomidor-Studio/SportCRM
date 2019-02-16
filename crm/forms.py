@@ -12,7 +12,7 @@ from .models import (
 )
 
 
-from libs.django_multitenant.django_multitenant.utils import get_current_tenant
+from django_multitenant.utils import get_current_tenant
 
 
 class TenantModelForm(forms.ModelForm):

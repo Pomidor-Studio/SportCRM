@@ -1,4 +1,4 @@
-from libs.django_multitenant.django_multitenant.utils import set_current_tenant
+from django_multitenant.utils import set_current_tenant
 
 
 def set_current_tenant_for_user(current_user):

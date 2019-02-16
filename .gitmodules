@@ -1,3 +1,0 @@
-[submodule "libs/django_multitenant"]
-	path = libs/django_multitenant
-	url = https://github.com/Pomidor-Studio/django_multitenant.git
