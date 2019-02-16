@@ -1,0 +1,33 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Тренер</legend>
+    <form method="post">
+      {% csrf_token %}
+      {% bootstrap_form form.user %}
+      {% if object.id and not object.user.has_vk_auth %}
+        <div class="form-group">
+        <div class="alert alert-primary" role="alert">
+          Тренер не привязал аккаунт в VK, для этого нужно передать ему временную ссылку.
+        </div>
+        <label for="coach_temp_login">Временная ссылка для привязки VK</label>
+        <input type="text" class="form-control" readonly id="coach_temp_login" value="{{ login_temp_link }}">
+        </div>
+      {% endif %}
+      <div class="form-group">
+        <button class="btn btn-outline-info" type="submit">
+          {% if object.id %}Сохранить{% else %}Добавить{% endif %}
+        </button>
+        <a name="cancel"
+           href="
+             {% if object.id %}{% url 'crm:manager:coach:detail' object.id %}{% else %}{% url 'crm:manager:coach:list' %}{% endif %}"
+           class="btn btn-outline-info">
+          Назад
+        </a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

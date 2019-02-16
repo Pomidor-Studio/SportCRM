@@ -1,36 +1,25 @@
 from datetime import date
 
-from bootstrap_datepicker_plus import DatePickerInput
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import transaction
 from django.http import HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404
-from django.views import View
-from django.views.generic import ListView, DetailView
-from django.views.generic.edit import CreateView, UpdateView, DeleteView
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse, reverse_lazy
-from django import forms
-from django.db import IntegrityError, transaction
+from django.views.generic import DetailView, ListView, TemplateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
 
-from .forms import (ClientForm,
-                    ClientSubscriptionForm,
-                    AttendanceForm,
-                    ExtendClientSubscriptionForm,
-                    EventClassForm,
-                    EventAttendanceForm,
-                    DayOfTheWeekClassForm
-                    )
-
-from .models import (Client,
-                     EventClass,
-                     SubscriptionsType,
-                     ClientSubscriptions,
-                     Attendance,
-                     Event,
-                     DayOfTheWeekClass,
-                     )
+from ..forms import (
+    AttendanceForm, ClientForm, ClientSubscriptionForm, DayOfTheWeekClassForm,
+    EventAttendanceForm, EventClassForm, ExtendClientSubscriptionForm,
+)
+from ..models import (
+    Attendance, Client, ClientSubscriptions, DayOfTheWeekClass, Event,
+    EventClass, SubscriptionsType,
+)
 
 
-def base(request):
-    return render(request, 'crm/base.html')
+class ManagerHomeView(LoginRequiredMixin, TemplateView):
+    template_name = 'crm/base.html'
 
 
 def clientsv(request):
@@ -96,8 +85,7 @@ class SubscriptionCreateView(CreateView):
 
 class SubscriptionUpdateView(UpdateView):
     model = SubscriptionsType
-    fields = ['name', 'price',
-              'duration', 'visit_limit']
+    fields = '__all__'
 
 
 class SubscriptionDeleteView(DeleteView):

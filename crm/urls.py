@@ -1,5 +1,8 @@
-from django.urls import path
+from django.contrib.auth import views as auth_views
+from django.urls import include, path
 
+from crm.views import coach as coach_views, auth as scrm_auth_views
+from crm.views.manager import coach as manager_coach_views
 from .views import (
     ClientUpdateView,
     ClientDeleteView,
@@ -25,8 +28,50 @@ from .views import (
 from . import views
 
 app_name = 'crm'
+
+coach_urlpatterns = ([
+    path('', coach_views.HomePage.as_view(), name='home')
+], 'coach')
+
+auth_urlpatterns = ([
+    path(
+        'login/',
+        auth_views.LoginView.as_view(template_name='crm/auth/login.html'),
+        name='login'
+    ),
+    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path(
+        'redirect/',
+        scrm_auth_views.SportCrmLoginRedirectView.as_view(),
+        name='login-redirect'
+    ),
+], 'accounts')
+
+manager_coach_urlpatterns = ([
+    path('', manager_coach_views.List.as_view(), name='list'),
+    path('<int:pk>/', manager_coach_views.Detail.as_view(), name='detail'),
+    path('new/', manager_coach_views.Create.as_view(), name='new'),
+    path(
+        '<int:pk>/update/',
+        manager_coach_views.Update.as_view(),
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete/',
+        manager_coach_views.Delete.as_view(),
+        name='delete'
+    )
+], 'coach')
+
+manager_urlpaterns = ([
+    path('coach/', include(manager_coach_urlpatterns)),
+], 'manager')
+
 urlpatterns = [
-    path('', views.base, name='base'),
+    path('', views.ManagerHomeView.as_view(), name='base'),
+    path('accounts/', include(auth_urlpatterns)),
+    path('coach/', include(coach_urlpatterns)),
+    path('manager/', include(manager_urlpaterns)),
     path('clients/', views.ClientsListView.as_view(), name='clients'),
     path('clients/<int:pk>/', views.ClientDetailView.as_view(), name='client-detail'),
     path('clients/new/', ClientCreateView.as_view(), name='client-new'),
