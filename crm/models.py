@@ -13,6 +13,10 @@ from django.db import models
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
+from libs.django_multitenant.django_multitenant.fields import *
+#from libs.django_multitenant.django_multitenant.mixins import *
+from libs.django_multitenant.django_multitenant.models import TenantModel
+
 
 class CustomUserManager(UserManager):
     def generate_uniq_username(self, first_name, last_name, prefix='user'):
@@ -61,6 +65,24 @@ class User(AbstractUser):
             return None
 
         return social.extra_data.get(data_key)
+
+
+class Company(models.Model):
+    """Компания. Multitentant строится вокруг этой модели"""
+    name = models.CharField("Название",
+                            max_length=100)
+    tenant_id = 'id'
+
+
+class CompanyObjectModel(TenantModel):
+    """Абстрактный класс для разделяемых по компаниям моделей"""
+    company = models.ForeignKey(Company,
+                                on_delete=models.PROTECT)
+    tenant_id = 'company_id'
+    unique_together = ["id", "company"]
+
+    class Meta:
+        abstract = True
 
 
 class Location(models.Model):

@@ -12,7 +12,26 @@ from .models import (
 )
 
 
-class ClientForm(forms.ModelForm):
+from libs.django_multitenant.django_multitenant.utils import get_current_tenant
+
+
+class TenantModelForm(forms.ModelForm):
+    """Base from for multitenant"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        tenant = get_current_tenant()
+        if tenant:
+            for field in self.fields.values():
+                if isinstance(field, (forms.ModelChoiceField, forms.ModelMultipleChoiceField,)):
+                    # Check if the model being used for the ModelChoiceField has a tenant model field
+                    if hasattr(field.queryset.model, 'tenant_id'):
+                        # Add filter restricting queryset to values to this tenant only.
+                        kwargs = {field.queryset.model.tenant_id: tenant}
+                        field.queryset = field.queryset.filter(**kwargs)
+
+
+class ClientForm(TenantModelForm):
     class Meta:
         model = Client
 
