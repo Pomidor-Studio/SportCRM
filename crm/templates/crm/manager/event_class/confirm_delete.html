@@ -1,0 +1,20 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+  <div class="content-section ml-4 mt-4">
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-2">Тип тренировки</legend>
+        <h2>Вы уверены что хотие удалить тип тренировки "{{ object }}"?</h2>
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-danger" type="submit">Удалить</button>
+        <a class="btn btn-outline-info"
+           href="{% url 'crm:manager:event-class:list' %}">Отмена</a>
+      </div>
+    </form>
+  </div>
+{% endblock content %}

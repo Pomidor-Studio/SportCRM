@@ -49,4 +49,3 @@ def test_user_is_coach(coach_factory):
         is_manager=False,
         is_coach=True
     ))
-

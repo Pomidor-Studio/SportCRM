@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
+from django.db import models, transaction
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
@@ -124,50 +124,69 @@ class Manager(CompanyObjectModel):
 
 
 class EventClass(CompanyObjectModel):
+    """
+    Описание шаблона мероприятия (Класс вид).
+    Например, тренировки в зале бокса у Иванова по средам и пятницам
+    """
     tenant_id = 'company_id'
-    """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
-    name = models.CharField("Название",
-                            max_length=100)
-    location = TenantForeignKey(Location,
-                                on_delete=models.PROTECT,
-                                verbose_name="Расположение")
-    coach = TenantForeignKey(Coach,
-                             on_delete=models.PROTECT,
-                             verbose_name="Тренер"
-                              )
-    date_from = models.DateField("Дата с",
-                                 null=True,
-                                 blank=True)
-    date_to = models.DateField("Дата по",
-                               null=True,
-                               blank=True)
+    name = models.CharField("Название", max_length=100)
+    location = TenantForeignKey(
+        Location,
+        on_delete=models.PROTECT,
+        verbose_name="Расположение")
+    coach = TenantForeignKey(
+        Coach,
+        on_delete=models.PROTECT,
+        verbose_name="Тренер")
+    date_from = models.DateField("Дата с", null=True, blank=True)
+    date_to = models.DateField("Дата по", null=True, blank=True)
 
     def is_event_day(self, day: date) -> bool:
-        """Входит ли переданный день в мероприятия (есть ли в этот день тренировка) """
+        """
+        Возможна ли тренировка в указанный день
+
+        :param day: День который надо проверить
+        :return: Является ли указанный день - днем тренировки
+        """
 
         # Проверяем, входит ли проверяемый день в диапазон проводимых тренировок
-        if (self.date_from and self.date_from > day) or (self.date_to and self.date_to < day):
+        if (self.date_from and self.date_from > day) or \
+                (self.date_to and self.date_to < day):
             return False
 
         # Проверяем, проходят ли в этот день недели тренировки
-        weekdays = self.dayoftheweekclass_set.all();
+        weekdays = self.dayoftheweekclass_set.all()
         if weekdays:
             for weekday in weekdays:
                 if weekday.day == day.weekday():
                     break
             else:
-                return False # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
+                # https://ncoghlan-devs-python-notes.readthedocs.io/en/latest/python_concepts/break_else.html
+                return False
 
         return True
 
-    def get_calendar(self, start_date: date, end_date: date) -> Dict[date, 'Event']:
-        """Возвращаем словарь занятий данного типа тренеровок"""
+    def get_calendar(
+            self, start_date: date, end_date: date) -> Dict[date, 'Event']:
+        """
+        Создает полный календарь одного типа тренировки. Создается список
+        всех возможный дней трениовок, ограниченный диапазоном дат.
+
+        Сами события треннировки не создаются фактически, а могут появится лишь
+        когда на эту тренировку будут назначены ученики.
+
+        :param start_date: Начальная дата календаря
+        :param end_date: Конечная дата календаря
+        :return: Словарь из даты и возможной тренировки
+        """
         events = {event.date: event for event in self.event_set.all()}
-        # Решение влоб - перебор всех дней с проверкой входят ли они в календарь.
-        # TODO: переписать на генератор(yield) - EventClass может возвращать следующий день исходя из настроек
+        # Решение влоб - перебор всех дней с проверкой входят
+        # ли они в календарь.
+        # TODO: переписать на генератор(yield) -
+        #  EventClass может возвращать следующий день исходя из настроек
         for n in range(int((end_date - start_date).days)):
             curr_date = start_date + timedelta(n)
-            if not (curr_date in events):
+            if curr_date not in events:
                 if self.is_event_day(curr_date):
                     events[curr_date] = Event(date=curr_date, event_class=self)
 
@@ -176,11 +195,12 @@ class EventClass(CompanyObjectModel):
     # TODO: Нужны методы:
     #   - Создание нового event
     #       +Получение на конкретную дату
-    #   - Валидация всех event (а можно ли редактировать описание тренировки, если они уже были?)
+    #   - Валидация всех event (а можно ли редактировать описание
+    #   тренировки, если они уже были?)
 
     @staticmethod
     def get_absolute_url():
-        return reverse_lazy('crm:eventclass_list')
+        return reverse_lazy('crm:manager:event-class:list')
 
     def __str__(self):
         return self.name
@@ -207,22 +227,38 @@ granularity = (
 
 
 class SubscriptionsType(CompanyObjectModel):
-    """Типы абонементов
-    Описывает продолжительность действия, количество посещений, какие тренировки позволяет посещать"""
+    """
+    Типы абонементов
+    Описывает продолжительность действия, количество посещений,
+    какие тренировки позволяет посещать
+    """
     name = models.CharField("Название", max_length=100)
     price = models.FloatField("Стоимость")
-    duration_type = models.CharField("Временные рамки абонемента", max_length=20, choices=granularity, default=granularity[0])
+    duration_type = models.CharField(
+        "Временные рамки абонемента",
+        max_length=20,
+        choices=granularity,
+        default=granularity[0]
+    )
     duration = models.PositiveIntegerField("Продолжительность")
-    rounding = models.BooleanField("Округление начала действия абонемента", default=False)
+    rounding = models.BooleanField(
+        "Округление начала действия абонемента",
+        default=False
+    )
     visit_limit = models.PositiveIntegerField("Количество посещений")
-    event_class = models.ManyToManyField(EventClass, verbose_name="Допустимые тренировки")
+    event_class = models.ManyToManyField(
+        EventClass,
+        verbose_name="Допустимые тренировки"
+    )
 
     def __str__(self):
         return 'name: (0)'.format(self.name)
 
     def get_start_date(self, rounding_date):
-        """Возвращает дату начала действия абонемента после округления.
-        rounding_date - дата начала действия абонемента до округления"""
+        """
+        Возвращает дату начала действия абонемента после округления.
+        rounding_date - дата начала действия абонемента до округления
+        """
         if self.rounding:
             weekday = rounding_date.weekday()
             if self.duration_type == granularity[0][0]:
@@ -238,8 +274,10 @@ class SubscriptionsType(CompanyObjectModel):
         return start_date
 
     def get_end_date(self, start_date):
-        """Возвращает дату окончания действия абонемента.
-        start_date - дата начала действия абонемента"""
+        """
+        Возвращает дату окончания действия абонемента.
+        start_date - дата начала действия абонемента
+        """
         end_date = None
         if self.duration_type == granularity[0][0]:
             end_date = start_date + relativedelta(days=self.duration)
@@ -253,7 +291,7 @@ class SubscriptionsType(CompanyObjectModel):
 
     @staticmethod
     def get_absolute_url():
-        return reverse('crm:subscriptions')
+        return reverse('crm:manager:subscription:list')
 
 
 class Client(CompanyObjectModel):
@@ -279,7 +317,7 @@ class Client(CompanyObjectModel):
                                 default=0)
 
     def get_absolute_url(self):
-        return reverse('crm:client-detail', kwargs={'pk':self.pk})
+        return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
 
     @property
     def last_sub(self):
@@ -308,25 +346,45 @@ class ClientSubscriptions(CompanyObjectModel):
         self.end_date = self.subscription.get_end_date(self.start_date)
         super(ClientSubscriptions, self).save(*args, **kwargs)
 
-    def extend_duration(self, visits_left_plus):
-        self.visits_left += int(visits_left_plus)
-        self.end_date = self.end_date + timedelta(self.subscription.duration)
-        self.save()
+    def extend_duration(self, added_visits, reason=''):
+        with transaction.atomic():
+            ExtensionHistory.objects.create(
+                client_subscription=self,
+                reason=reason,
+                added_visits=added_visits
+            )
+            self.visits_left += int(added_visits)
+            self.end_date = self.end_date + timedelta(
+                self.subscription.duration)
+            self.save()
 
     def get_absolute_url(self):
-        return reverse('crm:client-detail', kwargs={'pk': self.client.id})
+        return reverse(
+            'crm:manager:client:detail', kwargs={'pk': self.client.id})
 
     def is_expiring(self):
         current_date = datetime.now(timezone.utc)
         end_date = self.end_date
         delta = end_date - current_date
-        if (delta.days <= 7 or self.visits_left == 1):
-            return True
-        else:
-            return False
+        return delta.days <= 7 or self.visits_left == 1
 
     class Meta:
         ordering = ['purchase_date']
+
+
+class ExtensionHistory(models.Model):
+    client_subscription = models.ForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        verbose_name='Абонемент клиента')
+    date_extended = models.DateTimeField(
+        'Дата продления',
+        default=timezone.now)
+    reason = models.CharField('Причина продления', max_length=255, blank=False)
+    added_visits = models.PositiveIntegerField("Добавлено посещений")
+
+    class Meta:
+        ordering = ['date_extended']
 
 
 class Event(CompanyObjectModel):
