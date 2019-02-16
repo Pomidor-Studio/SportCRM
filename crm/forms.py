@@ -19,10 +19,13 @@ class TenantModelForm(forms.ModelForm):
     """Base from for multitenant"""
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        # никакой универсальности, просто удаляем поле company если оно есть.
+        if "company" in self.fields:
+            del self.fields["company"]
         tenant = get_current_tenant()
         if tenant:
             for field in self.fields.values():
+
                 if isinstance(field, (forms.ModelChoiceField, forms.ModelMultipleChoiceField,)):
                     # Check if the model being used for the ModelChoiceField has a tenant model field
                     if hasattr(field.queryset.model, 'tenant_id'):
@@ -72,7 +75,7 @@ class ExtendClientSubscriptionForm(forms.Form):
     visit_limit = forms.CharField(label='Добавить посещений')
 
 
-class ClientSubscriptionForm(forms.ModelForm):
+class ClientSubscriptionForm(TenantModelForm):
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []
@@ -100,13 +103,13 @@ class ClientSubscriptionForm(forms.ModelForm):
         exclude = ('client', 'end_date')
 
 
-class AttendanceForm(forms.ModelForm):
+class AttendanceForm(TenantModelForm):
     class Meta:
         model = Attendance
         exclude = ('client',)
 
 
-class EventAttendanceForm(forms.ModelForm):
+class EventAttendanceForm(TenantModelForm):
     class Meta:
         model = Attendance
         exclude = ('event',)
@@ -123,7 +126,7 @@ class EventClassForm(TenantModelForm):
         exclude = ('client',)
 
 
-class DayOfTheWeekClassForm(forms.ModelForm):
+class DayOfTheWeekClassForm(TenantModelForm):
 
     checked = forms.BooleanField()
 
@@ -146,7 +149,7 @@ class DayOfTheWeekClassForm(forms.ModelForm):
     # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
 
 
-class UserForm(forms.ModelForm):
+class UserForm(TenantModelForm):
     class Meta:
         model = get_user_model()
         fields = ('first_name', 'last_name')
@@ -159,7 +162,7 @@ class UserForm(forms.ModelForm):
         self.fields['last_name'].required = True
 
 
-class CoachForm(forms.ModelForm):
+class CoachForm(TenantModelForm):
     class Meta:
         model = Coach
         fields = '__all__'

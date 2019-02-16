@@ -13,12 +13,10 @@ from django.db import models
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 
-#from libs.django_multitenant.django_multitenant.fields import *
-#from libs.django_multitenant.django_multitenant.mixins import *
-#from libs.django_multitenant.django_multitenant.models import TenantModel
-from django_multitenant.fields import *
-from django_multitenant.models import TenantModel
 
+from django_multitenant.fields import TenantForeignKey
+from django_multitenant.models import TenantModel
+from django_multitenant.utils import get_current_tenant
 
 class CustomUserManager(UserManager):
     def generate_uniq_username(self, first_name, last_name, prefix='user'):
@@ -69,7 +67,7 @@ class User(AbstractUser):
         return social.extra_data.get(data_key)
 
 
-class Company(models.Model):
+class Company(TenantModel):
     """Компания. Multitentant строится вокруг этой модели"""
     name = models.CharField("Название",
                             max_length=100)
@@ -81,13 +79,14 @@ class Company(models.Model):
 
 class CompanyObjectModel(TenantModel):
     """Абстрактный класс для разделяемых по компаниям моделей"""
-    company = models.ForeignKey(Company,
-                                on_delete=models.PROTECT)
+    company = TenantForeignKey(Company,
+                               default=get_current_tenant,
+                               on_delete=models.PROTECT)
     tenant_id = 'company_id'
-    unique_together = ["id", "company"]
 
     class Meta:
         abstract = True
+        unique_together = ["id", "company"]
 
 
 class Location(CompanyObjectModel):
@@ -101,7 +100,7 @@ class Location(CompanyObjectModel):
         return self.name
 
 
-class Coach(models.Model):
+class Coach(CompanyObjectModel):
     """
     Профиль тренера
     """
@@ -124,16 +123,17 @@ class Manager(CompanyObjectModel):
         return self.user.get_full_name()
 
 
-class EventClass(models.Model):
+class EventClass(CompanyObjectModel):
+    tenant_id = 'company_id'
     """Описание мероприятия (Класс вид). Например, тренировки по средам и пятницам у новичков"""
     name = models.CharField("Название",
                             max_length=100)
-    location = models.ForeignKey(Location,
-                                 on_delete=models.PROTECT,
-                                 verbose_name="Расположение")
-    coach = models.ForeignKey(Coach,
-                              on_delete=models.PROTECT,
-                              verbose_name="Тренер"
+    location = TenantForeignKey(Location,
+                                on_delete=models.PROTECT,
+                                verbose_name="Расположение")
+    coach = TenantForeignKey(Coach,
+                             on_delete=models.PROTECT,
+                             verbose_name="Тренер"
                               )
     date_from = models.DateField("Дата с",
                                  null=True,
@@ -186,9 +186,9 @@ class EventClass(models.Model):
         return self.name
 
 
-class DayOfTheWeekClass(models.Model):
+class DayOfTheWeekClass(CompanyObjectModel):
     """Мероприятие в конкретный день недели, в определенное время, определенной продолжительности"""
-    event = models.ForeignKey(EventClass, on_delete=models.CASCADE, verbose_name="Мероприятие")
+    event = TenantForeignKey(EventClass, on_delete=models.CASCADE, verbose_name="Мероприятие")
     # номер дня недели
     day = models.PositiveSmallIntegerField("День недели", validators=[MinValueValidator(0), MaxValueValidator(6)])
     start_time = models.TimeField("Время начала тренировки", default=timezone.now)
@@ -206,7 +206,7 @@ granularity = (
 )
 
 
-class SubscriptionsType(models.Model):
+class SubscriptionsType(CompanyObjectModel):
     """Типы абонементов
     Описывает продолжительность действия, количество посещений, какие тренировки позволяет посещать"""
     name = models.CharField("Название", max_length=100)
@@ -256,7 +256,7 @@ class SubscriptionsType(models.Model):
         return reverse('crm:subscriptions')
 
 
-class Client(models.Model):
+class Client(CompanyObjectModel):
     """Клиент-Ученик. Котнактные данные. Баланс"""
     name = models.CharField("Имя",
                             max_length=100)
@@ -289,14 +289,14 @@ class Client(models.Model):
         return self.name
 
 
-class ClientSubscriptions(models.Model):
+class ClientSubscriptions(CompanyObjectModel):
     """Абонементы клиента"""
-    client = models.ForeignKey(Client,
-                               on_delete=models.PROTECT,
-                               verbose_name="Ученик")
-    subscription = models.ForeignKey(SubscriptionsType,
-                                     on_delete=models.PROTECT,
-                                     verbose_name="Тип Абонемента")
+    client = TenantForeignKey(Client,
+                              on_delete=models.PROTECT,
+                              verbose_name="Ученик")
+    subscription = TenantForeignKey(SubscriptionsType,
+                                    on_delete=models.PROTECT,
+                                    verbose_name="Тип Абонемента")
     purchase_date = models.DateTimeField("Дата покупки", default=timezone.now)
     start_date = models.DateTimeField("Дата начала", default=timezone.now)
     end_date = models.DateTimeField(null=True)
@@ -329,12 +329,12 @@ class ClientSubscriptions(models.Model):
         ordering = ['purchase_date']
 
 
-class Event(models.Model):
+class Event(CompanyObjectModel):
     """Конкретное мероприятие (тренировка)"""
     date = models.DateField("Дата")
-    event_class = models.ForeignKey(EventClass,
-                                    on_delete=models.PROTECT,
-                                    verbose_name="Тренировка")
+    event_class = TenantForeignKey(EventClass,
+                                   on_delete=models.PROTECT,
+                                   verbose_name="Тренировка")
 
     class Meta:
         unique_together = ('event_class', 'date',)
@@ -349,14 +349,14 @@ class Event(models.Model):
     # TODO: Валидацию по event_class
 
 
-class Attendance(models.Model):
+class Attendance(CompanyObjectModel):
     """Посещение клиентом мероприятия(тренировки)"""
-    client = models.ForeignKey(Client,
-                               on_delete=models.PROTECT,
-                               verbose_name="Ученик")
-    event = models.ForeignKey(Event,
+    client = TenantForeignKey(Client,
                               on_delete=models.PROTECT,
-                              verbose_name="Тренировка")
+                              verbose_name="Ученик")
+    event = TenantForeignKey(Event,
+                             on_delete=models.PROTECT,
+                             verbose_name="Тренировка")
 
     class Meta:
         unique_together = ('client', 'event',)
