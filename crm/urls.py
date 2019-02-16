@@ -139,13 +139,13 @@ manager_events_urlpatterns = ([
 manager_event_class_urlpatterns = ([
     path(
         '',
-        manager_event_class_views.List.as_view(),
+        manager_event_class_views.ObjList.as_view(),
         name='list'
     ),
-    path('new/', manager_event_class_views.eventclass_view, name='new'),
+    path('new/', manager_event_class_views.CreateEdit.as_view(), name='new'),
     path(
         '<int:pk>/update/',
-        manager_event_class_views.eventclass_view,
+        manager_event_class_views.CreateEdit.as_view(),
         name='update'
     ),
     path(

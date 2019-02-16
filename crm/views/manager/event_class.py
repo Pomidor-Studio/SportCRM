@@ -1,12 +1,15 @@
 from datetime import date, timedelta
+from typing import List, Optional
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
-from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView,
+    TemplateView,
 )
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
@@ -14,7 +17,7 @@ from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass
 from crm.views.mixin import UserManagerMixin
 
 
-class List(LoginRequiredMixin, UserManagerMixin, ListView):
+class ObjList(LoginRequiredMixin, UserManagerMixin, ListView):
     model = EventClass
     template_name = 'crm/manager/event_class/list.html'
 
@@ -85,74 +88,82 @@ class MarkEventAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
             'crm:manager:event-class:event-by-date', kwargs=self.kwargs)
 
 
-def eventclass_view(request, pk=None):
-    # TODO: Refactor to CBV!!!
-    """редактирование типа события"""
-    # инициализируем служебный массив 7 пустыми элементами
-    weekdays = [None] * 7
-    if request.method == "POST":
-        if pk:
-            eventclass = get_object_or_404(EventClass, pk=pk)
-        else:
-            eventclass = None
-        eventclass_form = EventClassForm(request.POST, instance=eventclass)
-        eventclass = eventclass_form.save()
+class CreateEdit(LoginRequiredMixin, UserManagerMixin, TemplateView):
+
+    template_name = 'crm/manager/event_class/form.html'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.object = None
+        self.weekdays: List[Optional[DayOfTheWeekClassForm]] = [None] * 7
+        self.form: EventClassForm = None
+
+    def get_object(self):
+        if 'pk' in self.kwargs:
+            self.object = get_object_or_404(EventClass, pk=self.kwargs['pk'])
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'eventclass_form': self.form,
+            'weekdays': self.weekdays
+        })
+        return context
+
+    def get(self, request, *args, **kwargs):
+        self.get_object()
+        prefiled_days = {}
+        if self.object:
+            # Получаем уже записанные дни для тип тренировки
+            prefiled_days = {
+                x.day: x for x in self.object.dayoftheweekclass_set.all()
+            }
+
+        self.form = EventClassForm(instance=self.object)
+
+        # Заполняем форму дней тренировки
+        for i in range(7):
+            sub_form_obj = prefiled_days.get(
+                i, DayOfTheWeekClass(event=self.object, day=i))
+            self.weekdays[i] = DayOfTheWeekClassForm(
+                instance=sub_form_obj,
+                prefix=f'weekday{i}',
+                initial={'checked': bool(sub_form_obj.id)}
+            )
+        return super().get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.get_object()
+
+        self.form = EventClassForm(request.POST, instance=self.object)
         with transaction.atomic():
+            self.object = self.form.save()
+
             # сохраняем или удаляем дни недели, которые уже
             # были у тренировки ранее
-            if pk:
-                for weekday in eventclass.dayoftheweekclass_set.all():
-                    weekdayform = DayOfTheWeekClassForm(
-                        request.POST,
-                        prefix=f'weekday{weekday.day}',
-                        instance=weekday)
-                    if weekdayform.is_valid():
-                        if weekdayform.cleaned_data['checked']:
-                            weekdayform.save()
-                        else:
-                            weekday.delete()
-                    weekdays[weekday.day] = weekdayform
+            for weekday in self.object.dayoftheweekclass_set.all():
+                weekdayform = DayOfTheWeekClassForm(
+                    request.POST,
+                    prefix=f'weekday{weekday.day}',
+                    instance=weekday)
+                if weekdayform.is_valid():
+                    if weekdayform.cleaned_data['checked']:
+                        weekdayform.save()
+                    else:
+                        weekday.delete()
+                self.weekdays[weekday.day] = weekdayform
 
             # Проверяем все остальные дни
             for i in range(7):
-                if not weekdays[i]:
+                if not self.weekdays[i]:
                     weekday = DayOfTheWeekClass(day=i)
                     weekdayform = DayOfTheWeekClassForm(
                         request.POST, prefix=f'weekday{i}', instance=weekday)
                     if weekdayform.is_valid():
                         if weekdayform.cleaned_data['checked']:
-                            weekdayform.instance.event = eventclass
+                            weekdayform.instance.event = self.object
                             weekdayform.save()
-                    weekdays[i] = weekdayform
+                    self.weekdays[i] = weekdayform
 
-    else:
-        if pk:
-            eventclass = get_object_or_404(EventClass, pk=pk)
-            # заполняем формы по сохраненным дням
-            for weekday in eventclass.dayoftheweekclass_set.all():
-                weekdays[weekday.day] = DayOfTheWeekClassForm(
-                    instance=weekday,
-                    prefix=f'weekday{weekday.day}',
-                    initial={'checked': True})
-        else:
-            eventclass = None
-
-        eventclass_form = EventClassForm(instance=eventclass)
-
-        # Заполняем форму по всем остальным дням
-        for i in range(7):
-            if not weekdays[i]:
-                weekday = DayOfTheWeekClass()
-                weekday.event = eventclass
-                weekday.day = i
-                weekdays[i] = DayOfTheWeekClassForm(
-                    instance=weekday, prefix=f'weekday{weekday.day}')
-
-    return render(
-        request,
-        'crm/manager/event_class/form.html',
-        {
-            'eventclass_form': eventclass_form,
-            'weekdays': weekdays
-        }
-    )
+        return HttpResponseRedirect(reverse(
+            'crm:manager:event-class:update', kwargs={'pk': self.object.id}))
