@@ -33,8 +33,8 @@ def get_info_subscription(user_id):
 
         subscriptions = cl.clientsubscriptions_set.filter(
             end_date__gte=current_date, 
-            visits_left__gt=0).select_related('subscription__name')
-        check_sub = subscription.exists()
+            visits_left__gt=0)
+        check_sub = subscriptions.exists()
 
         if not check_sub and check_cl == 1:            
             messages = [name, '!\nВы еще не приобрели абонемент!']
