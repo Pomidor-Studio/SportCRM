@@ -1,7 +1,7 @@
 from bot.api.command_system import Command
 from crm.models import Client, SubscriptionsType
 from datetime import datetime, timezone
-
+#
 
 def get_info_schedule(user_id):
 
