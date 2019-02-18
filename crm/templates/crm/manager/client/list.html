@@ -6,13 +6,12 @@
 {% endblock nav %}
 
 {% block content %}
-  <script type="text/javascript"></script>
-  <script>window.page_name = "Ученики";</script>
 
   <script language="javascript">
     $(function () {
-      $("#clear_search").click(function () {
-        $("#search_input").val("");
+      $("#clear-search").click(function (e) {
+        $('#' + $(this).data('search-id')).val('');
+        $(this).parents('form').submit();
       });
     });
   </script>
@@ -21,23 +20,44 @@
   <div class="ml-4 mt-4 mr-4 container-fluid">
     <legend class="border-bottom mb-2">Ученики</legend>
     <div style="background-color: #FFFFFF;" class="sticky-top">
-      <form class="form-inline mb-2"
-            action="{% url 'crm:manager:client:list' %}" method="GET">
-        <a name="add-new" href="{% url 'crm:manager:client:new' %}"
-           class="btn btn-sm btn-info">Добавить ученика</a>
-        <div class="input-group  ml-2 w-25">
-          <input id="search_input" name="client" placeholder="Искать по ФИО"
-                 value="{{ request.GET.client }}" type="search"
-                 class="form-control form-control-sm">
-          <div class="input-group-append">
-            <input id="clear_search" type="submit" value="X"
-                   class="btn btn-sm btn-outline-danger" type="button">
-          </div>
+      <div class="row">
+        <div class="col-md-1">
+          <a name="add-new"
+             href="{% url 'crm:manager:client:new' %}"
+             class="btn btn-sm btn-info"
+          >
+            Добавить ученика
+          </a>
         </div>
+        <div class="col-md-6">
+          <form class="form-inline mb-2"
+                action="{% url 'crm:manager:client:list' %}" method="GET">
+            <div class="input-group  ml-2 w-50">
+              <input
+                id="{{ filter.form.name.id_for_label }}"
+                name="{{ filter.form.name.name }}"
+                placeholder="{{ filter.form.name.label }}"
+                value="{{ filter.form.name.data|default_if_none:'' }}"
+                type="search"
+                class="form-control form-control-sm"
+              >
+              <div class="input-group-append">
+                <a
+                  href="#"
+                  id="clear-search"
+                  class="btn btn-sm btn-outline-danger"
+                  data-search-id="{{ filter.form.name.id_for_label }}"
+                >
+                  <i class="fas fa-times"></i>
+                </a>
+              </div>
+            </div>
 
-        <input type="submit"
-               value="Поиск" class=" ml-2 btn btn-sm btn-success"/>
-      </form>
+            <input type="submit"
+                   value="Поиск" class=" ml-2 btn btn-sm btn-success"/>
+          </form>
+        </div>
+      </div>
     </div>
 
 
@@ -79,7 +99,7 @@
       </tbody>
     </table>
 
-    {% bootstrap_pagination page_obj %}
+    {% bootstrap_pagination page_obj extra=filter.data.urlencode %}
   </div>
 
 {% endblock content %}
