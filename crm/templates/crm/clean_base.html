@@ -57,9 +57,11 @@
     SportCRM
   </a>
   <ul class="navbar-nav px-3">
-    <li class="nav-item text-nowrap">
-      <a class="nav-link" href="{% url "crm:accounts:logout" %}">Выйти</a>
-    </li>
+    {% if user.is_authenticated %}
+      <li class="nav-item text-nowrap">
+        <a class="nav-link" href="{% url "crm:accounts:logout" %}">Выйти</a>
+      </li>
+    {% endif %}
   </ul>
 </nav>
 {% block main %}{% endblock %}
