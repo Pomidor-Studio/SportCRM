@@ -132,6 +132,12 @@ class DayOfTheWeekClassForm(forms.ModelForm):
     # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
 
 
+class ProfileUserForm(forms.ModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ('username',)
+
+
 class UserForm(forms.ModelForm):
     class Meta:
         model = get_user_model()
