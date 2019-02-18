@@ -2,9 +2,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, FormView, ListView, UpdateView,
+    CreateView, DeleteView, DetailView, FormView, UpdateView,
 )
+from django_filters.views import FilterView
 
+from crm.filters import ClientFilter
 from crm.forms import (
     AttendanceForm, ClientForm, ClientSubscriptionForm,
     ExtendClientSubscriptionForm,
@@ -13,19 +15,12 @@ from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory
 from crm.views.mixin import UserManagerMixin
 
 
-class List(LoginRequiredMixin, UserManagerMixin, ListView):
+class List(LoginRequiredMixin, UserManagerMixin, FilterView):
     model = Client
+    filterset_class = ClientFilter
     template_name = 'crm/manager/client/list.html'
     context_object_name = 'clients'
     paginate_by = 25
-
-    def get_queryset(self):
-        name_query = self.request.GET.get('client')
-        if name_query:
-            clients_list = Client.objects.filter(name__icontains=name_query)
-        else:
-            clients_list = Client.objects.all()
-        return clients_list
 
 
 class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
