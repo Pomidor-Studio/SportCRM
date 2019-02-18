@@ -1,0 +1,64 @@
+{% extends "crm/base.html" %}
+
+{% block nav %}
+{% endblock nav %}
+
+{% block content %}
+  <script type="text/javascript"></script>
+  <script>window.page_name = "Абонементы";</script>
+  <form id="clientsForm" method="POST"
+        style="width: 100%;">
+    <div class="ml-4 mt-4 mr-4">
+      <legend class="border-bottom mb-2">Абонементы</legend>
+      <div style="background-color: #FFFFFF;" class="sticky-top">
+        <a name="add-new" href="{% url 'crm:manager:subscription:new' %}"
+           class="btn btn-sm btn-info mb-2">Добавить абонемент</a>
+      </div>
+
+      <table class="table table-sm table-bordered">
+        <thead>
+        <tr>
+          <th scope="col">№</th>
+          <th scope="col">Название</th>
+          <th scope="col">Цена</th>
+          <th scope="col">Продолжительность (Дней)</th>
+          <th scope="col">Лимит посещений</th>
+          <th scope="col" style="width:5%"></th>
+          <th scope="col" style="width:5%"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for subscription in subscriptions %}
+          <tr>
+            <td>
+              {{ subscription.id }}
+            </td>
+            <td>
+              {{ subscription.name }}
+            </td>
+            <td>
+              {{ subscription.price }}
+            </td>
+            <td>
+              {{ subscription.duration }}
+            </td>
+            <td>
+              {{ subscription.visit_limit }}
+            </td>
+            <td>
+              <a name="edit"
+                 href="{% url 'crm:manager:subscription:update' subscription.id %}"
+                 class="btn btn-sm btn-outline-info">Редактировать</a>
+            </td>
+            <td>
+              <a name="remove"
+                 href="{% url 'crm:manager:subscription:delete' subscription.id %}"
+                 class="btn btn-sm btn-outline-danger">Удалить</a>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+{% endblock content %}

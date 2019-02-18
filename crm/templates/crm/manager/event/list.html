@@ -1,0 +1,28 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+
+  <div class="ml-4 mt-4 mr-4">
+    <h1 class="border-bottom mb-2">Календарь тренировок</h1>
+    <div class="sticky-top">
+      <a name="add-new" href="{% url 'crm:manager:event:new' %}"
+         class="btn btn-primary">Новая тренировка</a>
+    </div>
+    {% if event_list %}
+      <ul>
+        {% for event in event_list %}
+          <li><a href="{% url 'crm:manager:event:detail' event.pk %}">{{ event.date }}
+            - {{ event.event_class.name }} - {{ event.event_class.location }}
+            - {{ event.event_class.coach }}</a>
+            <a href="{% url 'crm:manager:event:update' event.pk %}"><i
+              class="fas fa-pen text-primary"></i></a>
+            <a href="{% url 'crm:manager:event:delete' event.pk %}"><i
+              class="fas fa-minus-circle text-danger"></i></a></li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>Календарь тренировок пуст</p>
+    {% endif %}
+  </div>
+
+{% endblock content %}

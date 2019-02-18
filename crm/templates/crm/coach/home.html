@@ -1,0 +1,17 @@
+{% extends "crm/base.html" %}
+
+{% block content %}
+  <div class="content-section ml-4 mt-4">
+    {% if not user.has_vk_auth %}
+      <div class="alert alert-primary" role="alert">
+        {{ coach|default_if_none:"Тренер" }} вы еще не привязали ваш аккаунт в VK. Для этого просто нажмите кнопку.
+      </div>
+        <a class="btn btn-primary mb-3 w-100"
+           href="{% url "social:begin" "vk-oauth2" %}"
+           role="button">
+          Привязать ВК <i class="fab fa-vk"></i>
+        </a>
+    {%  endif %}
+    Домашная страница тренера
+  </div>
+{% endblock %}
