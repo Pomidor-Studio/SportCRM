@@ -1,9 +1,12 @@
+from django.contrib.auth.models import AnonymousUser
 from django_multitenant.utils import set_current_tenant
 
 
 def set_current_tenant_for_user(current_user):
-    if current_user.is_manager:
-        current_tenant = current_user.manager.company
+    if isinstance(current_user, AnonymousUser):
+        current_tenant = None
+    elif current_user.is_manager or current_user.is_coach:
+        current_tenant = current_user.company
     else:
         current_tenant = None
 

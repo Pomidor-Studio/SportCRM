@@ -2,23 +2,52 @@ from datetime import date, datetime, timedelta
 from itertools import count
 from typing import Dict, Optional
 
-from transliterate import translit
-
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models, transaction
+from django.db import models, transaction, utils
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-
-
 from django_multitenant.fields import TenantForeignKey
+from django_multitenant.mixins import TenantManagerMixin, TenantModelMixin
 from django_multitenant.models import TenantModel
 from django_multitenant.utils import get_current_tenant
+from psycopg2 import Error as Psycopg2Error
+from transliterate import translit
 
-class CustomUserManager(UserManager):
+
+INTERNAL_COMPANY = 'INTERNAL'
+
+
+class Company(models.Model):
+    """Компания. Multitentant строится вокруг этой модели"""
+
+    # Внутренее поле, нужное для работы административных аккаунтов
+    # По факту является своеобразным uuid
+    name = models.CharField("Название", max_length=100, unique=True)
+    display_name = models.CharField('Отображаемое название', max_length=100)
+    tenant_id = 'id'
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        for idx in count(start=1):
+            trans_name = translit(
+                self.display_name, language_code='ru', reversed=True)
+            name = trans_name.replace(' ', '_').lower()
+            inner_name = f'{idx}_{name}'[:100]
+            if not Company.objects.filter(name=inner_name).exists():
+                self.name = inner_name
+                break
+
+        super().save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        return self.display_name
+
+
+class CustomUserManager(TenantManagerMixin, UserManager):
     def generate_uniq_username(self, first_name, last_name, prefix='user'):
         for idx in count():
             trans_f = translit(first_name, language_code='ru', reversed=True)
@@ -30,11 +59,31 @@ class CustomUserManager(UserManager):
     def create_coach(self, first_name, last_name):
         return self.create_user(
             self.generate_uniq_username(first_name, last_name, prefix='coach'),
-            first_name=first_name, last_name=last_name
+            first_name=first_name, last_name=last_name,
+            company=get_current_tenant()
         )
 
 
-class User(AbstractUser):
+def get_user_current_tenant():
+    """
+    Hack, to provide way for admin user creations
+    """
+    current_tenant = get_current_tenant()
+    if current_tenant is None:
+        try:
+            return Company.objects.get(name=INTERNAL_COMPANY)
+        except (Company.DoesNotExist, Psycopg2Error, utils.Error):
+            return None
+
+
+class User(TenantModelMixin, AbstractUser):
+    company = models.ForeignKey(
+        Company,
+        default=get_user_current_tenant,
+        on_delete=models.PROTECT
+    )
+    tenant_id = 'company_id'
+
     objects = CustomUserManager()
 
     @property
@@ -67,21 +116,13 @@ class User(AbstractUser):
         return social.extra_data.get(data_key)
 
 
-class Company(TenantModel):
-    """Компания. Multitentant строится вокруг этой модели"""
-    name = models.CharField("Название",
-                            max_length=100)
-    tenant_id = 'id'
-
-    def __str__(self):
-        return self.name
-
-
 class CompanyObjectModel(TenantModel):
     """Абстрактный класс для разделяемых по компаниям моделей"""
-    company = TenantForeignKey(Company,
-                               default=get_current_tenant,
-                               on_delete=models.PROTECT)
+    company = models.ForeignKey(
+        Company,
+        default=get_current_tenant,
+        on_delete=models.PROTECT
+    )
     tenant_id = 'company_id'
 
     class Meta:
@@ -90,11 +131,8 @@ class CompanyObjectModel(TenantModel):
 
 
 class Location(CompanyObjectModel):
-    name = models.CharField("Название",
-                            max_length=100)
-    address = models.CharField("Адрес",
-                               max_length=1000,
-                               blank=True)
+    name = models.CharField("Название", max_length=100)
+    address = models.CharField("Адрес", max_length=1000, blank=True)
 
     def __str__(self):
         return self.name
@@ -128,7 +166,6 @@ class EventClass(CompanyObjectModel):
     Описание шаблона мероприятия (Класс вид).
     Например, тренировки в зале бокса у Иванова по средам и пятницам
     """
-    tenant_id = 'company_id'
     name = models.CharField("Название", max_length=100)
     location = TenantForeignKey(
         Location,
@@ -316,6 +353,9 @@ class Client(CompanyObjectModel):
     balance = models.FloatField("Баланс",
                                 default=0)
 
+    class Meta:
+        unique_together = ('company', 'name')
+
     def get_absolute_url(self):
         return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
 
@@ -372,8 +412,8 @@ class ClientSubscriptions(CompanyObjectModel):
         ordering = ['purchase_date']
 
 
-class ExtensionHistory(models.Model):
-    client_subscription = models.ForeignKey(
+class ExtensionHistory(CompanyObjectModel):
+    client_subscription = TenantForeignKey(
         ClientSubscriptions,
         on_delete=models.PROTECT,
         verbose_name='Абонемент клиента')
