@@ -10,6 +10,7 @@
       <thead>
       <tr>
         <th scope="col">ФИО</th>
+        <th scope="col">Телефон</th>
         <th scope="col"><i class="fab fa-vk"></i></th>
         <th scope="col">Управление</th>
       </tr>
@@ -18,6 +19,7 @@
       {% for coach in coachs %}
         <tr>
           <td><a href="{% url "crm:manager:coach:detail" coach.id %}">{{ coach }}</a></td>
+          <td>{{ coach.phone_number }}</td>
           <td>
             {% if coach.user.vk_link %}
               <a href="{{ coach.user.vk_link|safe }}" target="_blank">
