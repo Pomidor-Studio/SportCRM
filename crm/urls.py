@@ -30,6 +30,22 @@ auth_urlpatterns = ([
         scrm_auth_views.SportCrmLoginRedirectView.as_view(),
         name='login-redirect'
     ),
+    path('profile/', scrm_auth_views.ProfileView.as_view(), name='profile'),
+    path(
+        'password-change/',
+        scrm_auth_views.SportCrmPasswordChangeView.as_view(),
+        name='password-change'
+    ),
+    path(
+        'password-reset-confirm/',
+        scrm_auth_views.ResetPasswordConfirmView.as_view(),
+        name='password-reset-confirm'
+    ),
+    path(
+        'password-reset/',
+        scrm_auth_views.ResetPasswordView.as_view(),
+        name='password-reset'
+    )
 ], 'accounts')
 
 manager_coach_urlpatterns = ([

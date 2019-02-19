@@ -173,6 +173,12 @@ class FakeNameValidator:
             self.code == other.code
         )
 
+      
+class ProfileUserForm(TenantModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ('username',)
+
 
 class UserForm(TenantModelForm):
     fullname = forms.CharField(
