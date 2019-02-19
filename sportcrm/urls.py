@@ -21,5 +21,6 @@ app_name = 'sportcrm'
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('', include('crm.urls')),
-    path('', include('social_django.urls', namespace='social'))
+    path('', include('social_django.urls', namespace='social')),
+    path('api/v1/', include(('crm.urls_api', 'api-v1'), namespace='api-v1')),
 ]
