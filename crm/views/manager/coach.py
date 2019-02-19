@@ -39,9 +39,7 @@ class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
             form['user']['first_name'].data,
             form['user']['last_name'].data
         )
-        # TODO: Return after coach extra field added to form
-        # coach = form['coach'].save(commit=False)
-        coach = Coach()
+        coach = form['coach'].save(commit=False)
         coach.user = user
         coach.save()
         self.object = coach
@@ -66,7 +64,7 @@ class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
 
     def form_valid(self, form):
         objects = form.save()
-        self.object = objects['user'].coach
+        self.object = objects['coach']
         return redirect(self.get_success_url())
 
     def get_form_kwargs(self):
