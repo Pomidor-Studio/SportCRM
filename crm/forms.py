@@ -1,18 +1,18 @@
 import calendar
 
+from betterforms.multiform import MultiModelForm
 from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
-from betterforms.multiform import MultiModelForm
+from django_multitenant.utils import get_current_tenant
 
 from .models import (
     Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
     EventClass, SubscriptionsType,
 )
-
-
-from django_multitenant.utils import get_current_tenant
 
 
 class TenantModelForm(forms.ModelForm):
@@ -154,28 +154,65 @@ class DayOfTheWeekClassForm(TenantModelForm):
     # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
 
 
+@deconstructible
+class FakeNameValidator:
+    message = (
+        'Не хватает данных для ФИО. '
+        'Возможно вы забыли указать фамилию или имя'
+    )
+    code = 'not_fullname'
+
+    def __call__(self, value):
+        if len(value.strip().split(maxsplit=1)) < 2:
+            raise ValidationError(self.message, code=self.code)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and
+            self.message == other.message and
+            self.code == other.code
+        )
+
+
 class UserForm(TenantModelForm):
+    fullname = forms.CharField(
+        label='ФИО',
+        required=True,
+        widget=forms.TextInput(attrs={'data-name-edit': True}),
+        validators=[FakeNameValidator()]
+    )
+
     class Meta:
         model = get_user_model()
         fields = ('first_name', 'last_name')
+        widgets = {
+            'first_name': forms.HiddenInput(),
+            'last_name': forms.HiddenInput()
+        }
 
     def __init__(self, *args, **kwargs):
-        super(UserForm, self).__init__(*args, **kwargs)
-        # Abstract user model dont't require names
-        # Bur coach creation does
-        self.fields['first_name'].required = True
-        self.fields['last_name'].required = True
+        initial = kwargs.pop('initial', {})
+        instance = kwargs.get('instance', None)
+
+        if instance:
+            if initial is None:
+                initial = {}
+            initial['fullname'] = instance.get_full_name()
+
+        super(UserForm, self).__init__(*args, initial=initial, **kwargs)
 
 
 class CoachForm(TenantModelForm):
     class Meta:
         model = Coach
-        fields = '__all__'
+        fields = ('phone_number',)
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'data-inputmask': True})
+        }
 
 
 class CoachMultiForm(MultiModelForm):
     form_classes = {
         'user': UserForm,
-        # TODO: Add coach form after profile extending
-        # 'coach': CoachForm
+        'coach': CoachForm
     }

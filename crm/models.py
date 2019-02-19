@@ -143,6 +143,7 @@ class Coach(CompanyObjectModel):
     Профиль тренера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
+    phone_number = models.CharField("Телефон", max_length=50, blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
