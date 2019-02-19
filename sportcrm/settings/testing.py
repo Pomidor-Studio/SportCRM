@@ -21,3 +21,9 @@ DATABASES['default'] = dj_database_url.config(
     conn_max_age=600,
     engine='django_postgrespool'
 )
+
+# Disables whitenoise on testing cases
+
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+
+MIDDLEWARE.remove('whitenoise.middleware.WhiteNoiseMiddleware')

@@ -12,7 +12,29 @@ from .models import (
 )
 
 
-class ClientForm(forms.ModelForm):
+from django_multitenant.utils import get_current_tenant
+
+
+class TenantModelForm(forms.ModelForm):
+    """Base from for multitenant"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # никакой универсальности, просто удаляем поле company если оно есть.
+        if "company" in self.fields:
+            del self.fields["company"]
+        tenant = get_current_tenant()
+        if tenant:
+            for field in self.fields.values():
+
+                if isinstance(field, (forms.ModelChoiceField, forms.ModelMultipleChoiceField,)):
+                    # Check if the model being used for the ModelChoiceField has a tenant model field
+                    if hasattr(field.queryset.model, 'tenant_id'):
+                        # Add filter restricting queryset to values to this tenant only.
+                        kwargs = {field.queryset.model.tenant_id: tenant}
+                        field.queryset = field.queryset.filter(**kwargs)
+
+
+class ClientForm(TenantModelForm):
     class Meta:
         model = Client
 
@@ -58,7 +80,7 @@ class ExtendClientSubscriptionForm(forms.Form):
             self.subscription.subscription.visit_limit
 
 
-class ClientSubscriptionForm(forms.ModelForm):
+class ClientSubscriptionForm(TenantModelForm):
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []
@@ -86,19 +108,19 @@ class ClientSubscriptionForm(forms.ModelForm):
         exclude = ('client', 'end_date')
 
 
-class AttendanceForm(forms.ModelForm):
+class AttendanceForm(TenantModelForm):
     class Meta:
         model = Attendance
         exclude = ('client',)
 
 
-class EventAttendanceForm(forms.ModelForm):
+class EventAttendanceForm(TenantModelForm):
     class Meta:
         model = Attendance
         exclude = ('event',)
 
 
-class EventClassForm(forms.ModelForm):
+class EventClassForm(TenantModelForm):
     class Meta:
         model = EventClass
         fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
@@ -109,7 +131,7 @@ class EventClassForm(forms.ModelForm):
         exclude = ('client',)
 
 
-class DayOfTheWeekClassForm(forms.ModelForm):
+class DayOfTheWeekClassForm(TenantModelForm):
 
     checked = forms.BooleanField()
 
@@ -138,7 +160,7 @@ class ProfileUserForm(forms.ModelForm):
         fields = ('username',)
 
 
-class UserForm(forms.ModelForm):
+class UserForm(TenantModelForm):
     class Meta:
         model = get_user_model()
         fields = ('first_name', 'last_name')
@@ -151,7 +173,7 @@ class UserForm(forms.ModelForm):
         self.fields['last_name'].required = True
 
 
-class CoachForm(forms.ModelForm):
+class CoachForm(TenantModelForm):
     class Meta:
         model = Coach
         fields = '__all__'

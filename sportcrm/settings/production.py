@@ -11,5 +11,6 @@ ALLOWED_HOSTS = [
     'sportcrm-usa.herokuapp.com'
 ]
 
+# django-multitenant db engine for foreign keys is broken, use default
 DATABASES['default'] = dj_database_url.config(
     conn_max_age=600, ssl_require=True)
