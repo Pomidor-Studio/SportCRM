@@ -97,10 +97,14 @@ class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
             )
             return HttpResponseRedirect(success_url)
 
+        coach_name = str(self.object)
         user = self.object.user
         self.object.delete()
         user.is_active = False
         user.save()
+
+        messages.info(self.request, f'Тренер {coach_name} удален.')
+
         return HttpResponseRedirect(success_url)
 
 
@@ -110,11 +114,12 @@ class Undelete(LoginRequiredMixin, UserManagerMixin, UnDeleteView):
     context_object_name = 'coach'
     success_url = reverse_lazy('crm:manager:coach:list')
 
-    def delete(self, request, *args, **kwargs):
+    def undelete(self, request, *args, **kwargs):
         self.object = self.get_object()
         user = self.object.user
         success_url = self.get_success_url()
         self.object.undelete()
         user.is_active = True
         user.save()
+        messages.info(self.request, f'Тренер {self.object} возвращен.')
         return HttpResponseRedirect(success_url)

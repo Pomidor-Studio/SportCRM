@@ -1,4 +1,6 @@
+from bootstrap4.components import render_alert
 from django import template
+from django.contrib.messages.storage.base import Message
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.utils.html import format_html
 
@@ -37,3 +39,18 @@ def css(filename):
         '<link rel="stylesheet" type="text/css" href="{}" />',
         staticfiles_storage.url(filename)
     )
+
+
+DJANGO_TO_BOOTSTRAP = {
+    'debug': 'dark',
+    'info': 'info',
+    'success': 'success',
+    'warning': 'warning',
+    'error': 'danger'
+}
+
+
+@register.simple_tag
+def bootstrap_alert_message(message: Message, dismissable=True):
+    return render_alert(
+        str(message), DJANGO_TO_BOOTSTRAP[message.level_tag], dismissable)

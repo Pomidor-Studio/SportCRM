@@ -1,6 +1,6 @@
 {% extends "crm/clean_base.html" %}
 
-{% load static %}
+{% load static html_helper %}
 
 {% block main %}
   <div class="container-fluid">
@@ -8,21 +8,17 @@
       <!--Sidebar-->
       {% include 'crm/bars/sidebar.html' %}
 
-      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+      <main
+        role="main"
+        class="col-md-9 ml-sm-auto col-lg-10 px-4"
+      >
 
         <div class="w-100">
-        {% if messages %}
-          <ul class="messages">
+          {% if messages %}
             {% for message in messages %}
-              <div class="alert alert-info alert-dismissible fade show" role="alert">
-              {{ message }}
-              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-              </button>
-              </div>
+              {% bootstrap_alert_message message %}
             {% endfor %}
-          </ul>
-        {% endif %}
+          {% endif %}
         </div>
         <!--Content-->
         {% block content %}{% endblock %}
