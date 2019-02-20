@@ -4,6 +4,7 @@ from django.views.generic import CreateView, UpdateView, DeleteView
 from django_filters.views import FilterView
 
 from crm.filters import SubscriptionsTypeFilterSet
+from crm.forms import SubscriptionsTypeForm
 from crm.models import SubscriptionsType
 from crm.views.mixin import UserManagerMixin, UnDeleteView
 
@@ -18,13 +19,13 @@ class List(LoginRequiredMixin, UserManagerMixin, FilterView):
 
 class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
     model = SubscriptionsType
-    fields = '__all__'
+    form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
 
 
 class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
     model = SubscriptionsType
-    fields = '__all__'
+    form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
 
 
