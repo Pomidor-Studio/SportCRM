@@ -26,7 +26,6 @@
       <table class="table table-sm table-bordered">
         <thead>
         <tr>
-          <th scope="col">№</th>
           <th scope="col">Название</th>
           <th scope="col">Цена</th>
           <th scope="col">Продолжительность (Дней)</th>
@@ -38,9 +37,6 @@
         <tbody>
         {% for subscription in subscriptions %}
           <tr>
-            <td>
-              {{ subscription.id }}
-            </td>
             <td>
               {{ subscription.name }}
               {% if subscription.deleted %}
