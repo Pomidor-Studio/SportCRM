@@ -8,6 +8,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
+from django.db.models import Q
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
@@ -15,6 +16,7 @@ from django_multitenant.mixins import TenantManagerMixin, TenantModelMixin
 from django_multitenant.models import TenantModel
 from django_multitenant.utils import get_current_tenant
 from psycopg2 import Error as Psycopg2Error
+from safedelete.models import SafeDeleteModel
 from transliterate import translit
 
 
@@ -76,7 +78,7 @@ def get_user_current_tenant():
             return None
 
 
-class User(TenantModelMixin, AbstractUser):
+class User(TenantModel, AbstractUser):
     company = models.ForeignKey(
         Company,
         default=get_user_current_tenant,
@@ -130,7 +132,7 @@ class CompanyObjectModel(TenantModel):
         unique_together = ["id", "company"]
 
 
-class Location(CompanyObjectModel):
+class Location(SafeDeleteModel, CompanyObjectModel):
     name = models.CharField("Название", max_length=100)
     address = models.CharField("Адрес", max_length=1000, blank=True)
 
@@ -138,7 +140,7 @@ class Location(CompanyObjectModel):
         return self.name
 
 
-class Coach(CompanyObjectModel):
+class Coach(SafeDeleteModel, CompanyObjectModel):
     """
     Профиль тренера
     """
@@ -150,6 +152,14 @@ class Coach(CompanyObjectModel):
 
     def get_absolute_url(self):
         return reverse('crm:manager:coach:detail', kwargs={'pk': self.pk})
+
+    @property
+    def has_active_events(self):
+        today = timezone.now().date()
+        return self.eventclass_set.filter(
+            Q(date_from__gt=today) |
+            Q(date_to__gt=today)
+        ).exists()
 
 
 class Manager(CompanyObjectModel):
@@ -264,7 +274,7 @@ granularity = (
 )
 
 
-class SubscriptionsType(CompanyObjectModel):
+class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     """
     Типы абонементов
     Описывает продолжительность действия, количество посещений,

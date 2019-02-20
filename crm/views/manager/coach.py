@@ -1,24 +1,27 @@
 import sesame.utils
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
-    ListView, DetailView, CreateView, UpdateView,
-    DeleteView,
+    CreateView, DeleteView, DetailView, UpdateView,
 )
+from django_filters.views import FilterView
 
-from crm.models import Coach
-from crm.views.mixin import UserManagerMixin
+from crm.filters import CoachFilter
 from crm.forms import CoachMultiForm
+from crm.models import Coach
+from crm.views.mixin import UnDeleteView, UserManagerMixin
 
 
-class List(LoginRequiredMixin, UserManagerMixin, ListView):
+class List(LoginRequiredMixin, UserManagerMixin, FilterView):
     model = Coach
     template_name = 'crm/manager/coach/list.html'
     context_object_name = 'coachs'
     paginate_by = 25
+    filterset_class = CoachFilter
 
 
 class Detail(LoginRequiredMixin, UserManagerMixin, DetailView):
@@ -77,7 +80,32 @@ class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
 
 
 class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
-    template_name = 'crm/manager/coach/delete.html'
+    template_name = 'crm/manager/coach/confirm_delete.html'
+    model = Coach
+    context_object_name = 'coach'
+    success_url = reverse_lazy('crm:manager:coach:list')
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        success_url = self.get_success_url()
+
+        if self.object.has_active_events:
+            messages.error(
+                self.request,
+                f'Невозможно удалить тренера {self.object}\n'
+                f'У этого тренера есть активные тренировки.'
+            )
+            return HttpResponseRedirect(success_url)
+
+        user = self.object.user
+        self.object.delete()
+        user.is_active = False
+        user.save()
+        return HttpResponseRedirect(success_url)
+
+
+class Undelete(LoginRequiredMixin, UserManagerMixin, UnDeleteView):
+    template_name = 'crm/manager/coach/confirm_undelete.html'
     model = Coach
     context_object_name = 'coach'
     success_url = reverse_lazy('crm:manager:coach:list')
@@ -86,6 +114,7 @@ class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
         self.object = self.get_object()
         user = self.object.user
         success_url = self.get_success_url()
-        self.object.delete()
-        user.delete()
+        self.object.undelete()
+        user.is_active = True
+        user.save()
         return HttpResponseRedirect(success_url)

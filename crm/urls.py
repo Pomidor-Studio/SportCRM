@@ -61,6 +61,11 @@ manager_coach_urlpatterns = ([
         '<int:pk>/delete/',
         manager_coach_views.Delete.as_view(),
         name='delete'
+    ),
+    path(
+        '<int:pk>/undelete/',
+        manager_coach_views.Undelete.as_view(),
+        name='undelete'
     )
 ], 'coach')
 
@@ -123,6 +128,11 @@ manager_subscriptions_urlpatterns = ([
         '<int:pk>/delete/',
         manager_subs_views.Delete.as_view(),
         name='delete'
+    ),
+    path(
+        '<int:pk>/undelete/',
+        manager_subs_views.UnDelete.as_view(),
+        name='undelete'
     ),
     path('new/', manager_subs_views.Create.as_view(), name='new'),
 ], 'subscription')
