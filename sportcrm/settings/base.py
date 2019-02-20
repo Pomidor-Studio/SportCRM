@@ -32,6 +32,7 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'crm.apps.CrmConfig',
+    'rest_framework',
     'bootstrap_datepicker_plus',
     'bootstrap4',
     'social_django',

@@ -11,9 +11,13 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView,
     TemplateView,
 )
+from rest_framework.fields import DateField
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
 from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass
+from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import UserManagerMixin
 
 
@@ -33,15 +37,24 @@ class Calendar(LoginRequiredMixin, UserManagerMixin, DetailView):
     context_object_name = 'event_class'
     template_name = 'crm/manager/event_class/calendar.html'
 
-    def get_context_data(self, **kwargs):
-        # По умолчанию выводить календарь на 60 дней
-        # от первого числа текущего месяца
+
+class ApiCalendar(ListAPIView):
+    serializer_class = CalendarEventSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        item_id = self.kwargs.get(self.lookup_field)
         first_day = timezone.now().replace(day=1).date()
-        context = super().get_context_data(**kwargs)
-        context['events'] = self.get_object().get_calendar(
-            first_day, first_day + timedelta(days=60)
-        )
-        return context
+        start = DateField().to_internal_value(
+            self.request.query_params.get('start')
+        ) or first_day
+
+        end = DateField().to_internal_value(
+            self.request.query_params.get('end')
+        ) or (first_day + timedelta(days=31))
+        return EventClass.objects.get(id=item_id).get_calendar(
+            start, end
+        ).values()
 
 
 class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):

@@ -243,6 +243,10 @@ class EventClass(CompanyObjectModel):
     def __str__(self):
         return self.name
 
+    @property
+    def detailed_name(self):
+        return f'{self.name} y {self.coach} в {self.location}'
+
 
 class DayOfTheWeekClass(CompanyObjectModel):
     """Мероприятие в конкретный день недели, в определенное время, определенной продолжительности"""
@@ -430,10 +434,13 @@ class ExtensionHistory(CompanyObjectModel):
 
 class Event(CompanyObjectModel):
     """Конкретное мероприятие (тренировка)"""
+    # TODO: Валидацию по event_class
     date = models.DateField("Дата")
-    event_class = TenantForeignKey(EventClass,
-                                   on_delete=models.PROTECT,
-                                   verbose_name="Тренировка")
+    event_class = TenantForeignKey(
+        EventClass,
+        on_delete=models.PROTECT,
+        verbose_name="Тренировка"
+    )
 
     class Meta:
         unique_together = ('event_class', 'date',)
@@ -444,8 +451,7 @@ class Event(CompanyObjectModel):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
 
     def __str__(self):
-        return self.date.strftime("%Y-%m-%d") + " " + str(self.event_class)
-    # TODO: Валидацию по event_class
+        return f'{self.date:"%Y-%m-%d"} {self.event_class}'
 
 
 class Attendance(CompanyObjectModel):
