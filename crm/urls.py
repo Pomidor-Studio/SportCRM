@@ -9,7 +9,8 @@ from crm.views.manager import (
     subscription as manager_subs_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
-    attendance as manager_attendance_views
+    attendance as manager_attendance_views,
+    location as manager_locations_views
 )
 
 app_name = 'crm'
@@ -193,6 +194,25 @@ manager_attendance_urlpatterns = ([
         name='delete'),
 ], 'attendance')
 
+manager_locations_urlpatterns = ([
+    path(
+        '',
+        manager_locations_views.ObjList.as_view(),
+        name='list'
+    ),
+    path('new/', manager_locations_views.Create.as_view(), name='new'),
+    path(
+        '<int:pk>/update/',
+        manager_locations_views.Update.as_view(),
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete/',
+        manager_locations_views.Delete.as_view(),
+        name='delete'
+    ),
+], 'locations')
+
 manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('coach/', include(manager_coach_urlpatterns)),
@@ -201,6 +221,7 @@ manager_urlpatterns = ([
     path('events/', include(manager_events_urlpatterns)),
     path('event-class/', include(manager_event_class_urlpatterns)),
     path('attendance/', include(manager_attendance_urlpatterns)),
+    path('locations/', include(manager_locations_urlpatterns)),
 ], 'manager')
 
 urlpatterns = [

@@ -1,0 +1,29 @@
+{% extends "crm/base.html" %}
+{% load static %}
+{% block content %}
+<script src="https://unpkg.com/gijgo@1.9.11/js/gijgo.min.js" type="text/javascript"></script>
+<link href="https://unpkg.com/gijgo@1.9.11/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript"></script>
+<script>window.page_name = "Места проведения";</script>
+
+<form action="/eventclass" id="eventForm" method="POST" style="width: 100%;">
+    <div class="ml-4 mt-4 mr-4">
+    <legend class="border-bottom mb-2">Места проведения</legend>
+        <div style="background-color: #FFFFFF;" class="sticky-top">
+            <a name="add-new" href="{% url 'crm:manager:locations:new' %}" class="btn btn-sm btn-info mb-2">Новое место</a>
+        </div>
+    {% if locations %}
+        <ul>
+        {% for location in locations %}
+            <li><a href="{% url 'crm:manager:locations:update' location.pk %}">{{ location.name }} - {{ location.address }}</a>
+                <a href="{% url 'crm:manager:locations:delete' location.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No locations are available.</p>
+    {% endif %}
+    </div>
+</form>
+{% endblock content %}

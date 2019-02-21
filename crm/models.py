@@ -137,6 +137,9 @@ class Location(CompanyObjectModel):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse_lazy('crm:manager:locations:list')
+
 
 class Coach(CompanyObjectModel):
     """
