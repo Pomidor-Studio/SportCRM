@@ -184,8 +184,7 @@ class UserForm(TenantModelForm):
     fullname = forms.CharField(
         label='ФИО',
         required=True,
-        widget=forms.TextInput(attrs={'data-name-edit': True}),
-        validators=[FakeNameValidator()]
+        widget=forms.TextInput(attrs={'data-name-edit': True})
     )
 
     class Meta:
