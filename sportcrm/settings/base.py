@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'bootstrap_datepicker_plus',
     'bootstrap4',
     'social_django',
+    'rules.apps.AutodiscoverRulesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -140,6 +141,7 @@ AUTH_USER_MODEL = 'crm.User'
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.vk.VKOAuth2',
     'sesame.backends.ModelBackend',
+    'rules.permissions.ObjectPermissionBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
