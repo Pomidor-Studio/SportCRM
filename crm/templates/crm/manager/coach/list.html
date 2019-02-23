@@ -6,6 +6,14 @@
   <div class="ml-4 mt-4 mr-4 container-fluid">
     <legend class="border-bottom mb-2">Тренеры</legend>
     <a name="add-new" href="{% url 'crm:manager:coach:new' %}" class="btn btn-sm btn-info">Добавить</a>
+    <a
+      name="toggle-archive"
+      href="{% url 'crm:manager:coach:list' %}?{{ filter.toggled_data.urlencode }}"
+      class="btn btn-sm btn-secondary"
+    >
+      <i class="fas fa-archive"></i>
+      {% if filter.form.with_archive.data %}Cкрыть{% else %}Показать{% endif %} архив
+    </a>
     <table class="table table-striped table-borderless">
       <thead>
       <tr>
@@ -18,7 +26,12 @@
       <tbody>
       {% for coach in coachs %}
         <tr>
-          <td><a href="{% url "crm:manager:coach:detail" coach.id %}">{{ coach }}</a></td>
+          <td>
+            <a href="{% url "crm:manager:coach:detail" coach.id %}">{{ coach }}</a>
+            {% if coach.deleted %}
+              <span class="badge badge-secondary"><i class="fas fa-archive"></i>в ахриве</span>
+            {% endif %}
+          </td>
           <td>{{ coach.phone_number }}</td>
           <td>
             {% if coach.user.vk_link %}
@@ -27,7 +40,11 @@
               </a>
             {% endif %}
           <td>
-            <a href="{% url "crm:manager:coach:delete" coach.id %}" class="btn btn-danger">Удалить</a>
+            {% if coach.deleted %}
+              <a href="{% url "crm:manager:coach:undelete" coach.id %}" class="btn btn-secondary">Вернуть</a>
+            {% else %}
+              <a href="{% url "crm:manager:coach:delete" coach.id %}" class="btn btn-danger">Удалить</a>
+            {% endif %}
           </td>
         </tr>
       {% endfor %}

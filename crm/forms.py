@@ -68,6 +68,12 @@ class DataAttributesSelect(forms.Select):
         return option
 
 
+class SubscriptionsTypeForm(TenantModelForm):
+    class Meta:
+        model = SubscriptionsType
+        fields = '__all__'
+
+
 class ExtendClientSubscriptionForm(forms.Form):
     visit_limit = forms.CharField(label='Добавить посещений')
     reason = forms.CharField(label='Причина продления', widget=forms.Textarea)

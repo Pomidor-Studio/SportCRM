@@ -1,6 +1,6 @@
 {% extends "crm/clean_base.html" %}
 
-{% load static %}
+{% load static html_helper %}
 
 {% block main %}
   <div class="container-fluid">
@@ -8,8 +8,18 @@
       <!--Sidebar-->
       {% include 'crm/bars/sidebar.html' %}
 
-      <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+      <main
+        role="main"
+        class="col-md-9 ml-sm-auto col-lg-10 px-4"
+      >
 
+        <div class="w-100">
+          {% if messages %}
+            {% for message in messages %}
+              {% bootstrap_alert_message message %}
+            {% endfor %}
+          {% endif %}
+        </div>
         <!--Content-->
         {% block content %}{% endblock %}
 
