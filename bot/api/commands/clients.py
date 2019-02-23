@@ -50,7 +50,7 @@ class Clients(Command):
                 messages.extend([
                     str(idx), ') ', sub.subscription.name,
                     '\nОстаток посещений: ', str(sub.visits_left),
-                    '\nДействующий до: ',
+                    '\nДействующий по: ',
                     '{:%d-%m-%Y}'.format(sub.end_date), '\n'
                 ])
 
