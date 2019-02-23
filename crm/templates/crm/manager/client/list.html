@@ -1,6 +1,6 @@
 {% extends "crm/base.html" %}
 
-{% load bootstrap4 %}
+{% load bootstrap4 html_helper %}
 
 {% block nav %}
 {% endblock nav %}
@@ -22,12 +22,14 @@
     <div style="background-color: #FFFFFF;" class="sticky-top">
       <div class="row">
         <div class="col-md-1">
+          {% ifhasperm 'client.add' user %}
           <a name="add-new"
              href="{% url 'crm:manager:client:new' %}"
              class="btn btn-sm btn-info"
           >
             Добавить ученика
           </a>
+          {% endifhasperm %}
         </div>
         <div class="col-md-6">
           <form class="form-inline mb-2"
@@ -72,11 +74,13 @@
       {% for client in clients %}
         <tr>
           <td>
+            {% ifhasperm 'client' user %}
             <a href="{% url 'crm:manager:client:detail' client.id %}">
               <div class="font-weight-bold">{{ client.name }}</div>
               <div>{{ client.phone_number }}</div>
               <div>{{ client.email_address }}</div>
             </a>
+            {% endifhasperm %}
           </td>
           <td>
             {% if client.last_sub %}
@@ -90,8 +94,10 @@
               <div>Действует
                 до {{ client.last_sub.end_date|date:'d N Y' }}</div>
               <div>Осталось {{ client.last_sub.visits_left }} посещений</div>
+              {% ifhasperm 'is_manager' user %}
               <a class="btn btn-sm btn-outline-info"
                  href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}">Продлить</a>
+              {% endifhasperm %}
             {% endif %}
           </td>
         </tr>
