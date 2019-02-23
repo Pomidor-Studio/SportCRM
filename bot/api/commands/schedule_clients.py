@@ -4,7 +4,7 @@ from crm.models import Client, SubscriptionsType
 from datetime import date, timedelta
 
 
-class Schedule_clients(Command):
+class ScheduleClients(Command):
     keys = ['расписание']
     description = 'Информация о Вашем расписание'
 

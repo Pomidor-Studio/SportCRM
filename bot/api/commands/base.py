@@ -35,7 +35,7 @@ class Command:
                     d[(i, j)] = min(d[(i, j)], d[i - 2, j - 2] + cost)  # transposition
         return d[lenstr1 - 1, lenstr2 - 1]
 
-    def is_good_request(self, user_message: str):
+    def is_good_request(self, user_message: str) -> bool:
         for key in self.keys:
             d = self.damerau_levenshtein_distance(user_message, key)
             if d == 0 or d < len(user_message) * 0.4:

@@ -1,6 +1,5 @@
 from typing import Tuple, Optional
 from .base import Command
-from .commands_list import commands_list
 
 
 class Information(Command):
@@ -10,6 +9,7 @@ class Information(Command):
     def process(self, user_id: int) -> Tuple[str, Optional[str]]:
         message = []
         message.append('Список команд:\n')
-        for list in commands_list:
+        from . import allowed_commands
+        for list in allowed_commands:
             message.extend([list.keys[0], ' - ', list.description, '\n'])
         return ''.join(message), ''
