@@ -1,14 +1,15 @@
-from bot.api.command_system import command_list
-from bot.api.command_system import Command
+from typing import Tuple, Optional
+from .base import Command
+from .commands_list import commands_list
 
-def info(user_id):
-   message = 'Список команд:\n'
-   for c in command_list:
-        message += c.keys[0] + ' - ' + c.description + '\n'
-   return message, ''
 
-info_command = Command()
+class Information(Command):
+    keys = ['помощь', 'помоги', 'help', 'хелп']
+    description = 'Покажу список команд'
 
-info_command.keys = ['помощь', 'помоги', 'help','хелп']
-info_command.description = 'Покажу список команд'
-info_command.process = info
+    def process(self, user_id: int) -> Tuple[str, Optional[str]]:
+        message = []
+        message.append('Список команд:\n')
+        for list in commands_list:
+            message.extend([list.keys[0], ' - ', list.description, '\n'])
+        return ''.join(message), ''
