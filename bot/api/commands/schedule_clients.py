@@ -1,7 +1,7 @@
 from typing import Tuple, Optional
 from .base import Command
 from crm.models import Client, SubscriptionsType
-from datetime import date, timedelta
+from datetime import date, timedelta, timezone, datetime
 
 
 class ScheduleClients(Command):
@@ -12,6 +12,7 @@ class ScheduleClients(Command):
 
         messages = []
         start_date = date.today()
+        current_date = datetime.now(timezone.utc)
         end_date = start_date + timedelta(14)
 
         client = Client.objects.filter(vk_user_id=user_id)
@@ -31,7 +32,7 @@ class ScheduleClients(Command):
             messages.extend([name, '!\n'])
 
             subscriptions = cl.clientsubscriptions_set.filter(
-                end_date__gte=start_date,
+                end_date__gte=current_date,
                 visits_left__gt=0)
             check_sub = subscriptions.exists()
 
@@ -42,14 +43,22 @@ class ScheduleClients(Command):
                 messages.append('\nВы еще не приобрели абонемент!\n')
                 continue
 
+            training = []
+
             for sub in subscriptions:
                 sub_type = SubscriptionsType.objects.get(id=sub.subscription_id)
                 events = sub_type.event_class.filter()
 
-                for ev in events:
+                for event in events:
                     messages.append('\n')
-                    calendar = ev.get_calendar(start_date, end_date)
-                    for key, value in calendar.items():
-                        messages.extend([str(value), '\n'])
+                    calendar = event.get_calendar(start_date, end_date)
+                    for value in calendar.values():
+                        training.extend([str(value), '\n'])
+
+            training = list(set(training))
+            training.sort()
+
+            for tr in training:
+                messages.extend([''.join(tr), '\n'])
 
         return ''.join(messages), ''
