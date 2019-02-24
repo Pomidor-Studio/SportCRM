@@ -1,10 +1,10 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
 )
 from django_filters.views import FilterView
+from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.filters import ClientFilter
@@ -13,7 +13,6 @@ from crm.forms import (
     ExtendClientSubscriptionForm,
 )
 from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory
-from crm.views.mixin import UserManagerMixin
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -25,21 +24,21 @@ class List(PermissionRequiredMixin, FilterView):
     permission_required = 'client'
 
 
-class Create(PermissionRequiredMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.add'
 
 
-class Update(PermissionRequiredMixin, UpdateView):
+class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.edit'
 
 
-class Delete(PermissionRequiredMixin, DeleteView):
+class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = Client
     template_name = 'crm/manager/client/confirm_delete.html'
     success_url = reverse_lazy('crm:manager:client:list')
@@ -52,7 +51,7 @@ class Detail(PermissionRequiredMixin, DetailView):
     permission_required = 'client'
 
 
-class AddSubscription(PermissionRequiredMixin, CreateView):
+class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
     form_class = ClientSubscriptionForm
     template_name = "crm/manager/client/add-subscriptions.html"
     permission_required = 'is_manager'
@@ -66,7 +65,7 @@ class AddSubscription(PermissionRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class AddAttendance(PermissionRequiredMixin, CreateView):
+class AddAttendance(PermissionRequiredMixin, RevisionMixin, CreateView):
     model = Attendance
     form_class = AttendanceForm
     template_name = "crm/manager/client/add-attendance.html"
@@ -81,7 +80,7 @@ class AddAttendance(PermissionRequiredMixin, CreateView):
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
 
-class SubscriptionExtend(PermissionRequiredMixin, FormView):
+class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
     form_class = ExtendClientSubscriptionForm
     template_name = 'crm/manager/client/subscription_extend.html'
     permission_required = 'is_manager'
@@ -117,7 +116,7 @@ class SubscriptionExtend(PermissionRequiredMixin, FormView):
             'crm:manager:client:detail', kwargs={'pk': self.object.client_id})
 
 
-class SubscriptionUpdate(PermissionRequiredMixin, UpdateView):
+class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = ClientSubscriptions
     form_class = ClientSubscriptionForm
     template_name = 'crm/manager/client/add-subscriptions.html'
@@ -130,7 +129,7 @@ class SubscriptionUpdate(PermissionRequiredMixin, UpdateView):
         return context
 
 
-class SubscriptionDelete(PermissionRequiredMixin, DeleteView):
+class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = ClientSubscriptions
     template_name = 'crm/manager/client/subscription_confirm_delete.html'
     permission_required = 'is_manager'

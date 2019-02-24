@@ -30,13 +30,18 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+# Order of installed apps matters
+# social_django MUST be defined BEFORE crm.apps.CrmConfig
+# as we redefine social_django admin for purposes of django-reversion
 INSTALLED_APPS = [
-    'crm.apps.CrmConfig',
     'rest_framework',
     'bootstrap_datepicker_plus',
     'bootstrap4',
     'social_django',
     'rules.apps.AutodiscoverRulesConfig',
+    'reversion',
+    'reversion_compare',
+    'crm.apps.CrmConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

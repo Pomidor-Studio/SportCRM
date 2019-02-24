@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django_filters.views import FilterView
+from reversion.views import RevisionMixin
 
 from crm.filters import SubscriptionsTypeFilterSet
 from crm.forms import SubscriptionsTypeForm
@@ -17,25 +18,30 @@ class List(LoginRequiredMixin, UserManagerMixin, FilterView):
     filterset_class = SubscriptionsTypeFilterSet
 
 
-class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
+class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
 
 
-class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
+class Update(LoginRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
+class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
     model = SubscriptionsType
     success_url = reverse_lazy('crm:manager:subscription:list')
     template_name = 'crm/manager/subscription/confirm_delete.html'
 
 
-class UnDelete(LoginRequiredMixin, UserManagerMixin, UnDeleteView):
+class UnDelete(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    UnDeleteView
+):
     model = SubscriptionsType
     success_url = reverse_lazy('crm:manager:subscription:list')
     template_name = 'crm/manager/subscription/confirm_undelete.html'

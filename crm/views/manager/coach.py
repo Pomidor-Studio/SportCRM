@@ -9,6 +9,7 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView, UpdateView,
 )
 from django_filters.views import FilterView
+from reversion.views import RevisionMixin
 
 from crm.filters import CoachFilter
 from crm.forms import CoachMultiForm
@@ -30,7 +31,7 @@ class Detail(LoginRequiredMixin, UserManagerMixin, DetailView):
     context_object_name = 'coach'
 
 
-class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
+class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
     template_name = 'crm/manager/coach/form.html'
     model = Coach
     form_class = CoachMultiForm
@@ -49,7 +50,7 @@ class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
         return redirect(self.get_success_url())
 
 
-class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
+class Update(LoginRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
     template_name = 'crm/manager/coach/form.html'
     model = Coach
     form_class = CoachMultiForm
@@ -79,7 +80,7 @@ class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
         return kwargs
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
+class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
     template_name = 'crm/manager/coach/confirm_delete.html'
     model = Coach
     context_object_name = 'coach'
@@ -108,7 +109,12 @@ class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
         return HttpResponseRedirect(success_url)
 
 
-class Undelete(LoginRequiredMixin, UserManagerMixin, UnDeleteView):
+class Undelete(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    UnDeleteView
+):
     template_name = 'crm/manager/coach/confirm_undelete.html'
     model = Coach
     context_object_name = 'coach'

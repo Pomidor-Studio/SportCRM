@@ -14,6 +14,7 @@ from django.views.generic import (
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
+from reversion.views import RevisionMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
 from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass
@@ -26,7 +27,7 @@ class ObjList(LoginRequiredMixin, UserManagerMixin, ListView):
     template_name = 'crm/manager/event_class/list.html'
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
+class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:manager:event-class:list')
     template_name = 'crm/manager/event_class/confirm_delete.html'
@@ -77,7 +78,12 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
             return Event(date=event_date, event_class=event_class)
 
 
-class MarkEventAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
+class MarkEventAttendance(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    CreateView
+):
     template_name = 'crm/manager/client/add-attendance.html'
     form_class = EventAttendanceForm
 
@@ -101,7 +107,12 @@ class MarkEventAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
             'crm:manager:event-class:event-by-date', kwargs=self.kwargs)
 
 
-class CreateEdit(LoginRequiredMixin, UserManagerMixin, TemplateView):
+class CreateEdit(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    TemplateView
+):
 
     template_name = 'crm/manager/event_class/form.html'
 
