@@ -1,0 +1,17 @@
+{% extends "crm/base.html" %}
+{% block content %}
+  <div class="content-section ml-4 mt-4">
+    <form method="post">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-2">Тренер: {{ coach }}</legend>
+        <h2>Вы действительно хотете вернуть тренера "{{ coach }}"?</h2>
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-success" type="submit">Вернуть</button>
+        <a class="btn btn-outline-info"
+           href="{% url 'crm:manager:coach:list' %}">Отмена</a>
+      </div>
+    </form>
+  </div>
+{% endblock content %}

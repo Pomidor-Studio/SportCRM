@@ -1,10 +1,13 @@
 import calendar
 
+from betterforms.multiform import MultiModelForm
 from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
 from django import forms
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
-from betterforms.multiform import MultiModelForm
+from django_multitenant.utils import get_current_tenant
 
 from .models import (
     Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
@@ -12,7 +15,26 @@ from .models import (
 )
 
 
-class ClientForm(forms.ModelForm):
+class TenantModelForm(forms.ModelForm):
+    """Base from for multitenant"""
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # никакой универсальности, просто удаляем поле company если оно есть.
+        if "company" in self.fields:
+            del self.fields["company"]
+        tenant = get_current_tenant()
+        if tenant:
+            for field in self.fields.values():
+
+                if isinstance(field, (forms.ModelChoiceField, forms.ModelMultipleChoiceField,)):
+                    # Check if the model being used for the ModelChoiceField has a tenant model field
+                    if hasattr(field.queryset.model, 'tenant_id'):
+                        # Add filter restricting queryset to values to this tenant only.
+                        kwargs = {field.queryset.model.tenant_id: tenant}
+                        field.queryset = field.queryset.filter(**kwargs)
+
+
+class ClientForm(TenantModelForm):
     class Meta:
         model = Client
 
@@ -46,6 +68,12 @@ class DataAttributesSelect(forms.Select):
         return option
 
 
+class SubscriptionsTypeForm(TenantModelForm):
+    class Meta:
+        model = SubscriptionsType
+        fields = '__all__'
+
+
 class ExtendClientSubscriptionForm(forms.Form):
     visit_limit = forms.CharField(label='Добавить посещений')
     reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
@@ -58,7 +86,7 @@ class ExtendClientSubscriptionForm(forms.Form):
             self.subscription.subscription.visit_limit
 
 
-class ClientSubscriptionForm(forms.ModelForm):
+class ClientSubscriptionForm(TenantModelForm):
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []
@@ -86,19 +114,19 @@ class ClientSubscriptionForm(forms.ModelForm):
         exclude = ('client', 'end_date')
 
 
-class AttendanceForm(forms.ModelForm):
+class AttendanceForm(TenantModelForm):
     class Meta:
         model = Attendance
         exclude = ('client',)
 
 
-class EventAttendanceForm(forms.ModelForm):
+class EventAttendanceForm(TenantModelForm):
     class Meta:
         model = Attendance
         exclude = ('event',)
 
 
-class EventClassForm(forms.ModelForm):
+class EventClassForm(TenantModelForm):
     class Meta:
         model = EventClass
         fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
@@ -109,7 +137,7 @@ class EventClassForm(forms.ModelForm):
         exclude = ('client',)
 
 
-class DayOfTheWeekClassForm(forms.ModelForm):
+class DayOfTheWeekClassForm(TenantModelForm):
 
     checked = forms.BooleanField()
 
@@ -132,28 +160,70 @@ class DayOfTheWeekClassForm(forms.ModelForm):
     # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
 
 
-class UserForm(forms.ModelForm):
+@deconstructible
+class FakeNameValidator:
+    message = (
+        'Не хватает данных для ФИО. '
+        'Возможно вы забыли указать фамилию или имя'
+    )
+    code = 'not_fullname'
+
+    def __call__(self, value):
+        if len(value.strip().split(maxsplit=1)) < 2:
+            raise ValidationError(self.message, code=self.code)
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__) and
+            self.message == other.message and
+            self.code == other.code
+        )
+
+      
+class ProfileUserForm(TenantModelForm):
+    class Meta:
+        model = get_user_model()
+        fields = ('username',)
+
+
+class UserForm(TenantModelForm):
+    fullname = forms.CharField(
+        label='ФИО',
+        required=True,
+        widget=forms.TextInput(attrs={'data-name-edit': True})
+    )
+
     class Meta:
         model = get_user_model()
         fields = ('first_name', 'last_name')
+        widgets = {
+            'first_name': forms.HiddenInput(),
+            'last_name': forms.HiddenInput()
+        }
 
     def __init__(self, *args, **kwargs):
-        super(UserForm, self).__init__(*args, **kwargs)
-        # Abstract user model dont't require names
-        # Bur coach creation does
-        self.fields['first_name'].required = True
-        self.fields['last_name'].required = True
+        initial = kwargs.pop('initial', {})
+        instance = kwargs.get('instance', None)
+
+        if instance:
+            if initial is None:
+                initial = {}
+            initial['fullname'] = instance.get_full_name()
+
+        super(UserForm, self).__init__(*args, initial=initial, **kwargs)
 
 
-class CoachForm(forms.ModelForm):
+class CoachForm(TenantModelForm):
     class Meta:
         model = Coach
-        fields = '__all__'
+        fields = ('phone_number',)
+        widgets = {
+            'phone_number': forms.TextInput(attrs={'data-inputmask': True})
+        }
 
 
 class CoachMultiForm(MultiModelForm):
     form_classes = {
         'user': UserForm,
-        # TODO: Add coach form after profile extending
-        # 'coach': CoachForm
+        'coach': CoachForm
     }

@@ -1,5 +1,7 @@
 {% extends "crm/base.html" %}
 
+{% load html_helper %}
+
 {% block nav %}
 {% endblock nav %}
 
@@ -48,11 +50,18 @@
 <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">{{ object.name }}</legend>
     <div class="row mb-2">
-        <div class="container-fluid">
-            <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:update' object.id %}">Изменить</a>
-            <a name="cancel" href="{% url 'crm:manager:client:list' %}" class="btn btn-sm btn-outline-info">Назад</a>
-            <a class="btn btn-sm btn-outline-danger"  href="{% url 'crm:manager:client:delete' object.id %}">Удалить</a>
-        </div>
+      <div class="container-fluid">
+        {% ifhasperm 'client.edit' user %}
+        <a class="btn btn-sm btn-outline-info"
+           href="{% url 'crm:manager:client:update' object.id %}">Изменить</a>
+        {% endifhasperm %}
+        <a name="cancel" href="{% url 'crm:manager:client:list' %}"
+           class="btn btn-sm btn-outline-info">Назад</a>
+        {% ifhasperm 'client.delete' user %}
+        <a class="btn btn-sm btn-outline-danger"
+           href="{% url 'crm:manager:client:delete' object.id %}">Удалить</a>
+        {% endifhasperm %}
+      </div>
     </div>
     <div class="row">
         <label id="id_vk_user_id" hidden="true">{{ object.vk_user_id }}</label>

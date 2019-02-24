@@ -14,7 +14,7 @@ import os
 from django.urls import reverse_lazy
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 # Quick-start development settings - unsuitable for production
@@ -32,9 +32,11 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'crm.apps.CrmConfig',
+    'rest_framework',
     'bootstrap_datepicker_plus',
     'bootstrap4',
     'social_django',
+    'rules.apps.AutodiscoverRulesConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'sesame.middleware.AuthenticationMiddleware',
+    'crm.middleware.SetTenantMiddleware'
 ]
 
 ROOT_URLCONF = 'sportcrm.urls'
@@ -138,6 +141,7 @@ AUTH_USER_MODEL = 'crm.User'
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.vk.VKOAuth2',
     'sesame.backends.ModelBackend',
+    'rules.permissions.ObjectPermissionBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 

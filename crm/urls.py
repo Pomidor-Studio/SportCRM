@@ -9,7 +9,8 @@ from crm.views.manager import (
     subscription as manager_subs_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
-    attendance as manager_attendance_views
+    attendance as manager_attendance_views,
+    location as manager_locations_views
 )
 
 app_name = 'crm'
@@ -30,6 +31,22 @@ auth_urlpatterns = ([
         scrm_auth_views.SportCrmLoginRedirectView.as_view(),
         name='login-redirect'
     ),
+    path('profile/', scrm_auth_views.ProfileView.as_view(), name='profile'),
+    path(
+        'password-change/',
+        scrm_auth_views.SportCrmPasswordChangeView.as_view(),
+        name='password-change'
+    ),
+    path(
+        'password-reset-confirm/',
+        scrm_auth_views.ResetPasswordConfirmView.as_view(),
+        name='password-reset-confirm'
+    ),
+    path(
+        'password-reset/',
+        scrm_auth_views.ResetPasswordView.as_view(),
+        name='password-reset'
+    )
 ], 'accounts')
 
 manager_coach_urlpatterns = ([
@@ -45,6 +62,11 @@ manager_coach_urlpatterns = ([
         '<int:pk>/delete/',
         manager_coach_views.Delete.as_view(),
         name='delete'
+    ),
+    path(
+        '<int:pk>/undelete/',
+        manager_coach_views.Undelete.as_view(),
+        name='undelete'
     )
 ], 'coach')
 
@@ -107,6 +129,11 @@ manager_subscriptions_urlpatterns = ([
         '<int:pk>/delete/',
         manager_subs_views.Delete.as_view(),
         name='delete'
+    ),
+    path(
+        '<int:pk>/undelete/',
+        manager_subs_views.UnDelete.as_view(),
+        name='undelete'
     ),
     path('new/', manager_subs_views.Create.as_view(), name='new'),
 ], 'subscription')
@@ -177,6 +204,25 @@ manager_attendance_urlpatterns = ([
         name='delete'),
 ], 'attendance')
 
+manager_locations_urlpatterns = ([
+    path(
+        '',
+        manager_locations_views.ObjList.as_view(),
+        name='list'
+    ),
+    path('new/', manager_locations_views.Create.as_view(), name='new'),
+    path(
+        '<int:pk>/update/',
+        manager_locations_views.Update.as_view(),
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete/',
+        manager_locations_views.Delete.as_view(),
+        name='delete'
+    ),
+], 'locations')
+
 manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('coach/', include(manager_coach_urlpatterns)),
@@ -185,6 +231,7 @@ manager_urlpatterns = ([
     path('events/', include(manager_events_urlpatterns)),
     path('event-class/', include(manager_event_class_urlpatterns)),
     path('attendance/', include(manager_attendance_urlpatterns)),
+    path('locations/', include(manager_locations_urlpatterns)),
 ], 'manager')
 
 urlpatterns = [

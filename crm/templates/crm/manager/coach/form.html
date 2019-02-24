@@ -1,5 +1,23 @@
 {% extends "crm/base.html" %}
 
+{% block extrahead %}
+  <script
+    src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $('[data-inputmask]').inputmask({"mask": "+7 (999) 999-99-99"});
+      $('[data-name-edit]').on('input', function () {
+        var data = $(this).val().trim();
+        var items = data.split(' ');
+        var result = items.splice(0, 1);
+        result.push(items.join(' '));
+        $('#' + '{{ form.user.first_name.id_for_label }}').val(result[0]);
+        $('#' + '{{ form.user.last_name.id_for_label }}').val(result[1]);
+      });
+    });
+  </script>
+{% endblock %}
+
 {% load bootstrap4 %}
 
 {% block content %}
@@ -8,13 +26,16 @@
     <form method="post">
       {% csrf_token %}
       {% bootstrap_form form.user %}
+      {% bootstrap_form form.coach %}
       {% if object.id and not object.user.has_vk_auth %}
         <div class="form-group">
-        <div class="alert alert-primary" role="alert">
-          Тренер не привязал аккаунт в VK, для этого нужно передать ему временную ссылку.
-        </div>
-        <label for="coach_temp_login">Временная ссылка для привязки VK</label>
-        <input type="text" class="form-control" readonly id="coach_temp_login" value="{{ login_temp_link }}">
+          <div class="alert alert-primary" role="alert">
+            Тренер не привязал аккаунт в VK, для этого нужно передать ему
+            временную ссылку.
+          </div>
+          <label for="coach_temp_login">Временная ссылка для привязки VK</label>
+          <input type="text" class="form-control" readonly id="coach_temp_login"
+                 value="{{ login_temp_link }}">
         </div>
       {% endif %}
       <div class="form-group">
@@ -22,8 +43,7 @@
           {% if object.id %}Сохранить{% else %}Добавить{% endif %}
         </button>
         <a name="cancel"
-           href="
-             {% if object.id %}{% url 'crm:manager:coach:detail' object.id %}{% else %}{% url 'crm:manager:coach:list' %}{% endif %}"
+           href="{% if object.id %}{% url 'crm:manager:coach:detail' object.id %}{% else %}{% url 'crm:manager:coach:list' %}{% endif %}"
            class="btn btn-outline-info">
           Назад
         </a>

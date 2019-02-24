@@ -2,19 +2,54 @@ from datetime import date, datetime, timedelta
 from itertools import count
 from typing import Dict, Optional
 
-from transliterate import translit
-
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models, transaction
+from django.db import models, transaction, utils
+from django.db.models import Q
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django_multitenant.fields import TenantForeignKey
+from django_multitenant.mixins import TenantManagerMixin, TenantModelMixin
+from django_multitenant.models import TenantModel
+from django_multitenant.utils import get_current_tenant
+from psycopg2 import Error as Psycopg2Error
+from safedelete.models import SafeDeleteModel
+from transliterate import translit
 
 
-class CustomUserManager(UserManager):
+INTERNAL_COMPANY = 'INTERNAL'
+
+
+class Company(models.Model):
+    """Компания. Multitentant строится вокруг этой модели"""
+
+    # Внутренее поле, нужное для работы административных аккаунтов
+    # По факту является своеобразным uuid
+    name = models.CharField("Название", max_length=100, unique=True)
+    display_name = models.CharField('Отображаемое название', max_length=100)
+    tenant_id = 'id'
+
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        for idx in count(start=1):
+            trans_name = translit(
+                self.display_name, language_code='ru', reversed=True)
+            name = trans_name.replace(' ', '_').lower()
+            inner_name = f'{idx}_{name}'[:100]
+            if not Company.objects.filter(name=inner_name).exists():
+                self.name = inner_name
+                break
+
+        super().save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        return self.display_name
+
+
+class CustomUserManager(TenantManagerMixin, UserManager):
     def generate_uniq_username(self, first_name, last_name, prefix='user'):
         for idx in count():
             trans_f = translit(first_name, language_code='ru', reversed=True)
@@ -26,11 +61,31 @@ class CustomUserManager(UserManager):
     def create_coach(self, first_name, last_name):
         return self.create_user(
             self.generate_uniq_username(first_name, last_name, prefix='coach'),
-            first_name=first_name, last_name=last_name
+            first_name=first_name, last_name=last_name,
+            company=get_current_tenant()
         )
 
 
-class User(AbstractUser):
+def get_user_current_tenant():
+    """
+    Hack, to provide way for admin user creations
+    """
+    current_tenant = get_current_tenant()
+    if current_tenant is None:
+        try:
+            return Company.objects.get(name=INTERNAL_COMPANY)
+        except (Company.DoesNotExist, Psycopg2Error, utils.Error):
+            return None
+
+
+class User(TenantModel, AbstractUser):
+    company = models.ForeignKey(
+        Company,
+        default=get_user_current_tenant,
+        on_delete=models.PROTECT
+    )
+    tenant_id = 'company_id'
+
     objects = CustomUserManager()
 
     @property
@@ -63,22 +118,37 @@ class User(AbstractUser):
         return social.extra_data.get(data_key)
 
 
-class Location(models.Model):
-    name = models.CharField("Название",
-                            max_length=100)
-    address = models.CharField("Адрес",
-                               max_length=1000,
-                               blank=True)
+class CompanyObjectModel(TenantModel):
+    """Абстрактный класс для разделяемых по компаниям моделей"""
+    company = models.ForeignKey(
+        Company,
+        default=get_current_tenant,
+        on_delete=models.PROTECT
+    )
+    tenant_id = 'company_id'
+
+    class Meta:
+        abstract = True
+        unique_together = ["id", "company"]
+
+
+class Location(SafeDeleteModel, CompanyObjectModel):
+    name = models.CharField("Название", max_length=100)
+    address = models.CharField("Адрес", max_length=1000, blank=True)
 
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return reverse_lazy('crm:manager:locations:list')
 
-class Coach(models.Model):
+
+class Coach(SafeDeleteModel, CompanyObjectModel):
     """
     Профиль тренера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
+    phone_number = models.CharField("Телефон", max_length=50, blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -86,8 +156,16 @@ class Coach(models.Model):
     def get_absolute_url(self):
         return reverse('crm:manager:coach:detail', kwargs={'pk': self.pk})
 
+    @property
+    def has_active_events(self):
+        today = timezone.now().date()
+        return self.eventclass_set.filter(
+            Q(date_from__gt=today) |
+            Q(date_to__gt=today)
+        ).exists()
 
-class Manager(models.Model):
+
+class Manager(CompanyObjectModel):
     """
     Профиль менеджера
     """
@@ -97,17 +175,17 @@ class Manager(models.Model):
         return self.user.get_full_name()
 
 
-class EventClass(models.Model):
+class EventClass(CompanyObjectModel):
     """
     Описание шаблона мероприятия (Класс вид).
     Например, тренировки в зале бокса у Иванова по средам и пятницам
     """
     name = models.CharField("Название", max_length=100)
-    location = models.ForeignKey(
+    location = TenantForeignKey(
         Location,
         on_delete=models.PROTECT,
         verbose_name="Расположение")
-    coach = models.ForeignKey(
+    coach = TenantForeignKey(
         Coach,
         on_delete=models.PROTECT,
         verbose_name="Тренер")
@@ -178,10 +256,14 @@ class EventClass(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def detailed_name(self):
+        return f'{self.name} y {self.coach} в {self.location}'
 
-class DayOfTheWeekClass(models.Model):
+
+class DayOfTheWeekClass(CompanyObjectModel):
     """Мероприятие в конкретный день недели, в определенное время, определенной продолжительности"""
-    event = models.ForeignKey(EventClass, on_delete=models.CASCADE, verbose_name="Мероприятие")
+    event = TenantForeignKey(EventClass, on_delete=models.CASCADE, verbose_name="Мероприятие")
     # номер дня недели
     day = models.PositiveSmallIntegerField("День недели", validators=[MinValueValidator(0), MaxValueValidator(6)])
     start_time = models.TimeField("Время начала тренировки", default=timezone.now)
@@ -199,7 +281,7 @@ granularity = (
 )
 
 
-class SubscriptionsType(models.Model):
+class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     """
     Типы абонементов
     Описывает продолжительность действия, количество посещений,
@@ -267,7 +349,7 @@ class SubscriptionsType(models.Model):
         return reverse('crm:manager:subscription:list')
 
 
-class Client(models.Model):
+class Client(CompanyObjectModel):
     """Клиент-Ученик. Котнактные данные. Баланс"""
     name = models.CharField("Имя",
                             max_length=100)
@@ -289,6 +371,9 @@ class Client(models.Model):
     balance = models.FloatField("Баланс",
                                 default=0)
 
+    class Meta:
+        unique_together = ('company', 'name')
+
     def get_absolute_url(self):
         return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
 
@@ -300,14 +385,14 @@ class Client(models.Model):
         return self.name
 
 
-class ClientSubscriptions(models.Model):
+class ClientSubscriptions(CompanyObjectModel):
     """Абонементы клиента"""
-    client = models.ForeignKey(Client,
-                               on_delete=models.PROTECT,
-                               verbose_name="Ученик")
-    subscription = models.ForeignKey(SubscriptionsType,
-                                     on_delete=models.PROTECT,
-                                     verbose_name="Тип Абонемента")
+    client = TenantForeignKey(Client,
+                              on_delete=models.PROTECT,
+                              verbose_name="Ученик")
+    subscription = TenantForeignKey(SubscriptionsType,
+                                    on_delete=models.PROTECT,
+                                    verbose_name="Тип Абонемента")
     purchase_date = models.DateTimeField("Дата покупки", default=timezone.now)
     start_date = models.DateTimeField("Дата начала", default=timezone.now)
     end_date = models.DateTimeField(null=True)
@@ -345,8 +430,8 @@ class ClientSubscriptions(models.Model):
         ordering = ['purchase_date']
 
 
-class ExtensionHistory(models.Model):
-    client_subscription = models.ForeignKey(
+class ExtensionHistory(CompanyObjectModel):
+    client_subscription = TenantForeignKey(
         ClientSubscriptions,
         on_delete=models.PROTECT,
         verbose_name='Абонемент клиента')
@@ -360,12 +445,15 @@ class ExtensionHistory(models.Model):
         ordering = ['date_extended']
 
 
-class Event(models.Model):
+class Event(CompanyObjectModel):
     """Конкретное мероприятие (тренировка)"""
+    # TODO: Валидацию по event_class
     date = models.DateField("Дата")
-    event_class = models.ForeignKey(EventClass,
-                                    on_delete=models.PROTECT,
-                                    verbose_name="Тренировка")
+    event_class = TenantForeignKey(
+        EventClass,
+        on_delete=models.PROTECT,
+        verbose_name="Тренировка"
+    )
 
     class Meta:
         unique_together = ('event_class', 'date',)
@@ -376,18 +464,17 @@ class Event(models.Model):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
 
     def __str__(self):
-        return self.date.strftime("%Y-%m-%d") + " " + str(self.event_class)
-    # TODO: Валидацию по event_class
+        return f'{self.date:"%Y-%m-%d"} {self.event_class}'
 
 
-class Attendance(models.Model):
+class Attendance(CompanyObjectModel):
     """Посещение клиентом мероприятия(тренировки)"""
-    client = models.ForeignKey(Client,
-                               on_delete=models.PROTECT,
-                               verbose_name="Ученик")
-    event = models.ForeignKey(Event,
+    client = TenantForeignKey(Client,
                               on_delete=models.PROTECT,
-                              verbose_name="Тренировка")
+                              verbose_name="Ученик")
+    event = TenantForeignKey(Event,
+                             on_delete=models.PROTECT,
+                             verbose_name="Тренировка")
 
     class Meta:
         unique_together = ('client', 'event',)
