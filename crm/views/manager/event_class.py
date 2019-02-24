@@ -13,7 +13,7 @@ from django.views.generic import (
 )
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
-from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass
+from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client
 from crm.views.mixin import UserManagerMixin
 
 
@@ -48,6 +48,16 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
     model = Event
     context_object_name = 'event'
     template_name = 'crm/manager/event/detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
+        context.update({
+            'attendance_list': attendance_list,
+            'clients': Client.objects.exclude(id__in=[x.client_id for x in attendance_list])
+        })
+
+        return context
 
     def get_object(self, queryset=None):
         event_date = date(
@@ -84,8 +94,7 @@ class MarkEventAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
         return kwargs
 
     def get_success_url(self):
-        return reverse(
-            'crm:manager:event-class:event-by-date', kwargs=self.kwargs)
+        return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
 
 
 class CreateEdit(LoginRequiredMixin, UserManagerMixin, TemplateView):
