@@ -3,11 +3,21 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
-)
+    TemplateView)
+from django_filters.views import FilterView
 
+from crm.filters import EventReportFilter
 from crm.forms import EventAttendanceForm
 from crm.models import Event, Attendance
 from crm.views.mixin import UserManagerMixin
+
+
+class Report(LoginRequiredMixin, UserManagerMixin, FilterView):
+    template_name = 'crm/manager/event/report.html'
+    filterset_class = EventReportFilter
+
+    def get_queryset(self):
+        return self.filterset_class.queryset
 
 
 class List(LoginRequiredMixin, UserManagerMixin, ListView):

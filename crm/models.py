@@ -463,6 +463,22 @@ class Event(CompanyObjectModel):
         if not self.event_class.is_event_day(self.date):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
 
+    def get_clients_count(self):
+        # Получаем количество посетивших данную тренировку клиентов
+        return 0
+
+    def get_clients_count_one_time_sub(self):
+        # Получаем количество посетивших данную тренировку по одноразовому абонементу
+        return 0
+
+    def get_subs_sales(self):
+        # Получаем количество проданных абонементов
+        return 0
+
+    def get_profit(self):
+        # Получаем прибыль
+        return 0
+
     def __str__(self):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
 

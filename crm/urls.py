@@ -161,6 +161,11 @@ manager_events_urlpatterns = ([
         manager_event_views.EventAttendanceCreate.as_view(),
         name='new-attendance'
     ),
+path(
+        'report/',
+        manager_event_views.Report.as_view(),
+        name='report'
+    ),
 ], 'event')
 
 manager_event_class_urlpatterns = ([

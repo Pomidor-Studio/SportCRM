@@ -1,0 +1,31 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
+{% block extrahead %}
+{{ filter.form.media }}
+{% endblock extrahead %}
+
+{% block content %}
+
+<div class="ml-4 mt-4 mr-4">
+  <h1 class="border-bottom mb-2">Отчет по тренировкам</h1>
+  <div class="sticky-top">
+    {% csrf_token %}
+    <form class="form-inline mb-2"
+          action="{% url 'crm:manager:event:report' %}" method="GET">
+      {% bootstrap_field filter.form.coach show_label=False field_class='ml-2'%}
+      {% bootstrap_field filter.form.event_class show_label=False field_class='ml-2' %}
+      <input type="submit"
+                   value="Поиск" class=" ml-2 btn btn-success"/>
+    </form>
+  </div>
+  {% if event_list %}
+
+  {% else %}
+  <p>Календарь тренировок пуст</p>
+  {% endif %}
+</div>
+
+{% endblock content %}
+
