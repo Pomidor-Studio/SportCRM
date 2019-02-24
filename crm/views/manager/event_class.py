@@ -17,7 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
-from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass
+from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import UserManagerMixin
 
@@ -63,6 +63,16 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
     context_object_name = 'event'
     template_name = 'crm/manager/event/detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
+        context.update({
+            'attendance_list': attendance_list,
+            'clients': Client.objects.exclude(id__in=[x.client_id for x in attendance_list])
+        })
+
+        return context
+
     def get_object(self, queryset=None):
         event_date = date(
             self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
@@ -103,8 +113,7 @@ class MarkEventAttendance(
         return kwargs
 
     def get_success_url(self):
-        return reverse(
-            'crm:manager:event-class:event-by-date', kwargs=self.kwargs)
+        return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
 
 
 class CreateEdit(
