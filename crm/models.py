@@ -362,7 +362,7 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         if self.duration_type == granularity[0][0]:
             end_date = start_date + relativedelta(days=self.duration)
         elif self.duration_type == granularity[1][0]:
-            end_date = start_date + relativedelta(days=7 * self.duration)
+            end_date = start_date + relativedelta(days=6 * self.duration)
         elif self.duration_type == granularity[2][0]:
             end_date = start_date + relativedelta(months=self.duration)
         elif self.duration_type == granularity[3][0]:

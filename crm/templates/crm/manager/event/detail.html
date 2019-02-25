@@ -19,6 +19,9 @@
 
               </div>
               <div class="col">
+
+              </div>
+              <div class="col">
                 <a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:attendance:delete' attendance.id %}">Удалить</a>
               </div>
             </div>
@@ -38,8 +41,11 @@
 
               </div>
               <div class="col">
+
+              </div>
+              <div class="col">
                 <a class="btn btn-sm btn-outline-info"
-                   href="{% url 'crm:manager:event-class:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить посещение</a>
+                   href="{% url 'crm:manager:event-class:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id %}">Отметить посещение</a>
               </div>
             </div>
           {% endfor %}

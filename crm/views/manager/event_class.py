@@ -10,14 +10,14 @@ from django.utils import timezone
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView,
     TemplateView,
-)
+    RedirectView)
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
-from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client
+from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions, SubscriptionsType
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import UserManagerMixin
 
@@ -66,9 +66,22 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
+        event_class = self.object.event_class
+        subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
+        client_subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
+                                                                  start_date__lte=self.object.date,
+                                                                  end_date__gte=self.object.date)
+        all_clients = [client_subscription.client for client_subscription in client_subscriptions]
+        attendance_clients = [attendance.client for attendance in attendance_list]
+        # Не понимаю почему не работает эта конструкция
+        # clients = [client not in attendance_clients for client in all_clients]
+        clients = []
+        for client in all_clients:
+            if client not in attendance_clients:
+                clients.append(client)
         context.update({
             'attendance_list': attendance_list,
-            'clients': Client.objects.exclude(id__in=[x.client_id for x in attendance_list])
+            'clients': clients
         })
 
         return context
@@ -111,6 +124,30 @@ class MarkEventAttendance(
         kwargs = super().get_form_kwargs()
         kwargs.update({'instance': self.get_object()})
         return kwargs
+
+    def get_success_url(self):
+        return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
+
+
+class MarkClientAttendance(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    RedirectView
+):
+
+    def get(self, request, *args, **kwargs):
+        event_date = date(
+            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
+        )
+        event, _ = Event.objects.get_or_create(
+            event_class_id=self.kwargs['event_class_id'],
+            date=event_date)
+        client = get_object_or_404(Client, id=self.kwargs['client_id'])
+        self.kwargs.__delitem__('client_id')
+        Attendance.objects.create(event=event, client=client)
+        self.url = self.get_success_url()
+        return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
