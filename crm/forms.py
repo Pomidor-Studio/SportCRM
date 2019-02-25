@@ -82,8 +82,7 @@ class ExtendClientSubscriptionForm(forms.Form):
         self.subscription = kwargs.pop('subscription')
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
 
-        self.fields['visit_limit'].initial = \
-            self.subscription.subscription.visit_limit
+        self.fields['visit_limit'].initial = 1
 
 
 class ClientSubscriptionForm(TenantModelForm):

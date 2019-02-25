@@ -428,7 +428,9 @@ class ClientSubscriptions(CompanyObjectModel):
 
     def save(self, *args, **kwargs):
         self.start_date = self.subscription.get_start_date(self.start_date)
-        self.end_date = self.subscription.get_end_date(self.start_date)
+        if not self.is_extended():
+            self.end_date = self.subscription.get_end_date(self.start_date)
+
         super(ClientSubscriptions, self).save(*args, **kwargs)
 
     def extend_duration(self, added_visits, reason=''):
@@ -438,10 +440,29 @@ class ClientSubscriptions(CompanyObjectModel):
                 reason=reason,
                 added_visits=added_visits
             )
+
             self.visits_left += int(added_visits)
-            self.end_date = self.end_date + timedelta(
-                self.subscription.duration)
+            self.end_date = self.get_new_end_date(self.visits_left)
             self.save()
+
+    # Получаем новую дату окончания при изменении количества посещений
+    def get_new_end_date(self, new_visits_count):
+        events = self.subscription.event_class.all()
+        end_date = self.end_date.date()
+
+        # Увеличиваем дату на 1 день до тех пор, пока не найдем следующий день, в который будет тренировка
+        while True:
+            for event in events:
+                if event.is_event_day(end_date):
+                    return end_date
+            end_date = end_date + timedelta(days=1)
+
+
+    def is_extended(self):
+        if (ExtensionHistory.objects.filter(client_subscription=self)):
+            return True
+        else:
+            return False
 
     def get_absolute_url(self):
         return reverse(
