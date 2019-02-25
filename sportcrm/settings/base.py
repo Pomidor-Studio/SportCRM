@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'bootstrap4',
     'social_django',
     'rules.apps.AutodiscoverRulesConfig',
+    'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -144,6 +145,28 @@ AUTHENTICATION_BACKENDS = (
     'rules.permissions.ObjectPermissionBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler'
+        }
+    },
+    'loggers': {
+        'django_multitenant': {
+            'handlers': ['null'],
+            'level': 'CRITICAL'
+        },
+    },
+}
+
 
 LOGIN_URL = reverse_lazy('crm:accounts:login')
 LOGIN_REDIRECT_URL = reverse_lazy('crm:accounts:login-redirect')

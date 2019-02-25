@@ -15,9 +15,8 @@ from crm.views.mixin import UserManagerMixin
 class Report(LoginRequiredMixin, UserManagerMixin, FilterView):
     template_name = 'crm/manager/event/report.html'
     filterset_class = EventReportFilter
-
-    def get_queryset(self):
-        return self.filterset_class.queryset
+    context_object_name = 'events'
+    model = Event
 
 
 class List(LoginRequiredMixin, UserManagerMixin, ListView):

@@ -3,7 +3,7 @@
 {% load bootstrap4 %}
 
 {% block extrahead %}
-{{ filter.form.media }}
+{#<!--{{ filter.form.media }}-->#}
 {% endblock extrahead %}
 
 {% block content %}
@@ -11,20 +11,39 @@
 <div class="ml-4 mt-4 mr-4">
   <h1 class="border-bottom mb-2">Отчет по тренировкам</h1>
   <div class="sticky-top">
-    {% csrf_token %}
     <form class="form-inline mb-2"
           action="{% url 'crm:manager:event:report' %}" method="GET">
-      {% bootstrap_field filter.form.coach show_label=False field_class='ml-2'%}
-      {% bootstrap_field filter.form.event_class show_label=False field_class='ml-2' %}
+      {% bootstrap_form filter.form %}
       <input type="submit"
                    value="Поиск" class=" ml-2 btn btn-success"/>
     </form>
   </div>
-  {% if event_list %}
-
-  {% else %}
-  <p>Календарь тренировок пуст</p>
-  {% endif %}
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th scope="col">Дата</th>
+        <th scope="col">Тренер</th>
+        <th scope="col">Тренировка</th>
+        <th scope="col">Количество человек</th>
+        <th scope="col">По разовым абонементам</th>
+        <th scope="col">Продано абонементов</th>
+        <th scope="col">Денег собрано</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for event in events %}
+      <tr>
+        <td>{{ event.date }}</td>
+      <td>{{ event.event_class.coach }}</td>
+      <td>{{ event.event_class.name }}</td>
+      <td>{{ event.attendance_set.all.count }}</td>
+      <td>TODO</td>
+      <td>TODO</td>
+      <td>TODO</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 {% endblock content %}

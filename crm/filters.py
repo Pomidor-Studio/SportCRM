@@ -1,12 +1,9 @@
-from copy import copy
-
 import django_filters
-from bootstrap_datepicker_plus import DatePickerInput
+# from bootstrap_datepicker_plus import DatePickerInput
 from django import forms
 from django.http import QueryDict
 
 from crm import models
-from crm.models import Coach, EventClass, Event
 
 
 class ClientFilter(django_filters.FilterSet):
@@ -21,43 +18,19 @@ class ClientFilter(django_filters.FilterSet):
 
 
 class EventReportFilter(django_filters.FilterSet):
-    date_from = django_filters.DateFilter(label='Дата с:',
-        widget=DatePickerInput(format='%d.%m.%Y',
-                                         attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}))
-    date_to = django_filters.DateFilter(label='Дата по:',
-        widget=DatePickerInput(format='%d.%m.%Y',
-                                         attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}))
-    coach = django_filters.ModelChoiceFilter(
-        label='Тренер:',
-        queryset=Coach.objects.all(),
+    date = django_filters.DateFromToRangeFilter(field_name='date')
+    coach = django_filters.ModelMultipleChoiceFilter(
+        field_name='event_class__coach',
+        queryset=models.Coach.objects.all()
     )
-    event_class = django_filters.ModelChoiceFilter(
-        label='Тренировка:',
-        queryset=EventClass.objects.all(),
+    event_class = django_filters.ModelMultipleChoiceFilter(
+        field_name='event_class',
+        queryset=models.EventClass.objects.all()
     )
 
-    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
-        new_data = data.copy() if data is not None else QueryDict(mutable=True)
-        print(new_data.get('date_from'))
-        # filter param is either missing or empty
-        date_from = new_data.get('date_from')
-        date_to = new_data.get('date_to')
-        coach =  new_data.get('coach')
-        event_class = new_data.get('event_class')
-
-        new_data['date_from'] = date_from
-        new_data['date_to'] = date_to
-        new_data['coach'] = coach
-        new_data['event_class'] = event_class
-
-        super().__init__(new_data, queryset, request=request, prefix=prefix)
-
-        self.queryset = (
-            Event.objects.all()
-        )
-
-        print(self.queryset)
-
+    class Meta:
+        model = models.Event
+        fields = ('date',)
 
 
 class ArchivableFilterSet(django_filters.FilterSet):
