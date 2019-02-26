@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from itertools import count
+from itertools import count, dropwhile
 from typing import Dict, Optional
 
 import reversion
@@ -9,7 +9,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
@@ -21,6 +21,10 @@ from safedelete.models import SafeDeleteModel
 from transliterate import translit
 
 INTERNAL_COMPANY = 'INTERNAL'
+
+
+class NoFutureEvent(Exception):
+    pass
 
 
 @reversion.register()
@@ -222,6 +226,49 @@ class EventClass(CompanyObjectModel):
                 return False
 
         return True
+
+    def get_nearest_event_to(self, required_day: date):
+        if self.date_to is not None and required_day >= self.date_to:
+            raise ValueError("Can't find next event for date in future")
+
+        days = list(
+            self.dayoftheweekclass_set.all().values_list('day', flat=True))
+        if not len(days):
+            raise ValueError("Event class don't have any days to spread")
+
+        r_dayw = required_day.weekday()
+        # Find all days that are after required date
+        next_days = [x for x in days if x > r_dayw]
+
+        # If we have some day in event class, we are sure than in distance
+        # more than one week will be new event
+        # So, we check edge case if required_day is in last week of
+        # event class
+        if self.date_to is not None and \
+                (self.date_to - required_day) < timedelta(days=7):
+            if not len(next_days):
+                raise ValueError(
+                    "Required day is out of event class date range")
+
+            nearest_day = next_days[0]
+        else:
+            # If required date was after last weekday event, use first week day
+            try:
+                nearest_day = next_days[0]
+            except IndexError:
+                nearest_day = days[0]
+
+        delta = (nearest_day - r_dayw) % 7 if nearest_day != r_dayw else 7
+        return required_day + timedelta(days=delta)
+
+    def get_nearest_event_to_or_none(
+        self,
+        required_day: date
+    ) -> Optional[date]:
+        try:
+            return self.get_nearest_day_or_none(required_day)
+        except ValueError:
+            return None
 
     def get_calendar(
             self, start_date: date, end_date: date) -> Dict[date, 'Event']:
@@ -439,9 +486,23 @@ class ClientSubscriptions(CompanyObjectModel):
                 added_visits=added_visits
             )
             self.visits_left += int(added_visits)
-            self.end_date = self.end_date + timedelta(
-                self.subscription.duration)
+            self.end_date = self.nearest_extended_end_date()
             self.save()
+
+    def nearest_extended_end_date(self):
+        possible_events = self.subscription.event_class.filter(
+            Q(date_to__isnull=True) | Q(date_to__gt=self.end_date)
+        )
+
+        if not possible_events.exists():
+            raise NoFutureEvent()
+
+        new_end_date = list(filter(bool, [
+            x.get_nearest_event_to_or_none(self.end_date)
+            for x in possible_events
+        ]))
+
+        return min(new_end_date) if len(new_end_date) else self.end_date
 
     def get_absolute_url(self):
         return reverse(
@@ -467,7 +528,17 @@ class ExtensionHistory(CompanyObjectModel):
         'Дата продления',
         default=timezone.now)
     reason = models.CharField('Причина продления', max_length=255, blank=False)
+    # related_event = TenantForeignKey(
+    #     to='Event',
+    #     on_delete=models.PROTECT,
+    #     null=True
+    # )
     added_visits = models.PositiveIntegerField("Добавлено посещений")
+    # extended_to = models.DateField(
+    #     'Абонемент продлен до дня',
+    #     blank=True,
+    #     null=True
+    # )
 
     class Meta:
         ordering = ['date_extended']
@@ -483,6 +554,7 @@ class Event(CompanyObjectModel):
         on_delete=models.PROTECT,
         verbose_name="Тренировка"
     )
+    # canceled_at = models.DateField('Дата отмены тренировки', null=True)
 
     class Meta:
         unique_together = ('event_class', 'date',)

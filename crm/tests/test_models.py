@@ -1,6 +1,10 @@
+from datetime import date, timedelta
+from typing import List
+
 import pytest
 from hamcrest import assert_that, is_, has_properties
 
+from crm import models
 from crm.models import User, Coach, Location, SubscriptionsType
 
 pytestmark = pytest.mark.django_db
@@ -67,3 +71,47 @@ def test_item_safe_delete(test_factory, model):
     assert_that(count_regular, is_(0))
     assert_that(count_all, is_(1))
     assert_that(count_deleted, is_(1))
+
+
+@pytest.mark.parametrize('request_day_delta,days,expected_delta', [
+    (0, [0, 1, 2, 3, 4, 5, 6], 1),
+    (1, [0, 1, 2, 3, 4, 5, 6], 1),
+    (2, [0, 1, 2, 3, 4, 5, 6], 1),
+    (3, [0, 1, 2, 3, 4, 5, 6], 1),
+    (4, [0, 1, 2, 3, 4, 5, 6], 1),
+    (5, [0, 1, 2, 3, 4, 5, 6], 1),
+    (6, [0, 1, 2, 3, 4, 5, 6], 1),
+
+    (0, [0], 7),
+    (1, [0], 6),
+    (2, [0], 5),
+    (3, [0], 4),
+    (4, [0], 3),
+    (5, [0], 2),
+    (6, [0], 1),
+
+    (0, [0, 3], 3),
+    (1, [0, 3], 2),
+    (2, [0, 3], 1),
+    (3, [0, 3], 4),
+    (4, [0, 3], 3),
+    (5, [0, 3], 2),
+    (6, [0, 3], 1),
+])
+def test_nearest_event_to_infinite_event(
+    request_day_delta: int,
+    days: List[int],
+    expected_delta: int,
+    event_class_factory
+):
+    monday = date(2019, 2, 25)
+    request_day = monday + timedelta(days=request_day_delta)
+    ec: models.EventClass = event_class_factory(date_from=monday, days=days)
+
+    assert_that(
+        ec.get_nearest_event_to(request_day),
+        is_(request_day + timedelta(days=expected_delta))
+    )
+
+#TODO: Add test for finite event class
+#TODO: Add test for edge cases: finished event class, class with empty days
