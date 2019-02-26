@@ -505,7 +505,12 @@ class Attendance(CompanyObjectModel):
     event = TenantForeignKey(Event,
                              on_delete=models.PROTECT,
                              verbose_name="Тренировка")
-
+    subscription = TenantForeignKey(ClientSubscriptions,
+                                    on_delete=models.PROTECT,
+                                    blank=True,
+                                    verbose_name="Абонемент Клиента",
+                                    null=True,
+                                    default=None)
     class Meta:
         unique_together = ('client', 'event',)
 
