@@ -133,6 +133,28 @@ USE_TZ = True
 DATE_INPUT_FORMATS = ['%d.%m.%Y']
 
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler'
+        },
+        'null': {
+            'level': 'DEBUG',
+            'class': 'logging.NullHandler'
+        }
+    },
+    'loggers': {
+        'django_multitenant': {
+            'handlers': ['null'],
+            'level': 'CRITICAL'
+        }
+    },
+}
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
