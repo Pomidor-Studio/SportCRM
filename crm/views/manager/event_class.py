@@ -73,11 +73,9 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
                                                                   end_date__gte=self.object.date)
         all_clients = [client_subscription.client for client_subscription in client_subscriptions]
         attendance_clients = [attendance.client for attendance in attendance_list]
-        # Не понимаю почему не работает эта конструкция
-        # clients = [client not in attendance_clients for client in all_clients]
         clients = []
         for client in all_clients:
-            if client not in attendance_clients:
+            if client not in attendance_clients and client not in clients:
                 clients.append(client)
         context.update({
             'attendance_list': attendance_list,
@@ -143,9 +141,12 @@ class MarkClientAttendance(
         event, _ = Event.objects.get_or_create(
             event_class_id=self.kwargs['event_class_id'],
             date=event_date)
-        client = get_object_or_404(Client, id=self.kwargs['client_id'])
-        self.kwargs.__delitem__('client_id')
-        Attendance.objects.create(event=event, client=client)
+        client_id = self.kwargs.pop('client_id')
+        client = get_object_or_404(Client, id=client_id)
+        event_class = event.event_class
+        subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class).first()
+        subscription = ClientSubscriptions.objects.filter(subscription=subscriptions_types, client=client).first()
+        Attendance.objects.create(event=event, client=client, subscription=subscription)
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 
