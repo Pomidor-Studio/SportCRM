@@ -3,7 +3,7 @@
 {% load bootstrap4 %}
 
 {% block extrahead %}
-{#<!--{{ filter.form.media }}-->#}
+{{ filter.form.media.css }}
 {% endblock extrahead %}
 
 {% block content %}
@@ -13,12 +13,25 @@
   <div class="sticky-top">
     <form class="form-inline mb-2"
           action="{% url 'crm:manager:event:report' %}" method="GET">
-      {% bootstrap_form filter.form %}
+      {% csrf_token %}
+      <div>
+        {{ filter.form.date.label }}
+       {% bootstrap_field filter.form.date show_label=false %}
+      </div>
+      <div class="ml-2">
+        {{ filter.form.coach.label }}
+       {% bootstrap_field filter.form.coach show_label=false %}
+      </div>
+      <div class="ml-2">
+        {{ filter.form.event_class.label }}
+       {% bootstrap_field filter.form.event_class show_label=false %}
+      </div>
+
       <input type="submit"
-                   value="Поиск" class=" ml-2 btn btn-success"/>
+                   value="Поиск" class="mt-4 ml-2 btn btn-success"/>
     </form>
   </div>
-  <table class="table table-sm">
+  <table class="table table-bordered table-striped table-sm">
     <thead>
       <tr>
         <th scope="col">Дата</th>
@@ -27,7 +40,7 @@
         <th scope="col">Количество человек</th>
         <th scope="col">По разовым абонементам</th>
         <th scope="col">Продано абонементов</th>
-        <th scope="col">Денег собрано</th>
+        <th scope="col">Прибыль</th>
       </tr>
     </thead>
     <tbody>
@@ -36,15 +49,17 @@
         <td>{{ event.date }}</td>
       <td>{{ event.event_class.coach }}</td>
       <td>{{ event.event_class.name }}</td>
-      <td>{{ event.attendance_set.all.count }}</td>
-      <td>TODO</td>
-      <td>TODO</td>
-      <td>TODO</td>
+      <td>{{ event.get_clients_count }}</td>
+      <td>{{ event.get_clients_count_one_time_sub }}</td>
+      <td>{{ event.get_subs_sales }}</td>
+      <td>{{ event.get_profit }}</td>
       </tr>
     {% endfor %}
     </tbody>
   </table>
 </div>
-
 {% endblock content %}
+{% block extra %}
+{{ filter.form.media.js }}
+{% endblock extra %}
 

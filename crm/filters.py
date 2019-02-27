@@ -1,9 +1,15 @@
+from datetime import datetime, timedelta
+
 import django_filters
 # from bootstrap_datepicker_plus import DatePickerInput
+from dateutil.relativedelta import relativedelta
 from django import forms
 from django.http import QueryDict
+from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget, Select2Widget, Select2TagWidget, \
+    Select2TagMixin
 
 from crm import models
+from crm.utils import BootstrapDateFromToRangeFilter
 
 
 class ClientFilter(django_filters.FilterSet):
@@ -18,15 +24,32 @@ class ClientFilter(django_filters.FilterSet):
 
 
 class EventReportFilter(django_filters.FilterSet):
-    date = django_filters.DateFromToRangeFilter(field_name='date')
+    date = BootstrapDateFromToRangeFilter(label='Диапазон дат:', field_name='date')
+
+    # date = django_filters.DateFromToRangeFilter(field_name='date')
     coach = django_filters.ModelMultipleChoiceFilter(
+        label='Тренер:',
         field_name='event_class__coach',
-        queryset=models.Coach.objects.all()
+        queryset=models.Coach.objects.all(),
+        widget=Select2MultipleWidget
     )
     event_class = django_filters.ModelMultipleChoiceFilter(
+        label='Тип тренировки:',
         field_name='event_class',
-        queryset=models.EventClass.objects.all()
+        queryset=models.EventClass.objects.all(),
+        widget=Select2MultipleWidget
     )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        initial_data = data.copy() if data is not None else QueryDict(mutable=True)
+        # Подставляем текущий месяц
+        initial_data['date_after'] = datetime.today().replace(day=1)
+        initial_data['date_before'] = datetime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)
+
+        super().__init__(initial_data , queryset, request=request, prefix=prefix)
+        #self.form['date'].initial = ['27.02.2019', '27.02.2019']
+
+
 
     class Meta:
         model = models.Event
