@@ -1,6 +1,8 @@
+from __future__ import annotations
+
 from datetime import date, datetime, timedelta
-from itertools import count, dropwhile
-from typing import Dict, Optional
+from itertools import count
+from typing import Dict, List, Optional
 
 import reversion
 from dateutil.relativedelta import relativedelta
@@ -9,7 +11,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q, QuerySet
+from django.db.models import Q
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
@@ -19,6 +21,8 @@ from django_multitenant.utils import get_current_tenant
 from psycopg2 import Error as Psycopg2Error
 from safedelete.models import SafeDeleteModel
 from transliterate import translit
+
+from crm.events import get_nearest_to, next_day, Weekdays
 
 INTERNAL_COMPANY = 'INTERNAL'
 
@@ -202,6 +206,20 @@ class EventClass(CompanyObjectModel):
     date_from = models.DateField("Дата с", null=True, blank=True)
     date_to = models.DateField("Дата по", null=True, blank=True)
 
+    def days(self) -> List[int]:
+        """
+        Get list of all weekdays of current event
+
+        For example: [0, 2, 4] for monday, wednesday, friday
+        """
+        days = list(
+            self.dayoftheweekclass_set.all().values_list('day', flat=True))
+
+        if not len(days):
+            raise ValueError("Event class don't have any days to spread")
+
+        return days
+
     def is_event_day(self, day: date) -> bool:
         """
         Возможна ли тренировка в указанный день
@@ -228,38 +246,8 @@ class EventClass(CompanyObjectModel):
         return True
 
     def get_nearest_event_to(self, required_day: date):
-        if self.date_to is not None and required_day >= self.date_to:
-            raise ValueError("Can't find next event for date in future")
-
-        days = list(
-            self.dayoftheweekclass_set.all().values_list('day', flat=True))
-        if not len(days):
-            raise ValueError("Event class don't have any days to spread")
-
-        r_dayw = required_day.weekday()
-        # Find all days that are after required date
-        next_days = [x for x in days if x > r_dayw]
-
-        # If we have some day in event class, we are sure than in distance
-        # more than one week will be new event
-        # So, we check edge case if required_day is in last week of
-        # event class
-        if self.date_to is not None and \
-                (self.date_to - required_day) < timedelta(days=7):
-            if not len(next_days):
-                raise ValueError(
-                    "Required day is out of event class date range")
-
-            nearest_day = next_days[0]
-        else:
-            # If required date was after last weekday event, use first week day
-            try:
-                nearest_day = next_days[0]
-            except IndexError:
-                nearest_day = days[0]
-
-        delta = (nearest_day - r_dayw) % 7 if nearest_day != r_dayw else 7
-        return required_day + timedelta(days=delta)
+        return get_nearest_to(
+            required_day, Weekdays(self.days()), self.date_to)
 
     def get_nearest_event_to_or_none(
         self,
@@ -271,7 +259,10 @@ class EventClass(CompanyObjectModel):
             return None
 
     def get_calendar(
-            self, start_date: date, end_date: date) -> Dict[date, 'Event']:
+        self,
+        start_date: date,
+        end_date: date
+    ) -> Dict[date, Event]:
         """
         Создает полный календарь одного типа тренировки. Создается список
         всех возможный дней трениовок, ограниченный диапазоном дат.
@@ -293,6 +284,18 @@ class EventClass(CompanyObjectModel):
             if curr_date not in events:
                 if self.is_event_day(curr_date):
                     events[curr_date] = Event(date=curr_date, event_class=self)
+
+        return events
+
+    def get_calendar_gen(
+        self,
+        start_date: date,
+        end_date: date
+    ) -> Dict[date, Event]:
+        events = {event.date: event for event in self.event_set.all()}
+        for event_date in next_day(start_date, end_date, Weekdays(self.days())):
+            if event_date not in events:
+                events[event_date] = Event(date=event_date, event_class=self)
 
         return events
 
