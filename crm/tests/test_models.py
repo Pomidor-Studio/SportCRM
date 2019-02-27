@@ -93,9 +93,10 @@ def test_nearest_event_infinite_no_days(event_class_factory):
 ])
 def test_gen_calendar_behaviour(days, event_class_factory):
     monday = date(2019, 2, 25)
+    last_day = date(2019, 3, 10)
     ec = event_class_factory(date_from=monday, days=days)
 
-    dumb_cal = ec.get_calendar(monday, monday + timedelta(days=14))
-    gen_cal = ec.get_calendar_gen(monday, monday + timedelta(days=14))
+    dumb_cal = ec.get_calendar(monday, last_day)
+    gen_cal = ec.get_calendar_gen(monday, last_day)
 
     assert_that(dumb_cal, contains(*gen_cal))

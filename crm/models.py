@@ -274,7 +274,11 @@ class EventClass(CompanyObjectModel):
         :param end_date: Конечная дата календаря
         :return: Словарь из даты и возможной тренировки
         """
-        events = {event.date: event for event in self.event_set.all()}
+        events = {
+            event.date: event
+            for event in
+            self.event_set.filter(date__range=(start_date, end_date))
+        }
         # Решение влоб - перебор всех дней с проверкой входят
         # ли они в календарь.
         # TODO: переписать на генератор(yield) -
@@ -292,7 +296,11 @@ class EventClass(CompanyObjectModel):
         start_date: date,
         end_date: date
     ) -> Dict[date, Event]:
-        events = {event.date: event for event in self.event_set.all()}
+        events = {
+            event.date: event
+            for event in
+            self.event_set.filter(date__range=(start_date, end_date))
+        }
         for event_date in next_day(start_date, end_date, Weekdays(self.days())):
             if event_date not in events:
                 events[event_date] = Event(date=event_date, event_class=self)
