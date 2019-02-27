@@ -2,6 +2,7 @@ from datetime import date, datetime, timedelta
 from itertools import count
 from typing import Dict, Optional
 
+import reversion
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -22,6 +23,7 @@ from transliterate import translit
 INTERNAL_COMPANY = 'INTERNAL'
 
 
+@reversion.register()
 class Company(models.Model):
     """Компания. Multitentant строится вокруг этой модели"""
 
@@ -77,6 +79,7 @@ def get_user_current_tenant():
             return None
 
 
+@reversion.register()
 class User(TenantModel, AbstractUser):
     company = models.ForeignKey(
         Company,
@@ -131,6 +134,7 @@ class CompanyObjectModel(TenantModel):
         unique_together = ["id", "company"]
 
 
+@reversion.register()
 class Location(SafeDeleteModel, CompanyObjectModel):
     name = models.CharField("Название", max_length=100)
     address = models.CharField("Адрес", max_length=1000, blank=True)
@@ -142,6 +146,7 @@ class Location(SafeDeleteModel, CompanyObjectModel):
         return reverse_lazy('crm:manager:locations:list')
 
 
+@reversion.register()
 class Coach(SafeDeleteModel, CompanyObjectModel):
     """
     Профиль тренера
@@ -164,6 +169,7 @@ class Coach(SafeDeleteModel, CompanyObjectModel):
         ).exists()
 
 
+@reversion.register()
 class Manager(CompanyObjectModel):
     """
     Профиль менеджера
@@ -174,6 +180,7 @@ class Manager(CompanyObjectModel):
         return self.user.get_full_name()
 
 
+@reversion.register()
 class EventClass(CompanyObjectModel):
     """
     Описание шаблона мероприятия (Класс вид).
@@ -260,13 +267,30 @@ class EventClass(CompanyObjectModel):
         return f'{self.name} y {self.coach} в {self.location}'
 
 
+@reversion.register()
 class DayOfTheWeekClass(CompanyObjectModel):
-    """Мероприятие в конкретный день недели, в определенное время, определенной продолжительности"""
-    event = TenantForeignKey(EventClass, on_delete=models.CASCADE, verbose_name="Мероприятие")
+    """
+    Мероприятие в конкретный день недели, в определенное время,
+    определенной продолжительности
+    """
+    event = TenantForeignKey(
+        EventClass,
+        on_delete=models.CASCADE,
+        verbose_name="Мероприятие"
+    )
     # номер дня недели
-    day = models.PositiveSmallIntegerField("День недели", validators=[MinValueValidator(0), MaxValueValidator(6)])
-    start_time = models.TimeField("Время начала тренировки", default=timezone.now)
-    end_time = models.TimeField("Время окнчания тренировки", default=timezone.now)
+    day = models.PositiveSmallIntegerField(
+        "День недели",
+        validators=[MinValueValidator(0), MaxValueValidator(6)]
+    )
+    start_time = models.TimeField(
+        "Время начала тренировки",
+        default=timezone.now
+    )
+    end_time = models.TimeField(
+        "Время окнчания тренировки",
+        default=timezone.now
+    )
 
     class Meta:
         unique_together = ('day', 'event',)
@@ -280,6 +304,7 @@ granularity = (
 )
 
 
+@reversion.register()
 class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     """
     Типы абонементов
@@ -320,7 +345,8 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
             elif self.duration_type == granularity[1][0]:
                 start_date = rounding_date - timedelta(weekday)
             elif self.duration_type == granularity[2][0]:
-                start_date = datetime(rounding_date.year, rounding_date.month, 1)
+                start_date = datetime(
+                    rounding_date.year, rounding_date.month, 1)
             elif self.duration_type == granularity[3][0]:
                 start_date = datetime(rounding_date.year, 1, 1)
         else:
@@ -336,7 +362,7 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         if self.duration_type == granularity[0][0]:
             end_date = start_date + relativedelta(days=self.duration)
         elif self.duration_type == granularity[1][0]:
-            end_date = start_date + relativedelta(days=7 * self.duration)
+            end_date = start_date + relativedelta(days=6 * self.duration)
         elif self.duration_type == granularity[2][0]:
             end_date = start_date + relativedelta(months=self.duration)
         elif self.duration_type == granularity[3][0]:
@@ -348,6 +374,7 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         return reverse('crm:manager:subscription:list')
 
 
+@reversion.register()
 class Client(CompanyObjectModel):
     """Клиент-Ученик. Котнактные данные. Баланс"""
     name = models.CharField("Имя",
@@ -384,6 +411,7 @@ class Client(CompanyObjectModel):
         return self.name
 
 
+@reversion.register()
 class ClientSubscriptions(CompanyObjectModel):
     """Абонементы клиента"""
     client = TenantForeignKey(Client,
@@ -429,6 +457,7 @@ class ClientSubscriptions(CompanyObjectModel):
         ordering = ['purchase_date']
 
 
+@reversion.register()
 class ExtensionHistory(CompanyObjectModel):
     client_subscription = TenantForeignKey(
         ClientSubscriptions,
@@ -444,6 +473,7 @@ class ExtensionHistory(CompanyObjectModel):
         ordering = ['date_extended']
 
 
+@reversion.register()
 class Event(CompanyObjectModel):
     """Конкретное мероприятие (тренировка)"""
     # TODO: Валидацию по event_class
@@ -515,6 +545,7 @@ class Event(CompanyObjectModel):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
 
 
+@reversion.register()
 class Attendance(CompanyObjectModel):
     """Посещение клиентом мероприятия(тренировки)"""
     client = TenantForeignKey(Client,

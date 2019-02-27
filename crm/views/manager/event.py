@@ -1,14 +1,15 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
-    TemplateView)
+)
 from django_filters.views import FilterView
+from reversion.views import RevisionMixin
 
 from crm.filters import EventReportFilter
 from crm.forms import EventAttendanceForm
-from crm.models import Event, Attendance
+from crm.models import Attendance, Event
 from crm.views.mixin import UserManagerMixin
 
 
@@ -24,21 +25,21 @@ class List(LoginRequiredMixin, UserManagerMixin, ListView):
     template_name = 'crm/manager/event/list.html'
 
 
-class Create(LoginRequiredMixin, UserManagerMixin, CreateView):
+class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
     model = Event
     fields = '__all__'
     template_name = 'crm/manager/event/form.html'
     success_url = reverse_lazy('crm:manager:event:list')
 
 
-class Update(LoginRequiredMixin, UserManagerMixin, UpdateView):
+class Update(LoginRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
     model = Event
     fields = '__all__'
     template_name = 'crm/manager/event/form.html'
     success_url = reverse_lazy('crm:manager:event:list')
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
+class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
     model = Event
     template_name = 'crm/manager/event/confirm_delete.html'
     success_url = reverse_lazy('crm:manager:event:list')
@@ -50,7 +51,12 @@ class Detail(LoginRequiredMixin, UserManagerMixin, DetailView):
     template_name = 'crm/manager/event/detail.html'
 
 
-class EventAttendanceCreate(LoginRequiredMixin, UserManagerMixin, CreateView):
+class EventAttendanceCreate(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    CreateView
+):
     # TODO: Где должна использоваться эта View?
     model = Attendance
     form_class = EventAttendanceForm

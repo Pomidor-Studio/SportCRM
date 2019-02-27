@@ -30,13 +30,18 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
+# Order of installed apps matters
+# social_django MUST be defined BEFORE crm.apps.CrmConfig
+# as we redefine social_django admin for purposes of django-reversion
 INSTALLED_APPS = [
-    'crm.apps.CrmConfig',
     'rest_framework',
     'bootstrap_datepicker_plus',
     'bootstrap4',
     'social_django',
     'rules.apps.AutodiscoverRulesConfig',
+    'reversion',
+    'reversion_compare',
+    'crm.apps.CrmConfig',
     'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -129,23 +134,6 @@ USE_TZ = True
 DATE_INPUT_FORMATS = ['%d.%m.%Y']
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.1/howto/static-files/
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = "/static/"
-
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
-AUTH_USER_MODEL = 'crm.User'
-
-AUTHENTICATION_BACKENDS = (
-    'social_core.backends.vk.VKOAuth2',
-    'sesame.backends.ModelBackend',
-    'rules.permissions.ObjectPermissionBackend',
-    'django.contrib.auth.backends.ModelBackend',
-)
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -163,10 +151,27 @@ LOGGING = {
         'django_multitenant': {
             'handlers': ['null'],
             'level': 'CRITICAL'
-        },
+        }
     },
 }
 
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/2.1/howto/static-files/
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = "/static/"
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+AUTH_USER_MODEL = 'crm.User'
+
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.vk.VKOAuth2',
+    'sesame.backends.ModelBackend',
+    'rules.permissions.ObjectPermissionBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)
 
 LOGIN_URL = reverse_lazy('crm:accounts:login')
 LOGIN_REDIRECT_URL = reverse_lazy('crm:accounts:login-redirect')
