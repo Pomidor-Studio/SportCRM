@@ -213,7 +213,11 @@ class EventClass(CompanyObjectModel):
         For example: [0, 2, 4] for monday, wednesday, friday
         """
         days = list(
-            self.dayoftheweekclass_set.all().values_list('day', flat=True))
+            self.dayoftheweekclass_set
+                .all()
+                .order_by('day')
+                .values_list('day', flat=True)
+        )
 
         if not len(days):
             raise ValueError("Event class don't have any days to spread")
