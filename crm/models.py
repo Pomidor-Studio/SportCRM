@@ -258,7 +258,7 @@ class EventClass(CompanyObjectModel):
         required_day: date
     ) -> Optional[date]:
         try:
-            return self.get_nearest_day_or_none(required_day)
+            return self.get_nearest_event_to(required_day)
         except ValueError:
             return None
 
@@ -450,25 +450,13 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
 @reversion.register()
 class Client(CompanyObjectModel):
     """Клиент-Ученик. Котнактные данные. Баланс"""
-    name = models.CharField("Имя",
-                            max_length=100)
-    address = models.CharField("Адрес",
-                               max_length=255,
-                               blank=True)
-    birthday = models.DateField("Дата рождения",
-                                null=True,
-                                blank=True)
-    phone_number = models.CharField("Телефон",
-                                    max_length=50,
-                                    blank=True)
-    email_address = models.CharField("Email",
-                                     max_length=50,
-                                     blank=True)
-    vk_user_id = models.IntegerField("id ученика в ВК",
-                                     null=True,
-                                     blank=True)
-    balance = models.FloatField("Баланс",
-                                default=0)
+    name = models.CharField("Имя", max_length=100)
+    address = models.CharField("Адрес", max_length=255, blank=True)
+    birthday = models.DateField("Дата рождения", null=True, blank=True)
+    phone_number = models.CharField("Телефон", max_length=50, blank=True)
+    email_address = models.CharField("Email", max_length=50, blank=True)
+    vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
+    balance = models.FloatField("Баланс", default=0)
 
     class Meta:
         unique_together = ('company', 'name')
@@ -478,21 +466,37 @@ class Client(CompanyObjectModel):
 
     @property
     def last_sub(self):
-        return self.clientsubscriptions_set.order_by('purchase_date').first
+        return self.clientsubscriptions_set.order_by('purchase_date').first()
 
     def __str__(self):
         return self.name
 
 
+class ClientSubscriptionsManager(models.Manager):
+
+    def extend_by_cancellation(self, cancelled_event: Event):
+        active_subscriptions = self.get_queryset().filter(
+            subscription__event_class=cancelled_event.event_class,
+            start_date__lte=cancelled_event.date,
+            end_date__gte=cancelled_event.date,
+            visits_left__gt=0
+        )
+
+        for subscription in active_subscriptions:
+            subscription.extend_duration(cancelled_event)
+
+
 @reversion.register()
 class ClientSubscriptions(CompanyObjectModel):
     """Абонементы клиента"""
-    client = TenantForeignKey(Client,
-                              on_delete=models.PROTECT,
-                              verbose_name="Ученик")
-    subscription = TenantForeignKey(SubscriptionsType,
-                                    on_delete=models.PROTECT,
-                                    verbose_name="Тип Абонемента")
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик")
+    subscription = TenantForeignKey(
+        SubscriptionsType,
+        on_delete=models.PROTECT,
+        verbose_name="Тип Абонемента")
     purchase_date = models.DateTimeField("Дата покупки", default=timezone.now)
     start_date = models.DateTimeField("Дата начала", default=timezone.now)
     end_date = models.DateTimeField(null=True)
@@ -500,28 +504,58 @@ class ClientSubscriptions(CompanyObjectModel):
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
     def save(self, *args, **kwargs):
-        self.start_date = self.subscription.get_start_date(self.start_date)
-        self.end_date = self.subscription.get_end_date(self.start_date)
-        super(ClientSubscriptions, self).save(*args, **kwargs)
+        # Prevent change end date for extended client subsctription
+        if not self.id:
+            self.start_date = self.subscription.get_start_date(self.start_date)
+            self.end_date = self.subscription.get_end_date(self.start_date)
+
+        super().save(*args, **kwargs)
 
     def extend_duration(self, added_visits, reason=''):
+        new_end_date = self.nearest_extended_end_date()
         with transaction.atomic():
             ExtensionHistory.objects.create(
                 client_subscription=self,
                 reason=reason,
-                added_visits=added_visits
+                added_visits=added_visits,
+                extended_to=(
+                    new_end_date if new_end_date != self.end_date else None
+                )
             )
             self.visits_left += int(added_visits)
-            self.end_date = self.nearest_extended_end_date()
+            self.end_date = new_end_date
             self.save()
 
-    def nearest_extended_end_date(self):
+    def extend_by_cancellation(self, cancelled_event: Event):
+        possible_extension_date = self.nearest_extended_end_date(
+            cancelled_event.event_class)
+
+        if possible_extension_date == self.end_date:
+            # Don't extend if there is no more future events for this
+            # event class
+            return
+
+        with transaction.atomic():
+            ExtensionHistory.objects.create(
+                client_subscription=self,
+                reason=f'В связи с отменой тренировки {cancelled_event}',
+                added_visits=0,
+                related_event=cancelled_event,
+                extended_to=possible_extension_date
+            )
+            self.end_date = possible_extension_date
+            self.save()
+
+    def nearest_extended_end_date(self, event_class: EventClass = None):
         possible_events = self.subscription.event_class.filter(
             Q(date_to__isnull=True) | Q(date_to__gt=self.end_date)
         )
 
+        if event_class:
+            possible_events = possible_events.filter(id=event_class.id)
+
         if not possible_events.exists():
-            raise NoFutureEvent()
+            return self.end_date
 
         new_end_date = list(filter(bool, [
             x.get_nearest_event_to_or_none(self.end_date)
@@ -554,17 +588,17 @@ class ExtensionHistory(CompanyObjectModel):
         'Дата продления',
         default=timezone.now)
     reason = models.CharField('Причина продления', max_length=255, blank=False)
-    # related_event = TenantForeignKey(
-    #     to='Event',
-    #     on_delete=models.PROTECT,
-    #     null=True
-    # )
+    related_event = TenantForeignKey(
+        to='Event',
+        on_delete=models.PROTECT,
+        null=True
+    )
     added_visits = models.PositiveIntegerField("Добавлено посещений")
-    # extended_to = models.DateField(
-    #     'Абонемент продлен до дня',
-    #     blank=True,
-    #     null=True
-    # )
+    extended_to = models.DateField(
+        'Абонемент продлен до дня',
+        blank=True,
+        null=True
+    )
 
     class Meta:
         ordering = ['date_extended']
@@ -580,18 +614,27 @@ class Event(CompanyObjectModel):
         on_delete=models.PROTECT,
         verbose_name="Тренировка"
     )
-    # canceled_at = models.DateField('Дата отмены тренировки', null=True)
+    canceled_at = models.DateField('Дата отмены тренировки', null=True)
 
     class Meta:
         unique_together = ('event_class', 'date',)
 
     def clean(self):
         # Проверяем пренадлижит ли указанная дата тренировке
+        # TODO: Refactor dump Event.is_event_day
         if not self.event_class.is_event_day(self.date):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
 
     def __str__(self):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
+
+    def cancel_event(self, extend_subscriptions=False):
+        with transaction.atomic():
+            self.canceled_at = timezone.now()
+            self.save()
+
+            if extend_subscriptions:
+                ClientSubscriptions.objects.extend_by_cancellation(self)
 
 
 @reversion.register()
