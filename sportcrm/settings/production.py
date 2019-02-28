@@ -6,7 +6,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = [
     '127.0.0.1',
-    '9170cfd8.ngrok.io'
+    'sportcrm.herokuapp.com',
+    'sportcrm-test.herokuapp.com',
+    'sportcrm-usa.herokuapp.com'
 ]
 
 DATABASES['default'] = dj_database_url.config(
