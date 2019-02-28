@@ -4,6 +4,7 @@ import factory
 from django_multitenant.utils import set_current_tenant
 from factory import post_generation
 
+from crm.enums import GRANULARITY
 from .. import models
 
 
@@ -69,7 +70,7 @@ class SubscriptionsTypeFactory(factory.DjangoModelFactory):
     price = factory.Faker('pyfloat', left_digits=3)
     duration_type = factory.Faker(
         'random_element',
-        elements=tuple(x[0] for x in models.granularity)
+        elements=tuple(GRANULARITY.values.keys())
     )
     duration = factory.Faker('random_int', max=60)
     rounding = factory.Faker('pybool')

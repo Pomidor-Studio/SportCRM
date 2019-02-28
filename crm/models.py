@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta, time
+from datetime import date, datetime, time, timedelta
 from itertools import count
 from typing import Dict, List, Optional
 
+import pendulum
 import pytz
 import reversion
-from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
@@ -23,6 +23,7 @@ from psycopg2 import Error as Psycopg2Error
 from safedelete.models import SafeDeleteModel
 from transliterate import translit
 
+from crm.enums import GRANULARITY
 from crm.events import get_nearest_to, next_day, Weekdays
 
 INTERNAL_COMPANY = 'INTERNAL'
@@ -390,8 +391,8 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     duration_type = models.CharField(
         "Временные рамки абонемента",
         max_length=20,
-        choices=granularity,
-        default=granularity[0]
+        choices=GRANULARITY,
+        default=GRANULARITY.DAY
     )
     duration = models.PositiveIntegerField("Продолжительность")
     rounding = models.BooleanField(
@@ -405,43 +406,53 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     )
 
     def __str__(self):
-        return 'name: (0)'.format(self.name)
+        return self.name
 
-    def get_start_date(self, rounding_date: date):
+    def start_date(self, rounding_date: date) -> pendulum.Date:
         """
         Возвращает дату начала действия абонемента после округления.
-        rounding_date - дата начала действия абонемента до округления
-        """
-        if self.rounding:
-            weekday = rounding_date.weekday()
-            if self.duration_type == granularity[0][0]:
-                start_date = rounding_date
-            elif self.duration_type == granularity[1][0]:
-                start_date = rounding_date - timedelta(weekday)
-            elif self.duration_type == granularity[2][0]:
-                start_date = datetime(
-                    rounding_date.year, rounding_date.month, 1)
-            elif self.duration_type == granularity[3][0]:
-                start_date = datetime(rounding_date.year, 1, 1)
-        else:
-            start_date = rounding_date
-        return start_date
 
-    def get_end_date(self, start_date):
+        :param rounding_date: дата начала действия абонемента до округления
+        """
+        p_date: pendulum.Date = pendulum.Date.fromordinal(
+            rounding_date.toordinal())
+        if not self.rounding:
+            return p_date
+
+        elif self.duration_type == GRANULARITY.DAY:
+            return p_date
+
+        elif self.duration_type == GRANULARITY.WEEK:
+            return p_date.start_of('week')
+
+        elif self.duration_type == GRANULARITY.MONTH:
+            return p_date.start_of('month')
+
+        elif self.duration_type == GRANULARITY.YEAR:
+            return p_date.start_of('year')
+
+        return p_date
+
+    def end_date(self, start_date: date) -> Optional[pendulum.Date]:
         """
         Возвращает дату окончания действия абонемента.
-        start_date - дата начала действия абонемента
+        :param start_date: дата начала действия абонемента
         """
-        end_date = None
-        if self.duration_type == granularity[0][0]:
-            end_date = start_date + relativedelta(days=self.duration)
-        elif self.duration_type == granularity[1][0]:
-            end_date = start_date + relativedelta(days=6 * self.duration)
-        elif self.duration_type == granularity[2][0]:
-            end_date = start_date + relativedelta(months=self.duration)
-        elif self.duration_type == granularity[3][0]:
-            end_date = start_date + relativedelta(years=self.duration)
-        return end_date
+        rounded_start_date = self.start_date(start_date)
+
+        if self.duration_type == GRANULARITY.DAY:
+            return rounded_start_date.add(days=self.duration)
+
+        elif self.duration_type == GRANULARITY.WEEK:
+            return rounded_start_date.add(weeks=self.duration)
+
+        elif self.duration_type == GRANULARITY.MONTH:
+            return rounded_start_date.add(months=self.duration)
+
+        elif self.duration_type == GRANULARITY.YEAR:
+            return rounded_start_date.add(years=self.duration)
+
+        return None
 
     @staticmethod
     def get_absolute_url():
@@ -509,8 +520,8 @@ class ClientSubscriptions(CompanyObjectModel):
     def save(self, *args, **kwargs):
         # Prevent change end date for extended client subscription
         if not self.id:
-            self.start_date = self.subscription.get_start_date(self.start_date)
-            self.end_date = self.subscription.get_end_date(self.start_date)
+            self.start_date = self.subscription.start_date(self.start_date)
+            self.end_date = self.subscription.end_date(self.start_date)
 
         super().save(*args, **kwargs)
 
