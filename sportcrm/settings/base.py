@@ -24,6 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SECRET_KEY = '$+a*ui0^x+mdhq^$)vvl5aa+#9es)_bii00k!jqf4(_gcpmq1j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = False
 
 ALLOWED_HOSTS = []
@@ -42,6 +43,8 @@ INSTALLED_APPS = [
     'reversion',
     'reversion_compare',
     'crm.apps.CrmConfig',
+    'bot.apps.BotConfig',
+    'bot.apps.SignalsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
