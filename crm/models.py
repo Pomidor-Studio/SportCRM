@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time
 from itertools import count
 from typing import Dict, List, Optional
 
+import pytz
 import reversion
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
@@ -512,7 +513,8 @@ class ClientSubscriptions(CompanyObjectModel):
         super().save(*args, **kwargs)
 
     def extend_duration(self, added_visits, reason=''):
-        new_end_date = self.nearest_extended_end_date()
+        new_end_date = datetime.combine(
+            self.nearest_extended_end_date(), time(), tzinfo=pytz.utc)
         with transaction.atomic():
             ExtensionHistory.objects.create(
                 client_subscription=self,

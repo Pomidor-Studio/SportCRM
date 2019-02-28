@@ -1,8 +1,10 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, time, datetime
 from typing import List
 
 import pytest
+import pytz
 from hamcrest import assert_that, calling, contains, has_properties, is_, raises
+from pytest_mock import MockFixture
 
 from crm import models
 from crm.models import Coach, Location, SubscriptionsType, User
@@ -218,4 +220,82 @@ def test_nearest_extended_end_date_for_no_future_events(
     assert_that(
         cs.nearest_extended_end_date(),
         is_(cs.end_date)
+    )
+
+
+def test_client_subscription_extend_duration_with_new_end_date(
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    start_date = date(2019, 2, 25)
+    new_end_date = start_date + timedelta(days=14)
+
+    mocker.patch(
+        'crm.models.ClientSubscriptions.nearest_extended_end_date',
+        return_value=new_end_date
+    )
+
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        subscription__event_class__events=[],
+        subscription__rounding=False,
+        subscription__duration=7,
+        subscription__duration_type='day',
+        start_date=start_date
+    )
+    old_visits = cs.visits_left
+
+    spy = mocker.spy(models.ExtensionHistory.objects, 'create')
+
+    cs.extend_duration(10, reason='TEST')
+
+    cs.refresh_from_db()
+
+    assert_that(cs, has_properties(
+        visits_left=old_visits + 10,
+        end_date=datetime.combine(new_end_date, time(), tzinfo=pytz.utc)
+    ))
+    spy.assert_called_once_with(
+        client_subscription=cs,
+        reason='TEST',
+        added_visits=10,
+        extended_to=datetime.combine(new_end_date, time(), tzinfo=pytz.utc)
+    )
+
+
+def test_client_subscription_extend_duration_without_new_end_date(
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    start_date = date(2019, 2, 25)
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        subscription__event_class__events=[],
+        subscription__rounding=False,
+        subscription__duration=7,
+        subscription__duration_type='day',
+        start_date=start_date
+    )
+    old_end_date = cs.end_date
+
+    mocker.patch(
+        'crm.models.ClientSubscriptions.nearest_extended_end_date',
+        return_value=cs.end_date.date()
+    )
+
+    old_visits = cs.visits_left
+
+    spy = mocker.spy(models.ExtensionHistory.objects, 'create')
+
+    cs.extend_duration(10, reason='TEST')
+
+    cs.refresh_from_db()
+
+    assert_that(cs, has_properties(
+        visits_left=old_visits + 10,
+        end_date=old_end_date
+    ))
+    spy.assert_called_once_with(
+        client_subscription=cs,
+        reason='TEST',
+        added_visits=10,
+        extended_to=None
     )
