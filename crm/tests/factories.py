@@ -1,11 +1,12 @@
+import datetime
 from datetime import date
 
 import factory
 from django_multitenant.utils import set_current_tenant
 from factory import post_generation
 
+from crm import models
 from crm.enums import GRANULARITY
-from .. import models
 
 
 class CompanyFactory(factory.DjangoModelFactory):
@@ -126,6 +127,25 @@ class EventClassFactory(factory.DjangoModelFactory):
                 event=self,
                 day=day
             )
+
+
+class EventFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Event
+
+    company = factory.SubFactory('crm.tests.factories.CompanyFactory')
+    event_class = factory.SubFactory(
+        'crm.tests.factories.EventClassFactory',
+        company=factory.SelfAttribute('..company')
+    )
+    canceled_at = None
+
+    @factory.lazy_attribute
+    def date(self):
+        return list(self.event_class.get_calendar_gen(
+            self.event_class.date_from,
+            self.event_class.date_from + datetime.timedelta(days=1)
+        ).keys())[0]
 
 
 class ClientFactory(factory.DjangoModelFactory):

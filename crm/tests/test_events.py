@@ -181,13 +181,13 @@ def test_days_delta(input_days, expected):
         date(2019, 2, 25),
         date(2019, 3, 24),
         [0],
-        [date(2019, 2, 25) + timedelta(days=7*x) for x in range(4)]
+        [date(2019, 2, 25) + timedelta(days=7 * x) for x in range(4)]
     ),
     (
         date(2019, 2, 25),
         date(2019, 3, 24),
         [6],
-        [date(2019, 3, 3) + timedelta(days=7*x) for x in range(4)]
+        [date(2019, 3, 3) + timedelta(days=7 * x) for x in range(4)]
     ),
     (
         date(2019, 2, 25),

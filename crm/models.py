@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta
+from datetime import date, datetime, timedelta
 from itertools import count
 from typing import Dict, List, Optional
 
 import pendulum
-import pytz
 import reversion
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
@@ -13,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
 from django.db.models import Q
+from django.db.models.manager import BaseManager
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
@@ -371,14 +371,6 @@ class DayOfTheWeekClass(CompanyObjectModel):
         unique_together = ('day', 'event',)
 
 
-granularity = (
-    ('day', 'День'),
-    ('week', 'Неделя'),
-    ('month', 'Месяц'),
-    ('year', 'Год')
-)
-
-
 @reversion.register()
 class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     """
@@ -484,18 +476,25 @@ class Client(CompanyObjectModel):
         return self.name
 
 
-class ClientSubscriptionsManager(models.Manager):
-
-    def extend_by_cancellation(self, cancelled_event: Event):
-        active_subscriptions = self.get_queryset().filter(
-            subscription__event_class=cancelled_event.event_class,
-            start_date__lte=cancelled_event.date,
-            end_date__gte=cancelled_event.date,
+class ClientSubscriptionQuerySet(models.QuerySet):
+    def active_subscriptions(self, event: Event):
+        return self.filter(
+            subscription__event_class=event.event_class,
+            start_date__lte=event.date,
+            end_date__gte=event.date,
             visits_left__gt=0
         )
 
-        for subscription in active_subscriptions:
-            subscription.extend_duration(cancelled_event)
+
+class ClientSubscriptionsManager(
+    BaseManager.from_queryset(ClientSubscriptionQuerySet)
+):
+    def active_subscriptions(self, event: Event):
+        return self.get_queryset().active_subscriptions(event)
+
+    def extend_by_cancellation(self, cancelled_event: Event):
+        for subscription in self.active_subscriptions(cancelled_event):
+            subscription.extend_by_cancellation(cancelled_event)
 
 
 @reversion.register()
@@ -525,9 +524,12 @@ class ClientSubscriptions(CompanyObjectModel):
 
         super().save(*args, **kwargs)
 
-    def extend_duration(self, added_visits, reason=''):
-        new_end_date = datetime.combine(
-            self.nearest_extended_end_date(), time(), tzinfo=pytz.utc)
+    def extend_duration(self, added_visits: int, reason: str = ''):
+        new_end_date = self.nearest_extended_end_date()
+
+        if new_end_date == self.end_date and added_visits == 0:
+            return
+
         with transaction.atomic():
             ExtensionHistory.objects.create(
                 client_subscription=self,
@@ -537,7 +539,7 @@ class ClientSubscriptions(CompanyObjectModel):
                     new_end_date if new_end_date != self.end_date else None
                 )
             )
-            self.visits_left += int(added_visits)
+            self.visits_left += added_visits
             self.end_date = new_end_date
             self.save()
 
@@ -645,7 +647,7 @@ class Event(CompanyObjectModel):
 
     def cancel_event(self, extend_subscriptions=False):
         with transaction.atomic():
-            self.canceled_at = timezone.now()
+            self.canceled_at = date.today()
             self.save()
 
             if extend_subscriptions:
@@ -655,20 +657,27 @@ class Event(CompanyObjectModel):
 @reversion.register()
 class Attendance(CompanyObjectModel):
     """Посещение клиентом мероприятия(тренировки)"""
-    client = TenantForeignKey(Client,
-                              on_delete=models.PROTECT,
-                              verbose_name="Ученик")
-    event = TenantForeignKey(Event,
-                             on_delete=models.PROTECT,
-                             verbose_name="Тренировка")
-    subscription = TenantForeignKey(ClientSubscriptions,
-                                    on_delete=models.PROTECT,
-                                    blank=True,
-                                    verbose_name="Абонемент Клиента",
-                                    null=True,
-                                    default=None)
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик"
+    )
+    event = TenantForeignKey(
+        Event,
+        on_delete=models.PROTECT,
+        verbose_name="Тренировка"
+    )
+    subscription = TenantForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        blank=True,
+        verbose_name="Абонемент Клиента",
+        null=True,
+        default=None
+    )
+
     class Meta:
         unique_together = ('client', 'event',)
 
     def __str__(self):
-        return self.client.name + " " + str(self.event)
+        return f'{self.client} {self.event}'

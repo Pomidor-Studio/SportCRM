@@ -1,14 +1,19 @@
-from datetime import date, timedelta, time, datetime
+from datetime import date, timedelta
 from typing import List
 
 import pytest
-import pytz
-from hamcrest import assert_that, calling, contains, has_properties, is_, raises
+from freezegun import freeze_time
+from hamcrest import (
+    assert_that, calling, contains, contains_inanyorder,
+    has_properties, is_, raises,
+)
 from pytest_mock import MockFixture
 
 from crm import models
 from crm.enums import GRANULARITY
-from crm.models import Coach, Location, SubscriptionsType, User
+from crm.models import (
+    ClientSubscriptions, Coach, Location, SubscriptionsType, User,
+)
 
 pytestmark = pytest.mark.django_db
 
@@ -329,13 +334,13 @@ def test_client_subscription_extend_duration_with_new_end_date(
 
     assert_that(cs, has_properties(
         visits_left=old_visits + 10,
-        end_date=datetime.combine(new_end_date, time(), tzinfo=pytz.utc)
+        end_date=new_end_date
     ))
     spy.assert_called_once_with(
         client_subscription=cs,
         reason='TEST',
         added_visits=10,
-        extended_to=datetime.combine(new_end_date, time(), tzinfo=pytz.utc)
+        extended_to=new_end_date
     )
 
 
@@ -355,7 +360,7 @@ def test_client_subscription_extend_duration_without_new_end_date(
 
     mocker.patch(
         'crm.models.ClientSubscriptions.nearest_extended_end_date',
-        return_value=cs.end_date.date()
+        return_value=cs.end_date
     )
 
     old_visits = cs.visits_left
@@ -376,3 +381,246 @@ def test_client_subscription_extend_duration_without_new_end_date(
         added_visits=10,
         extended_to=None
     )
+
+
+def test_client_subscription_extend_duration_without_new_end_date_and_zero(
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    start_date = date(2019, 2, 25)
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        subscription__event_class__events=[],
+        subscription__rounding=False,
+        subscription__duration=7,
+        subscription__duration_type='day',
+        start_date=start_date
+    )
+    old_end_date = cs.end_date
+
+    mocker.patch(
+        'crm.models.ClientSubscriptions.nearest_extended_end_date',
+        return_value=cs.end_date
+    )
+
+    old_visits = cs.visits_left
+
+    spy = mocker.spy(models.ExtensionHistory.objects, 'create')
+
+    cs.extend_duration(0, reason='TEST')
+
+    cs.refresh_from_db()
+
+    assert_that(cs, has_properties(
+        visits_left=old_visits,
+        end_date=old_end_date
+    ))
+    spy.assert_not_called()
+
+
+def test_client_subscription_extend_by_cancellation_no_future_date(
+    client_subscription_factory,
+    event_factory,
+    mocker: MockFixture
+):
+    start_date = date(2019, 2, 25)
+    event = event_factory(
+        event_class__date_from=start_date,
+        canceled_at=date(2019, 2, 26)
+    )
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        subscription__event_class__events=event.event_class,
+        subscription__rounding=False,
+        subscription__duration=7,
+        subscription__duration_type='day',
+        start_date=start_date
+    )
+    old_end_date = cs.end_date
+
+    mocker.patch(
+        'crm.models.ClientSubscriptions.nearest_extended_end_date',
+        return_value=cs.end_date
+    )
+
+    spy = mocker.spy(models.ExtensionHistory.objects, 'create')
+
+    cs.extend_by_cancellation(event)
+
+    cs.refresh_from_db()
+
+    assert_that(cs, has_properties(
+        end_date=old_end_date
+    ))
+    spy.assert_not_called()
+
+
+def test_client_subscription_extend_by_cancellation_with_future_date(
+    client_subscription_factory,
+    event_factory,
+    mocker: MockFixture
+):
+    start_date = date(2019, 2, 25)
+    event = event_factory(
+        event_class__date_from=start_date,
+        canceled_at=date(2019, 2, 26)
+    )
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        subscription__event_class__events=event.event_class,
+        subscription__rounding=False,
+        subscription__duration=7,
+        subscription__duration_type='day',
+        start_date=start_date
+    )
+    new_end_date = date(2019, 2, 27)
+
+    mocker.patch(
+        'crm.models.ClientSubscriptions.nearest_extended_end_date',
+        return_value=new_end_date
+    )
+
+    spy = mocker.spy(models.ExtensionHistory.objects, 'create')
+
+    cs.extend_by_cancellation(event)
+
+    cs.refresh_from_db()
+
+    assert_that(cs, has_properties(
+        end_date=new_end_date
+    ))
+    spy.assert_called_once_with(
+        client_subscription=cs,
+        reason=f'В связи с отменой тренировки {event}',
+        added_visits=0,
+        related_event=event,
+        extended_to=new_end_date
+    )
+
+
+def test_client_subscription_qs_active_subscriptions(
+    subscriptions_type_factory,
+    client_subscription_factory,
+    event_factory
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1)
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.MONTH,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+
+    active_subs = client_subscription_factory.create_batch(
+        3,
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 25),
+        start_date=date(2019, 2, 25)
+    )
+    # outdated_sub
+    client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 1, 1),
+        start_date=date(2019, 1, 1)
+    )
+    # future_sub
+    client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 3, 1),
+        start_date=date(2019, 3, 1)
+    )
+    # empty_sub
+    client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 25),
+        start_date=date(2019, 2, 25),
+        visits_left=0
+    )
+
+    assert_that(
+        ClientSubscriptions.objects.get_queryset().active_subscriptions(event),
+        contains_inanyorder(*active_subs)
+    )
+
+
+def test_client_subscriptions_manager_active_subscriptions(
+    mocker: MockFixture
+):
+    mock = mocker.patch(
+        'crm.models.ClientSubscriptionQuerySet.active_subscriptions')
+
+    ClientSubscriptions.objects.active_subscriptions(mocker.ANY)
+
+    mock.assert_called_once_with(mocker.ANY)
+
+
+def test_client_subscriptions_manager_extend_by_cancellation(
+    subscriptions_type_factory,
+    client_subscription_factory,
+    event_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1)
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.MONTH,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+
+    client_subscription_factory.create_batch(
+        3,
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 25),
+        start_date=date(2019, 2, 25)
+    )
+
+    mock = mocker.patch(
+        'crm.models.ClientSubscriptions.extend_by_cancellation')
+
+    ClientSubscriptions.objects.extend_by_cancellation(event)
+
+    assert_that(mock.call_count, is_(3))
+    mock.assert_any_call(event)
+
+
+def test_event_cancel_event_with_extending(
+    event_factory,
+    mocker: MockFixture
+):
+    event = event_factory()
+    mock = mocker.patch(
+        'crm.models.ClientSubscriptionsManager.extend_by_cancellation')
+    with freeze_time('2019-02-25'):
+        event.cancel_event(extend_subscriptions=True)
+
+    event.refresh_from_db()
+
+    assert_that(event.canceled_at, is_(date(2019, 2, 25)))
+    mock.assert_called_once()
+
+
+def test_event_cancel_event_without_extending(
+    event_factory,
+    mocker: MockFixture
+):
+    event = event_factory()
+    mock = mocker.patch(
+        'crm.models.ClientSubscriptionsManager.extend_by_cancellation')
+    with freeze_time('2019-02-25'):
+        event.cancel_event(extend_subscriptions=False)
+
+    event.refresh_from_db()
+
+    assert_that(event.canceled_at, is_(date(2019, 2, 25)))
+    mock.assert_not_called()

@@ -59,7 +59,7 @@ def days_delta(days) -> List[int]:
         if x == len(days) - 1:
             deltas[x] = 7 - days[x] + days[0]
         else:
-            deltas[x] = days[x+1] - days[x]
+            deltas[x] = days[x + 1] - days[x]
 
     return deltas
 
