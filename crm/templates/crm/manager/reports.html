@@ -1,0 +1,16 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
+{% block extrahead %}
+  {{ form.media }}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Отчеты</legend>
+    <ul>
+      <li><a href="{% url 'crm:manager:event:report' %}">Отчет по тренировкам</a></li>
+    </ul>
+  </div>
+{% endblock content %}
