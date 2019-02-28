@@ -137,19 +137,14 @@ class MarkClientAttendance(
 ):
 
     def get(self, request, *args, **kwargs):
-        event_date = date(
-            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
-        )
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
         event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
                                                date=event_date)
-        client_id = self.kwargs.pop('client_id')
         subscription_id = self.kwargs.pop('subscription_id')
         subscription = ClientSubscriptions.objects.get(id=subscription_id)
-        client = get_object_or_404(Client, id=client_id)
-        Attendance.objects.create(event=event,
-                                  client=client,
-                                  subscription=subscription)
-        subscription.mark_the_visit()
+        subscription.mark_visit(event)
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 

@@ -192,7 +192,7 @@ manager_event_class_urlpatterns = ([
         name='mark-attendance'
     ),
     path(
-        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/<int:client_id>/<int:subscription_id>',
+        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/<int:subscription_id>',
         manager_event_class_views.MarkClientAttendance.as_view(),
         name='mark-client-attendance'
     ),
