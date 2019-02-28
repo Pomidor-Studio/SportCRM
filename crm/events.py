@@ -43,8 +43,9 @@ def get_nearest_to(
 
 def days_delta(days) -> List[int]:
     """
-    Get list of days delta between event occurrences. Can work with
-    shifted days (monday is not first day in list)
+    Get list of days delta between event occurrences. Can't work with
+    shifted days (monday is not first day in list). Days must be ordered
+    in natural manner.
 
     For [0, 2, 4] it will return [2, 2, 3]
     For [0, 1, 2, 3, 4, 5, 6] it will return [1, 1, 1, 1, 1, 1, 1]
