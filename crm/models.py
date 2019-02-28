@@ -410,7 +410,6 @@ class Client(CompanyObjectModel):
     def __str__(self):
         return self.name
 
-
 @reversion.register()
 class ClientSubscriptions(CompanyObjectModel):
     """Абонементы клиента"""
