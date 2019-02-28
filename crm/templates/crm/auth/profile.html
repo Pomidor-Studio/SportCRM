@@ -1,0 +1,50 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+  <div class="content-section ml-4 mt-4 w-50">
+    <div class="card mb-3">
+      <div class="card-body">
+        {% if not user.has_vk_auth %}
+          <div class="alert alert-primary" role="alert">
+            {{ coach|default_if_none:"Тренер" }} вы еще не привязали ваш аккаунт
+            в
+            VK. Для этого просто нажмите кнопку.
+          </div>
+          <a class="btn btn-primary mb-3 w-100"
+             href="{% url "social:begin" "vk-oauth2" %}"
+             role="button">
+            Привязать ВК <i class="fab fa-vk"></i>
+          </a>
+        {% else %}
+          <a href="{{ coach.user.vk_link|safe }}" target="_blank">
+            <i class="fab fa-vk"></i>&nbsp;{{ coach.user.vk_link|safe }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        Основное
+      </div>
+      <div class="card-body">
+        <form method="post">
+
+          {% csrf_token %}
+          {% bootstrap_form form show_help=False %}
+
+          <input type="submit" value="Изменить" class="btn btn-primary mb-2">
+
+          <br>
+
+          <a href="{% url 'crm:accounts:password-change' %}"
+             class="btn btn-outline-danger">Сменить пароль</a>
+          <a href="{% url 'crm:accounts:password-reset-confirm' %}"
+             class="btn btn-outline-danger">Сбросить пароль</a>
+
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}
