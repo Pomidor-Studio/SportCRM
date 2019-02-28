@@ -407,7 +407,7 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     def __str__(self):
         return 'name: (0)'.format(self.name)
 
-    def get_start_date(self, rounding_date):
+    def get_start_date(self, rounding_date: date):
         """
         Возвращает дату начала действия абонемента после округления.
         rounding_date - дата начала действия абонемента до округления
@@ -498,14 +498,16 @@ class ClientSubscriptions(CompanyObjectModel):
         SubscriptionsType,
         on_delete=models.PROTECT,
         verbose_name="Тип Абонемента")
-    purchase_date = models.DateTimeField("Дата покупки", default=timezone.now)
-    start_date = models.DateTimeField("Дата начала", default=timezone.now)
-    end_date = models.DateTimeField(null=True)
+    purchase_date = models.DateField("Дата покупки", default=date.today)
+    start_date = models.DateField("Дата начала", default=date.today)
+    end_date = models.DateField(null=True)
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
+    objects = ClientSubscriptionsManager()
+
     def save(self, *args, **kwargs):
-        # Prevent change end date for extended client subsctription
+        # Prevent change end date for extended client subscription
         if not self.id:
             self.start_date = self.subscription.get_start_date(self.start_date)
             self.end_date = self.subscription.get_end_date(self.start_date)
