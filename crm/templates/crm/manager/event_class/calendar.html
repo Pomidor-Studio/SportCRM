@@ -1,22 +1,36 @@
 {% extends "crm/base.html" %}
 
+{% load html_helper %}
+
+{% block extrahead %}
+  {% css 'css/fullcalendar.min.css' %}
+  {% js 'js/fullcalendar.min.js' %}
+  {% js 'js/fullcalendar-locale-ru.js' %}
+  <script type="text/javascript">
+    $(function() {
+      $('#calendar').fullCalendar({
+        locale: 'ru',
+        height: 'auto',
+        aspectRatio: 3,
+        themeSystem: 'bootstrap4',
+        timeFormat: 'H:mm',
+        displayEventTime: true,
+        displayEventEnd: true,
+        eventSources: [
+          {
+            url: '{% url 'api-v1:manager:event-class:calendar' event_class.id %}',
+          }
+        ]
+      });
+    });
+  </script>
+{% endblock %}
+
 {% block content %}
 
   <div class="ml-4 mt-4 mr-4">
-    <h1 class="border-bottom mb-2">Календарь тренировок</h1>
-    {% if events %}
-      <ul>
-        {% for date, event in events.items %}
-          <li><a
-            href="{% url 'crm:manager:event-class:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">{{ event.date }}
-            - {{ event.event_class.name }} - {{ event.event_class.location }}
-            - {{ event.event_class.coach }}</a>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p>В заданом периоде нет тренировок</p>
-    {% endif %}
+    <h1 class="border-bottom mb-2">Календарь тренировок {{ event_class.detailed_name }}</h1>
+    <div id="calendar"></div>
   </div>
 
 {% endblock content %}

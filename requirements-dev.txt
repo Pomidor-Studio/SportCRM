@@ -8,3 +8,4 @@ PyHamcrest==1.9.0
 pytest==4.2.1
 pytest-django==3.4.7
 pytest-factoryboy==2.0.2
+pytest-lazy-fixture==0.5.1

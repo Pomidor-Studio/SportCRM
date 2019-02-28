@@ -10,10 +10,15 @@ from django.utils import timezone
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView,
     TemplateView,
-)
+    RedirectView)
+from rest_framework.fields import DateField
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAuthenticated
+from reversion.views import RevisionMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
-from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass
+from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions, SubscriptionsType
+from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import UserManagerMixin
 
 
@@ -22,7 +27,7 @@ class ObjList(LoginRequiredMixin, UserManagerMixin, ListView):
     template_name = 'crm/manager/event_class/list.html'
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, DeleteView):
+class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:manager:event-class:list')
     template_name = 'crm/manager/event_class/confirm_delete.html'
@@ -33,21 +38,51 @@ class Calendar(LoginRequiredMixin, UserManagerMixin, DetailView):
     context_object_name = 'event_class'
     template_name = 'crm/manager/event_class/calendar.html'
 
-    def get_context_data(self, **kwargs):
-        # По умолчанию выводить календарь на 60 дней
-        # от первого числа текущего месяца
+
+class ApiCalendar(ListAPIView):
+    serializer_class = CalendarEventSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        item_id = self.kwargs.get(self.lookup_field)
         first_day = timezone.now().replace(day=1).date()
-        context = super().get_context_data(**kwargs)
-        context['events'] = self.get_object().get_calendar(
-            first_day, first_day + timedelta(days=60)
-        )
-        return context
+        start = DateField().to_internal_value(
+            self.request.query_params.get('start')
+        ) or first_day
+
+        end = DateField().to_internal_value(
+            self.request.query_params.get('end')
+        ) or (first_day + timedelta(days=31))
+        return EventClass.objects.get(id=item_id).get_calendar(
+            start, end
+        ).values()
 
 
 class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
     model = Event
     context_object_name = 'event'
     template_name = 'crm/manager/event/detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
+        event_class = self.object.event_class
+        subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
+        client_subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
+                                                                  start_date__lte=self.object.date,
+                                                                  end_date__gte=self.object.date)
+        all_clients = [client_subscription.client for client_subscription in client_subscriptions]
+        attendance_clients = [attendance.client for attendance in attendance_list]
+        clients = []
+        for client in all_clients:
+            if client not in attendance_clients and client not in clients:
+                clients.append(client)
+        context.update({
+            'attendance_list': attendance_list,
+            'clients': clients
+        })
+
+        return context
 
     def get_object(self, queryset=None):
         event_date = date(
@@ -64,7 +99,12 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
             return Event(date=event_date, event_class=event_class)
 
 
-class MarkEventAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
+class MarkEventAttendance(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    CreateView
+):
     template_name = 'crm/manager/client/add-attendance.html'
     form_class = EventAttendanceForm
 
@@ -84,11 +124,42 @@ class MarkEventAttendance(LoginRequiredMixin, UserManagerMixin, CreateView):
         return kwargs
 
     def get_success_url(self):
-        return reverse(
-            'crm:manager:event-class:event-by-date', kwargs=self.kwargs)
+        return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
 
 
-class CreateEdit(LoginRequiredMixin, UserManagerMixin, TemplateView):
+class MarkClientAttendance(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    RedirectView
+):
+
+    def get(self, request, *args, **kwargs):
+        event_date = date(
+            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
+        )
+        event, _ = Event.objects.get_or_create(
+            event_class_id=self.kwargs['event_class_id'],
+            date=event_date)
+        client_id = self.kwargs.pop('client_id')
+        client = get_object_or_404(Client, id=client_id)
+        event_class = event.event_class
+        subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class).first()
+        subscription = ClientSubscriptions.objects.filter(subscription=subscriptions_types, client=client).first()
+        Attendance.objects.create(event=event, client=client, subscription=subscription)
+        self.url = self.get_success_url()
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
+
+
+class CreateEdit(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    TemplateView
+):
 
     template_name = 'crm/manager/event_class/form.html'
 

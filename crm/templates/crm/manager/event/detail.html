@@ -1,39 +1,59 @@
 {% extends "crm/base.html" %}
-
 {% block nav %}
 {% endblock nav %}
-
 {% block content %}
 
-  {{ event.date }} - {{ event.event_class.name }} -
-  {{ event.event_class.location }} - {{ event.event_class.coach }}
-
+  {{ event.date }} - {{ event.event_class.name }} - {{ event.event_class.location }} - {{ event.event_class.coach }}
+  <div class="border-top mt-2"></div>
   <div class="row">
     <div class="col">
-      <span class="font-weight-bold ">Ученики: </span>
-      <div class="mb-2 mt-2">
-        <a class="btn btn-sm btn-outline-info"
-           href="{% url 'crm:manager:event-class:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить
-          посещение</a>
+      <div class="border-top">
+        <span class="font-weight-bold ">Отмеченные ученики: </span>
+        <div class="border-top">
+          {% for attendance in attendance_list %}
+            <div class="row border-top ml-0 mr-0">
+              <div class="col pl-0">
+                {{ attendance.client.name }}
+              </div>
+              <div class="col">
+                {{ attendance.subscription.subscription.name }}
+              </div>
+              <div class="col">
+
+              </div>
+              <div class="col">
+
+              </div>
+              <div class="col">
+                <a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:attendance:delete' attendance.id %}">Удалить</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
       </div>
-      <table class="table table-sm">
-        <thead>
-        <tr>
-          <th scope="col">ФИО</th>
-          <th scope="col"></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for attendance in event.attendance_set.all|dictsort:"client.name" %}
-          <tr>
-            <td>{{ attendance.client.name }}</td>
-            <td><a class="btn btn-sm btn-outline-danger"
-                   href="{% url 'crm:manager:attendance:delete' attendance.id %}">Удалить</a>
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+      <div class="border-top mt-2"></div>
+      <div class="border-top">
+        <span class="font-weight-bold ">Не отмеченные ученики: </span>
+        <div class="border-top">
+          {% for client in clients %}
+            <div class="row border-top ml-0 mr-0">
+              <div class="col pl-0">
+                {{ client.name }}
+              </div>
+              <div class="col">
+
+              </div>
+              <div class="col">
+
+              </div>
+              <div class="col">
+                <a class="btn btn-sm btn-outline-info"
+                   href="{% url 'crm:manager:event-class:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id %}">Отметить посещение</a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
     </div>
   </div>
 
