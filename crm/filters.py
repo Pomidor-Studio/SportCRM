@@ -43,8 +43,9 @@ class EventReportFilter(django_filters.FilterSet):
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
         initial_data = data.copy() if data is not None else QueryDict(mutable=True)
         # Подставляем текущий месяц
-        initial_data['date_after'] = datetime.today().replace(day=1)
-        initial_data['date_before'] = datetime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)
+        if data is None:
+            initial_data['date_after'] = datetime.today().replace(day=1)
+            initial_data['date_before'] = datetime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)
 
         super().__init__(initial_data , queryset, request=request, prefix=prefix)
         #self.form['date'].initial = ['27.02.2019', '27.02.2019']

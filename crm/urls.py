@@ -1,5 +1,6 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
+from django.views.generic import TemplateView
 
 from crm.views import coach as coach_views, auth as scrm_auth_views
 from crm.views.manager import (
@@ -242,6 +243,7 @@ manager_urlpatterns = ([
     path('event-class/', include(manager_event_class_urlpatterns)),
     path('attendance/', include(manager_attendance_urlpatterns)),
     path('locations/', include(manager_locations_urlpatterns)),
+    path('reports/', TemplateView.as_view(template_name='crm/manager/reports.html'),name='reports')
 ], 'manager')
 
 urlpatterns = [
