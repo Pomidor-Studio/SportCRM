@@ -1,11 +1,11 @@
 from datetime import date, timedelta
-from typing import List, Callable
+from typing import List
 
 import pytest
-from hamcrest import assert_that, is_, has_properties, calling, raises, contains
+from hamcrest import assert_that, calling, contains, has_properties, is_, raises
 
 from crm import models
-from crm.models import User, Coach, Location, SubscriptionsType
+from crm.models import Coach, Location, SubscriptionsType, User
 
 pytestmark = pytest.mark.django_db
 
@@ -100,3 +100,122 @@ def test_gen_calendar_behaviour(days, event_class_factory):
     gen_cal = ec.get_calendar_gen(monday, last_day)
 
     assert_that(dumb_cal, contains(*gen_cal))
+
+
+@pytest.mark.parametrize('days, expected_delta', [
+    ([0, 1, 2, 3, 4, 5, 6], 1),
+    ([0], 7),
+    ([1, 4], 1),
+    ([0, 4], 4)
+])
+def test_nearest_extended_end_date(
+    days,
+    expected_delta,
+    company_factory,
+    event_class_factory,
+    client_subscription_factory
+):
+    start_date = date(2019, 2, 25)
+    company = company_factory()
+    ecs: List[models.EventClass] = event_class_factory.create_batch(
+        2, company=company, date_from=start_date, days=days)
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        company=company,
+        subscription__event_class__events=ecs,
+        subscription__rounding=False,
+        subscription__duration=7,
+        subscription__duration_type='day',
+        start_date=start_date,
+    )
+
+    assert_that(
+        cs.nearest_extended_end_date(),
+        is_(cs.end_date + timedelta(days=expected_delta))
+    )
+
+
+def test_nearest_extended_end_date_without_events(
+    company_factory,
+    client_subscription_factory
+):
+    company = company_factory()
+    # Client subscription don't have any event class attached
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        company=company,
+        subscription__event_class__events=[]
+    )
+
+    assert_that(
+        cs.nearest_extended_end_date(),
+        is_(cs.end_date)
+    )
+
+
+def test_nearest_extended_end_date_for_ended_events(
+    company_factory,
+    event_class_factory,
+    client_subscription_factory
+):
+    start_date = date(2019, 2, 25)
+    end_date = date.today() + timedelta(days=7)
+    company = company_factory()
+    ecs: List[models.EventClass] = event_class_factory.create_batch(
+        2,
+        company=company,
+        date_from=start_date,
+        date_to=end_date
+    )
+
+    # Client subscription ends after every event class ends
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        company=company,
+        subscription__event_class__events=ecs,
+        subscription__rounding=False,
+        subscription__duration=10,
+        subscription__duration_type='day',
+        start_date=start_date
+    )
+
+    assert_that(
+        cs.nearest_extended_end_date(),
+        is_(cs.end_date)
+    )
+
+
+def test_nearest_extended_end_date_for_no_future_events(
+    company_factory,
+    event_class_factory,
+    client_subscription_factory
+):
+    start_date = date(2019, 2, 25)
+
+    company = company_factory()
+    ecs1 = event_class_factory(
+        company=company,
+        date_from=start_date,
+        date_to=start_date + timedelta(days=13),
+        days=[0]
+    )
+    ecs2 = event_class_factory(
+        company=company,
+        date_from=start_date,
+        date_to=start_date + timedelta(days=14),
+        days=[0]
+    )
+
+    # Client subscription ends after every event class ends
+    # Because there is only event at monday, and clients
+    # subscriptions ends at tuesday
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        company=company,
+        subscription__event_class__events=[ecs1, ecs2],
+        subscription__rounding=False,
+        subscription__duration=10,
+        subscription__duration_type='day',
+        start_date=start_date
+    )
+
+    assert_that(
+        cs.nearest_extended_end_date(),
+        is_(cs.end_date)
+    )

@@ -62,6 +62,7 @@ class LocationFactory(factory.DjangoModelFactory):
 class SubscriptionsTypeFactory(factory.DjangoModelFactory):
     class Meta:
         model = models.SubscriptionsType
+
     company = factory.SubFactory('crm.tests.factories.CompanyFactory')
 
     name = factory.Faker('pystr', min_chars=10, max_chars=15)
@@ -73,6 +74,22 @@ class SubscriptionsTypeFactory(factory.DjangoModelFactory):
     duration = factory.Faker('random_int', max=60)
     rounding = factory.Faker('pybool')
     visit_limit = factory.Faker('random_int', max=30)
+
+    event_class__events = factory.SubFactory(
+        'crm.tests.factories.EventClassFactory',
+        company=factory.SelfAttribute('...company')
+    )
+
+    @factory.post_generation
+    def event_class(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if isinstance(kwargs['events'], models.EventClass):
+            self.event_class.add(kwargs['events'])
+        else:
+            for event_class in kwargs['events']:
+                self.event_class.add(event_class)
 
 
 class EventClassFactory(factory.DjangoModelFactory):
@@ -108,3 +125,39 @@ class EventClassFactory(factory.DjangoModelFactory):
                 event=self,
                 day=day
             )
+
+
+class ClientFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.Client
+
+    company = factory.SubFactory('crm.tests.factories.CompanyFactory')
+    name = factory.Faker('name', locale='ru')
+    address = factory.Faker('address', locale='ru')
+    birthday = factory.Faker(
+        'date_between', start_date='-30y', end_date='-20y')
+    phone_number = factory.Faker('phone_number', locale='ru')
+    email_address = factory.Faker('email')
+    vk_user_id = None
+    balance = 0
+
+
+class ClientSubscriptionFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.ClientSubscriptions
+
+    company = factory.SubFactory('crm.tests.factories.CompanyFactory')
+    client = factory.SubFactory(
+        'crm.tests.factories.ClientFactory',
+        company=factory.SelfAttribute('..company')
+    )
+    subscription = factory.SubFactory(
+        'crm.tests.factories.SubscriptionsTypeFactory',
+        company=factory.SelfAttribute('..company')
+    )
+    purchase_date = factory.Faker(
+        'date_time_between', start_date='-30d', end_date='-10d')
+    start_date = factory.SelfAttribute('purchase_date')
+    end_date = factory.Faker('future_datetime')
+    price = factory.Faker('pyfloat', left_digits=3)
+    visits_left = factory.Faker('random_int', min=1, max=30)
