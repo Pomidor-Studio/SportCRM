@@ -12,5 +12,6 @@ class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
     template_name = 'crm/manager/attendance/confirm_delete.html'
 
     def get_success_url(self):
-        return reverse(
-            'crm:manager:client:detail', args=[self.object.client_id])
+        self.object.subscription.reimburse_visit()
+        return reverse('crm:manager:client:detail',
+                       args=[self.object.client_id])

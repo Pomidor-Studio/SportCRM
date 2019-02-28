@@ -70,7 +70,8 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
         subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
         client_subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
                                                                   start_date__lte=self.object.date,
-                                                                  end_date__gte=self.object.date)
+                                                                  end_date__gte=self.object.date,
+                                                                  visits_left__gt=0)
         all_clients = [client_subscription.client for client_subscription in client_subscriptions]
         attendance_clients = [attendance.client for attendance in attendance_list]
         clients = []
@@ -79,7 +80,8 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
                 clients.append(client)
         context.update({
             'attendance_list': attendance_list,
-            'clients': clients
+            'clients': clients,
+            'subscriptions': client_subscriptions
         })
 
         return context
@@ -138,15 +140,16 @@ class MarkClientAttendance(
         event_date = date(
             self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
         )
-        event, _ = Event.objects.get_or_create(
-            event_class_id=self.kwargs['event_class_id'],
-            date=event_date)
+        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
+                                               date=event_date)
         client_id = self.kwargs.pop('client_id')
+        subscription_id = self.kwargs.pop('subscription_id')
+        subscription = ClientSubscriptions.objects.get(id=subscription_id)
         client = get_object_or_404(Client, id=client_id)
-        event_class = event.event_class
-        subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class).first()
-        subscription = ClientSubscriptions.objects.filter(subscription=subscriptions_types, client=client).first()
-        Attendance.objects.create(event=event, client=client, subscription=subscription)
+        Attendance.objects.create(event=event,
+                                  client=client,
+                                  subscription=subscription)
+        subscription.mark_the_visit()
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 

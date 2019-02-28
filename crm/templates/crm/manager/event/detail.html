@@ -44,8 +44,13 @@
 
               </div>
               <div class="col">
-                <a class="btn btn-sm btn-outline-info"
-                   href="{% url 'crm:manager:event-class:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id %}">Отметить посещение</a>
+                {% for subscription in subscriptions %}
+                  {% if client.id == subscription.client.id %}
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id %}">
+                      {{ subscription.subscription.name }}
+                    </a>
+                  {% endif %}
+                {% endfor %}
               </div>
             </div>
           {% endfor %}
