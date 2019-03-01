@@ -369,6 +369,34 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
             end_date = start_date + relativedelta(years=self.duration)
         return end_date
 
+    def get_duration_type_alias(self):
+        alias = None
+        if self.duration_type == 'day' and self.duration == 1:
+            alias = 'день'
+        elif self.duration_type == 'day' and 1 < self.duration < 5:
+            alias = 'дня'
+        elif self.duration_type == 'day' and self.duration >= 5:
+            alias = 'дней'
+        elif self.duration_type == 'week':
+            alias = 'неделя'
+        elif self.duration_type == 'week' and 1 < self.duration < 5:
+            alias = 'недели'
+        elif self.duration_type == 'week' and self.duration >= 5:
+            alias = 'недель'
+        elif self.duration_type == 'month' and self.duration == 1:
+            alias = 'месяц'
+        elif self.duration_type == 'month' and 1 < self.duration < 5:
+            alias = 'месяца'
+        elif self.duration_type == 'month' and self.duration >= 5:
+            alias = 'месяцев'
+        elif self.duration_type == 'year' and self.duration == 1:
+            alias = 'год'
+        elif self.duration_type == 'year' and 1 < self.duration < 5:
+            alias = 'года'
+        elif self.duration_type == 'year' and self.duration >= 5:
+            alias = 'лет'
+        return alias
+
     @staticmethod
     def get_absolute_url():
         return reverse('crm:manager:subscription:list')
