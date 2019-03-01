@@ -586,10 +586,9 @@ class ClientSubscriptions(CompanyObjectModel):
         return reverse(
             'crm:manager:client:detail', kwargs={'pk': self.client.id})
 
-    def is_expiring(self):
-        current_date = datetime.now(timezone.utc)
-        end_date = self.end_date
-        delta = end_date - current_date
+    @property
+    def is_expiring(self) -> bool:
+        delta = self.end_date - date.today()
         return delta.days <= 7 or self.visits_left == 1
 
     class Meta:
