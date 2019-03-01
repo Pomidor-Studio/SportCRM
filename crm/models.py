@@ -13,6 +13,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
 from django.db.models import Q
 from django.db.models.manager import BaseManager
+from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
@@ -621,6 +622,15 @@ class ExtensionHistory(CompanyObjectModel):
         ordering = ['date_extended']
 
 
+class EventManager(models.Manager):
+    def get_or_virtual(self, event_class_id: int, event_date: date) -> Event:
+        try:
+            return self.get(event_class_id=event_class_id, date=event_date)
+        except Event.DoesNotExist:
+            event_class = get_object_or_404(EventClass, id=event_class_id)
+            return Event(date=event_date, event_class=event_class)
+
+
 @reversion.register()
 class Event(CompanyObjectModel):
     """Конкретное мероприятие (тренировка)"""
@@ -633,6 +643,8 @@ class Event(CompanyObjectModel):
     )
     canceled_at = models.DateField('Дата отмены тренировки', null=True)
 
+    objects = EventManager()
+
     class Meta:
         unique_together = ('event_class', 'date',)
 
@@ -644,6 +656,22 @@ class Event(CompanyObjectModel):
 
     def __str__(self):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
+
+    @property
+    def is_virtual(self):
+        return self.id is None
+
+    @property
+    def is_canceled(self):
+        return self.canceled_at is not None
+
+    @property
+    def is_active(self):
+        return self.date >= date.today()
+
+    @property
+    def is_closed(self):
+        return self.is_canceled or not self.is_active
 
     def cancel_event(self, extend_subscriptions=False):
         with transaction.atomic():

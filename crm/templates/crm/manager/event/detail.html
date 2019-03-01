@@ -1,9 +1,19 @@
 {% extends "crm/base.html" %}
-{% block nav %}
-{% endblock nav %}
+
+{% block extrahead %}
+  <script type="text/javascript">
+    $(function () {
+      $('#cancel-event').click(function () {
+        $('#confirm-cancel').toggle();
+      });
+    });
+  </script>
+{% endblock %}
+
 {% block content %}
 
-  {{ event.date }} - {{ event.event_class.name }} - {{ event.event_class.location }} - {{ event.event_class.coach }}
+  {{ event.date }} - {{ event.event_class.name }} -
+  {{ event.event_class.location }} - {{ event.event_class.coach }}
   <div class="border-top mt-2"></div>
   <div class="row">
     <div class="col">
@@ -18,43 +28,84 @@
               <div class="col">
                 {{ attendance.subscription.subscription.name }}
               </div>
+              <div class="col"></div>
+              <div class="col"></div>
               <div class="col">
-
-              </div>
-              <div class="col">
-
-              </div>
-              <div class="col">
-                <a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:attendance:delete' attendance.id %}">Удалить</a>
+                {% if not event.is_closed %}
+                  <a
+                    class="btn btn-sm btn-outline-danger"
+                    href="{% url 'crm:manager:attendance:delete' attendance.id %}"
+                  >Удалить</a>
+                {% endif %}
               </div>
             </div>
           {% endfor %}
         </div>
       </div>
       <div class="border-top mt-2"></div>
-      <div class="border-top">
-        <span class="font-weight-bold ">Не отмеченные ученики: </span>
+      {% if not event.is_closed %}
         <div class="border-top">
-          {% for client in clients %}
-            <div class="row border-top ml-0 mr-0">
-              <div class="col pl-0">
-                {{ client.name }}
+          <span class="font-weight-bold ">Не отмеченные ученики: </span>
+          <div class="border-top">
+            {% for client in clients %}
+              <div class="row border-top ml-0 mr-0">
+                <div class="col pl-0">
+                  {{ client.name }}
+                </div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col">
+                  <a
+                    class="btn btn-sm btn-outline-info"
+                    href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id %}"
+                  >Отметить посещение</a>
+                </div>
               </div>
-              <div class="col">
-
-              </div>
-              <div class="col">
-
-              </div>
-              <div class="col">
-                <a class="btn btn-sm btn-outline-info"
-                   href="{% url 'crm:manager:event-class:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id %}">Отметить посещение</a>
-              </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
-      </div>
+      {% endif %}
     </div>
   </div>
+  {% if not event.is_closed %}
+    <div class="row">
+      <div class="alert alert-light" role="alert">
+        {% if not event.is_canceled %}
+          <a
+            href="#"
+            id="cancel-event"
+            class="btn btn-outline-danger mb-2"
+            role="button"
+            data-toggle="button"
+            aria-pressed="false"
+          >Отменить тренировку</a>
+          <div
+            id="confirm-cancel"
+            style="display: none;"
+          >
+            <a
+              href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
+              id="cancel-event"
+              class="btn btn-outline-danger mr-2"
+              role="button"
+            >Не продлять абонементы</a>
+            <a
+              href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
+              id="cancel-event"
+              class="btn btn-outline-danger mr-2"
+              role="button"
+            >Продлять абонементы</a>
+          </div>
+        {% else %}
+          <a
+            href="#"
+            id="activate-event"
+            class="btn btn-outline-success"
+            role="button"
+          >Вернуть тренировку</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
 
 {% endblock content %}
