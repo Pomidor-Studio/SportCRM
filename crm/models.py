@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from itertools import count
 from typing import Dict, List, Optional
 
@@ -497,6 +497,10 @@ class ClientSubscriptionsManager(
         for subscription in self.active_subscriptions(cancelled_event):
             subscription.extend_by_cancellation(cancelled_event)
 
+    def revoke_extending(self, activated_event: Event):
+        # TODO: Add revert cancellation, with transitive dependencies
+        pass
+
 
 @reversion.register()
 class ClientSubscriptions(CompanyObjectModel):
@@ -641,6 +645,10 @@ class Event(CompanyObjectModel):
         verbose_name="Тренировка"
     )
     canceled_at = models.DateField('Дата отмены тренировки', null=True)
+    canceled_with_extending = models.BooleanField(
+        'Отмена была с продленим абонемента?',
+        default=False
+    )
 
     objects = EventManager()
 
@@ -673,12 +681,35 @@ class Event(CompanyObjectModel):
         return self.is_canceled or not self.is_active
 
     def cancel_event(self, extend_subscriptions=False):
+        if not self.is_active:
+            raise ValueError("Event is outdated. It can't be canceled.")
+
+        if self.is_canceled:
+            raise ValueError("Event is already cancelled.")
+
         with transaction.atomic():
             self.canceled_at = date.today()
+            self.canceled_with_extending = extend_subscriptions
             self.save()
 
             if extend_subscriptions:
                 ClientSubscriptions.objects.extend_by_cancellation(self)
+
+    def activate_event(self, revoke_extending=False):
+        if not self.is_active:
+            raise ValueError("Event is outdated. It can't be activated.")
+
+        if not self.is_canceled:
+            raise ValueError("Event is already in action.")
+
+        original_cwe = self.canceled_with_extending
+        with transaction.atomic():
+            self.canceled_at = None
+            self.canceled_with_extending = False
+            self.save()
+
+            if revoke_extending and original_cwe:
+                ClientSubscriptions.objects.revoke_extending(self)
 
 
 @reversion.register()

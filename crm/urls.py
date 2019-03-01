@@ -189,7 +189,17 @@ manager_event_urlpatterns = ([
         'cancel/with-extending/',
         manager_event_class_views.CancelWithExtending.as_view(),
         name='cancel-with-extending'
-     )
+    ),
+    path(
+        'activate/without-revoke/',
+        manager_event_class_views.ActivateWithoutRevoke.as_view(),
+        name='activate-without-revoke'
+    ),
+    path(
+        'activate/with-revoke/',
+        manager_event_class_views.ActivateWithRevoke.as_view(),
+        name='activate-with-revoke'
+    )
 ], 'event')
 
 manager_event_class_urlpatterns = ([

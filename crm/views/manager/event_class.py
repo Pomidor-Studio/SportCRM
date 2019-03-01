@@ -126,6 +126,32 @@ class CancelWithExtending(
         event.cancel_event(extend_subscriptions=True)
 
 
+class ActivateWithoutRevoke(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView,
+):
+    permission_required = 'event.activate'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.activate_event(revoke_extending=False)
+
+
+class ActivateWithRevoke(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView,
+):
+    permission_required = 'event.activate'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.activate_event(revoke_extending=True)
+
+
 class MarkEventAttendance(
     LoginRequiredMixin,
     UserManagerMixin,

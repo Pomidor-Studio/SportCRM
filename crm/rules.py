@@ -52,6 +52,7 @@ rules.add_perm(
     is_logged_manager | is_editable_by_coach
 )
 rules.add_perm('event.cancel', is_logged_manager)
+rules.add_perm('event.activate', is_logged_manager)
 rules.add_perm('event.undo_cancel', is_logged_manager)
 
 rules.add_perm('location', is_logged_personnel)

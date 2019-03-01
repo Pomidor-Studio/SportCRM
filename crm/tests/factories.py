@@ -139,6 +139,7 @@ class EventFactory(factory.DjangoModelFactory):
         company=factory.SelfAttribute('..company')
     )
     canceled_at = None
+    canceled_with_extending = False
 
     @factory.lazy_attribute
     def date(self):
