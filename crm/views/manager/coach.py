@@ -30,6 +30,15 @@ class Detail(LoginRequiredMixin, UserManagerMixin, DetailView):
     model = Coach
     context_object_name = 'coach'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['login_temp_link'] = '{host}{url}{qs}'.format(
+            host=self.request.get_host(),
+            url=reverse('crm:coach:home'),
+            qs=sesame.utils.get_query_string(self.object.user)
+        )
+        return context
+
 
 class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
     template_name = 'crm/manager/coach/form.html'
