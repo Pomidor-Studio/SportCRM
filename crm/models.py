@@ -459,10 +459,7 @@ class ClientSubscriptions(CompanyObjectModel):
 
 
     def is_extended(self):
-        if (ExtensionHistory.objects.filter(client_subscription=self)):
-            return True
-        else:
-            return False
+        return self.extensionhistory_set.exists()
 
     def get_absolute_url(self):
         return reverse(
