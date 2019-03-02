@@ -138,6 +138,7 @@ manager_subscriptions_urlpatterns = ([
     path('new/', manager_subs_views.Create.as_view(), name='new'),
 ], 'subscription')
 
+# TODO: Remove obsolete views and urls
 manager_events_urlpatterns = ([
     path('', manager_event_views.List.as_view(), name='list'),
     path('new/', manager_event_views.Create.as_view(), name='new'),
@@ -163,6 +164,44 @@ manager_events_urlpatterns = ([
     ),
 ], 'event')
 
+manager_event_urlpatterns = ([
+    path(
+        '',
+        manager_event_class_views.EventByDate.as_view(),
+        name='event-by-date'
+    ),
+    path(
+        'mark/',
+        manager_event_class_views.MarkEventAttendance.as_view(),
+        name='mark-attendance'
+    ),
+    path(
+        'mark/<int:subscription_id>',
+        manager_event_class_views.MarkClientAttendance.as_view(),
+        name='mark-client-attendance'
+    ),
+    path(
+        'cancel/without-extending/',
+        manager_event_class_views.CancelWithoutExtending.as_view(),
+        name='cancel-without-extending'
+    ),
+    path(
+        'cancel/with-extending/',
+        manager_event_class_views.CancelWithExtending.as_view(),
+        name='cancel-with-extending'
+    ),
+    path(
+        'activate/without-revoke/',
+        manager_event_class_views.ActivateWithoutRevoke.as_view(),
+        name='activate-without-revoke'
+    ),
+    path(
+        'activate/with-revoke/',
+        manager_event_class_views.ActivateWithRevoke.as_view(),
+        name='activate-with-revoke'
+    )
+], 'event')
+
 manager_event_class_urlpatterns = ([
     path(
         '',
@@ -180,21 +219,9 @@ manager_event_class_urlpatterns = ([
         manager_event_class_views.Delete.as_view(),
         name='delete'
     ),
-
     path(
         '<int:event_class_id>/<int:year>/<int:month>/<int:day>/',
-        manager_event_class_views.EventByDate.as_view(),
-        name='event-by-date'
-    ),
-    path(
-        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/',
-        manager_event_class_views.MarkEventAttendance.as_view(),
-        name='mark-attendance'
-    ),
-    path(
-        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/<int:subscription_id>',
-        manager_event_class_views.MarkClientAttendance.as_view(),
-        name='mark-client-attendance'
+        include(manager_event_urlpatterns)
     ),
     path(
         '<int:pk>/calendar/',
