@@ -19,4 +19,6 @@ social-auth-core==3.0.0
 sqlparse==0.2.4
 transliterate==1.10.2
 whitenoise==4.1.2
+django-select2==6.3.1
+django-tables2==2.0.5
 -e git+https://github.com/citusdata/django-multitenant#egg=django-multitenant==1.0.2
