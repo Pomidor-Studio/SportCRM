@@ -208,7 +208,7 @@ class EventClass(CompanyObjectModel):
 
         # Проверяем, входит ли проверяемый день в диапазон проводимых тренировок
         if (self.date_from and self.date_from > day) or \
-            (self.date_to and self.date_to < day):
+                (self.date_to and self.date_to < day):
             return False
 
         # Проверяем, проходят ли в этот день недели тренировки
@@ -224,7 +224,7 @@ class EventClass(CompanyObjectModel):
         return True
 
     def get_calendar(
-        self, start_date: date, end_date: date) -> Dict[date, 'Event']:
+            self, start_date: date, end_date: date) -> Dict[date, 'Event']:
         """
         Создает полный календарь одного типа тренировки. Создается список
         всех возможный дней трениовок, ограниченный диапазоном дат.
@@ -492,54 +492,56 @@ class Event(CompanyObjectModel):
         if not self.event_class.is_event_day(self.date):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
 
-    def get_clients_count(self):
+    def get_present_clients_count(self):
         # Получаем количество посетивших данную тренировку клиентов
         return self.attendance_set.all().count()
 
     def get_clients_count_one_time_sub(self):
         # Получаем количество посетивших данную тренировку по одноразовому абонементу
-        queryset = ClientSubscriptions.objects.filter(subscription__in=
-                                                      SubscriptionsType.objects.filter(event_class=self.event_class,
-                                                                                       visit_limit=1),
-                                                      purchase_date=self.date,
-                                                      start_date=self.date,
-                                                      client__in=[attendance.client for attendance in
-                                                                  self.attendance_set.all()]
-                                                      )
-        if queryset:
-            return queryset.count()
-        else:
-            return 0
-        return 0
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class, visit_limit=1
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        return queryset.count()
 
     def get_subs_sales(self):
         # Получаем количество проданных абонементов
-        queryset = ClientSubscriptions.objects.filter(subscription__in=
-                                                      SubscriptionsType.objects.filter(event_class=self.event_class),
-                                                      purchase_date=self.date,
-                                                      start_date=self.date,
-                                                      client__in=[attendance.client for attendance in
-                                                                  self.attendance_set.all()])
-
-        if queryset:
-            return queryset.count()
-        else:
-            return 0
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        return queryset.count()
 
     def get_profit(self):
         # Получаем прибыль
-        queryset = ClientSubscriptions.objects.filter(subscription__in=
-                                                      SubscriptionsType.objects.filter(event_class=self.event_class),
-                                                      purchase_date=self.date,
-                                                      start_date=self.date,
-                                                      client__in=[attendance.client for attendance in
-                                                                  self.attendance_set.all()]
-                                                      )
-        profit = 0
-        for clientsub in queryset:
-            profit += clientsub.price
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        queryset = queryset.values_list('price', flat=True)
 
-        return profit
+        return sum(list(queryset))
 
     def __str__(self):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
