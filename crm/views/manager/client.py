@@ -61,6 +61,12 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
     def form_valid(self, form):
+        cash_earned = form.cleaned_data['cash_earned']
+        if not cash_earned:
+            abon_price = form.cleaned_data['price']
+            client = Client.objects.get(id=self.kwargs['client_id'])
+            client.balance -= abon_price
+            client.save()
         form.instance.client_id = self.kwargs['client_id']
         return super().form_valid(form)
 

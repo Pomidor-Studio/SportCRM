@@ -84,6 +84,8 @@ class ExtendClientSubscriptionForm(forms.Form):
 
 
 class ClientSubscriptionForm(TenantModelForm):
+    cash_earned = forms.BooleanField(label='Деньги получены', required=False, initial=True)
+
     def __init__(self, *args, **kwargs):
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
         choices = []
