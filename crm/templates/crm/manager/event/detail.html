@@ -37,18 +37,19 @@
         <div class="border-top">
           <span class="font-weight-bold ">Не отмеченные ученики: </span>
           <div class="border-top">
-            {% for client in clients %}
+            {% for key, value in clients_subscriptions.items %}
               <div class="row border-top ml-0 mr-0">
                 <div class="col pl-0">
-                  {{ client.name }}
+                  {{ key.name }}
                 </div>
                 <div class="col"></div>
                 <div class="col"></div>
                 <div class="col">
-                  <a
-                    class="btn btn-sm btn-outline-info"
-                    href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id %}"
-                  >Отметить посещение</a>
+                  {% for subscription in value %}
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
+                      {{ subscription.subscription.name }}
+                    </a>
+                  {% endfor %}
                 </div>
               </div>
             {% endfor %}

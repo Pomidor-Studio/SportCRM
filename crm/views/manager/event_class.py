@@ -78,23 +78,31 @@ class EventByDate(
     template_name = 'crm/manager/event/detail.html'
     permission_required = 'event'
 
+    def get_clients_subscriptions(self, attendance_list, subscriptions):
+        clients_subscriptions = {}
+        attendance_client_list = [attendance.client for attendance in attendance_list]
+        for subscription in subscriptions:
+            client = subscription.client
+            if client not in attendance_client_list:
+                if client in clients_subscriptions.keys():
+                    clients_subscriptions.get(client).append(subscription)
+                else:
+                    clients_subscriptions.update({client: [subscription]})
+        return clients_subscriptions
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
         event_class = self.object.event_class
         subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
-        client_subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
-                                                                  start_date__lte=self.object.date,
-                                                                  end_date__gte=self.object.date)
-        all_clients = [client_subscription.client for client_subscription in client_subscriptions]
-        attendance_clients = [attendance.client for attendance in attendance_list]
-        clients = []
-        for client in all_clients:
-            if client not in attendance_clients and client not in clients:
-                clients.append(client)
+        subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
+                                                           start_date__lte=self.object.date,
+                                                           end_date__gte=self.object.date,
+                                                           visits_left__gt=0)
+        clients_subscriptions = self.get_clients_subscriptions(attendance_list, subscriptions)
         context.update({
             'attendance_list': attendance_list,
-            'clients': clients
+            'clients_subscriptions': clients_subscriptions
         })
 
         return context
@@ -188,18 +196,14 @@ class MarkClientAttendance(
 ):
 
     def get(self, request, *args, **kwargs):
-        event_date = date(
-            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
-        )
-        event, _ = Event.objects.get_or_create(
-            event_class_id=self.kwargs['event_class_id'],
-            date=event_date)
-        client_id = self.kwargs.pop('client_id')
-        client = get_object_or_404(Client, id=client_id)
-        event_class = event.event_class
-        subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class).first()
-        subscription = ClientSubscriptions.objects.filter(subscription=subscriptions_types, client=client).first()
-        Attendance.objects.create(event=event, client=client, subscription=subscription)
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
+        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
+                                               date=event_date)
+        subscription_id = self.kwargs.pop('subscription_id')
+        subscription = ClientSubscriptions.objects.get(id=subscription_id)
+        subscription.mark_visit(event)
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 

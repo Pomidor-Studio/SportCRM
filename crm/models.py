@@ -595,6 +595,21 @@ class ClientSubscriptions(CompanyObjectModel):
         delta = self.end_date - date.today()
         return delta.days <= 7 or self.visits_left == 1
 
+    def mark_visit(self, event):
+        with transaction.atomic():
+            if self.visits_left > 0:
+                Attendance.objects.create(event=event,
+                                          client=self.client,
+                                          subscription=self)
+                self.visits_left = self.visits_left - 1
+                self.save()
+
+    def restore_visit(self, attendance):
+        with transaction.atomic():
+            attendance.delete()
+            self.visits_left = self.visits_left + 1
+            self.save()
+
     class Meta:
         ordering = ['purchase_date']
 

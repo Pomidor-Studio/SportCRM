@@ -176,7 +176,7 @@ manager_event_urlpatterns = ([
         name='mark-attendance'
     ),
     path(
-        'mark/<int:client_id>',
+        'mark/<int:subscription_id>',
         manager_event_class_views.MarkClientAttendance.as_view(),
         name='mark-client-attendance'
     ),
