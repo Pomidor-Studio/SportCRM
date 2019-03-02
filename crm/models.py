@@ -304,6 +304,14 @@ granularity = (
 )
 
 
+granularity_postfix = {
+    granularity[0][0]: ['день', 'дня', 'дней'],
+    granularity[1][0]: ['неделя', 'недели', 'недель'],
+    granularity[2][0]: ['месяц', 'месяца', 'месяцев'],
+    granularity[3][0]: ['год', 'года', 'лет'],
+}
+
+
 @reversion.register()
 class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     """
@@ -369,33 +377,22 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
             end_date = start_date + relativedelta(years=self.duration)
         return end_date
 
-    def get_duration_type_alias(self):
-        alias = None
-        if self.duration_type == 'day' and self.duration == 1:
-            alias = 'день'
-        elif self.duration_type == 'day' and 1 < self.duration < 5:
-            alias = 'дня'
-        elif self.duration_type == 'day' and self.duration >= 5:
-            alias = 'дней'
-        elif self.duration_type == 'week':
-            alias = 'неделя'
-        elif self.duration_type == 'week' and 1 < self.duration < 5:
-            alias = 'недели'
-        elif self.duration_type == 'week' and self.duration >= 5:
-            alias = 'недель'
-        elif self.duration_type == 'month' and self.duration == 1:
-            alias = 'месяц'
-        elif self.duration_type == 'month' and 1 < self.duration < 5:
-            alias = 'месяца'
-        elif self.duration_type == 'month' and self.duration >= 5:
-            alias = 'месяцев'
-        elif self.duration_type == 'year' and self.duration == 1:
-            alias = 'год'
-        elif self.duration_type == 'year' and 1 < self.duration < 5:
-            alias = 'года'
-        elif self.duration_type == 'year' and self.duration >= 5:
-            alias = 'лет'
-        return alias
+    def get_duration_type_postfix(self):
+        word_form = granularity_postfix.get(self.duration_type)
+        first_form = word_form[0]
+        second_form = word_form[1]
+        third_form = word_form[2]
+        return self.get_postfix(first_form, second_form, third_form)
+
+    def get_postfix(self, first_form, second_form, third_form):
+        postfix = None
+        if self.duration % 10 == 1 and self.duration % 100 != 11:
+            postfix = first_form
+        elif 2 <= self.duration % 10 <= 4 and (self.duration % 100 < 12 or self.duration % 100 > 14):
+            postfix = second_form
+        elif self.duration % 10 == 0 or (5 <= self.duration % 10 <= 9) or (11 <= self.duration % 100 <= 14):
+            postfix = third_form
+        return postfix
 
     @staticmethod
     def get_absolute_url():
