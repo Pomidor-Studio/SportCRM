@@ -63,25 +63,34 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
     context_object_name = 'event'
     template_name = 'crm/manager/event/detail.html'
 
+    def get_clients_subscriptions(self, attendance_list, subscriptions):
+        clients_subscriptions = {}
+        clients = []
+        attendance_client_list = [attendance.client for attendance in attendance_list]
+        for subscription in subscriptions:
+            client = subscription.client
+            if client not in attendance_client_list:
+                if client in clients:
+                    client_subscriptions = clients_subscriptions.get(client)
+                    client_subscriptions.append(subscription)
+                else:
+                    clients.append(client)
+                    clients_subscriptions.update({client: [subscription]})
+        return clients_subscriptions
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
         event_class = self.object.event_class
         subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
-        client_subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
-                                                                  start_date__lte=self.object.date,
-                                                                  end_date__gte=self.object.date,
-                                                                  visits_left__gt=0)
-        all_clients = [client_subscription.client for client_subscription in client_subscriptions]
-        attendance_clients = [attendance.client for attendance in attendance_list]
-        clients = []
-        for client in all_clients:
-            if client not in attendance_clients and client not in clients:
-                clients.append(client)
+        subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
+                                                           start_date__lte=self.object.date,
+                                                           end_date__gte=self.object.date,
+                                                           visits_left__gt=0)
+        clients_subscriptions = self.get_clients_subscriptions(attendance_list, subscriptions)
         context.update({
             'attendance_list': attendance_list,
-            'clients': clients,
-            'subscriptions': client_subscriptions
+            'clients_subscriptions': clients_subscriptions
         })
 
         return context
