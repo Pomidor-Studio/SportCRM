@@ -28,7 +28,7 @@
         <tr>
           <th scope="col">Название</th>
           <th scope="col">Цена</th>
-          <th scope="col">Продолжительность (Дней)</th>
+          <th scope="col">Продолжительность</th>
           <th scope="col">Лимит посещений</th>
           <th scope="col" style="width:5%"></th>
           <th scope="col" style="width:5%"></th>
@@ -49,7 +49,7 @@
               {{ subscription.price }}
             </td>
             <td>
-              {{ subscription.duration }}
+              {{ subscription.duration }} {{ subscription.duration_postfix }}
             </td>
             <td>
               {{ subscription.visit_limit }}
