@@ -1,5 +1,3 @@
-from copy import copy
-
 import django_filters
 from django import forms
 from django.http import QueryDict
