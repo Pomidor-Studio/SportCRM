@@ -688,6 +688,57 @@ class Event(CompanyObjectModel):
         if not self.event_class.is_event_day(self.date):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
 
+    def get_present_clients_count(self):
+        # Получаем количество посетивших данную тренировку клиентов
+        return self.attendance_set.all().count()
+
+    def get_clients_count_one_time_sub(self):
+        # Получаем количество посетивших данную тренировку по одноразовому абонементу
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class, visit_limit=1
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        return queryset.count()
+
+    def get_subs_sales(self):
+        # Получаем количество проданных абонементов
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        return queryset.count()
+
+    def get_profit(self):
+        # Получаем прибыль
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        queryset = queryset.values_list('price', flat=True)
+
+        return sum(list(queryset))
+
     def __str__(self):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
 

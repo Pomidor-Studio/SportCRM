@@ -1,14 +1,26 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
 )
+from django_filters.views import FilterView
+from django_tables2 import SingleTableMixin
 from reversion.views import RevisionMixin
 
+from crm.filters import EventReportFilter
 from crm.forms import EventAttendanceForm
-from crm.models import Event, Attendance
+from crm.models import Attendance, Event
+from crm.tables import EventReportTable
 from crm.views.mixin import UserManagerMixin
+
+
+class Report(LoginRequiredMixin, UserManagerMixin, SingleTableMixin,  FilterView):
+    table_class = EventReportTable
+    template_name = 'crm/manager/event/report.html'
+    filterset_class = EventReportFilter
+    context_object_name = 'events'
+    model = Event
 
 
 class List(LoginRequiredMixin, UserManagerMixin, ListView):

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'reversion',
     'reversion_compare',
     'crm.apps.CrmConfig',
+    'django_filters',
     'bot.apps.BotConfig',
     'bot.apps.SignalsConfig',
     'django.contrib.admin',
@@ -51,6 +52,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_select2',
+    'django_tables2',
 ]
 
 BOOTSTRAP4 = {
