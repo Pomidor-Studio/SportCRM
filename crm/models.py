@@ -26,6 +26,7 @@ from transliterate import translit
 
 from crm.enums import GRANULARITY
 from crm.events import get_nearest_to, next_day, Weekdays
+from crm.utils import pluralize
 
 INTERNAL_COMPANY = 'INTERNAL'
 
@@ -372,14 +373,6 @@ class DayOfTheWeekClass(CompanyObjectModel):
         unique_together = ('day', 'event',)
 
 
-granularity_postfix = {
-    granularity[0][0]: ['день', 'дня', 'дней'],
-    granularity[1][0]: ['неделя', 'недели', 'недель'],
-    granularity[2][0]: ['месяц', 'месяца', 'месяцев'],
-    granularity[3][0]: ['год', 'года', 'лет'],
-}
-
-
 @reversion.register()
 class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     """
@@ -455,22 +448,12 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
 
         return None
 
-    def get_duration_type_postfix(self):
-        word_form = granularity_postfix.get(self.duration_type)
-        first_form = word_form[0]
-        second_form = word_form[1]
-        third_form = word_form[2]
-        return self.get_postfix(first_form, second_form, third_form)
-
-    def get_postfix(self, first_form, second_form, third_form):
-        postfix = None
-        if self.duration % 10 == 1 and self.duration % 100 != 11:
-            postfix = first_form
-        elif 2 <= self.duration % 10 <= 4 and (self.duration % 100 < 12 or self.duration % 100 > 14):
-            postfix = second_form
-        elif self.duration % 10 == 0 or (5 <= self.duration % 10 <= 9) or (11 <= self.duration % 100 <= 14):
-            postfix = third_form
-        return postfix
+    @property
+    def duration_postfix(self):
+        return pluralize(
+            *GRANULARITY.for_value(self.duration_type).pluralize,
+            self.duration
+        )
 
     @staticmethod
     def get_absolute_url():
