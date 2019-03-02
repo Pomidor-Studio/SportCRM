@@ -65,16 +65,13 @@ class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
 
     def get_clients_subscriptions(self, attendance_list, subscriptions):
         clients_subscriptions = {}
-        clients = []
         attendance_client_list = [attendance.client for attendance in attendance_list]
         for subscription in subscriptions:
             client = subscription.client
             if client not in attendance_client_list:
-                if client in clients:
-                    client_subscriptions = clients_subscriptions.get(client)
-                    client_subscriptions.append(subscription)
+                if client in clients_subscriptions.keys():
+                    clients_subscriptions.get(client).append(subscription)
                 else:
-                    clients.append(client)
                     clients_subscriptions.update({client: [subscription]})
         return clients_subscriptions
 
