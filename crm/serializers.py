@@ -36,7 +36,7 @@ class CalendarEventSerializer(serializers.Serializer):
         return datetime.combine(instance.date, end_time)
 
     def get_url(self, instance: 'Event'):
-        return reverse('crm:manager:event-class:event-by-date', args=(
+        return reverse('crm:manager:event-class:event:event-by-date', args=(
             instance.event_class.id,
             instance.date.year,
             instance.date.month,
