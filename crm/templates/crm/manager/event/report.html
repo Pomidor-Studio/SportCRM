@@ -1,6 +1,7 @@
 {% extends "crm/base.html" %}
 
 {% load bootstrap4 %}
+{% load render_table from django_tables2 %}
 
 {% block extrahead %}
 {{ filter.form.media.css }}
@@ -31,32 +32,7 @@
                    value="Поиск" class="mt-4 ml-2 btn btn-success"/>
     </form>
   </div>
-  <table class="table table-bordered table-striped table-sm">
-    <thead>
-      <tr>
-        <th scope="col">Дата</th>
-        <th scope="col">Тренер</th>
-        <th scope="col">Тренировка</th>
-        <th scope="col">Количество человек</th>
-        <th scope="col">По разовым абонементам</th>
-        <th scope="col">Продано абонементов</th>
-        <th scope="col">Прибыль</th>
-      </tr>
-    </thead>
-    <tbody>
-    {% for event in events %}
-      <tr>
-        <td>{{ event.date }}</td>
-      <td>{{ event.event_class.coach }}</td>
-      <td>{{ event.event_class.name }}</td>
-      <td>{{ event.get_clients_count }}</td>
-      <td>{{ event.get_clients_count_one_time_sub }}</td>
-      <td>{{ event.get_subs_sales }}</td>
-      <td>{{ event.get_profit }}</td>
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
+  {% render_table table %}
 </div>
 {% endblock content %}
 {% block extra %}
