@@ -46,7 +46,7 @@
                 <div class="col"></div>
                 <div class="col">
                   {% for subscription in value %}
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
                       {{ subscription.subscription.name }}
                     </a>
                   {% endfor %}
