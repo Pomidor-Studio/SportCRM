@@ -573,6 +573,7 @@ class ClientSubscriptions(CompanyObjectModel):
                 related_event=cancelled_event,
                 extended_to=possible_extension_date
             )
+
             self.end_date = possible_extension_date
             self.save()
 
@@ -593,6 +594,9 @@ class ClientSubscriptions(CompanyObjectModel):
         ]))
 
         return min(new_end_date) if len(new_end_date) else self.end_date
+
+    def is_extended(self):
+        return self.extensionhistory_set.exists()
 
     def get_absolute_url(self):
         return reverse(
