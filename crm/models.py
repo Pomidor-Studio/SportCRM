@@ -26,6 +26,7 @@ from transliterate import translit
 
 from crm.enums import GRANULARITY
 from crm.events import get_nearest_to, next_day, Weekdays
+from crm.utils import pluralize
 
 INTERNAL_COMPANY = 'INTERNAL'
 
@@ -446,6 +447,13 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
             return rounded_start_date.add(years=self.duration)
 
         return None
+
+    @property
+    def duration_postfix(self):
+        return pluralize(
+            *GRANULARITY.for_value(self.duration_type).pluralize,
+            self.duration
+        )
 
     @staticmethod
     def get_absolute_url():
