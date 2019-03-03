@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, timedelta
 from itertools import count
 from typing import Dict, List, Optional
+import uuid
 
 import pendulum
 import reversion
@@ -483,7 +484,7 @@ class Client(CompanyObjectModel):
     email_address = models.CharField("Email", max_length=50, blank=True)
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
     balance = models.FloatField("Баланс", default=0)
-    qr_code = models.UUIDField("QR код", blank=True, null=True, unique=True)
+    qr_code = models.UUIDField("QR код", blank=True, null=True, unique=True, default=uuid.uuid4)
 
     objects = ClientManager()
 

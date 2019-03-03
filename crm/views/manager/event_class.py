@@ -378,5 +378,5 @@ class DoScan(
                         messages.warning(self.request, f'У {client} нет действующего абонемента')
 
     def get_redirect_url(self, *args, **kwargs):
-        self.kwargs.pop('code')
+        kwargs.pop('code')
         return super().get_redirect_url(*args, **kwargs)
