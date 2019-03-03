@@ -134,6 +134,10 @@ class User(TenantModel, AbstractUser):
 
         return social.extra_data.get(data_key)
 
+    @property
+    def vk_message_token(self) -> str:
+        return Company.objects.get(id=self.company_id).access_token
+
 
 class CompanyObjectModel(TenantModel):
     """Абстрактный класс для разделяемых по компаниям моделей"""
@@ -183,10 +187,6 @@ class Coach(SafeDeleteModel, CompanyObjectModel):
             Q(date_to__gt=today)
         ).exists()
 
-    @property
-    def vk_message_token(self) -> str:
-        return Company.objects.get(id=self.company_id).access_token
-
 
 @reversion.register()
 class Manager(CompanyObjectModel):
@@ -197,10 +197,6 @@ class Manager(CompanyObjectModel):
 
     def __str__(self):
         return self.user.get_full_name()
-
-    @property
-    def vk_message_token(self) -> str:
-        return Company.objects.get(id=self.company_id).access_token
 
 
 @reversion.register()
