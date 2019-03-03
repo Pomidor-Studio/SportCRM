@@ -17,6 +17,7 @@ from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
+from crm.enums import GRANULARITY
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
 from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions, SubscriptionsType
 from crm.serializers import CalendarEventSerializer
@@ -266,6 +267,21 @@ class CreateEdit(
         self.form = EventClassForm(request.POST, instance=self.object)
         with transaction.atomic():
             self.object = self.form.save()
+
+            #Добавляем абонемент на разовое посещение, если цена указана и не равна нулю
+            one_time_price = self.form.cleaned_data['one_time_price']
+            name = self.object.name
+            if one_time_price and one_time_price > 0:
+                sub = SubscriptionsType(
+                    name='Разовое посещение ' + name,
+                    price=one_time_price,
+                    duration_type=GRANULARITY.DAY,
+                    duration=1,
+                    rounding=False,
+                    visit_limit=1
+                )
+                sub.save()
+                sub.event_class.add(self.object)
 
             # сохраняем или удаляем дни недели, которые уже
             # были у тренировки ранее

@@ -129,9 +129,11 @@ class EventAttendanceForm(TenantModelForm):
 
 
 class EventClassForm(TenantModelForm):
+    one_time_price = forms.IntegerField(label='Стоимость разового посещения', initial='', min_value=0, required=False)
+
     class Meta:
         model = EventClass
-        fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
+        fields = ['name', 'location', 'coach', 'date_from', 'date_to', 'one_time_price']
         widgets = {
             'date_from': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
             'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),

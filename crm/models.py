@@ -518,6 +518,7 @@ class ClientSubscriptions(CompanyObjectModel):
     end_date = models.DateField(null=True)
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")
+    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
 
     objects = ClientSubscriptionsManager()
 
