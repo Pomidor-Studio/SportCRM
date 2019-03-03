@@ -1,6 +1,8 @@
+from uuid import UUID
 from datetime import date, timedelta
 from typing import List, Optional
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import HttpResponseRedirect
@@ -19,8 +21,8 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
 from crm.models import (Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions,
-    SubscriptionsType,
-    ClientAttendanceExist)
+                        SubscriptionsType,
+                        ClientAttendanceExists)
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import UserManagerMixin, RedirectWithActionView
 
@@ -306,37 +308,34 @@ class Scanner(
 ):
     template_name = 'crm/manager/event/scanner.html'
 
-    # def __init__(self, *args, **kwargs):
-    #     self.event: Event = None
-    #     super().__init__(*args, **kwargs)
-
     def get(self, request, *args, **kwargs):
         event = self.get_object()
         self.extra_context = {'event': event}
 
         code = kwargs.get('code')
+
         if code:
-            client: Client = None
             try:
-                client = Client.objects.get(qr_code=code)
-            except Client.DoesNotExist:
-                self.extra_context['warning'] = f'Ученик с QR кодом {code} не найден'
+                uuid = UUID(code)
+            except ValueError:
+                messages.error(self.request, f'Некорректный формат кода "{code}"')
             else:
-                subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(client=client).order_by(
-                    'purchase_date').first()
-                if subscription:
-                    try:
-                        subscription.mark_visit(event)
-                    except ClientAttendanceExist:
-                        self.extra_context['warning'] = f'{client} уже отмечен'
-                    else:
-                        self.extra_context['warning'] = f'{client} отмечен по абонементу {subscription}'
+                client: Client = None
+                try:
+                    client = Client.objects.get(qr_code=uuid)
+                except Client.DoesNotExist:
+                    messages.error(self.request, f'Ученик с QR кодом {code} не найден')
                 else:
-                    self.extra_context['warning'] = f'У {client} нет действующего абонемента'
+                    subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(client=client).order_by(
+                        'purchase_date').first()
+                    if subscription:
+                        try:
+                            subscription.mark_visit(event)
+                        except ClientAttendanceExists:
+                            messages.warning(self.request, f'{client} уже отмечен')
+                        else:
+                            messages.info(self.request, f'{client} отмечен по абонементу {subscription}')
+                    else:
+                        messages.warning(self.request, f'У {client} нет действующего абонемента')
 
         return super().get(request, *args, **kwargs)
-
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['event'] = self.event
-    #     return context

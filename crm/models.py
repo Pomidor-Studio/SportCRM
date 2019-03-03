@@ -483,7 +483,7 @@ class Client(CompanyObjectModel):
     email_address = models.CharField("Email", max_length=50, blank=True)
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
     balance = models.FloatField("Баланс", default=0)
-    qr_code = models.SlugField("QR код", blank=True, null=True, unique=True)
+    qr_code = models.UUIDField("QR код", blank=True, null=True, unique=True)
 
     objects = ClientManager()
 
@@ -534,7 +534,7 @@ class ClientSubscriptionsManager(
         pass
 
 
-class ClientAttendanceExist(Exception):
+class ClientAttendanceExists(Exception):
     pass
 
 @reversion.register()
@@ -639,14 +639,15 @@ class ClientSubscriptions(CompanyObjectModel):
         # TODO: Обработать race. Q?
         if (self.visits_left > 0) and (self.start_date <= event.date) and (self.end_date >= event.date):
             with transaction.atomic():
-                new_obj, created = Attendance.objects.get_or_create(event=event,
-                                                                    client=self.client,
-                                                                    defaults={'subscription': self})
+                new_obj, created = Attendance.objects.get_or_create(
+                    event=event,
+                    client=self.client,
+                    defaults={'subscription': self})
                 if created:
                     self.visits_left = self.visits_left - 1
                     self.save()
                 else:
-                    raise ClientAttendanceExist("Client attendance for this event already exists")
+                    raise ClientAttendanceExists("Client attendance for this event already exists")
 
         else:
             raise ValueError('Subscription or event is incorrect')
