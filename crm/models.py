@@ -43,6 +43,9 @@ class Company(models.Model):
     # По факту является своеобразным uuid
     name = models.CharField("Название", max_length=100, unique=True)
     display_name = models.CharField('Отображаемое название', max_length=100)
+    vk_group_id = models.CharField('ИД группы вк', max_length=20, unique=True, null=True)
+    access_token = models.CharField('Токен группы вк', max_length=100, unique=True, null=True)
+    confirmation_token = models.CharField('Строка-подтверждение', max_length=20, null=True)
     tenant_id = 'id'
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -180,6 +183,10 @@ class Coach(SafeDeleteModel, CompanyObjectModel):
             Q(date_to__gt=today)
         ).exists()
 
+    @property
+    def vk_message_token(self) -> str:
+        return Company.objects.get(id=self.company_id).access_token
+
 
 @reversion.register()
 class Manager(CompanyObjectModel):
@@ -190,6 +197,10 @@ class Manager(CompanyObjectModel):
 
     def __str__(self):
         return self.user.get_full_name()
+
+    @property
+    def vk_message_token(self) -> str:
+        return Company.objects.get(id=self.company_id).access_token
 
 
 @reversion.register()
@@ -501,11 +512,7 @@ class Client(CompanyObjectModel):
 
     @property
     def vk_message_token(self) -> str:
-        # TODO: in time with
-        #  https://trello.com/c/AlMtG9rW/107-хранение-настроек-vk-для-компании
-        #  add correct behaviour of token getter from client
-        #  MAYBE return self.company.vk_token
-        return 'some-token'
+        return Company.objects.get(id=self.company_id).access_token
 
 
 class ClientSubscriptionQuerySet(models.QuerySet):
@@ -778,7 +785,7 @@ class Event(CompanyObjectModel):
         return self.date >= date.today()
 
     @property
-    def is_closed(self):
+    def is_non_editable(self):
         return self.is_canceled or not self.is_active
 
     def cancel_event(self, extend_subscriptions=False):
