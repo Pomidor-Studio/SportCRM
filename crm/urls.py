@@ -205,6 +205,16 @@ manager_event_urlpatterns = ([
         'activate/with-revoke/',
         manager_event_class_views.ActivateWithRevoke.as_view(),
         name='activate-with-revoke'
+    ),
+    path(
+        'scan/',
+        manager_event_class_views.Scanner.as_view(),
+        name='scanner'
+    ),
+    path(
+        'scan/<str:code>/',
+        manager_event_class_views.Scanner.as_view(),
+        name='scanner'
     )
 ], 'event')
 

@@ -470,6 +470,7 @@ class Client(CompanyObjectModel):
     email_address = models.CharField("Email", max_length=50, blank=True)
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
     balance = models.FloatField("Баланс", default=0)
+    qr_code = models.SlugField("QR код", blank=True, null=True, unique=True)
 
     class Meta:
         unique_together = ('company', 'name')
@@ -509,6 +510,9 @@ class ClientSubscriptionsManager(
         # TODO: Add revert cancellation, with transitive dependencies
         pass
 
+
+class ClientAttendanceExist(Exception):
+    pass
 
 @reversion.register()
 class ClientSubscriptions(CompanyObjectModel):
@@ -608,13 +612,22 @@ class ClientSubscriptions(CompanyObjectModel):
         return delta.days <= 7 or self.visits_left == 1
 
     def mark_visit(self, event):
-        with transaction.atomic():
-            if self.visits_left > 0:
-                Attendance.objects.create(event=event,
-                                          client=self.client,
-                                          subscription=self)
-                self.visits_left = self.visits_left - 1
-                self.save()
+        """Отметить посещение по абонементу"""
+        # TODO: Обработать race. Q?
+        if (self.visits_left > 0) and (self.start_date <= event.date) and (self.end_date >= event.date):
+            with transaction.atomic():
+                # TODO: Проверять нет ли уже этой отметки (с помощью get_or_create?)
+                new_obj, created = Attendance.objects.get_or_create(event=event,
+                                                                    client=self.client,
+                                                                    defaults={'subscription': self})
+                if created:
+                    self.visits_left = self.visits_left - 1
+                    self.save()
+                else:
+                    raise ClientAttendanceExist("Client attendance for this event already exists")
+
+        else:
+            raise ValueError('Subscription or event is incorrect')
 
     def restore_visit(self, attendance):
         with transaction.atomic():

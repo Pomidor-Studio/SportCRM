@@ -18,7 +18,9 @@ from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
-from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions, SubscriptionsType
+from crm.models import (Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions,
+    SubscriptionsType,
+    ClientAttendanceExist)
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import UserManagerMixin, RedirectWithActionView
 
@@ -60,7 +62,7 @@ class ApiCalendar(ListAPIView):
 
 
 class EventByDateMixin:
-    def get_object(self, queryset=None):
+    def get_object(self, queryset=None) -> Event:
         event_date = date(
             self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
         )
@@ -295,3 +297,46 @@ class CreateEdit(
 
         return HttpResponseRedirect(reverse(
             'crm:manager:event-class:update', kwargs={'pk': self.object.id}))
+
+
+class Scanner(
+    LoginRequiredMixin,
+    EventByDateMixin,
+    TemplateView
+):
+    template_name = 'crm/manager/event/scanner.html'
+
+    # def __init__(self, *args, **kwargs):
+    #     self.event: Event = None
+    #     super().__init__(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        event = self.get_object()
+        self.extra_context = {'event': event}
+
+        code = kwargs.get('code')
+        if code:
+            client: Client = None
+            try:
+                client = Client.objects.get(qr_code=code)
+            except Client.DoesNotExist:
+                self.extra_context['warning'] = f'Ученик с QR кодом {code} не найден'
+            else:
+                subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(client=client).order_by(
+                    'purchase_date').first()
+                if subscription:
+                    try:
+                        subscription.mark_visit(event)
+                    except ClientAttendanceExist:
+                        self.extra_context['warning'] = f'{client} уже отмечен'
+                    else:
+                        self.extra_context['warning'] = f'{client} отмечен по абонементу {subscription}'
+                else:
+                    self.extra_context['warning'] = f'У {client} нет действующего абонемента'
+
+        return super().get(request, *args, **kwargs)
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['event'] = self.event
+    #     return context
