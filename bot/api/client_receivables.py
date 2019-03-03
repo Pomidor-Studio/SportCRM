@@ -1,5 +1,4 @@
 from crm.models import Client
-from bot.api.settings import *
 from bot.api.vkapi import send_message
 
 
@@ -12,6 +11,6 @@ def receivables():
         name = cl.name
         balance = cl.balance
         message.extend([name, '!\nУ вас есть задолженность!\nСостояние вашего счета: ', str(balance)])
-        send_message(token, cl.vk_user_id, ''.join(message), '')
+        send_message(cl.vk_user_id, cl.vk_message_token, ''.join(message), '')
 
     return
