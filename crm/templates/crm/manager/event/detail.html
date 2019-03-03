@@ -21,7 +21,7 @@
               <div class="col"></div>
               <div class="col"></div>
               <div class="col">
-                {% if not event.is_closed %}
+                {% if not event.is_non_editable %}
                   <a
                     class="btn btn-sm btn-outline-danger"
                     href="{% url 'crm:manager:attendance:delete' attendance.id %}"
@@ -33,7 +33,7 @@
         </div>
       </div>
       <div class="border-top mt-2"></div>
-      {% if not event.is_closed %}
+      {% if not event.is_non_editable %}
         <div class="border-top">
           <span class="font-weight-bold ">Не отмеченные ученики: </span>
           <div class="border-top">
