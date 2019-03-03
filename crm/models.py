@@ -625,6 +625,9 @@ class ClientSubscriptions(CompanyObjectModel):
     class Meta:
         ordering = ['purchase_date']
 
+    def __str__(self):
+        return f'{self.subscription.name} (до {self.end_date:%d.%m.%Y})'
+
 
 @reversion.register()
 class ExtensionHistory(CompanyObjectModel):
