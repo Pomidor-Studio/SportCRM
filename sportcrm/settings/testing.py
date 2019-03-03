@@ -27,3 +27,7 @@ DATABASES['default'] = dj_database_url.config(
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 MIDDLEWARE.remove('whitenoise.middleware.WhiteNoiseMiddleware')
+
+CELERY_TASK_ALWAYS_EAGER = True  # Emulate async work of celery
+CELERY_BROKER_URL = 'redis://localhost:6379/1'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/1'

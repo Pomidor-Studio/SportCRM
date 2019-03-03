@@ -1,3 +1,5 @@
+celery[redis]==4.3.0rc1  # 4.3.0rc1 as celery 4.2 fails on python 3.7 with async keyword
+# As soon as 4.3.0 will be released - we will switch on it
 dj-database-url==0.5.0
 django-betterforms==1.2
 django-bootstrap-datepicker-plus==3.0.5
