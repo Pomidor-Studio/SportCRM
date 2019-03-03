@@ -302,10 +302,11 @@ class CreateEdit(
 
 
 class Scanner(
-    LoginRequiredMixin,
+    PermissionRequiredMixin,
     EventByDateMixin,
     TemplateView
 ):
+    permission_required = 'event.mark_attendance'
     template_name = 'crm/manager/event/scanner.html'
 
     def get(self, request, *args, **kwargs):
@@ -342,10 +343,11 @@ class Scanner(
 
 
 class DoScan(
-    LoginRequiredMixin,
+    PermissionRequiredMixin,
     EventByDateMixin,
     RedirectWithActionView
 ):
+    permission_required = 'event.mark_attendance'
     pattern_name = 'crm:manager:event-class:event:scanner'
 
     def run_action(self):
