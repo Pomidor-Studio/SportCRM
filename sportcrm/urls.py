@@ -16,6 +16,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include
 from django.urls import path
+from django.conf.urls import url
+from qr_code import urls as qr_code_urls
+
 
 app_name = 'sportcrm'
 urlpatterns = [
@@ -24,4 +27,5 @@ urlpatterns = [
     path('', include('bot.urls')),
     path('', include('social_django.urls', namespace='social')),
     path('api/v1/', include(('crm.urls_api', 'api-v1'), namespace='api-v1')),
+    url(r'^qr_code/', include(qr_code_urls, namespace="qr_code")),
 ]

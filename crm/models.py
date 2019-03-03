@@ -639,7 +639,6 @@ class ClientSubscriptions(CompanyObjectModel):
         # TODO: Обработать race. Q?
         if (self.visits_left > 0) and (self.start_date <= event.date) and (self.end_date >= event.date):
             with transaction.atomic():
-                # TODO: Проверять нет ли уже этой отметки (с помощью get_or_create?)
                 new_obj, created = Attendance.objects.get_or_create(event=event,
                                                                     client=self.client,
                                                                     defaults={'subscription': self})

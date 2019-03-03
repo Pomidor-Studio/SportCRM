@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_select2',
     'django_tables2',
+    'qr_code',
 ]
 
 BOOTSTRAP4 = {
