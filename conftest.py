@@ -1,6 +1,6 @@
 from pytest_factoryboy import register
 
-from . import factories
+from crm.tests import factories
 
 
 register(factories.CompanyFactory)
