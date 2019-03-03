@@ -460,6 +460,19 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         return reverse('crm:manager:subscription:list')
 
 
+class ClientManager(models.Manager):
+
+    def with_active_subscription_to_event(self, event: Event):
+        cs = (
+            ClientSubscriptions.objects
+            .active_subscriptions(event)
+            .order_by('client_id')
+            .distinct('client_id')
+            .values_list('client_id', flat=True)
+        )
+        return self.get_queryset().filter(id__in=cs)
+
+
 @reversion.register()
 class Client(CompanyObjectModel):
     """Клиент-Ученик. Котнактные данные. Баланс"""
@@ -471,6 +484,8 @@ class Client(CompanyObjectModel):
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
     balance = models.FloatField("Баланс", default=0)
     qr_code = models.SlugField("QR код", blank=True, null=True, unique=True)
+
+    objects = ClientManager()
 
     class Meta:
         unique_together = ('company', 'name')
@@ -484,6 +499,14 @@ class Client(CompanyObjectModel):
 
     def __str__(self):
         return self.name
+
+    @property
+    def vk_message_token(self) -> str:
+        # TODO: in time with
+        #  https://trello.com/c/AlMtG9rW/107-хранение-настроек-vk-для-компании
+        #  add correct behaviour of token getter from client
+        #  MAYBE return self.company.vk_token
+        return 'some-token'
 
 
 class ClientSubscriptionQuerySet(models.QuerySet):
@@ -788,6 +811,12 @@ class Event(CompanyObjectModel):
 
             if extend_subscriptions:
                 ClientSubscriptions.objects.extend_by_cancellation(self)
+
+            try:
+                from bot.tasks import notify_event_cancellation
+                notify_event_cancellation.delay(self.id)
+            except ImportError:
+                pass
 
     def activate_event(self, revoke_extending=False):
         if not self.is_active:
