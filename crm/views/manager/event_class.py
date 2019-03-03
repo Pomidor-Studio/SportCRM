@@ -339,3 +339,44 @@ class Scanner(
                         messages.warning(self.request, f'У {client} нет действующего абонемента')
 
         return super().get(request, *args, **kwargs)
+
+
+class DoScan(
+    LoginRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView
+):
+    pattern_name = 'crm:manager:event-class:event:scanner'
+
+    def run_action(self):
+        code = self.kwargs.get('code')
+
+        if code:
+            try:
+                uuid = UUID(code)
+            except ValueError:
+                messages.error(self.request, f'Некорректный формат кода "{code}"')
+            else:
+                client: Client = None
+                try:
+                    client = Client.objects.get(qr_code=uuid)
+                except Client.DoesNotExist:
+                    messages.error(self.request, f'Ученик с QR кодом {code} не найден')
+                else:
+                    event = self.get_object()
+                    subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(
+                        client=client).order_by(
+                        'purchase_date').first()
+                    if subscription:
+                        try:
+                            subscription.mark_visit(event)
+                        except ClientAttendanceExists:
+                            messages.warning(self.request, f'{client} уже отмечен')
+                        else:
+                            messages.info(self.request, f'{client} отмечен по абонементу {subscription}')
+                    else:
+                        messages.warning(self.request, f'У {client} нет действующего абонемента')
+
+    def get_redirect_url(self, *args, **kwargs):
+        self.kwargs.pop('code')
+        return super().get_redirect_url(*args, **kwargs)

@@ -6,7 +6,7 @@
   <script type="text/javascript">
     function processCode (content) {
       var sqcode = content.split("/").pop();
-      window.location.replace("{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day 9999999999%}".replace("9999999999", sqcode));
+      window.location.replace("{% url 'crm:manager:event-class:event:do-scan' event.event_class.id event.date.year event.date.month event.date.day 9999999999%}".replace("9999999999", sqcode));
     };
 
     $(function() {

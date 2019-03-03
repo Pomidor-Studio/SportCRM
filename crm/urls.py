@@ -213,8 +213,8 @@ manager_event_urlpatterns = ([
     ),
     path(
         'scan/<str:code>/',
-        manager_event_class_views.Scanner.as_view(),
-        name='scanner'
+        manager_event_class_views.DoScan.as_view(),
+        name='do-scan'
     )
 ], 'event')
 
