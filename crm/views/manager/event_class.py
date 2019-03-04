@@ -328,7 +328,7 @@ class DoScan(
 
         if not code:
             messages.error(self.request, 'Не передан код')
-
+            return
         try:
             uuid = UUID(code)
         except ValueError:
