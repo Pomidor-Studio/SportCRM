@@ -90,7 +90,12 @@ def get_user_current_tenant():
     current_tenant = get_current_tenant()
     if current_tenant is None:
         try:
-            return Company.objects.get(name=INTERNAL_COMPANY)
+            return (
+                Company.objects
+                .only('id')
+                .filter(name=INTERNAL_COMPANY)
+                .first()
+            )
         except (Company.DoesNotExist, Psycopg2Error, utils.Error):
             return None
 
@@ -135,7 +140,6 @@ class User(TenantModel, AbstractUser):
 
         return social.extra_data.get(data_key)
 
-    @property
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
 
