@@ -7,6 +7,13 @@
   <div class="border-top mt-2"></div>
   <div class="row">
     <div class="col">
+      <div class="mb-2 mt-2">
+        <a class="btn btn-sm btn-outline-info"
+           href="{% url 'crm:manager:event-class:event:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить
+          посещение</a>
+        <a class="btn btn-sm btn-outline-info"
+           href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">Сканнер</a>
+      </div>
       <div class="border-top">
         <span class="font-weight-bold ">Отмеченные ученики: </span>
         <div class="border-top">

@@ -1,6 +1,6 @@
 {% extends "crm/base.html" %}
 
-{% load html_helper %}
+{% load html_helper qr_code %}
 
 {% block nav %}
 {% endblock nav %}
@@ -84,6 +84,9 @@
             {% if object.balance %}
                 <div class="font-weight-bold">Баланс:</div>
             {% endif %}
+            {% if object.qr_code %}
+                <div class="font-weight-bold">QR код:</div>
+            {% endif %}
         </div>
         <div class="col">
             <div>{{ object.address }} </div>
@@ -93,6 +96,9 @@
             <div><a id="id_vk_url"></a></div>
             {% if object.balance %}
                 <div>{{ object.balance }} ₽</div>
+            {% endif %}
+            {% if object.qr_code %}
+                <img src="{% qr_url_from_text object.qr_code.hex error_correction="H" size=8 %}" alt="object.qr_code">
             {% endif %}
         </div>
         <div class="col-2 border-right">

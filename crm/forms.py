@@ -39,7 +39,7 @@ class ClientForm(TenantModelForm):
         model = Client
 
         fields = ['name', 'address',
-                  'birthday', 'phone_number', 'email_address', 'vk_user_id']
+                  'birthday', 'phone_number', 'email_address', 'vk_user_id', 'qr_code']
         widgets = {
             'birthday': DatePickerInput(format='%d.%m.%Y',
                                         attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),

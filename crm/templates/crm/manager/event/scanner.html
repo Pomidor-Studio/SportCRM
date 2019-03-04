@@ -1,0 +1,41 @@
+{% extends "crm/base.html" %}
+{% load html_helper bootstrap4%}
+
+{% block extrahead %}
+  {% js 'js/instascan.min.js' %}
+  <script type="text/javascript">
+    function processCode (content) {
+      let sqcode = content.split("/").pop();
+      window.location.replace("{% url 'crm:manager:event-class:event:do-scan' event.event_class.id event.date.year event.date.month event.date.day 9999999999%}".replace("9999999999", sqcode));
+    };
+
+    $(function() {
+      let scanner = new Instascan.Scanner({ video: document.getElementById('preview'),  mirror: false, backgroundScan: false });
+      scanner.addListener('scan', processCode);
+      Instascan.Camera.getCameras().then(function (cameras) {
+        if (cameras.length > 0) {
+          scanner.start(cameras[cameras.length - 1]);
+        } else {
+          console.error('No cameras found.');
+        }
+      }).catch(function (e) {
+        console.error(e);
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+   <legend class="border-bottom mb-2">{{ event.date }} - {{ event.event_class.name }} -
+    {{ event.event_class.location }} - {{ event.event_class.coach }}
+   </legend>
+
+  <div class="row">
+    <a class="btn btn-sm btn-outline-info"
+           href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Назад</a>
+  </div>
+  <div class="row">
+    <video id="preview"></video>
+  </div>
+
+{% endblock content %}
