@@ -30,11 +30,11 @@ def gl(request): #url: https://mysite.ru/vkbot/
         data = json.loads(request.body)# take POST request from auto-generated variable <request.body> in json format
 
         if (data['type'] == 'confirmation'):#if VK server request confirmation
-            confirmation_token = Company.objects.get(vk_group_id=data['group_id']).confirmation_token
+            confirmation_token = Company.objects.get(vk_group_id=data['group_id']).vk_confirmation_token
             return HttpResponse(confirmation_token, content_type="text/plain", status=200)
 
         if (data['type'] == 'message_new'):# if VK server send a message
-            token = Company.objects.get(vk_group_id=data['group_id']).access_token
+            token = Company.objects.get(vk_group_id=data['group_id']).vk_access_token
             create_answer(data['object'], token)
 
     return HttpResponse('ok', content_type="text/plain", status=200)
