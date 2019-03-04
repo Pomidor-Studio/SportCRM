@@ -68,6 +68,7 @@
       <tr>
         <th scope="col">Инфо</th>
         <th scope="col">Абонемент</th>
+        <th scope="col">Баланс</th>
       </tr>
       </thead>
       <tbody>
@@ -99,6 +100,9 @@
                  href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}">Продлить</a>
               {% endifhasperm %}
             {% endif %}
+          </td>
+          <td>
+            {{ client.balance }}
           </td>
         </tr>
       {% endfor %}

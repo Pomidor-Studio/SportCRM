@@ -24,6 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SECRET_KEY = '$+a*ui0^x+mdhq^$)vvl5aa+#9es)_bii00k!jqf4(_gcpmq1j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = False
 
 ALLOWED_HOSTS = []
@@ -43,6 +44,8 @@ INSTALLED_APPS = [
     'reversion_compare',
     'crm.apps.CrmConfig',
     'django_filters',
+    'bot.apps.BotConfig',
+    'bot.apps.SignalsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -193,3 +196,8 @@ SOCIAL_AUTH_VK_OAUTH2_KEY = ''
 SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
 
 SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
+
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_BEAT_SCHEDULE = {}  # For configuration of periodical tasks
+CELERY_BROKER_URL = 'redis://HOST:PORT/DB'
+CELERY_RESULT_BACKEND = 'redis://HOST:PORT/DB'

@@ -15,11 +15,12 @@ from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
+from rules.contrib.views import PermissionRequiredMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
 from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions, SubscriptionsType
 from crm.serializers import CalendarEventSerializer
-from crm.views.mixin import UserManagerMixin
+from crm.views.mixin import UserManagerMixin, RedirectWithActionView
 
 
 class ObjList(LoginRequiredMixin, UserManagerMixin, ListView):
@@ -58,47 +59,105 @@ class ApiCalendar(ListAPIView):
         ).values()
 
 
-class EventByDate(LoginRequiredMixin, UserManagerMixin, DetailView):
+class EventByDateMixin:
+    def get_object(self, queryset=None):
+        event_date = date(
+            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
+        )
+        return Event.objects.get_or_virtual(
+            self.kwargs['event_class_id'], event_date)
+
+
+class EventByDate(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    DetailView
+):
     model = Event
     context_object_name = 'event'
     template_name = 'crm/manager/event/detail.html'
+    permission_required = 'event'
+
+    def get_clients_subscriptions(self, attendance_list, subscriptions):
+        clients_subscriptions = {}
+        attendance_client_list = [attendance.client for attendance in attendance_list]
+        for subscription in subscriptions:
+            client = subscription.client
+            if client not in attendance_client_list:
+                if client in clients_subscriptions.keys():
+                    clients_subscriptions.get(client).append(subscription)
+                else:
+                    clients_subscriptions.update({client: [subscription]})
+        return clients_subscriptions
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
         event_class = self.object.event_class
         subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
-        client_subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
-                                                                  start_date__lte=self.object.date,
-                                                                  end_date__gte=self.object.date)
-        all_clients = [client_subscription.client for client_subscription in client_subscriptions]
-        attendance_clients = [attendance.client for attendance in attendance_list]
-        # Не понимаю почему не работает эта конструкция
-        # clients = [client not in attendance_clients for client in all_clients]
-        clients = []
-        for client in all_clients:
-            if client not in attendance_clients:
-                clients.append(client)
+        subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
+                                                           start_date__lte=self.object.date,
+                                                           end_date__gte=self.object.date,
+                                                           visits_left__gt=0)
+        clients_subscriptions = self.get_clients_subscriptions(attendance_list, subscriptions)
         context.update({
             'attendance_list': attendance_list,
-            'clients': clients
+            'clients_subscriptions': clients_subscriptions
         })
 
         return context
 
-    def get_object(self, queryset=None):
-        event_date = date(
-            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
-        )
-        try:
-            return Event.objects.get(
-                event_class_id=self.kwargs['event_class_id'],
-                date=event_date
-            )
-        except Event.DoesNotExist:
-            event_class = get_object_or_404(
-                EventClass, id=self.kwargs['event_class_id'])
-            return Event(date=event_date, event_class=event_class)
+
+class CancelWithoutExtending(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView,
+):
+    permission_required = 'event.cancel'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.cancel_event(extend_subscriptions=False)
+
+
+class CancelWithExtending(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView,
+):
+    permission_required = 'event.cancel'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.cancel_event(extend_subscriptions=True)
+
+
+class ActivateWithoutRevoke(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView,
+):
+    permission_required = 'event.activate'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.activate_event(revoke_extending=False)
+
+
+class ActivateWithRevoke(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView,
+):
+    permission_required = 'event.activate'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.activate_event(revoke_extending=True)
 
 
 class MarkEventAttendance(
@@ -126,7 +185,7 @@ class MarkEventAttendance(
         return kwargs
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
+        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class MarkClientAttendance(
@@ -137,20 +196,19 @@ class MarkClientAttendance(
 ):
 
     def get(self, request, *args, **kwargs):
-        event_date = date(
-            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
-        )
-        event, _ = Event.objects.get_or_create(
-            event_class_id=self.kwargs['event_class_id'],
-            date=event_date)
-        client = get_object_or_404(Client, id=self.kwargs['client_id'])
-        self.kwargs.__delitem__('client_id')
-        Attendance.objects.create(event=event, client=client)
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
+        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
+                                               date=event_date)
+        subscription_id = self.kwargs.pop('subscription_id')
+        subscription = ClientSubscriptions.objects.get(id=subscription_id)
+        subscription.mark_visit(event)
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event-by-date', kwargs=self.kwargs)
+        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class CreateEdit(
