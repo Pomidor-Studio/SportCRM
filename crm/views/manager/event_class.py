@@ -309,37 +309,10 @@ class Scanner(
     permission_required = 'event.mark_attendance'
     template_name = 'crm/manager/event/scanner.html'
 
-    def get(self, request, *args, **kwargs):
-        event = self.get_object()
-        self.extra_context = {'event': event}
-
-        code = kwargs.get('code')
-
-        if code:
-            try:
-                uuid = UUID(code)
-            except ValueError:
-                messages.error(self.request, f'Некорректный формат кода "{code}"')
-            else:
-                client: Client = None
-                try:
-                    client = Client.objects.get(qr_code=uuid)
-                except Client.DoesNotExist:
-                    messages.error(self.request, f'Ученик с QR кодом {code} не найден')
-                else:
-                    subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(client=client).order_by(
-                        'purchase_date').first()
-                    if subscription:
-                        try:
-                            subscription.mark_visit(event)
-                        except ClientAttendanceExists:
-                            messages.warning(self.request, f'{client} уже отмечен')
-                        else:
-                            messages.info(self.request, f'{client} отмечен по абонементу {subscription}')
-                    else:
-                        messages.warning(self.request, f'У {client} нет действующего абонемента')
-
-        return super().get(request, *args, **kwargs)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['event'] = self.get_object()
+        return context
 
 
 class DoScan(
@@ -353,31 +326,34 @@ class DoScan(
     def run_action(self):
         code = self.kwargs.get('code')
 
-        if code:
-            try:
-                uuid = UUID(code)
-            except ValueError:
-                messages.error(self.request, f'Некорректный формат кода "{code}"')
-            else:
-                client: Client = None
-                try:
-                    client = Client.objects.get(qr_code=uuid)
-                except Client.DoesNotExist:
-                    messages.error(self.request, f'Ученик с QR кодом {code} не найден')
-                else:
-                    event = self.get_object()
-                    subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(
-                        client=client).order_by(
-                        'purchase_date').first()
-                    if subscription:
-                        try:
-                            subscription.mark_visit(event)
-                        except ClientAttendanceExists:
-                            messages.warning(self.request, f'{client} уже отмечен')
-                        else:
-                            messages.info(self.request, f'{client} отмечен по абонементу {subscription}')
-                    else:
-                        messages.warning(self.request, f'У {client} нет действующего абонемента')
+        if not code:
+            messages.error(self.request, 'Не передан код')
+
+        try:
+            uuid = UUID(code)
+        except ValueError:
+            messages.error(self.request, f'Некорректный формат кода "{code}"')
+            return
+
+        try:
+            client = Client.objects.get(qr_code=uuid)
+        except Client.DoesNotExist:
+            messages.error(self.request, f'Ученик с QR кодом {code} не найден')
+            return
+        event = self.get_object()
+        subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(
+            client=client).order_by(
+            'purchase_date').first()
+        if not subscription:
+            messages.warning(self.request, f'У {client} нет действующего абонемента')
+            return
+        try:
+            subscription.mark_visit(event)
+        except ClientAttendanceExists:
+            messages.warning(self.request, f'{client} уже отмечен')
+        else:
+            messages.info(self.request, f'{client} отмечен по абонементу {subscription}')
+            return
 
     def get_redirect_url(self, *args, **kwargs):
         kwargs.pop('code')

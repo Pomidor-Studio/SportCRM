@@ -5,12 +5,12 @@
   {% js 'js/instascan.min.js' %}
   <script type="text/javascript">
     function processCode (content) {
-      var sqcode = content.split("/").pop();
+      let sqcode = content.split("/").pop();
       window.location.replace("{% url 'crm:manager:event-class:event:do-scan' event.event_class.id event.date.year event.date.month event.date.day 9999999999%}".replace("9999999999", sqcode));
     };
 
     $(function() {
-      var scanner = new Instascan.Scanner({ video: document.getElementById('preview'),  mirror: false, backgroundScan: false });
+      let scanner = new Instascan.Scanner({ video: document.getElementById('preview'),  mirror: false, backgroundScan: false });
       scanner.addListener('scan', processCode);
       Instascan.Camera.getCameras().then(function (cameras) {
         if (cameras.length > 0) {
