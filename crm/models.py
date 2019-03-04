@@ -43,9 +43,9 @@ class Company(models.Model):
     # По факту является своеобразным uuid
     name = models.CharField("Название", max_length=100, unique=True)
     display_name = models.CharField('Отображаемое название', max_length=100)
-    vk_group_id = models.CharField('ИД группы вк', max_length=20, unique=True, null=True)
-    access_token = models.CharField('Токен группы вк', max_length=100, unique=True, null=True)
-    confirmation_token = models.CharField('Строка-подтверждение', max_length=20, null=True)
+    vk_group_id = models.CharField('ИД группы вк', max_length=20, unique=True, null=True, blank=True)
+    vk_access_token = models.CharField('Токен группы вк', max_length=100, unique=True, null=True, blank=True)
+    vk_confirmation_token = models.CharField('Строка-подтверждение', max_length=20, null=True, blank=True)
     tenant_id = 'id'
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -136,7 +136,7 @@ class User(TenantModel, AbstractUser):
 
     @property
     def vk_message_token(self) -> str:
-        return Company.objects.get(id=self.company_id).access_token
+        return self.company.vk_access_token
 
 
 class CompanyObjectModel(TenantModel):
@@ -508,7 +508,7 @@ class Client(CompanyObjectModel):
 
     @property
     def vk_message_token(self) -> str:
-        return Company.objects.get(id=self.company_id).access_token
+        return self.company.vk_access_token
 
 
 class ClientSubscriptionQuerySet(models.QuerySet):
