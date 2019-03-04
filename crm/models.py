@@ -397,6 +397,7 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         EventClass,
         verbose_name="Допустимые тренировки"
     )
+    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
 
     def __str__(self):
         return self.name
@@ -518,7 +519,6 @@ class ClientSubscriptions(CompanyObjectModel):
     end_date = models.DateField(null=True)
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")
-    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
 
     objects = ClientSubscriptionsManager()
 

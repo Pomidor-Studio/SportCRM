@@ -278,7 +278,8 @@ class CreateEdit(
                     duration_type=GRANULARITY.DAY,
                     duration=1,
                     rounding=False,
-                    visit_limit=1
+                    visit_limit=1,
+                    one_time=True
                 )
                 sub.save()
                 sub.event_class.add(self.object)
