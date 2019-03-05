@@ -15,8 +15,9 @@
         $("#id_phone_number").inputmask({"mask": "+7 (999) 999-99-99"});
 
         $("#vk_user_ref").change(function() {
-            var idRe = new RegExp("vk.com\/(?<user_id>[A-Za-z0-9]+)");
+            var idRe = new RegExp("vk.com\/(?<user_id>([A-Za-z0-9_])+)");
             var matchString = $("#vk_user_ref").val();
+
             var matchObj = idRe.exec(matchString);
             try {
                 var id = matchObj.groups.user_id;
