@@ -18,7 +18,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
-from django_multitenant.mixins import TenantManagerMixin
+from django_multitenant.mixins import TenantManagerMixin, TenantQuerySet
 from django_multitenant.models import TenantModel
 from django_multitenant.utils import get_current_tenant
 from psycopg2 import Error as Psycopg2Error
@@ -34,6 +34,28 @@ INTERNAL_COMPANY = 'INTERNAL'
 
 class NoFutureEvent(Exception):
     pass
+
+
+class ScrmTenantManagerMixin(object):
+    """
+    Override TenantManagerMixin behaviour, as it ignore that queryset may be
+    already instance of TenantQuerySet
+    """
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not isinstance(queryset, TenantQuerySet):
+            queryset = TenantQuerySet(self.model)
+
+        current_tenant = get_current_tenant()
+        if current_tenant:
+            current_tenant_id = getattr(current_tenant, current_tenant.tenant_id, None)
+
+            # TO CHANGE: tenant_id should be set in model Meta
+            kwargs = {self.model.tenant_id: current_tenant_id}
+
+            return queryset.filter(**kwargs)
+        return queryset
 
 
 @reversion.register()
@@ -473,7 +495,7 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         return reverse('crm:manager:subscription:list')
 
 
-class ClientManager(models.Manager):
+class ClientManager(TenantManagerMixin, models.Manager):
 
     def with_active_subscription_to_event(self, event: Event):
         cs = (
@@ -518,7 +540,7 @@ class Client(CompanyObjectModel):
         return self.company.vk_access_token
 
 
-class ClientSubscriptionQuerySet(models.QuerySet):
+class ClientSubscriptionQuerySet(TenantQuerySet):
     def active_subscriptions(self, event: Event):
         return self.filter(
             subscription__event_class=event.event_class,
@@ -529,6 +551,7 @@ class ClientSubscriptionQuerySet(models.QuerySet):
 
 
 class ClientSubscriptionsManager(
+    ScrmTenantManagerMixin,
     BaseManager.from_queryset(ClientSubscriptionQuerySet)
 ):
     def active_subscriptions(self, event: Event):
@@ -700,7 +723,7 @@ class ExtensionHistory(CompanyObjectModel):
         ordering = ['date_extended']
 
 
-class EventManager(models.Manager):
+class EventManager(TenantManagerMixin, models.Manager):
     def get_or_virtual(self, event_class_id: int, event_date: date) -> Event:
         try:
             return self.get(event_class_id=event_class_id, date=event_date)
