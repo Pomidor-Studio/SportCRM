@@ -4,11 +4,13 @@ from typing import List
 import pytest
 from hamcrest import (
     assert_that, contains_inanyorder, has_properties, is_,
+    has_length,
 )
 from pytest_mock import MockFixture
 
 from crm import models
 from crm.enums import GRANULARITY
+from crm.events import range_days
 
 pytestmark = pytest.mark.django_db
 
@@ -423,3 +425,43 @@ def test_manager_extend_by_cancellation(
 
     assert_that(mock.call_count, is_(3))
     mock.assert_any_call(event)
+
+
+def test_events_to_date(
+    event_class_factory,
+    company_factory,
+    client_subscription_factory,
+):
+    start_date = date(2019, 1, 1)
+    end_date = date(2019, 1, 31)
+    company = company_factory()
+
+    # By default event class if for every day
+    ecs: List[models.EventClass] = event_class_factory.create_batch(
+        2,
+        company=company,
+        date_from=start_date,
+        date_to=end_date
+    )
+
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        company=company,
+        subscription__event_class__events=ecs,
+        subscription__rounding=True,
+        subscription__duration=1,
+        subscription__duration_type=GRANULARITY.MONTH,
+        start_date=start_date,
+        end_date=start_date + timedelta(days=6)
+    )
+
+    cs_events = cs.events_to_date(
+        from_date=start_date, to_date=start_date + timedelta(days=6))
+
+    # Client subscription have 2 event classes, so one week count * 2
+
+    assert_that(cs_events, has_length(14))
+    for idx, day in enumerate(
+            range_days(start_date, start_date + timedelta(days=7))):
+        check_idx = idx * 2
+        assert_that(cs_events[check_idx].date, is_(day))
+        assert_that(cs_events[check_idx + 1].date, is_(day))

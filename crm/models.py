@@ -635,16 +635,49 @@ class ClientSubscriptions(CompanyObjectModel):
         to_date: date,
         from_date: date = None
     ) -> List[Event]:
+        """
+        Get list of all events that can be visited by this subscription type
+        Event are sorted by date.
+
+        :param to_date: End date of calendar
+        :param from_date: Start date of calendar, if not provided date.today()
+        will be used
+
+        :return: List of all events
+        """
         return sorted(
             filter(
                 lambda x: not x.is_canceled,
                 [
+                    e for x in self.subscription.event_class.all()
+                    for e in
                     x.get_calendar(from_date or date.today(), to_date).values()
-                    for x in self.subscription.event_class_set.all()
                 ]
             ),
             key=lambda x: x.date
         )
+
+    def remained_events(self) -> List[Event]:
+        """
+        Return list of remained events from today until end date. With care
+        about left visits.
+
+        :return: List of all events that can be visited one after one,
+        by this client subscription
+        """
+        return self.events_to_date(to_date=self.end_date)[:self.visits_left]
+
+    def is_overlapping(self) -> bool:
+        """
+        Return if client subscription allows visit more events that are
+        planned
+
+        :return: True if after visiting all events from calendar will remain
+        some visits on this subscription
+        """
+        return len(self.events_to_date(
+            from_date=self.start_date, to_date=self.end_date
+        )) > self.visits_left
 
     def will_have_events(self, to_date: date) -> bool:
         return len(self.events_to_date(to_date=to_date)) > 0
