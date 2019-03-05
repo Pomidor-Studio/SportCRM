@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import include
 from django.urls import path
 
+
 app_name = 'sportcrm'
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
@@ -24,4 +25,5 @@ urlpatterns = [
     path('', include('bot.urls')),
     path('', include('social_django.urls', namespace='social')),
     path('api/v1/', include(('crm.urls_api', 'api-v1'), namespace='api-v1')),
+    path('qr_code/', include(('qr_code.urls', 'qr_code'), namespace="qr_code")),
 ]

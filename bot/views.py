@@ -35,6 +35,7 @@ def gl(request): #url: https://mysite.ru/vkbot/
 
         if (data['type'] == 'message_new'):# if VK server send a message
             token = Company.objects.get(vk_group_id=data['group_id']).vk_access_token
+
             create_answer(data['object'], token)
 
     return HttpResponse('ok', content_type="text/plain", status=200)
