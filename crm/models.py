@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date
+from datetime import date, timedelta
 from itertools import count
 from typing import Dict, List, Optional
 
@@ -317,6 +317,10 @@ class EventClass(CompanyObjectModel):
             for event in
             self.event_set.filter(date__range=(start_date, end_date))
         }
+
+        if self.date_to and self.date_to < end_date:
+            end_date = self.date_to
+
         for event_date in next_day(start_date, end_date, Weekdays(self.days())):
             if event_date not in events:
                 events[event_date] = Event(date=event_date, event_class=self)
@@ -444,6 +448,33 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
             return rounded_start_date.add(years=self.duration)
 
         return None
+
+    def events_to_date(
+        self, *,
+        to_date: date,
+        from_date: date = None
+    ) -> List[Event]:
+        """
+        Get list of all events that can be visited by this subscription type
+        Event are sorted by date.
+
+        :param to_date: End date of calendar
+        :param from_date: Start date of calendar, if not provided date.today()
+        will be used
+
+        :return: List of all events
+        """
+        return sorted(
+            filter(
+                lambda x: not x.is_canceled,
+                [
+                    e for x in self.event_class.all()
+                    for e in
+                    x.get_calendar(from_date or date.today(), to_date).values()
+                ]
+            ),
+            key=lambda x: x.date
+        )
 
     @property
     def duration_postfix(self):
@@ -630,33 +661,6 @@ class ClientSubscriptions(CompanyObjectModel):
         return reverse(
             'crm:manager:client:detail', kwargs={'pk': self.client.id})
 
-    def events_to_date(
-        self, *,
-        to_date: date,
-        from_date: date = None
-    ) -> List[Event]:
-        """
-        Get list of all events that can be visited by this subscription type
-        Event are sorted by date.
-
-        :param to_date: End date of calendar
-        :param from_date: Start date of calendar, if not provided date.today()
-        will be used
-
-        :return: List of all events
-        """
-        return sorted(
-            filter(
-                lambda x: not x.is_canceled,
-                [
-                    e for x in self.subscription.event_class.all()
-                    for e in
-                    x.get_calendar(from_date or date.today(), to_date).values()
-                ]
-            ),
-            key=lambda x: x.date
-        )
-
     def remained_events(self) -> List[Event]:
         """
         Return list of remained events from today until end date. With care
@@ -665,7 +669,10 @@ class ClientSubscriptions(CompanyObjectModel):
         :return: List of all events that can be visited one after one,
         by this client subscription
         """
-        return self.events_to_date(to_date=self.end_date)[:self.visits_left]
+        return (
+            self.subscription
+                .events_to_date(to_date=self.end_date)[:self.visits_left]
+        )
 
     def is_overlapping(self) -> bool:
         """
@@ -675,12 +682,9 @@ class ClientSubscriptions(CompanyObjectModel):
         :return: True if after visiting all events from calendar will remain
         some visits on this subscription
         """
-        return len(self.events_to_date(
+        return len(self.subscription.events_to_date(
             from_date=self.start_date, to_date=self.end_date
-        )) > self.visits_left
-
-    def will_have_events(self, to_date: date) -> bool:
-        return len(self.events_to_date(to_date=to_date)) > 0
+        )) < self.visits_left
 
     def is_active_at_date(self, check_date) -> bool:
         """
@@ -696,8 +700,8 @@ class ClientSubscriptions(CompanyObjectModel):
         :return: is active subscription at date or not
         """
         return (
-            self.start_date <= check_date <= self.end_date or
-            self.visits_left <= 0
+            self.start_date <= check_date <= self.end_date and
+            self.visits_left > 0
         )
 
     def is_active_to_date(self, to_date: date) -> bool:
@@ -714,12 +718,13 @@ class ClientSubscriptions(CompanyObjectModel):
         if not self.is_active_at_date(to_date):
             return False
 
-        future_events = self.events_to_date(to_date=to_date)
+        # Extract one day - to check if subscriptions ends before date
+        future_events = self.subscription.events_to_date(
+            to_date=(to_date - timedelta(days=1)))
 
-        if self.visits_left - len(future_events) < 0:
-            return False
-
-        return True
+        # If visits limit ends before date, we are sure that subscription is
+        # no more active
+        return not (self.visits_left - len(future_events) <= 0)
 
     def is_active(self) -> bool:
         return self.is_active_to_date(date.today())
