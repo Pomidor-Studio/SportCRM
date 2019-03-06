@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import logging
+import uuid
 from datetime import date, timedelta
 from itertools import count
 from typing import Dict, List, Optional
-import uuid
 
 import pendulum
 import reversion
@@ -30,6 +31,9 @@ from crm.events import get_nearest_to, next_day, Weekdays
 from crm.utils import pluralize
 
 INTERNAL_COMPANY = 'INTERNAL'
+
+
+logger = logging.getLogger('crm.models')
 
 
 class NoFutureEvent(Exception):
@@ -562,12 +566,22 @@ class ClientSubscriptionsManager(
             subscription.extend_by_cancellation(cancelled_event)
 
     def revoke_extending(self, activated_event: Event):
-        # TODO: Add revert cancellation, with transitive dependencies
-        pass
+        # Don't try revoke on non-active events or non-canceled evens
+        if not activated_event.is_active or \
+                not activated_event.is_canceled or \
+                not activated_event.canceled_with_extending:
+            return
+
+        subs_ids = activated_event.extensionhistory_set.all().values_list(
+            'client_subscription_id', flat=True)
+
+        for subscription in self.get_queryset().filter(id__in=subs_ids):
+            subscription.revoke_extending(activated_event)
 
 
 class ClientAttendanceExists(Exception):
     pass
+
 
 @reversion.register()
 class ClientSubscriptions(CompanyObjectModel):
@@ -607,6 +621,9 @@ class ClientSubscriptions(CompanyObjectModel):
                 client_subscription=self,
                 reason=reason,
                 added_visits=added_visits,
+                extended_from=(
+                    self.end_date if new_end_date != self.end_date else None
+                ),
                 extended_to=(
                     new_end_date if new_end_date != self.end_date else None
                 )
@@ -630,11 +647,59 @@ class ClientSubscriptions(CompanyObjectModel):
                 reason=f'В связи с отменой тренировки {cancelled_event}',
                 added_visits=0,
                 related_event=cancelled_event,
+                extended_from=self.end_date,
                 extended_to=possible_extension_date
             )
 
             self.end_date = possible_extension_date
             self.save()
+
+    def revoke_extending(self, activated_event: Event):
+        extension_to_delete = (
+            activated_event.extensionhistory_set
+            .filter(client_subscription=self)
+            .order_by('date_extended')
+            .first()
+        )
+        if not extension_to_delete:
+            # Nothing to delete
+            return
+
+        extending_chain = ExtensionHistory.objects.filter(
+            client_subscription=self,
+            date_extended__gt=extension_to_delete.date_extended
+        )
+
+        with transaction.atomic():
+            # Edge case when extension chain is empty - just reset
+            # client subscription to old ending date
+            if not extending_chain:
+                if extension_to_delete.extended_from:
+                    self.end_date = extension_to_delete.extended_from
+                    self.save()
+                else:
+                    logger.error(
+                        'Subscription date extension with empty extended_from '
+                        'found and deleted.'
+                    )
+            else:
+                prev_from = extension_to_delete.extended_from
+                prev_to = extension_to_delete.extended_to
+                for chained_extension in extending_chain:
+                    current_from = chained_extension.extended_from
+                    current_to = chained_extension.extended_to
+
+                    chained_extension.extended_from = prev_from
+                    chained_extension.extended_to = prev_to
+                    chained_extension.save()
+
+                    prev_from = current_from
+                    prev_to = current_to
+
+                self.end_date = prev_from
+                self.save()
+
+            extension_to_delete.delete()
 
     def nearest_extended_end_date(self, event_class: EventClass = None):
         possible_events = self.subscription.event_class.filter(
@@ -713,6 +778,11 @@ class ExtensionHistory(CompanyObjectModel):
         null=True
     )
     added_visits = models.PositiveIntegerField("Добавлено посещений")
+    extended_from = models.DateField(
+        'Абонеметы был продлен с',
+        blank=True,
+        null=True
+    )
     extended_to = models.DateField(
         'Абонемент продлен до дня',
         blank=True,

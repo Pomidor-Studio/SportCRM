@@ -13,3 +13,5 @@ register(factories.EventClassFactory)
 register(factories.EventFactory)
 register(factories.ClientFactory, 'client_model')
 register(factories.ClientSubscriptionFactory)
+register(factories.ExtensionHistoryFactory)
+

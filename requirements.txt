@@ -17,6 +17,7 @@ gunicorn==19.9.0
 pendulum==2.0.4
 psycopg2-binary==2.7.7
 python-dateutil==2.8.0
+pytz==2018.9
 rules==2.0.1
 social-auth-app-django==3.1.0
 social-auth-core==3.0.0
