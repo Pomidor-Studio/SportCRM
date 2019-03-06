@@ -495,7 +495,6 @@ class Client(CompanyObjectModel):
     phone_number = models.CharField("Телефон", max_length=50, blank=True)
     email_address = models.CharField("Email", max_length=50, blank=True)
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
-    balance = models.FloatField("Баланс", default=0)
     qr_code = models.UUIDField("QR код", blank=True, null=True, unique=True, default=uuid.uuid4)
 
     objects = ClientManager()
@@ -516,6 +515,16 @@ class Client(CompanyObjectModel):
     @property
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
+
+    def get_client_balance(self):
+        payments = list(ClientBalance.objects.filter(client_id=self.id))
+        if not payments:
+            balance = 0
+        else:
+            balance = 0
+            for payment in payments:
+                balance = balance + payment.balance
+        return balance
 
 
 class ClientSubscriptionQuerySet(models.QuerySet):
@@ -541,6 +550,13 @@ class ClientSubscriptionsManager(
     def revoke_extending(self, activated_event: Event):
         # TODO: Add revert cancellation, with transitive dependencies
         pass
+
+
+class ClientBalance(models.Model):
+    balance = models.FloatField("Баланс", default=0)
+    client = TenantForeignKey(Client, on_delete=models.PROTECT, verbose_name="Ученик")
+    reason = models.TextField("Причина изменения баланса")
+    entry_date = models.DateField("Дата зачисления", default=date.today())
 
 
 class ClientAttendanceExists(Exception):
