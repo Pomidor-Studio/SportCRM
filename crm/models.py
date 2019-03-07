@@ -670,34 +670,27 @@ class ClientSubscriptions(CompanyObjectModel):
             date_extended__gt=extension_to_delete.date_extended
         )
 
+        prev_from = extension_to_delete.extended_from
+        prev_to = extension_to_delete.extended_to
         with transaction.atomic():
-            # Edge case when extension chain is empty - just reset
-            # client subscription to old ending date
-            if not extending_chain:
-                if extension_to_delete.extended_from:
-                    self.end_date = extension_to_delete.extended_from
-                    self.save()
-                else:
-                    logger.error(
-                        'Subscription date extension with empty extended_from '
-                        'found and deleted.'
-                    )
-            else:
-                prev_from = extension_to_delete.extended_from
-                prev_to = extension_to_delete.extended_to
-                for chained_extension in extending_chain:
-                    current_from = chained_extension.extended_from
-                    current_to = chained_extension.extended_to
+            for chained_extension in extending_chain:
+                current_from = chained_extension.extended_from
+                current_to = chained_extension.extended_to
 
-                    chained_extension.extended_from = prev_from
-                    chained_extension.extended_to = prev_to
-                    chained_extension.save()
+                chained_extension.extended_from = prev_from
+                chained_extension.extended_to = prev_to
+                chained_extension.save()
 
-                    prev_from = current_from
-                    prev_to = current_to
+                prev_from = current_from
+                prev_to = current_to
 
+            if prev_from:
                 self.end_date = prev_from
                 self.save()
+            else:
+                logger.error(
+                    'Subscription date extension with empty extended_from found'
+                )
 
             extension_to_delete.delete()
 
