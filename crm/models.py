@@ -670,6 +670,14 @@ class ClientSubscriptions(CompanyObjectModel):
             date_extended__gt=extension_to_delete.date_extended
         )
 
+        # If we have any extension history AFTER removable,
+        # we must rebuild history date changing
+        # Set current extension history dates to next extension history item
+        # and so further.
+        # Last extension history extended_from will be used as real date,
+        # on which will be truncated client subscription
+        # If there is empty chain, it means that extension history is last one
+        # and no history rebuilding needed
         prev_from = extension_to_delete.extended_from
         prev_to = extension_to_delete.extended_to
         with transaction.atomic():
