@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 
 import django_filters
-# from bootstrap_datepicker_plus import DatePickerInput
 from dateutil.relativedelta import relativedelta
 from django import forms
 from django.http import QueryDict
-from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget, Select2Widget, Select2TagWidget, \
-    Select2TagMixin
+from django_select2.forms import Select2MultipleWidget
+from phonenumber_field import modelfields
 
 from crm import models
 from crm.utils import BootstrapDateFromToRangeFilter
@@ -92,6 +91,11 @@ class CoachFilter(ArchivableFilterSet):
     class Meta:
         model = models.Coach
         fields = '__all__'
+        filter_overrides = {
+            modelfields.PhoneNumberField: {
+                'filter_class': django_filters.CharFilter
+            }
+        }
 
 
 class LocationFilter(ArchivableFilterSet):

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{% load static html_helper bootstrap4%}
+{% load static html_helper bootstrap4 %}
 <html class="h-100">
 
 <head>
@@ -90,16 +90,22 @@
     >
     SportCRM
   </a>
-  <ul class="navbar-nav px-3">
-    {% if user.is_authenticated %}
+
+  {% if user.is_authenticated %}
+    <span class="text-right w-100">
+    {{ user.get_full_name }} ({{ user.company }})
+    </span>
+    <ul class="navbar-nav px-3">
       <li class="nav-item text-nowrap">
+
         <a
           class="nav-link"
           href="{% url "crm:accounts:logout" %}"
         >Выйти</a>
       </li>
-    {% endif %}
-  </ul>
+    </ul>
+  {% endif %}
+
 </nav>
 {% block main %}{% endblock %}
 </body>

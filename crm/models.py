@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import uuid
 from datetime import date, timedelta
 from itertools import count
 from typing import Dict, List, Optional
-import uuid
 
 import pendulum
 import reversion
@@ -21,7 +21,11 @@ from django_multitenant.fields import TenantForeignKey
 from django_multitenant.mixins import TenantManagerMixin, TenantQuerySet
 from django_multitenant.models import TenantModel
 from django_multitenant.utils import get_current_tenant
+from phonenumber_field.modelfields import PhoneNumberField
 from psycopg2 import Error as Psycopg2Error
+from safedelete.managers import (
+    SafeDeleteAllManager, SafeDeleteDeletedManager, SafeDeleteManager,
+)
 from safedelete.models import SafeDeleteModel
 from transliterate import translit
 
@@ -36,7 +40,7 @@ class NoFutureEvent(Exception):
     pass
 
 
-class ScrmTenantManagerMixin(object):
+class ScrmTenantManagerMixin:
     """
     Override TenantManagerMixin behaviour, as it ignore that queryset may be
     already instance of TenantQuerySet
@@ -54,8 +58,32 @@ class ScrmTenantManagerMixin(object):
             # TO CHANGE: tenant_id should be set in model Meta
             kwargs = {self.model.tenant_id: current_tenant_id}
 
-            return queryset.filter(**kwargs)
+            return super().get_queryset().filter(**kwargs)
         return queryset
+
+
+class ScrmSafeDeleteManager(ScrmTenantManagerMixin, SafeDeleteManager):
+    pass
+
+
+class ScrmSafeDeleteAllManager(ScrmTenantManagerMixin, SafeDeleteAllManager):
+    pass
+
+
+class ScrmSafeDeleteDeletedManager(
+    ScrmTenantManagerMixin,
+    SafeDeleteDeletedManager
+):
+    pass
+
+
+class ScrmSafeDeleteModel(SafeDeleteModel):
+    objects = ScrmSafeDeleteManager()
+    all_objects = ScrmSafeDeleteAllManager()
+    deleted_objects = ScrmSafeDeleteDeletedManager()
+
+    class Meta:
+        abstract = True
 
 
 @reversion.register()
@@ -182,7 +210,7 @@ class CompanyObjectModel(TenantModel):
 
 
 @reversion.register()
-class Location(SafeDeleteModel, CompanyObjectModel):
+class Location(ScrmSafeDeleteModel, CompanyObjectModel):
     name = models.CharField("Название", max_length=100)
     address = models.CharField("Адрес", max_length=1000, blank=True)
 
@@ -194,12 +222,12 @@ class Location(SafeDeleteModel, CompanyObjectModel):
 
 
 @reversion.register()
-class Coach(SafeDeleteModel, CompanyObjectModel):
+class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     Профиль тренера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
-    phone_number = models.CharField("Телефон", max_length=50, blank=True)
+    phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -222,6 +250,7 @@ class Manager(CompanyObjectModel):
     Профиль менеджера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
+    phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -409,7 +438,7 @@ class DayOfTheWeekClass(CompanyObjectModel):
 
 
 @reversion.register()
-class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
+class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     Типы абонементов
     Описывает продолжительность действия, количество посещений,

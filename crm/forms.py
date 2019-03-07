@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_multitenant.utils import get_current_tenant
+from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import (
     Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
@@ -217,7 +218,9 @@ class CoachForm(TenantModelForm):
         model = Coach
         fields = ('phone_number',)
         widgets = {
-            'phone_number': forms.TextInput(attrs={'data-inputmask': True})
+            'phone_number': PhoneNumberInternationalFallbackWidget(
+                attrs={'data-phone': True}
+            )
         }
 
 
