@@ -23,11 +23,11 @@ def birthday():
             message_managers.extend([cl.name, '(vk.com/id', str(cl.vk_user_id), ')\n'])
             message.extend([cl.name, '!\n'])
             message.append('Поздравляем вас с Днем рождения!')
-            send_message(cl.vk_user_id, company.access_token, ''.join(message), '')
+            send_message(cl.vk_user_id, company.vk_access_token, ''.join(message), '')
 
         managers = Manager.objects.filter(company_id=company.id)
 
         for manager in managers:
-            send_message(manager.user.vk_id, company.access_token, ''.join(message_managers), '')
+            send_message(manager.user.vk_id, company.vk_access_token, ''.join(message_managers), '')
 
     return

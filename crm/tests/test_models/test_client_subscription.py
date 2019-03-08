@@ -1,11 +1,12 @@
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import List
 
 import pytest
+import pytz
 from freezegun import freeze_time
 from hamcrest import (
-    assert_that, contains_inanyorder, has_properties, is_,
-    has_length,
+    assert_that, calling, contains_inanyorder, has_properties, is_,
+    has_length, raises,
 )
 from pytest_mock import MockFixture
 
@@ -157,6 +158,7 @@ def test_extend_duration_with_new_end_date(
     old_visits = cs.visits_left
 
     spy = mocker.spy(models.ExtensionHistory.objects, 'create')
+    old_end_date = cs.end_date
 
     cs.extend_duration(10, reason='TEST')
 
@@ -170,7 +172,8 @@ def test_extend_duration_with_new_end_date(
         client_subscription=cs,
         reason='TEST',
         added_visits=10,
-        extended_to=new_end_date
+        extended_to=new_end_date,
+        extended_from=old_end_date,
     )
 
 
@@ -209,7 +212,8 @@ def test_extend_duration_without_new_end_date(
         client_subscription=cs,
         reason='TEST',
         added_visits=10,
-        extended_to=None
+        extended_to=None,
+        extended_from=None
     )
 
 
@@ -308,6 +312,7 @@ def test_extend_by_cancellation_with_future_date(
     )
 
     spy = mocker.spy(models.ExtensionHistory.objects, 'create')
+    old_end_date = cs.end_date
 
     cs.extend_by_cancellation(event)
 
@@ -321,7 +326,8 @@ def test_extend_by_cancellation_with_future_date(
         reason=f'В связи с отменой тренировки {event}',
         added_visits=0,
         related_event=event,
-        extended_to=new_end_date
+        extended_to=new_end_date,
+        extended_from=old_end_date,
     )
 
 
@@ -565,3 +571,484 @@ def test_is_active_to_date(
         cs.subscription, 'events_to_date', return_value=events_to_date)
 
     assert_that(cs.is_active_to_date(date(2019, 1, 1)), is_(expected))
+
+
+def test_manager_revoke_extending(
+    subscriptions_type_factory,
+    event_factory,
+    extension_history_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+    cs_list = client_subscription_factory.create_batch(
+        3,
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    for cs in cs_list:
+        extension_history_factory(
+            company=event.company,
+            client_subscription=cs,
+            added_visits=0,
+            date_extended=datetime(2019, 2, 25, tzinfo=pytz.utc),
+            extended_from=date(2019, 2, 25),
+            extended_to=date(2019, 2, 26),
+            related_event=event
+        )
+
+    mock = mocker.patch('crm.models.ClientSubscriptions.revoke_extending')
+
+    with freeze_time(date(2019, 2, 25)):
+        models.ClientSubscriptions.objects.revoke_extending(event)
+
+    assert_that(mock.call_count, is_(3))
+
+
+def test_manager_revoke_extending_with_empty_extension_history(
+    subscriptions_type_factory,
+    event_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.MONTH,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+
+    mock = mocker.patch('crm.models.ClientSubscriptions.revoke_extending')
+
+    with freeze_time(date(2019, 2, 24)):
+        models.ClientSubscriptions.objects.revoke_extending(event)
+
+    mock.assert_not_called()
+
+
+def test_manager_revoke_extending_on_non_active_event(
+    subscriptions_type_factory,
+    event_factory,
+    extension_history_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+    cs_list = client_subscription_factory.create_batch(
+        3,
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    for cs in cs_list:
+        extension_history_factory(
+            company=event.company,
+            client_subscription=cs,
+            added_visits=0,
+            date_extended=datetime(2019, 2, 25, tzinfo=pytz.utc),
+            extended_from=date(2019, 2, 25),
+            extended_to=date(2019, 2, 26),
+            related_event=event
+        )
+
+    mock = mocker.patch('crm.models.ClientSubscriptions.revoke_extending')
+
+    with freeze_time(date(2019, 2, 26)):
+        models.ClientSubscriptions.objects.revoke_extending(event)
+
+    mock.assert_not_called()
+
+
+def test_manager_revoke_extending_non_canceled(
+    subscriptions_type_factory,
+    event_factory,
+    extension_history_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=None
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+    cs_list = client_subscription_factory.create_batch(
+        3,
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    for cs in cs_list:
+        extension_history_factory(
+            company=event.company,
+            client_subscription=cs,
+            added_visits=0,
+            date_extended=datetime(2019, 2, 25, tzinfo=pytz.utc),
+            extended_from=date(2019, 2, 25),
+            extended_to=date(2019, 2, 26),
+            related_event=event
+        )
+
+    mock = mocker.patch('crm.models.ClientSubscriptions.revoke_extending')
+
+    with freeze_time(date(2019, 2, 25)):
+        models.ClientSubscriptions.objects.revoke_extending(event)
+
+    mock.assert_not_called()
+
+
+def test_manager_revoke_extending_event_without_extending(
+    subscriptions_type_factory,
+    event_factory,
+    extension_history_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=False
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+    cs_list = client_subscription_factory.create_batch(
+        3,
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    for cs in cs_list:
+        extension_history_factory(
+            company=event.company,
+            client_subscription=cs,
+            added_visits=0,
+            date_extended=datetime(2019, 2, 25, tzinfo=pytz.utc),
+            extended_from=date(2019, 2, 25),
+            extended_to=date(2019, 2, 26),
+            related_event=event
+        )
+
+    mock = mocker.patch('crm.models.ClientSubscriptions.revoke_extending')
+
+    with freeze_time(date(2019, 2, 25)):
+        models.ClientSubscriptions.objects.revoke_extending(event)
+
+    mock.assert_not_called()
+
+
+def test_revoke_extending_no_chain(
+    subscriptions_type_factory,
+    event_factory,
+    extension_history_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=False
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+    cs = client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    ex_his = extension_history_factory(
+        company=event.company,
+        client_subscription=cs,
+        added_visits=0,
+        date_extended=datetime(2019, 2, 25, tzinfo=pytz.utc),
+        extended_from=date(2019, 2, 25),
+        extended_to=date(2019, 2, 26),
+        related_event=event
+    )
+    # Update client subscription end date, as it was changed by extension
+    cs.end_date = date(2019, 2, 26)
+    cs.save()
+    spy = mocker.spy(models.ExtensionHistory, 'delete')
+
+    cs.revoke_extending(event)
+    cs.refresh_from_db()
+
+    assert_that(cs.end_date, is_(date(2019, 2, 25)))
+    assert_that(
+        calling(ex_his.refresh_from_db),
+        raises(models.ExtensionHistory.DoesNotExist)
+    )
+    spy.assert_called_once()
+
+
+def test_revoke_extending_with_chain(
+    subscriptions_type_factory,
+    event_factory,
+    extension_history_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event_1 = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    event_2 = event_factory(
+        company=event_1.company,
+        date=date(2019, 2, 26),
+        event_class=event_1.event_class,
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    event_3 = event_factory(
+        company=event_1.company,
+        date=date(2019, 2, 27),
+        event_class=event_1.event_class,
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    subs = subscriptions_type_factory(
+        company=event_1.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event_1.event_class
+    )
+    cs = client_subscription_factory(
+        company=event_1.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    ex_his_1 = extension_history_factory(
+        company=event_1.company,
+        client_subscription=cs,
+        added_visits=0,
+        date_extended=datetime(2019, 2, 25, 12, 0, 0, tzinfo=pytz.utc),
+        extended_from=date(2019, 2, 25),
+        extended_to=date(2019, 2, 26),
+        related_event=event_1
+    )
+    ex_his_2 = extension_history_factory(
+        company=event_1.company,
+        client_subscription=cs,
+        added_visits=0,
+        date_extended=datetime(2019, 2, 25, 12, 1, 0, tzinfo=pytz.utc),
+        extended_from=date(2019, 2, 26),
+        extended_to=date(2019, 2, 27),
+        related_event=event_2
+    )
+    ex_his_3 = extension_history_factory(
+        company=event_1.company,
+        client_subscription=cs,
+        added_visits=0,
+        date_extended=datetime(2019, 2, 25, 12, 2, 0, tzinfo=pytz.utc),
+        extended_from=date(2019, 2, 27),
+        extended_to=date(2019, 2, 28),
+        related_event=event_3
+    )
+    # Update client subscription end date, as it was changed by extension
+    cs.end_date = date(2019, 2, 28)
+    cs.save()
+
+    spy = mocker.spy(models.ExtensionHistory, 'delete')
+    cs.revoke_extending(event_1)
+    cs.refresh_from_db()
+
+    assert_that(cs.end_date, is_(date(2019, 2, 27)))
+    assert_that(
+        calling(ex_his_1.refresh_from_db),
+        raises(models.ExtensionHistory.DoesNotExist)
+    )
+    ex_his_2.refresh_from_db()
+    ex_his_3.refresh_from_db()
+    assert_that(ex_his_2, has_properties(
+        extended_from=date(2019, 2, 25),
+        extended_to=date(2019, 2, 26)
+    ))
+    assert_that(ex_his_3, has_properties(
+        extended_from=date(2019, 2, 26),
+        extended_to=date(2019, 2, 27)
+    ))
+    spy.assert_called_once()
+
+
+def test_revoke_extending_with_chain_non_ordered(
+    subscriptions_type_factory,
+    event_factory,
+    extension_history_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event_1 = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    event_2 = event_factory(
+        company=event_1.company,
+        date=date(2019, 2, 26),
+        event_class=event_1.event_class,
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    event_3 = event_factory(
+        company=event_1.company,
+        date=date(2019, 2, 27),
+        event_class=event_1.event_class,
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=True
+    )
+    subs = subscriptions_type_factory(
+        company=event_1.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event_1.event_class
+    )
+    cs = client_subscription_factory(
+        company=event_1.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    ex_his_1 = extension_history_factory(
+        company=event_1.company,
+        client_subscription=cs,
+        added_visits=0,
+        date_extended=datetime(2019, 2, 25, 12, 1, 0, tzinfo=pytz.utc),
+        extended_from=date(2019, 2, 26),
+        extended_to=date(2019, 2, 27),
+        related_event=event_1
+    )
+    ex_his_2 = extension_history_factory(
+        company=event_1.company,
+        client_subscription=cs,
+        added_visits=0,
+        date_extended=datetime(2019, 2, 25, 12, 2, 0, tzinfo=pytz.utc),
+        extended_from=date(2019, 2, 27),
+        extended_to=date(2019, 2, 28),
+        related_event=event_2
+    )
+    ex_his_3 = extension_history_factory(
+        company=event_1.company,
+        client_subscription=cs,
+        added_visits=0,
+        date_extended=datetime(2019, 2, 25, 12, 0, 0, tzinfo=pytz.utc),
+        extended_from=date(2019, 2, 25),
+        extended_to=date(2019, 2, 26),
+        related_event=event_3
+    )
+    # Update client subscription end date, as it was changed by extension
+    cs.end_date = date(2019, 2, 28)
+    cs.save()
+
+    spy = mocker.spy(models.ExtensionHistory, 'delete')
+
+    cs.revoke_extending(event_1)
+    cs.refresh_from_db()
+
+    assert_that(cs.end_date, is_(date(2019, 2, 27)))
+    assert_that(
+        calling(ex_his_1.refresh_from_db),
+        raises(models.ExtensionHistory.DoesNotExist)
+    )
+    ex_his_2.refresh_from_db()
+    ex_his_3.refresh_from_db()
+    assert_that(ex_his_2, has_properties(
+        extended_from=date(2019, 2, 26),
+        extended_to=date(2019, 2, 27)
+    ))
+    assert_that(ex_his_3, has_properties(
+        extended_from=date(2019, 2, 25),
+        extended_to=date(2019, 2, 26)
+    ))
+    spy.assert_called_once()
+
+
+def test_revoke_extending_no_extension_history(
+    subscriptions_type_factory,
+    event_factory,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1),
+        canceled_at=date(2019, 2, 24),
+        canceled_with_extending=False
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.DAY,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+    cs = client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 24),
+        start_date=date(2019, 2, 25)
+    )
+    spy = mocker.spy(models.ExtensionHistory, 'delete')
+    # Update client subscription end date, as it was changed by extension
+
+    cs.revoke_extending(event)
+
+    spy.assert_not_called()

@@ -32,7 +32,7 @@
               <span class="badge badge-secondary"><i class="fas fa-archive"></i>в ахриве</span>
             {% endif %}
           </td>
-          <td>{{ coach.phone_number }}</td>
+          <td>{{ coach.phone_number.as_national }}</td>
           <td>
             {% if coach.user.vk_link %}
               <a href="{{ coach.user.vk_link|safe }}" target="_blank">

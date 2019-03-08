@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import uuid
 from datetime import date, timedelta
 from itertools import count
@@ -18,10 +19,14 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
-from django_multitenant.mixins import TenantManagerMixin
+from django_multitenant.mixins import TenantManagerMixin, TenantQuerySet
 from django_multitenant.models import TenantModel
 from django_multitenant.utils import get_current_tenant
+from phonenumber_field.modelfields import PhoneNumberField
 from psycopg2 import Error as Psycopg2Error
+from safedelete.managers import (
+    SafeDeleteAllManager, SafeDeleteDeletedManager, SafeDeleteManager,
+)
 from safedelete.models import SafeDeleteModel
 from transliterate import translit
 
@@ -32,8 +37,57 @@ from crm.utils import pluralize
 INTERNAL_COMPANY = 'INTERNAL'
 
 
+logger = logging.getLogger('crm.models')
+
+
 class NoFutureEvent(Exception):
     pass
+
+
+class ScrmTenantManagerMixin:
+    """
+    Override TenantManagerMixin behaviour, as it ignore that queryset may be
+    already instance of TenantQuerySet
+    """
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not isinstance(queryset, TenantQuerySet):
+            queryset = TenantQuerySet(self.model)
+
+        current_tenant = get_current_tenant()
+        if current_tenant:
+            current_tenant_id = getattr(current_tenant, current_tenant.tenant_id, None)
+
+            # TO CHANGE: tenant_id should be set in model Meta
+            kwargs = {self.model.tenant_id: current_tenant_id}
+
+            return super().get_queryset().filter(**kwargs)
+        return queryset
+
+
+class ScrmSafeDeleteManager(ScrmTenantManagerMixin, SafeDeleteManager):
+    pass
+
+
+class ScrmSafeDeleteAllManager(ScrmTenantManagerMixin, SafeDeleteAllManager):
+    pass
+
+
+class ScrmSafeDeleteDeletedManager(
+    ScrmTenantManagerMixin,
+    SafeDeleteDeletedManager
+):
+    pass
+
+
+class ScrmSafeDeleteModel(SafeDeleteModel):
+    objects = ScrmSafeDeleteManager()
+    all_objects = ScrmSafeDeleteAllManager()
+    deleted_objects = ScrmSafeDeleteDeletedManager()
+
+    class Meta:
+        abstract = True
 
 
 @reversion.register()
@@ -177,7 +231,7 @@ class CompanyObjectModel(TenantModel):
 
 
 @reversion.register()
-class Location(SafeDeleteModel, CompanyObjectModel):
+class Location(ScrmSafeDeleteModel, CompanyObjectModel):
     name = models.CharField("Название", max_length=100)
     address = models.CharField("Адрес", max_length=1000, blank=True)
 
@@ -189,12 +243,12 @@ class Location(SafeDeleteModel, CompanyObjectModel):
 
 
 @reversion.register()
-class Coach(SafeDeleteModel, CompanyObjectModel):
+class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     Профиль тренера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
-    phone_number = models.CharField("Телефон", max_length=50, blank=True)
+    phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -217,6 +271,7 @@ class Manager(CompanyObjectModel):
     Профиль менеджера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
+    phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -375,7 +430,7 @@ class DayOfTheWeekClass(CompanyObjectModel):
 
 
 @reversion.register()
-class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
+class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     Типы абонементов
     Описывает продолжительность действия, количество посещений,
@@ -488,7 +543,7 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         return reverse('crm:manager:subscription:list')
 
 
-class ClientManager(models.Manager):
+class ClientManager(TenantManagerMixin, models.Manager):
 
     def with_active_subscription_to_event(self, event: Event):
         cs = (
@@ -539,7 +594,7 @@ class Client(CompanyObjectModel):
         return self.company.vk_access_token
 
 
-class ClientSubscriptionQuerySet(models.QuerySet):
+class ClientSubscriptionQuerySet(TenantQuerySet):
     def active_subscriptions(self, event: Event):
         """Get all active subscriptions for selected event"""
         return self.filter(
@@ -551,6 +606,7 @@ class ClientSubscriptionQuerySet(models.QuerySet):
 
 
 class ClientSubscriptionsManager(
+    ScrmTenantManagerMixin,
     BaseManager.from_queryset(ClientSubscriptionQuerySet)
 ):
     def active_subscriptions(self, event: Event):
@@ -561,8 +617,17 @@ class ClientSubscriptionsManager(
             subscription.extend_by_cancellation(cancelled_event)
 
     def revoke_extending(self, activated_event: Event):
-        # TODO: Add revert cancellation, with transitive dependencies
-        pass
+        # Don't try revoke on non-active events or non-canceled evens
+        if not activated_event.is_active or \
+                not activated_event.is_canceled or \
+                not activated_event.canceled_with_extending:
+            return
+
+        subs_ids = activated_event.extensionhistory_set.all().values_list(
+            'client_subscription_id', flat=True)
+
+        for subscription in self.get_queryset().filter(id__in=subs_ids):
+            subscription.revoke_extending(activated_event)
 
 
 class ClientAttendanceExists(Exception):
@@ -607,6 +672,9 @@ class ClientSubscriptions(CompanyObjectModel):
                 client_subscription=self,
                 reason=reason,
                 added_visits=added_visits,
+                extended_from=(
+                    self.end_date if new_end_date != self.end_date else None
+                ),
                 extended_to=(
                     new_end_date if new_end_date != self.end_date else None
                 )
@@ -630,11 +698,60 @@ class ClientSubscriptions(CompanyObjectModel):
                 reason=f'В связи с отменой тренировки {cancelled_event}',
                 added_visits=0,
                 related_event=cancelled_event,
+                extended_from=self.end_date,
                 extended_to=possible_extension_date
             )
 
             self.end_date = possible_extension_date
             self.save()
+
+    def revoke_extending(self, activated_event: Event):
+        extension_to_delete = (
+            activated_event.extensionhistory_set
+            .filter(client_subscription=self)
+            .order_by('date_extended')
+            .first()
+        )
+        if not extension_to_delete:
+            # Nothing to delete
+            return
+
+        extending_chain = ExtensionHistory.objects.filter(
+            client_subscription=self,
+            date_extended__gt=extension_to_delete.date_extended
+        )
+
+        # If we have any extension history AFTER removable,
+        # we must rebuild history date changing
+        # Set current extension history dates to next extension history item
+        # and so further.
+        # Last extension history extended_from will be used as real date,
+        # on which will be truncated client subscription
+        # If there is empty chain, it means that extension history is last one
+        # and no history rebuilding needed
+        prev_from = extension_to_delete.extended_from
+        prev_to = extension_to_delete.extended_to
+        with transaction.atomic():
+            for chained_extension in extending_chain:
+                current_from = chained_extension.extended_from
+                current_to = chained_extension.extended_to
+
+                chained_extension.extended_from = prev_from
+                chained_extension.extended_to = prev_to
+                chained_extension.save()
+
+                prev_from = current_from
+                prev_to = current_to
+
+            if prev_from:
+                self.end_date = prev_from
+                self.save()
+            else:
+                logger.error(
+                    'Subscription date extension with empty extended_from found'
+                )
+
+            extension_to_delete.delete()
 
     def nearest_extended_end_date(self, event_class: EventClass = None):
         possible_events = self.subscription.event_class.filter(
@@ -780,6 +897,11 @@ class ExtensionHistory(CompanyObjectModel):
         null=True
     )
     added_visits = models.PositiveIntegerField("Добавлено посещений")
+    extended_from = models.DateField(
+        'Абонеметы был продлен с',
+        blank=True,
+        null=True
+    )
     extended_to = models.DateField(
         'Абонемент продлен до дня',
         blank=True,
@@ -790,7 +912,7 @@ class ExtensionHistory(CompanyObjectModel):
         ordering = ['date_extended']
 
 
-class EventManager(models.Manager):
+class EventManager(TenantManagerMixin, models.Manager):
     def get_or_virtual(self, event_class_id: int, event_date: date) -> Event:
         try:
             return self.get(event_class_id=event_class_id, date=event_date)
