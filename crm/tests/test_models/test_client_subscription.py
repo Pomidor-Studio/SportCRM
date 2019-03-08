@@ -535,7 +535,7 @@ def test_is_active_at_date(
     cs.end_date = end
     cs.save()
 
-    assert_that(cs.is_active_at_date(date(2019, 1, 4)), is_(expected))
+    assert_that(cs.is_active_at_date_without_events(date(2019, 1, 4)), is_(expected))
 
 
 @pytest.mark.parametrize('is_active_at_date,events_to_date,visits,expected', [

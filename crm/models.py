@@ -686,7 +686,7 @@ class ClientSubscriptions(CompanyObjectModel):
             from_date=self.start_date, to_date=self.end_date
         )) < self.visits_left
 
-    def is_active_at_date(self, check_date) -> bool:
+    def is_active_at_date_without_events(self, check_date) -> bool:
         """
         Check if client subscription is active at particular date.
         It's simple check, without events investigation. Check only if
@@ -715,7 +715,7 @@ class ClientSubscriptions(CompanyObjectModel):
         :param to_date: until what date check activity
         :return: is active client subscription or not
         """
-        if not self.is_active_at_date(to_date):
+        if not self.is_active_at_date_without_events(to_date):
             return False
 
         # Extract one day - to check if subscriptions ends before date
@@ -736,7 +736,7 @@ class ClientSubscriptions(CompanyObjectModel):
 
     def mark_visit(self, event):
         """Отметить посещение по абонементу"""
-        if not self.is_active_at_date(event.date):
+        if not self.is_active_at_date_without_events(event.date):
             raise ValueError('Subscription or event is incorrect')
 
         with transaction.atomic():
