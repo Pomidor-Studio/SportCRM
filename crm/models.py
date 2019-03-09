@@ -936,6 +936,10 @@ class Event(CompanyObjectModel):
         'Отмена была с продленим абонемента?',
         default=False
     )
+    is_closed = models.BooleanField(
+        'Тренировка закрыта',
+        default=False
+    )
 
     objects = EventManager()
 
@@ -1055,6 +1059,22 @@ class Event(CompanyObjectModel):
 
             if revoke_extending and original_cwe:
                 ClientSubscriptions.objects.revoke_extending(self)
+
+    def event_is_closed(self):
+        """Закрыть тренировку"""
+        if self.is_active:
+            raise ValueError("Event is active")
+
+        if self.is_event_closed:
+            raise ValueError("Event is closed")
+
+        with transaction.atomic():
+            self.is_closed = True
+            self.save()
+
+    @property
+    def is_event_closed(self):
+        return self.is_closed
 
 
 @reversion.register()
