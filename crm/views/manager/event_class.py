@@ -358,3 +358,23 @@ class DoScan(
     def get_redirect_url(self, *args, **kwargs):
         kwargs.pop('code')
         return super().get_redirect_url(*args, **kwargs)
+
+
+class IsClosed(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    RedirectView
+):
+    def get(self, request, *args, **kwargs):
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
+        event = Event.objects.get(event_class_id=self.kwargs['event_class_id'],
+                                  date=event_date)
+        event.event_is_closed()
+        self.url = self.get_success_url()
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
