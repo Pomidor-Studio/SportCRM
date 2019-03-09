@@ -112,7 +112,7 @@
     </div>
   {% endif %}
   <!--Кнопка появится только при условии event.date <= date.today()-->
-  {% if event.is_event_close %}
+  {% if event.is_overpast %}
     <!--Отоброзит кнопку, если тренировку еще не закрыли-->
     {% if not event.is_closed %}
       <div class="row">

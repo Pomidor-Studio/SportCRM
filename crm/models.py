@@ -1024,7 +1024,7 @@ class Event(CompanyObjectModel):
         return self.is_canceled or not self.is_active
 
     @property
-    def is_event_close(self):
+    def is_overpast(self):
         return self.date <= date.today()
 
     def cancel_event(self, extend_subscriptions=False):
@@ -1066,7 +1066,7 @@ class Event(CompanyObjectModel):
 
     def close_event(self):
         """Закрыть тренировку"""
-        if not self.is_event_close:
+        if not self.is_overpast:
             raise ValueError("Event has not started")
 
         if self.is_closed:
