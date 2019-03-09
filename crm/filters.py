@@ -67,3 +67,20 @@ class SubscriptionsTypeFilterSet(ArchivableFilterSet):
     class Meta:
         model = models.SubscriptionsType
         fields = '__all__'
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        new_data = data.copy() if data is not None else QueryDict(mutable=True)
+
+        # filter param is either missing or empty
+        with_archive = forms.BooleanField().to_python(
+            new_data.get('with_archive')
+        )
+        new_data['with_archive'] = with_archive
+
+        super().__init__(new_data, queryset, request=request, prefix=prefix)
+
+        self.queryset = (
+            self._meta.model.all_objects.filter(one_time=False)
+            if with_archive else
+            self._meta.model.objects.filter(one_time=False)
+        )

@@ -259,6 +259,14 @@ class CreateEdit(
                 prefix=f'weekday{i}',
                 initial={'checked': bool(sub_form_obj.id)}
             )
+
+        #Заполняем стоимость одноразового посещения
+        try:
+            one_time_sub = SubscriptionsType.objects.get(one_time=True, event_class=self.object)
+            self.form.fields['one_time_price'].initial = one_time_sub.price
+        except SubscriptionsType.DoesNotExist:
+            one_time_sub = None
+
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -267,22 +275,31 @@ class CreateEdit(
         self.form = EventClassForm(request.POST, instance=self.object)
         with transaction.atomic():
             self.object = self.form.save()
-
             #Добавляем абонемент на разовое посещение, если цена указана и не равна нулю
             one_time_price = self.form.cleaned_data['one_time_price']
             name = self.object.name
-            if one_time_price and one_time_price > 0:
-                sub = SubscriptionsType(
-                    name='Разовое посещение ' + name,
-                    price=one_time_price,
-                    duration_type=GRANULARITY.DAY,
-                    duration=1,
-                    rounding=False,
-                    visit_limit=1,
-                    one_time=True
-                )
-                sub.save()
-                sub.event_class.add(self.object)
+            try:
+                one_time_sub = SubscriptionsType.all_objects.get(one_time=True, event_class=self.object)
+                if one_time_price and one_time_price > 0:
+                    if one_time_sub.deleted:
+                        one_time_sub.undelete()
+                    one_time_sub.price = one_time_price
+                    one_time_sub.save()
+                else:
+                    one_time_sub.delete()
+            except SubscriptionsType.DoesNotExist:
+                if one_time_price and one_time_price > 0:
+                    sub = SubscriptionsType(
+                        name='Разовое посещение ' + name,
+                        price=one_time_price,
+                        duration_type=GRANULARITY.DAY,
+                        duration=1,
+                        rounding=False,
+                        visit_limit=1,
+                        one_time=True
+                    )
+                    sub.save()
+                    sub.event_class.add(self.object)
 
             # сохраняем или удаляем дни недели, которые уже
             # были у тренировки ранее

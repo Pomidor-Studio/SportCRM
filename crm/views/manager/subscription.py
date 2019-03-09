@@ -1,8 +1,9 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView, DeleteView
 from django_filters.views import FilterView
 from reversion.views import RevisionMixin
+from rules.contrib.views import permission_required
 
 from crm.filters import SubscriptionsTypeFilterSet
 from crm.forms import SubscriptionsTypeForm
@@ -24,7 +25,8 @@ class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
     template_name = 'crm/manager/subscription/form.html'
 
 
-class Update(LoginRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
+class Update(PermissionRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
+    permission_required = 'subscription.edit'
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
