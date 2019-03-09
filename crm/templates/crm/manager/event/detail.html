@@ -4,16 +4,21 @@
 
   {{ event.date }} - {{ event.event_class.name }} -
   {{ event.event_class.location }} - {{ event.event_class.coach }}
+  {% if event.is_event_closed %}
+    Тренировка закрыта!
+  {% endif %}
   <div class="border-top mt-2"></div>
   <div class="row">
     <div class="col">
-      <div class="mb-2 mt-2">
-        <a class="btn btn-sm btn-outline-info"
-           href="{% url 'crm:manager:event-class:event:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить
-          посещение</a>
-        <a class="btn btn-sm btn-outline-info"
-           href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">Сканнер</a>
-      </div>
+      {% if not event.is_event_closed %}
+        <div class="mb-2 mt-2">
+          <a class="btn btn-sm btn-outline-info"
+             href="{% url 'crm:manager:event-class:event:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить
+            посещение</a>
+          <a class="btn btn-sm btn-outline-info"
+             href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">Сканнер</a>
+        </div>
+      {% endif %}
       <div class="border-top">
         <span class="font-weight-bold ">Отмеченные ученики: </span>
         <div class="border-top">
@@ -103,6 +108,20 @@
         {% endif %}
       </div>
     </div>
+  {% else %}
+    {% if not event.is_event_closed %}
+      <div class="row">
+        <div class="alert alert-light" role="alert">
+          <a
+            href="{% url 'crm:manager:event-class:event:is-closed' event.event_class.id event.date.year event.date.month event.date.day%}"
+            class="btn btn-outline-danger mr-2"
+            role="button"
+          >
+            Закрыть тренировку
+          </a>
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
 
 {% endblock content %}
