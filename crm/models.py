@@ -98,9 +98,26 @@ class Company(models.Model):
     # По факту является своеобразным uuid
     name = models.CharField("Название", max_length=100, unique=True)
     display_name = models.CharField('Отображаемое название', max_length=100)
-    vk_group_id = models.CharField('ИД группы вк', max_length=20, unique=True, null=True, blank=True)
-    vk_access_token = models.CharField('Токен группы вк', max_length=100, unique=True, null=True, blank=True)
-    vk_confirmation_token = models.CharField('Строка-подтверждение', max_length=20, null=True, blank=True)
+    vk_group_id = models.CharField(
+        'ИД группы вк',
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
+    vk_access_token = models.CharField(
+        'Токен группы вк',
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True
+    )
+    vk_confirmation_token = models.CharField(
+        'Строка-подтверждение',
+        max_length=20,
+        null=True,
+        blank=True
+    )
     tenant_id = 'id'
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -355,39 +372,10 @@ class EventClass(CompanyObjectModel):
             for event in
             self.event_set.filter(date__range=(start_date, end_date))
         }
-        # Решение влоб - перебор всех дней с проверкой входят
-        # ли они в календарь.
-        # TODO: переписать на генератор(yield) -
-        #  EventClass может возвращать следующий день исходя из настроек
-        for n in range(int((end_date - start_date).days)):
-            curr_date = start_date + timedelta(n)
-            if curr_date not in events:
-                if self.is_event_day(curr_date):
-                    events[curr_date] = Event(date=curr_date, event_class=self)
 
-        return events
+        if self.date_to and self.date_to < end_date:
+            end_date = self.date_to
 
-    def get_calendar_gen(
-        self,
-        start_date: date,
-        end_date: date
-    ) -> Dict[date, Event]:
-        """
-        Создает полный календарь одного типа тренировки. Создается список
-        всех возможный дней трениовок, ограниченный диапазоном дат.
-
-        Сами события треннировки не создаются фактически, а могут появится лишь
-        когда на эту тренировку будут назначены ученики.
-
-        :param start_date: Начальная дата календаря
-        :param end_date: Конечная дата календаря
-        :return: Словарь из даты и возможной тренировки
-        """
-        events = {
-            event.date: event
-            for event in
-            self.event_set.filter(date__range=(start_date, end_date))
-        }
         for event_date in next_day(start_date, end_date, Weekdays(self.days())):
             if event_date not in events:
                 events[event_date] = Event(date=event_date, event_class=self)
@@ -516,6 +504,33 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
 
         return None
 
+    def events_to_date(
+        self, *,
+        to_date: date,
+        from_date: date = None
+    ) -> List[Event]:
+        """
+        Get list of all events that can be visited by this subscription type
+        Event are sorted by date.
+
+        :param to_date: End date of calendar
+        :param from_date: Start date of calendar, if not provided date.today()
+        will be used
+
+        :return: List of all events
+        """
+        return sorted(
+            filter(
+                lambda x: not x.is_canceled,
+                [
+                    e for x in self.event_class.all()
+                    for e in
+                    x.get_calendar(from_date or date.today(), to_date).values()
+                ]
+            ),
+            key=lambda x: x.date
+        )
+
     @property
     def duration_postfix(self):
         return pluralize(
@@ -551,7 +566,13 @@ class Client(CompanyObjectModel):
     email_address = models.CharField("Email", max_length=50, blank=True)
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
     balance = models.FloatField("Баланс", default=0)
-    qr_code = models.UUIDField("QR код", blank=True, null=True, unique=True, default=uuid.uuid4)
+    qr_code = models.UUIDField(
+        "QR код",
+        blank=True,
+        null=True,
+        unique=True,
+        default=uuid.uuid4
+    )
 
     objects = ClientManager()
 
@@ -575,6 +596,7 @@ class Client(CompanyObjectModel):
 
 class ClientSubscriptionQuerySet(TenantQuerySet):
     def active_subscriptions(self, event: Event):
+        """Get all active subscriptions for selected event"""
         return self.filter(
             subscription__event_class=event.event_class,
             start_date__lte=event.date,
@@ -756,6 +778,74 @@ class ClientSubscriptions(CompanyObjectModel):
         return reverse(
             'crm:manager:client:detail', kwargs={'pk': self.client.id})
 
+    def remained_events(self) -> List[Event]:
+        """
+        Return list of remained events from today until end date. With care
+        about left visits.
+
+        :return: List of all events that can be visited one after one,
+        by this client subscription
+        """
+        return (
+            self.subscription
+                .events_to_date(to_date=self.end_date)[:self.visits_left]
+        )
+
+    def is_overlapping(self) -> bool:
+        """
+        Return if client subscription allows visit more events that are
+        planned
+
+        :return: True if after visiting all events from calendar will remain
+        some visits on this subscription
+        """
+        return len(self.subscription.events_to_date(
+            from_date=self.start_date, to_date=self.end_date
+        )) < self.visits_left
+
+    def is_active_at_date_without_events(self, check_date) -> bool:
+        """
+        Check if client subscription is active at particular date.
+        It's simple check, without events investigation. Check only if
+        client subscription have some visits left, and date is in allowed
+        rage.
+
+        This function can be used when we need check some attendance for
+        past date.
+
+        :param check_date: what date we check
+        :return: is active subscription at date or not
+        """
+        return (
+            self.start_date <= check_date <= self.end_date and
+            self.visits_left > 0
+        )
+
+    def is_active_to_date(self, to_date: date) -> bool:
+        """
+        Check if current client subscription is valid until some date.
+
+        This check is performed only from current day to future date. It all
+        because we check current visits limit, and calculations about "how
+        much visits was on some past date" ignored.
+
+        :param to_date: until what date check activity
+        :return: is active client subscription or not
+        """
+        if not self.is_active_at_date_without_events(to_date):
+            return False
+
+        # Extract one day - to check if subscriptions ends before date
+        future_events = self.subscription.events_to_date(
+            to_date=(to_date - timedelta(days=1)))
+
+        # If visits limit ends before date, we are sure that subscription is
+        # no more active
+        return not (self.visits_left - len(future_events) <= 0)
+
+    def is_active(self) -> bool:
+        return self.is_active_to_date(date.today())
+
     @property
     def is_expiring(self) -> bool:
         delta = self.end_date - date.today()
@@ -763,21 +853,20 @@ class ClientSubscriptions(CompanyObjectModel):
 
     def mark_visit(self, event):
         """Отметить посещение по абонементу"""
-        # TODO: Обработать race. Q?
-        if (self.visits_left > 0) and (self.start_date <= event.date) and (self.end_date >= event.date):
-            with transaction.atomic():
-                new_obj, created = Attendance.objects.get_or_create(
-                    event=event,
-                    client=self.client,
-                    defaults={'subscription': self})
-                if created:
-                    self.visits_left = self.visits_left - 1
-                    self.save()
-                else:
-                    raise ClientAttendanceExists("Client attendance for this event already exists")
-
-        else:
+        if not self.is_active_at_date_without_events(event.date):
             raise ValueError('Subscription or event is incorrect')
+
+        with transaction.atomic():
+            _, created = Attendance.objects.get_or_create(
+                event=event,
+                client=self.client,
+                defaults={'subscription': self})
+            if created:
+                self.visits_left = self.visits_left - 1
+                self.save()
+            else:
+                raise ClientAttendanceExists(
+                    'Client attendance for this event already exists')
 
     def restore_visit(self, attendance):
         with transaction.atomic():
@@ -864,7 +953,8 @@ class Event(CompanyObjectModel):
         return self.attendance_set.all().count()
 
     def get_clients_count_one_time_sub(self):
-        # Получаем количество посетивших данную тренировку по одноразовому абонементу
+        # Получаем количество посетивших данную тренировку
+        # по одноразовому абонементу
         queryset = ClientSubscriptions.objects.filter(
             subscription__in=SubscriptionsType.objects.filter(
                 event_class=self.event_class, visit_limit=1

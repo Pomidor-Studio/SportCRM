@@ -143,7 +143,7 @@ class EventFactory(factory.DjangoModelFactory):
 
     @factory.lazy_attribute
     def date(self):
-        return list(self.event_class.get_calendar_gen(
+        return list(self.event_class.get_calendar(
             self.event_class.date_from,
             self.event_class.date_from + datetime.timedelta(days=1)
         ).keys())[0]

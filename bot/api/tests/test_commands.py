@@ -1,7 +1,12 @@
 import pytest
-from hamcrest import assert_that, is_, has_properties
-from bot.api.commands.hello import HelloCommand
+from hamcrest import assert_that, calling, is_, raises
+
+from bot.api.commands.base import InvalidCommand
 from bot.api.commands.clients import Clients
+from bot.api.commands.hello import HelloCommand
+
+pytestmark = pytest.mark.django_db
+
 
 @pytest.mark.parametrize('msg', ['hello', 'привет'])
 def test_hello_command_success(msg):
@@ -15,12 +20,16 @@ def test_hello_command_success(msg):
 def test_hello_failed():
     command = HelloCommand()
 
-    result, _ = command.handle_user_message('somebadcommand', 123)
+    assert_that(
+        calling(command.handle_user_message).with_args('somebadcommand', 123),
+        raises(InvalidCommand)
+    )
 
-    assert_that(result, is_())
 
-
-@pytest.mark.parametrize('msg', ['абонементы', 'мои абонементы', 'информация о моих абонементах'])
+@pytest.mark.skip()
+@pytest.mark.parametrize('msg', [
+    'абонементы', 'мои абонементы', 'информация о моих абонементах'
+])
 def test_clients_command_success(msg):
     command = Clients()
 

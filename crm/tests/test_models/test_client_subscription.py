@@ -5,12 +5,14 @@ import pytest
 import pytz
 from freezegun import freeze_time
 from hamcrest import (
-    assert_that, calling, contains_inanyorder, has_properties, is_, raises,
+    assert_that, calling, contains_inanyorder, has_properties, is_,
+    has_length, raises,
 )
 from pytest_mock import MockFixture
 
 from crm import models
 from crm.enums import GRANULARITY
+from crm.events import range_days
 
 pytestmark = pytest.mark.django_db
 
@@ -430,6 +432,145 @@ def test_manager_extend_by_cancellation(
 
     assert_that(mock.call_count, is_(3))
     mock.assert_any_call(event)
+
+
+@pytest.mark.parametrize('visits_left, expected_len', [
+    (0, 0),
+    (1, 1),
+    (2, 2),
+    (100, 14)
+])
+def test_remained_events(
+    visits_left,
+    expected_len,
+    event_class_factory,
+    company_factory,
+    client_subscription_factory,
+):
+    start_date = date(2019, 1, 1)
+    end_date = date(2019, 1, 31)
+    company = company_factory()
+
+    # By default event class if for every day
+    ecs: List[models.EventClass] = event_class_factory.create_batch(
+        2,
+        company=company,
+        date_from=start_date,
+        date_to=end_date
+    )
+
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        company=company,
+        subscription__event_class__events=ecs,
+        subscription__rounding=True,
+        subscription__duration=1,
+        subscription__duration_type=GRANULARITY.MONTH,
+        start_date=start_date,
+        end_date=start_date + timedelta(days=6),
+        visits_left=visits_left
+    )
+    # End date is overridden by save, so set it forced
+    cs.end_date = start_date + timedelta(days=6)
+    cs.save()
+
+    with freeze_time('2019-01-01'):
+        remained_events = cs.remained_events()
+
+    assert_that(remained_events, has_length(expected_len))
+
+
+@pytest.mark.parametrize('visits_left, expected', [
+    (0, False),
+    (1, False),
+    (7, False),
+    (8, True),
+    (100, True)
+])
+def test_is_overlapping(
+    visits_left,
+    expected,
+    event_class_factory,
+    company_factory,
+    client_subscription_factory,
+):
+    start_date = date(2019, 1, 1)
+    end_date = date(2019, 1, 7)
+    company = company_factory()
+
+    # By default event class if for every day
+    ecs = event_class_factory(
+        company=company,
+        date_from=start_date,
+        date_to=end_date
+    )
+
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        company=company,
+        subscription__event_class__events=ecs,
+        subscription__rounding=True,
+        subscription__duration=1,
+        subscription__duration_type=GRANULARITY.MONTH,
+        start_date=start_date,
+        visits_left=visits_left
+    )
+
+    assert_that(cs.is_overlapping(), is_(expected))
+
+
+@pytest.mark.parametrize('start,end,visits,expected', [
+    (date(2019, 1, 1), date(2019, 1, 7), 1, True),
+    (date(2019, 1, 5), date(2019, 1, 7), 1, False),
+    (date(2019, 1, 1), date(2019, 1, 3), 1, False),
+    (date(2019, 1, 1), date(2019, 1, 7), 0, False),
+])
+def test_is_active_at_date(
+    start,
+    end,
+    visits,
+    expected,
+    client_subscription_factory
+):
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        subscription__rounding=False,
+        subscription__duration=30,
+        subscription__duration_type=GRANULARITY.DAY,
+        start_date=start,
+        visits_left=visits
+    )
+    # Override cs end date
+    cs.end_date = end
+    cs.save()
+
+    assert_that(cs.is_active_at_date_without_events(date(2019, 1, 4)), is_(expected))
+
+
+@pytest.mark.parametrize('is_active_at_date,events_to_date,visits,expected', [
+    (False, ['event1'], 1, False),
+    (True, ['event1'], 2, True),
+    (True, ['event1'], 1, False),
+    (True, ['event1', 'event2'], 1, False)
+])
+def test_is_active_to_date(
+    is_active_at_date,
+    events_to_date,
+    visits,
+    expected,
+    client_subscription_factory,
+    mocker: MockFixture
+):
+    cs: models.ClientSubscriptions = client_subscription_factory(
+        subscription__rounding=False,
+        subscription__duration=30,
+        subscription__duration_type=GRANULARITY.DAY,
+        start_date=date(2019, 1, 1),
+        visits_left=visits
+    )
+    mocker.patch.object(
+        cs, 'is_active_at_date', return_value=is_active_at_date)
+    mocker.patch.object(
+        cs.subscription, 'events_to_date', return_value=events_to_date)
+
+    assert_that(cs.is_active_to_date(date(2019, 1, 1)), is_(expected))
 
 
 def test_manager_revoke_extending(
