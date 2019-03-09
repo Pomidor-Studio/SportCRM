@@ -33,11 +33,13 @@
               <div class="col"></div>
               <div class="col"></div>
               <div class="col">
-                {% if not event.is_non_editable %}
-                  <a
-                    class="btn btn-sm btn-outline-danger"
-                    href="{% url 'crm:manager:attendance:delete' attendance.id %}"
-                  >Удалить</a>
+                {% if not event.is_closed %}
+                  {% if not event.is_non_editable %}
+                    <a
+                      class="btn btn-sm btn-outline-danger"
+                      href="{% url 'crm:manager:attendance:delete' attendance.id %}"
+                    >Удалить</a>
+                  {% endif %}
                 {% endif %}
               </div>
             </div>
@@ -45,28 +47,30 @@
         </div>
       </div>
       <div class="border-top mt-2"></div>
-      {% if not event.is_non_editable %}
-        <div class="border-top">
-          <span class="font-weight-bold ">Не отмеченные ученики: </span>
+      {% if not event.is_closed %}
+        {% if not event.is_non_editable %}
           <div class="border-top">
-            {% for key, value in clients_subscriptions.items %}
-              <div class="row border-top ml-0 mr-0">
-                <div class="col pl-0">
-                  {{ key.name }}
+            <span class="font-weight-bold ">Не отмеченные ученики: </span>
+            <div class="border-top">
+              {% for key, value in clients_subscriptions.items %}
+                <div class="row border-top ml-0 mr-0">
+                  <div class="col pl-0">
+                    {{ key.name }}
+                  </div>
+                  <div class="col"></div>
+                  <div class="col"></div>
+                  <div class="col">
+                    {% for subscription in value %}
+                      <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
+                        {{ subscription.subscription.name }}
+                      </a>
+                    {% endfor %}
+                  </div>
                 </div>
-                <div class="col"></div>
-                <div class="col"></div>
-                <div class="col">
-                  {% for subscription in value %}
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
-                      {{ subscription.subscription.name }}
-                    </a>
-                  {% endfor %}
-                </div>
-              </div>
-            {% endfor %}
+              {% endfor %}
+            </div>
           </div>
-        </div>
+        {% endif %}
       {% endif %}
     </div>
   </div>
