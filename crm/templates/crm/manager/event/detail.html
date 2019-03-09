@@ -111,7 +111,9 @@
       </div>
     </div>
   {% endif %}
+  <!--Кнопка появится только при условии event.date <= date.today()-->
   {% if event.is_event_close %}
+    <!--Отоброзит кнопку, если тренировку еще не закрыли-->
     {% if not event.is_closed %}
       <div class="row">
         <div class="alert alert-light" role="alert">

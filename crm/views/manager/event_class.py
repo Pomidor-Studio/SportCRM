@@ -367,13 +367,11 @@ class IsClosed(
 ):
     permission_required = 'event.mark_attendance'
 
-    def get(self, request, *args, **kwargs):
+    def run_action(self):
         event = self.get_object()
         event.close_event()
-
         self.url = self.get_success_url()
-
-        return super().get(request, *args, **kwargs)
+        return
 
     def get_success_url(self):
         return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
