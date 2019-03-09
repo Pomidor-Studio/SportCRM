@@ -4,13 +4,13 @@
 
   {{ event.date }} - {{ event.event_class.name }} -
   {{ event.event_class.location }} - {{ event.event_class.coach }}
-  {% if event.is_event_closed %}
+  {% if event.is_closed %}
     Тренировка закрыта!
   {% endif %}
   <div class="border-top mt-2"></div>
   <div class="row">
     <div class="col">
-      {% if not event.is_event_closed %}
+      {% if not event.is_closed %}
         <div class="mb-2 mt-2">
           <a class="btn btn-sm btn-outline-info"
              href="{% url 'crm:manager:event-class:event:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить
@@ -73,47 +73,50 @@
   {% if event.is_active %}
     <div class="row">
       <div class="alert alert-light" role="alert">
-        {% if not event.is_canceled %}
-          <a
-            href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
-            class="btn btn-outline-danger mr-2"
-            role="button"
-          >
-            Отменить тренировку
-          </a>
-          <a
-            href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
-            class="btn btn-outline-danger"
-            role="button"
-          >
-            Отменить и продлить абонементы
-          </a>
-        {% else %}
-          <a
-            href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}"
-            class="btn btn-outline-success mr-2"
-            role="button"
-          >
-            Вернуть тренировку
-          </a>
-          {% if event.canceled_with_extending %}
+        {% if not event.is_closed %}
+          {% if not event.is_canceled %}
             <a
-              href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}"
-              class="btn btn-outline-success"
+              href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
+              class="btn btn-outline-danger mr-2"
               role="button"
             >
-              Вернуть тренировку и отменить проделния
+              Отменить тренировку
             </a>
+            <a
+              href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
+              class="btn btn-outline-danger"
+              role="button"
+            >
+              Отменить и продлить абонементы
+            </a>
+          {% else %}
+            <a
+              href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}"
+              class="btn btn-outline-success mr-2"
+              role="button"
+            >
+              Вернуть тренировку
+            </a>
+            {% if event.canceled_with_extending %}
+              <a
+                href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}"
+                class="btn btn-outline-success"
+                role="button"
+              >
+                Вернуть тренировку и отменить проделния
+              </a>
+            {% endif %}
           {% endif %}
         {% endif %}
       </div>
     </div>
-  {% else %}
-    {% if not event.is_event_closed %}
+  {% endif %}
+  {% if event.is_event_close %}
+    {% if not event.is_closed %}
       <div class="row">
         <div class="alert alert-light" role="alert">
           <a
-            href="{% url 'crm:manager:event-class:event:is-closed' event.event_class.id event.date.year event.date.month event.date.day%}"
+            href="{% url 'crm:manager:event-class:event:close-event' event.event_class.id event.date.year event.date.month event.date.day%}"
             class="btn btn-outline-danger mr-2"
             role="button"
           >

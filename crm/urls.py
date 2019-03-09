@@ -217,9 +217,9 @@ manager_event_urlpatterns = ([
         name='do-scan'
     ),
     path(
-        'is_closed/',
+        'close-event/',
         manager_event_class_views.IsClosed.as_view(),
-        name='is-closed'
+        name='close-event'
     )
 ], 'event')
 

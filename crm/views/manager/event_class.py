@@ -361,19 +361,18 @@ class DoScan(
 
 
 class IsClosed(
-    LoginRequiredMixin,
-    UserManagerMixin,
-    RevisionMixin,
-    RedirectView
+    PermissionRequiredMixin,
+    RedirectWithActionView,
+    EventByDateMixin
 ):
+    permission_required = 'event.mark_attendance'
+
     def get(self, request, *args, **kwargs):
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event = Event.objects.get(event_class_id=self.kwargs['event_class_id'],
-                                  date=event_date)
-        event.event_is_closed()
+        event = self.get_object()
+        event.close_event()
+
         self.url = self.get_success_url()
+
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):

@@ -1023,6 +1023,10 @@ class Event(CompanyObjectModel):
     def is_non_editable(self):
         return self.is_canceled or not self.is_active
 
+    @property
+    def is_event_close(self):
+        return self.date <= date.today()
+
     def cancel_event(self, extend_subscriptions=False):
         if not self.is_active:
             raise ValueError("Event is outdated. It can't be canceled.")
@@ -1060,21 +1064,17 @@ class Event(CompanyObjectModel):
             if revoke_extending and original_cwe:
                 ClientSubscriptions.objects.revoke_extending(self)
 
-    def event_is_closed(self):
+    def close_event(self):
         """Закрыть тренировку"""
-        if self.is_active:
-            raise ValueError("Event is active")
+        if not self.is_event_close:
+            raise ValueError("Event has not started")
 
-        if self.is_event_closed:
+        if self.is_closed:
             raise ValueError("Event is closed")
 
         with transaction.atomic():
             self.is_closed = True
             self.save()
-
-    @property
-    def is_event_closed(self):
-        return self.is_closed
 
 
 @reversion.register()
