@@ -1075,6 +1075,14 @@ class Event(CompanyObjectModel):
         self.is_closed = True
         self.save()
 
+    def open_event(self):
+        """Открыть тренировку"""
+        if not self.is_closed:
+            raise ValueError("Event is open")
+
+        self.is_closed = False
+        self.save()
+
 
 @reversion.register()
 class Attendance(CompanyObjectModel):

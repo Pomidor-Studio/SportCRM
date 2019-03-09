@@ -130,6 +130,16 @@
           </a>
         </div>
       </div>
+    {% else %}
+      <div class="col">
+        <a
+          href="{% url 'crm:manager:event-class:event:open-event' event.event_class.id event.date.year event.date.month event.date.day%}"
+          class="btn btn-sm btn-outline-info"
+          role="button"
+        >
+          Открыть тренировку
+        </a>
+      </div>
     {% endif %}
   {% endif %}
 

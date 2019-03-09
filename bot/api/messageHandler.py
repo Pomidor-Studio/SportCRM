@@ -2,7 +2,6 @@ from typing import Tuple, Optional
 from bot.api.commands import allowed_commands
 from bot.api.commands.base import InvalidCommand
 from bot.api.vkapi import send_message
-from django_multitenant.utils import set_current_tenant
 
 
 def get_answer(body, user_id):

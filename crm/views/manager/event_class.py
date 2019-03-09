@@ -372,3 +372,17 @@ class DoCloseEvent(
         event = self.get_object()
         event.close_event()
         return
+
+
+class DoOpenEvent(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView
+):
+    permission_required = 'event.mark_attendance'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.open_event()
+        return

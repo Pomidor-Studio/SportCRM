@@ -220,6 +220,11 @@ manager_event_urlpatterns = ([
         'close-event/',
         manager_event_class_views.DoCloseEvent.as_view(),
         name='close-event'
+    ),
+    path(
+        'open-event',
+        manager_event_class_views.DoOpenEvent.as_view(),
+        name='open-event'
     )
 ], 'event')
 
