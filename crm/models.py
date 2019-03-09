@@ -1067,14 +1067,13 @@ class Event(CompanyObjectModel):
     def close_event(self):
         """Закрыть тренировку"""
         if not self.is_overpast:
-            raise ValueError("Event has not started")
+            raise ValueError("Event for future date, can't be closed")
 
         if self.is_closed:
-            raise ValueError("Event is closed")
+            raise ValueError("Event is already closed")
 
-        with transaction.atomic():
-            self.is_closed = True
-            self.save()
+        self.is_closed = True
+        self.save()
 
 
 @reversion.register()

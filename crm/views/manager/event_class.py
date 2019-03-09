@@ -360,18 +360,15 @@ class DoScan(
         return super().get_redirect_url(*args, **kwargs)
 
 
-class IsClosed(
+class DoCloseEvent(
     PermissionRequiredMixin,
-    RedirectWithActionView,
-    EventByDateMixin
+    EventByDateMixin,
+    RedirectWithActionView
 ):
     permission_required = 'event.mark_attendance'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):
         event = self.get_object()
         event.close_event()
-        self.url = self.get_success_url()
         return
-
-    def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
