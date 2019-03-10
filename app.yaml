@@ -18,3 +18,11 @@ handlers:
 # accessible through os.environ['VARIABLE_NAME']
 env_variables:
   DJANGO_SETTINGS_MODULE: 'sportcrm.settings.gcp_production'
+
+automatic_scaling:
+    max_instances: 3
+    min_instances: 0
+    min_idle_instances: 0
+    target_cpu_utilization: 0.95
+    min_pending_latency: 300ms
+    max_pending_latency: automatic
