@@ -26,3 +26,12 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+.editorconfig
+.python-version
+.stylelintrc
+conftest.py
+Procfile
+pytest.ini
+runtime.txt
+**/tests/
