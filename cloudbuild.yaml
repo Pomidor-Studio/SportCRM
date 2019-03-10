@@ -1,19 +1,54 @@
 steps:
-- name: 'python:3.7'
-  entrypoint: python3
-  args: ['-m', 'pip', 'install', '-t', './venv', '-r', 'requirements.txt']
-  id: 'pip-install'
-- name: 'python:3.7'
-  entrypoint: python3
-  args: ['./manage.py', 'collectstatic', '--noinput', '--settings=sportcrm.settings.gcp_production']
-  env:
-  - 'PYTHONPATH=./venv'
-- name: 'python:3.7'
-  entrypoint: python3
-  args: ['./manage.py', 'migrate', '--noinput', '--settings=sportcrm.settings.gcp_production']
-  env:
-  - 'PYTHONPATH=./venv'
-  waitFor: ['pip-install']
-- name: "gcr.io/cloud-builders/gcloud"
-  args: ["app", "deploy"]
+    # Install pip dependencies
+    - id: 'pip-install'
+      name: 'python:3.7'
+      entrypoint: python3
+      args: ['-m', 'pip', 'install', '-t', './venv', '-r', 'requirements.txt']
+
+
+    # Launch Cloud SQL proxy and keep it open
+    # until the db migration step is finished
+    # https://cloud.google.com/sql/docs/postgres/sql-proxy
+    - id: proxy
+      name: gcr.io/cloudsql-docker/gce-proxy
+      entrypoint: sh
+      args:
+          - '-c'
+          - '/cloud_sql_proxy -dir=/cloudsql -instances=sport-srm-test:us-east1:sport-crm-test & while [ ! -f /cloudsql/stop ]; do sleep 2; done'
+      waitFor: ['-']
+      timeout: '1200s'
+      volumes:
+          - name: db
+            path: /cloudsql
+
+
+    # Migrate database schema
+    - name: 'python:3.7'
+      entrypoint: sh
+      args:
+          - '-c'
+          - 'python3 ./manage.py migrate --noinput --settings=sportcrm.settings.gcp_production && touch /cloudsql/stop'
+      env:
+          - 'PYTHONPATH=./venv'
+      volumes:
+          - name: db
+            path: /cloudsql
+      waitFor: ['pip-install']
+
+
+    # Collect static
+    - id: "collect-static"
+      name: 'python:3.7'
+      entrypoint: python3
+      args: ['./manage.py', 'collectstatic', '--noinput', '--settings=sportcrm.settings.gcp_production']
+      env:
+          - 'PYTHONPATH=./venv'
+      waitFor: ['pip-install']
+
+
+    # deploy on app engine
+    - name: "gcr.io/cloud-builders/gcloud"
+      args: ["app", "deploy"]
+      waitFor: ['collect-static']
+
 timeout: "1600s"
