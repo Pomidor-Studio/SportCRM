@@ -1078,7 +1078,7 @@ class Event(CompanyObjectModel):
     def open_event(self):
         """Открыть тренировку"""
         if not self.is_closed:
-            raise ValueError("Event is open")
+            raise ValueError("Event is already opened")
 
         self.is_closed = False
         self.save()
