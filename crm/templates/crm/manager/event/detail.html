@@ -2,6 +2,12 @@
 
 {% block content %}
 
+<script type="text/javascript">
+  function confirmClose() {
+    return confirm("Вы действительно хотите закрыть тренировку?");
+  }
+</script>
+
   {{ event.date }} - {{ event.event_class.name }} -
   {{ event.event_class.location }} - {{ event.event_class.coach }}
   {% if event.is_closed %}
@@ -125,6 +131,7 @@
             href="{% url 'crm:manager:event-class:event:close-event' event.event_class.id event.date.year event.date.month event.date.day%}"
             class="btn btn-outline-danger mr-2"
             role="button"
+            onclick="return confirmClose()"
           >
             Закрыть тренировку
           </a>
