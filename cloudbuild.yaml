@@ -2,14 +2,17 @@ steps:
 - name: 'python:3.7'
   entrypoint: python3
   args: ['-m', 'pip', 'install', '-t', './venv', '-r', 'requirements.txt']
+  id: 'pip-install'
 - name: 'python:3.7'
   entrypoint: python3
   args: ['./manage.py', 'collectstatic', '--noinput', '--settings=sportcrm.settings.gcp_production']
   env:
   - 'PYTHONPATH=./venv'
-#- name: 'python:3.7'
-#  entrypoint: python3
-#  args: ['./manage.py', 'migrate', '--noinput', '--settings=sportcrm.settings.gcp_production']
+- name: 'python:3.7'
+  entrypoint: python3
+  args: ['./manage.py', 'migrate', '--noinput', '--settings=sportcrm.settings.gcp_production']
+  - 'PYTHONPATH=./venv'
+  waitFor: ['pip-install']
 - name: "gcr.io/cloud-builders/gcloud"
   args: ["app", "deploy"]
 timeout: "1600s"
