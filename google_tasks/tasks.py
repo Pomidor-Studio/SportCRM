@@ -41,7 +41,6 @@ def enqueue(method: str, *args, **kwargs):
 
     # The API expects a payload of type bytes.
     json_payload = json.dumps(payload)
-    print(json_payload)
 
     converted_payload = json_payload.encode()
 
@@ -49,7 +48,7 @@ def enqueue(method: str, *args, **kwargs):
     task['app_engine_http_request']['body'] = converted_payload
 
     # Use the client to build and send the task.
-    # response = client.create_task(parent, task)
+    response = client.create_task(parent, task)
 
     # print('Created task {}'.format(response.name))
     # return response
