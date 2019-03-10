@@ -217,14 +217,14 @@ manager_event_urlpatterns = ([
         name='do-scan'
     ),
     path(
-        'close-event/',
+        'close/',
         manager_event_class_views.DoCloseEvent.as_view(),
-        name='close-event'
+        name='close'
     ),
     path(
-        'open-event',
+        'open/',
         manager_event_class_views.DoOpenEvent.as_view(),
-        name='open-event'
+        name='open'
     )
 ], 'event')
 
