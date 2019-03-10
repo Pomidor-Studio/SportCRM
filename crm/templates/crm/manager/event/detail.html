@@ -3,9 +3,17 @@
 {% block content %}
 
 <script type="text/javascript">
-  function confirmClose() {
-    return confirm("Вы действительно хотите закрыть тренировку?");
-  }
+  $(function() {
+    $('#show-close-confirm').click(function () {
+      $('#close-confirm').fadeIn(250);
+    });
+    $('#show-open-confirm').click(function () {
+      $('#open-confirm').fadeIn(250);
+    });
+    $('button.cancel-action').click(function() {
+      $(this).parents('div.card').first().hide();
+    });
+  });
 </script>
 
   {{ event.date }} - {{ event.event_class.name }} -
@@ -128,24 +136,67 @@
       <div class="row">
         <div class="alert alert-light" role="alert">
           <a
-            href="{% url 'crm:manager:event-class:event:close-event' event.event_class.id event.date.year event.date.month event.date.day%}"
+            id="show-close-confirm"
+            href="#"
             class="btn btn-outline-danger mr-2"
             role="button"
-            onclick="return confirmClose()"
           >
             Закрыть тренировку
           </a>
         </div>
       </div>
-    {% else %}
-      <div class="col">
-        <a
-          href="{% url 'crm:manager:event-class:event:open-event' event.event_class.id event.date.year event.date.month event.date.day%}"
-          class="btn btn-sm btn-outline-info"
+      <div id="close-confirm" class="card text-white mb-3" style="display: none;">
+        <div class="card-header bg-danger">Вы действительно хотите закрыть тренировку?</div>
+        <div class="card-body">
+          <a
+          href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day%}"
+          class="btn btn-outline-danger mr-2"
           role="button"
         >
-          Открыть тренировку
+          Да
         </a>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary mr-2 cancel-action"
+          aria-label="Close"
+        >
+          Нет
+        </button>
+        </div>
+      </div>
+    {% else %}
+      <div class="row">
+        <div class="alert alert-light" role="alert">
+          <a
+            id="show-open-confirm"
+            href="#"
+            class="btn btn-sm btn-outline-info"
+            role="button"
+          >
+            Открыть тренировку
+          </a>
+        </div>
+      </div>
+      <div id="open-confirm" class="card text-white mb-3" style="display: none;">
+        <div class="card-header bg-info">Вы действительно хотите открыть тренировку?</div>
+        <div class="card-body">
+          <a
+          href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day%}"
+          class="btn btn-outline-info mr-2"
+          role="button"
+        >
+          Да
+        </a>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary mr-2 cancel-action"
+          aria-label="Close"
+        >
+          Нет
+        </button>
+        </div>
       </div>
     {% endif %}
   {% endif %}
