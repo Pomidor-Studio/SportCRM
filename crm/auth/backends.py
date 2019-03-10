@@ -4,6 +4,7 @@ from typing import List
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from phonenumber_field.phonenumber import PhoneNumber
+from phonenumbers import NumberParseException
 
 from crm.models import Coach, Manager
 
@@ -36,7 +37,11 @@ class PhoneBackend(ListUsersBackend):
         if not phone:
             return []
 
-        ph = PhoneNumber.from_string(phone)
+        try:
+            ph = PhoneNumber.from_string(phone)
+        except NumberParseException:
+            return []
+
         coachs = Coach.objects.filter(phone_number=ph)
         managers = Manager.objects.filter(phone_number=ph)
         return [x.user for x in chain(coachs, managers)]
