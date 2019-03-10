@@ -26,4 +26,5 @@ urlpatterns = [
     path('', include('social_django.urls', namespace='social')),
     path('api/v1/', include(('crm.urls_api', 'api-v1'), namespace='api-v1')),
     path('qr_code/', include(('qr_code.urls', 'qr_code'), namespace="qr_code")),
+    path('', include('google_tasks.urls')),
 ]

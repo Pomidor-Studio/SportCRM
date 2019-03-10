@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_select2',
     'django_tables2',
     'qr_code',
+    'google_tasks.apps.GoogleTasksConfig',
 ]
 
 BOOTSTRAP4 = {
