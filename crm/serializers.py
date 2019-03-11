@@ -3,7 +3,7 @@ from datetime import datetime
 from django.urls import reverse
 from rest_framework import serializers
 
-from crm.models import Event
+from crm.models import Event, ClientSubscriptions
 
 
 class CalendarEventSerializer(serializers.Serializer):
@@ -42,3 +42,13 @@ class CalendarEventSerializer(serializers.Serializer):
             instance.date.month,
             instance.date.day
         ))
+
+
+class ClientSubscriptionCheckOverlappingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientSubscriptions
+        fields = [
+            'is_overlapping',
+            'is_overlapping_with_cancelled',
+            'canceled_events_count'
+        ]

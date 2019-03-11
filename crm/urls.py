@@ -116,6 +116,11 @@ manager_clients_urlpatterns = ([
     path(
         'subscription/',
         include(manager_client_subs_urlpatterns)
+    ),
+    path(
+        'check-overlapping/',
+        manager_client_views.CheckOverlapping.as_view(),
+        name='check-overlapping'
     )
 ], 'client')
 
