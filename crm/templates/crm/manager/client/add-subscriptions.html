@@ -10,10 +10,69 @@
 
   <script language="javascript">
     $(function () {
+      {% if allow_check_overlapping %}
+      function canCheckOverlapping() {
+        return $("#id_subscription option:selected") &&
+          $('#id_start_date').val() &&
+          $('#id_visits_left').val();
+      }
+      function checkOverlapping() {
+        $.get(
+          '{% url "crm:manager:client:check-overlapping" %}',
+          {
+            st: $("#id_subscription option:selected").attr('value'),
+            start: $('#id_start_date').val(),
+            vl: $('#id_visits_left').val()
+          },
+          function(data) {
+            if (data.is_overlapping && !data.is_overlapping_with_cancelled) {
+              $('#is-overlapping').show();
+              $('#add-with-autoextend').show();
+            } else if (
+              data.is_overlapping &&
+              data.is_overlapping_with_cancelled &&
+              data.canceled_events_count === 0
+            ) {
+              $('#is-overlapping-total').show();
+              //Don't show create with extend, as there no canceled events
+            } else if (
+              data.is_overlapping &&
+              data.is_overlapping_with_cancelled &&
+              data.canceled_events_count !== 0
+            ) {
+              $('#is-overlapping-with-canceled').show();
+              $('#add-with-autoextend').show();
+            } else {
+              $('div.overlapping').hide();
+              $('#is-overlapping').hide();
+            }
+          }
+        );
+      }
+      {% endif %}
+
+
       $("#id_subscription").change(function () {
         $("#id_price").val($(this).find("option:selected").attr("price"));
         $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
+        {% if allow_check_overlapping %}
+        if (canCheckOverlapping()) {
+          checkOverlapping();
+        }
+        {% endif %}
       });
+
+      {% if allow_check_overlapping %}
+      $('#id_start_date, #id_visits_left').on('input', function() {
+        if (canCheckOverlapping()) {
+          checkOverlapping();
+        }
+      });
+
+      $('button.add-subscription').click(function() {
+        $('#add-form').attr('action', $(this).data('action'));
+      });
+      {% endif %}
     });
   </script>
 
@@ -22,18 +81,57 @@
     <div class="w-100">
       <div class="row">
         <div class="col">
-          <form method="POST">
+          <form id="add-form" method="POST" action="">
             {% csrf_token %}
             <fieldset class="form-group">
               {% bootstrap_form form %}
             </fieldset>
 
+            <div
+              class="alert alert-info overlapping"
+              id="is-overlapping"
+              style="display: none;"
+            >
+              В тренировочной сетке есть отменённые занятия, из-за которых
+              нельзя будет потратить все посещения.
+            </div>
+            <div
+              class="alert alert-info overlapping"
+              id="is-overlapping-with-canceled"
+              style="display: none;"
+            >
+              В тренировочной сетке есть отменённые занятия, но даже вместе с ними,
+              нельзя будет потратить все посещения.
+            </div>
+            <div
+              class="alert alert-info overlapping"
+              id="is-overlapping-total"
+              style="display: none;"
+            >
+              Количество тренировок в сетке не позволяет потратить все посещения.
+            </div>
             <div class="form-group">
-              <button class="btn btn-outline-info" type="submit">Добавить
+              <button
+                id="add"
+                class="btn btn-outline-info add-subscription"
+                type="submit"
+                data-action="{% url 'crm:manager:client:new-subscription' client_id %}"
+              >
+                Добавить
               </button>
+              {% if allow_check_overlapping %}
+              <button
+                id="add-with-autoextend"
+                class="btn btn-outline-info add-subscription"
+                style="display: none;"
+                type="submit"
+                data-action="{% url 'crm:manager:client:add-subscription-with-extending' client_id %}"
+              >
+                Добавить с продлением абонемента
+              </button>
+              {% endif %}
               <a name="cancel"
-                 href="
-                   {% if object.client %}{% url 'crm:manager:client:detail' object.client.id %}{% else %}{% url 'crm:manager:client:detail' view.kwargs.client_id %}{% endif %}"
+                 href="{% url 'crm:manager:client:detail' client_id %}"
                  class="btn btn-outline-info">
                 Назад
               </a>
@@ -50,6 +148,7 @@
                   <th scope="col">Дата продления</th>
                   <th scope="col">Причина продления</th>
                   <th scope="col">Кол-во занятий</th>
+                  <th scope="col">Продлен до</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -58,6 +157,7 @@
                     <td>{{ hist_obj.date_extended }}</td>
                     <td>{{ hist_obj.reason }}</td>
                     <td>{{ hist_obj.added_visits }}</td>
+                    <td>{{ hist_obj.extended_to|date:"d.m.Y" }}</td>
                   </tr>
                 {% endfor %}
                 </tbody>

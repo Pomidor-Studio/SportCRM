@@ -4,7 +4,7 @@ import logging
 import uuid
 from datetime import date, timedelta
 from itertools import count
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import pendulum
 import reversion
@@ -429,6 +429,21 @@ class DayOfTheWeekClass(CompanyObjectModel):
         unique_together = ('day', 'event',)
 
 
+# noinspection PyPep8Naming
+class SubscriptionsTypeEventFilter:
+    @staticmethod
+    def ALL(event: Event) -> bool:
+        return True
+
+    @staticmethod
+    def ACTIVE(event: Event) -> bool:
+        return not event.is_canceled
+
+    @staticmethod
+    def CANCELED(event: Event) -> bool:
+        return event.is_canceled
+
+
 @reversion.register()
 class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     """
@@ -507,7 +522,9 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     def events_to_date(
         self, *,
         to_date: date,
-        from_date: date = None
+        from_date: date = None,
+        filter_runner: Callable[[Event], bool] =
+            SubscriptionsTypeEventFilter.ACTIVE
     ) -> List[Event]:
         """
         Get list of all events that can be visited by this subscription type
@@ -516,12 +533,14 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         :param to_date: End date of calendar
         :param from_date: Start date of calendar, if not provided date.today()
         will be used
+        :param filter_runner: Filter event for given criteria. Default criteria
+        select only active events.
 
         :return: List of all events
         """
         return sorted(
             filter(
-                lambda x: not x.is_canceled,
+                filter_runner,
                 [
                     e for x in self.event_class.all()
                     for e in
@@ -793,8 +812,8 @@ class ClientSubscriptions(CompanyObjectModel):
 
     def is_overlapping(self) -> bool:
         """
-        Return if client subscription allows visit more events that are
-        planned
+        Return information that client subscription allows visit more events
+        than are planned
 
         :return: True if after visiting all events from calendar will remain
         some visits on this subscription
@@ -802,6 +821,35 @@ class ClientSubscriptions(CompanyObjectModel):
         return len(self.subscription.events_to_date(
             from_date=self.start_date, to_date=self.end_date
         )) < self.visits_left
+
+    def is_overlapping_with_cancelled(self) -> bool:
+        """
+        Return information that client subscription allows visit more events
+        than are planned, event with canceled events
+
+        :return: True if after visiting all events from calendar will remain
+        some visits on this subscription. And this quantity of remaining
+        canceled events is greater that remaining visits minus active events
+        """
+        return len(self.subscription.events_to_date(
+            from_date=self.start_date,
+            to_date=self.end_date,
+            filter_runner=SubscriptionsTypeEventFilter.ALL
+        )) < self.visits_left
+
+    def canceled_events(
+        self,
+        from_date: date = None,
+        to_date: date = None
+    ) -> List[Event]:
+        return self.subscription.events_to_date(
+            from_date=from_date or self.start_date,
+            to_date=to_date or self.end_date,
+            filter_runner=SubscriptionsTypeEventFilter.CANCELED
+        )
+
+    def canceled_events_count(self):
+        return len(self.canceled_events())
 
     def is_active_at_date_without_events(self, check_date) -> bool:
         """
@@ -936,6 +984,10 @@ class Event(CompanyObjectModel):
         'Отмена была с продленим абонемента?',
         default=False
     )
+    is_closed = models.BooleanField(
+        'Тренировка закрыта',
+        default=False
+    )
 
     objects = EventManager()
 
@@ -1019,6 +1071,10 @@ class Event(CompanyObjectModel):
     def is_non_editable(self):
         return self.is_canceled or not self.is_active
 
+    @property
+    def is_overpast(self):
+        return self.date <= date.today()
+
     def cancel_event(self, extend_subscriptions=False):
         if not self.is_active:
             raise ValueError("Event is outdated. It can't be canceled.")
@@ -1055,6 +1111,25 @@ class Event(CompanyObjectModel):
 
             if revoke_extending and original_cwe:
                 ClientSubscriptions.objects.revoke_extending(self)
+
+    def close_event(self):
+        """Закрыть тренировку"""
+        if not self.is_overpast:
+            raise ValueError("Event for future date, can't be closed")
+
+        if self.is_closed:
+            raise ValueError("Event is already closed")
+
+        self.is_closed = True
+        self.save()
+
+    def open_event(self):
+        """Открыть тренировку"""
+        if not self.is_closed:
+            raise ValueError("Event is already opened")
+
+        self.is_closed = False
+        self.save()
 
 
 @reversion.register()
