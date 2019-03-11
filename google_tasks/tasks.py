@@ -54,15 +54,23 @@ def enqueue(method: str, *args, **kwargs):
     # return response
 
 
-def do(body_payload: bytes):
+def do(body_payload: bytes) -> str:
 
     payload = json.loads(body_payload.decode())
     company_id = payload['company_id']
     method = payload['method']
+    if not method:
+        return 'ERROR: no method in payload'
+
     args = payload['args']
     kwargs = payload['kwargs']
-    company = get_object_or_404(Company, pk=company_id)
-    set_current_tenant(company)
+    if company_id:
+        company = get_object_or_404(Company, pk=company_id)
+        set_current_tenant(company)
 
-    method_to_call = getattr(bot.tasks, method)
+    try:
+        method_to_call = getattr(bot.tasks, method)
+    except AttributeError:
+        return f'ERROR: no method "{method}" in bot.tasks module'
     method_to_call(*args, **kwargs)
+    return 'OK'

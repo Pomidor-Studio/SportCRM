@@ -9,7 +9,9 @@ from .tasks import do
 def google_task_handler(request):
 
     if request.method == "POST":
-        do(request.body)
+        result:str = do(request.body)
+        return HttpResponse(result, content_type="text/plain", status=200)
+    else:
+        return HttpResponse('Only POST alloyed', content_type="text/plain", status=405)
 
-    return HttpResponse('ok', content_type="text/plain", status=200)
 
