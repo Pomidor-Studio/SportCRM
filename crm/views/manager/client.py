@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -66,6 +67,16 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['client_id'] = (
+            self.object.client_id
+            if self.object and hasattr(self.object, 'client')
+            else self.kwargs['client_id']
+        )
+        context['allow_check_overlapping'] = True
+        return context
+
     def form_valid(self, form):
         cash_earned = form.cleaned_data['cash_earned']
         if not cash_earned:
@@ -75,6 +86,22 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
             client.save()
         form.instance.client_id = self.kwargs['client_id']
         return super().form_valid(form)
+
+
+class AddSubscriptionWithExtending(AddSubscription):
+
+    object: ClientSubscriptions = ...
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            ret_val = super().form_valid(form)
+
+            to_cancel_events = self.object.canceled_events()[:len(
+                self.object.remained_events()
+            )]
+            for event in to_cancel_events:
+                self.object.extend_by_cancellation(event)
+        return ret_val
 
 
 class CheckOverlapping(RetrieveAPIView):
@@ -157,6 +184,12 @@ class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['history'] = ExtensionHistory.objects.filter(
             client_subscription=self.object.id)
+        context['client_id'] = (
+            self.object.client_id
+            if self.object and hasattr(self.object, 'client')
+            else self.kwargs['client_id']
+        )
+        context['allow_check_overlapping'] = False
         return context
 
 

@@ -837,12 +837,19 @@ class ClientSubscriptions(CompanyObjectModel):
             filter_runner=SubscriptionsTypeEventFilter.ALL
         )) < self.visits_left
 
-    def canceled_events_count(self):
-        return len(self.subscription.events_to_date(
-            from_date=self.start_date,
-            to_date=self.end_date,
+    def canceled_events(
+        self,
+        from_date: date = None,
+        to_date: date = None
+    ) -> List[Event]:
+        return self.subscription.events_to_date(
+            from_date=from_date or self.start_date,
+            to_date=to_date or self.end_date,
             filter_runner=SubscriptionsTypeEventFilter.CANCELED
-        ))
+        )
+
+    def canceled_events_count(self):
+        return len(self.canceled_events())
 
     def is_active_at_date_without_events(self, check_date) -> bool:
         """

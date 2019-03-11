@@ -109,6 +109,11 @@ manager_clients_urlpatterns = ([
         name='new-subscription'
     ),
     path(
+        '<int:client_id>/add-subscription-with-extending',
+        manager_client_views.AddSubscriptionWithExtending.as_view(),
+        name='add-subscription-with-extending'
+    ),
+    path(
         '<int:client_id>/add-attendance/',
         manager_client_views.AddAttendance.as_view(),
         name='new-attendance'
