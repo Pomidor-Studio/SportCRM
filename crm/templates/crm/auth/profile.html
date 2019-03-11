@@ -38,8 +38,10 @@
 
           <br>
 
-          <a href="{% url 'crm:accounts:password-change' %}"
-             class="btn btn-outline-danger">Сменить пароль</a>
+          {% if user.has_usable_password %}
+            <a href="{% url 'crm:accounts:password-change' %}"
+               class="btn btn-outline-danger">Сменить пароль</a>
+          {% endif %}
           <a href="{% url 'crm:accounts:password-reset-confirm' %}"
              class="btn btn-outline-danger">Сбросить пароль</a>
 
