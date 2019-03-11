@@ -74,6 +74,7 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
             if self.object and hasattr(self.object, 'client')
             else self.kwargs['client_id']
         )
+        context['allow_check_overlapping'] = True
         return context
 
     def form_valid(self, form):
@@ -183,6 +184,12 @@ class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['history'] = ExtensionHistory.objects.filter(
             client_subscription=self.object.id)
+        context['client_id'] = (
+            self.object.client_id
+            if self.object and hasattr(self.object, 'client')
+            else self.kwargs['client_id']
+        )
+        context['allow_check_overlapping'] = False
         return context
 
 
