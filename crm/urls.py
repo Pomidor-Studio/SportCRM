@@ -225,6 +225,16 @@ manager_event_urlpatterns = ([
         'scan/<str:code>/',
         manager_event_class_views.DoScan.as_view(),
         name='do-scan'
+    ),
+    path(
+        'close/',
+        manager_event_class_views.DoCloseEvent.as_view(),
+        name='close'
+    ),
+    path(
+        'open/',
+        manager_event_class_views.DoOpenEvent.as_view(),
+        name='open'
     )
 ], 'event')
 
