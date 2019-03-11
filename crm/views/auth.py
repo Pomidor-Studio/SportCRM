@@ -1,7 +1,9 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView
 from django.urls import reverse, reverse_lazy
+from django.utils.safestring import mark_safe
 from django.views.generic import (
     RedirectView, TemplateView, UpdateView,
 )
@@ -10,6 +12,18 @@ from crm.forms import ProfileUserForm
 
 
 class SportCrmLoginRedirectView(RedirectView):
+
+    def get(self, request, *args, **kwargs):
+
+        if not request.user.is_anonymous and \
+                not request.user.has_usable_password():
+            reset_url = reverse('crm:accounts:password-reset')
+            messages.info(
+                request, mark_safe(
+                    'У вас не установлен пароль. На этой страницу можно '
+                    f'<a href="{reset_url}">сбросить пароль</a>'))
+
+        return super().get(request, *args, **kwargs)
 
     def get_redirect_url(self, *args, **kwargs):
         if self.request.user.is_anonymous:
