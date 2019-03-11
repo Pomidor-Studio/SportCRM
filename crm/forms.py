@@ -53,15 +53,20 @@ class ClientForm(TenantModelForm):
 
 
 class Balance(TenantModelForm):
+
     class Meta:
         model = ClientBalance
         widgets = {
             'balance': forms.NumberInput(),
             'reason': forms.TextInput(attrs={"class": "form-control", "placeholder": "Укажите причину изменения баланса"}),
-            'entry_date': DatePickerInput(format='%d.%m.%Y',
+            'entry_date': DatePickerInput(format='%d.%m.%Y 18:00',
                                           attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"})
         }
-        exclude = ('client',)
+        exclude = ('client', 'actual_entry_date',)
+
+    # def __init__(self, attrs=None, choices=(), data=None):
+    #     super().__init__(attrs, choices)
+    #     self.data = data or {}
 
 
 class DataAttributesSelect(forms.Select):
@@ -70,8 +75,7 @@ class DataAttributesSelect(forms.Select):
         super().__init__(attrs, choices)
         self.data = data or {}
 
-    def create_option(self, name, value, label, selected, index,
-                      subindex=None, attrs=None):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=None, attrs=None)
         for data_attr, values in self.data.items():

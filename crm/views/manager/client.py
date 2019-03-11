@@ -3,6 +3,8 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
 )
+
+from datetime import datetime
 from django_filters.views import FilterView
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
@@ -12,7 +14,7 @@ from crm.forms import (
     AttendanceForm, ClientForm, ClientSubscriptionForm,
     ExtendClientSubscriptionForm,
 )
-from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory
+from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory, ClientBalance
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -62,12 +64,15 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
 
     def form_valid(self, form):
         cash_earned = form.cleaned_data['cash_earned']
-        if not cash_earned:
-            abon_price = form.cleaned_data['price']
-            client = Client.objects.get(id=self.kwargs['client_id'])
-            client.balance -= abon_price
-            client.save()
+        abon_price = form.cleaned_data['price']
+        client = Client.objects.get(id=self.kwargs['client_id'])
+        default_reason = 'Покупка абонемента'
+        client.add_balance_in_history(-abon_price, default_reason)
+        if cash_earned:
+            default_reason = 'Перечесление средств за абонемент'
+            client.add_balance_in_history(abon_price, default_reason)
         form.instance.client_id = self.kwargs['client_id']
+        client.save()
         return super().form_valid(form)
 
 

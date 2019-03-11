@@ -24,6 +24,8 @@ class Create(PermissionRequiredMixin, CreateView):
         return reverse('crm:manager:client:detail', args=[self.kwargs['pk']])
 
     def form_valid(self, form):
-        form.instance.client_id = self.kwargs['pk']
+        client_id = self.kwargs['pk']
+        form.instance.client_id = client_id
+        Client.objects.get(id=client_id).update_balance(form.instance.balance)
         return super().form_valid(form)
 

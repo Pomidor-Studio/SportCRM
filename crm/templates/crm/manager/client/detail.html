@@ -48,9 +48,9 @@
 
 
 <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">{{ object.name }}</legend>
-    <div class="row mb-2">
-      <div class="container-fluid">
+    <legend class="mb-2">{{ object.name }}</legend>
+    <div class="row border-top mb-2">
+      <div class="container-fluid mt-1">
         {% ifhasperm 'client.edit' user %}
         <a class="btn btn-sm btn-outline-info"
            href="{% url 'crm:manager:client:update' object.id %}">Изменить</a>
@@ -81,7 +81,7 @@
             {% if object.vk_user_id %}
                 <div class="font-weight-bold">Ссылка вк:</div>
             {% endif %}
-            {% if object.get_client_balance %}
+            {% if object.balance %}
                 <div class="font-weight-bold">Баланс:</div>
             {% endif %}
             {% if object.qr_code %}
@@ -94,8 +94,8 @@
             <div>{{ object.phone_number }} </div>
             <div>{{ object.email_address }} </div>
             <div><a id="id_vk_url"></a></div>
-            {% if object.get_client_balance %}
-              <div>{{ object.get_client_balance }} ₽</div>
+            {% if object.balance %}
+              <div>{{ object.balance }} ₽</div>
             {% endif %}
             {% if object.qr_code %}
                 <img src="{% qr_url_from_text object.qr_code.hex error_correction="H" size=8 %}" alt="object.qr_code">
@@ -187,6 +187,7 @@
                     <th scope="col">Дата</th>
                     <th scope="col">Платеж</th>
                     <th scope="col">Причина изменения баланса</th>
+                    <th scope="col">Абонемент</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -195,6 +196,7 @@
                     <td>{{ bal.entry_date }}</td>
                     <td>{{ bal.balance }}</td>
                     <td>{{ bal.reason }}</td>
+                    <td>{{ bal.subscription.subscription.name }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>

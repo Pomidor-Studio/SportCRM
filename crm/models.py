@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import date, timedelta
+import decimal
+from datetime import date, datetime, timedelta
 from itertools import count
 from typing import Dict, List, Optional
 import uuid
@@ -494,9 +495,9 @@ class Client(CompanyObjectModel):
     birthday = models.DateField("Дата рождения", null=True, blank=True)
     phone_number = models.CharField("Телефон", max_length=50, blank=True)
     email_address = models.CharField("Email", max_length=50, blank=True)
-    vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
+    vk_user_id = models.IntegerField("id ученика в ВК", null=True)
+    balance = models.DecimalField("Баланс", max_digits=9, decimal_places=2, default=0)
     qr_code = models.UUIDField("QR код", blank=True, null=True, unique=True, default=uuid.uuid4)
-
     objects = ClientManager()
 
     class Meta:
@@ -516,15 +517,17 @@ class Client(CompanyObjectModel):
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
 
-    def get_client_balance(self):
-        payments = list(ClientBalance.objects.filter(client_id=self.id))
-        if not payments:
-            balance = 0
-        else:
-            balance = 0
-            for payment in payments:
-                balance = balance + payment.balance
-        return balance
+    def update_balance(self, top_up_amount):
+        self.balance = self.balance + decimal.Decimal(top_up_amount)
+        self.save()
+
+    def add_balance_in_history(self, top_up_amount, reason):
+        ClientBalance.objects.get_or_create(balance=top_up_amount,
+                                            client=self,
+                                            reason=reason,
+                                            entry_date=datetime.now(),
+                                            actual_entry_date=datetime.now())
+        self.update_balance(top_up_amount)
 
 
 class ClientSubscriptionQuerySet(models.QuerySet):
@@ -550,13 +553,6 @@ class ClientSubscriptionsManager(
     def revoke_extending(self, activated_event: Event):
         # TODO: Add revert cancellation, with transitive dependencies
         pass
-
-
-class ClientBalance(models.Model):
-    balance = models.FloatField("Баланс", default=0)
-    client = TenantForeignKey(Client, on_delete=models.PROTECT, verbose_name="Ученик")
-    reason = models.TextField("Причина изменения баланса")
-    entry_date = models.DateField("Дата зачисления", default=date.today())
 
 
 class ClientAttendanceExists(Exception):
@@ -688,6 +684,30 @@ class ClientSubscriptions(CompanyObjectModel):
 
     def __str__(self):
         return f'{self.subscription.name} (до {self.end_date:%d.%m.%Y})'
+
+
+class ClientBalance(CompanyObjectModel):
+    balance = models.FloatField("Баланс",
+                                default=0,
+                                blank=True)
+    client = TenantForeignKey(Client,
+                              on_delete=models.PROTECT,
+                              verbose_name="Ученик"
+                              )
+    reason = models.TextField("Причина изменения баланса", null=True, blank=True)
+    subscription = TenantForeignKey(ClientSubscriptions,
+                                    on_delete=models.PROTECT,
+                                    blank=True,
+                                    verbose_name="Абонемент Клиента",
+                                    null=True,
+                                    default=None
+                                    )
+    entry_date = models.DateTimeField("Дата зачисления",
+                                      default=datetime.now()
+                                      )
+    actual_entry_date = models.DateTimeField("Фактическая дата зачисления",
+                                             default=datetime.now()
+                                             )
 
 
 @reversion.register()
