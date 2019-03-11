@@ -202,10 +202,5 @@ SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
 
 SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
 
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_BEAT_SCHEDULE = {}  # For configuration of periodical tasks
-CELERY_BROKER_URL = 'redis://HOST:PORT/DB'
-CELERY_RESULT_BACKEND = 'redis://HOST:PORT/DB'
-
 PHONENUMBER_DB_FORMAT = 'E164'
 PHONENUMBER_DEFAULT_REGION = 'RU'
