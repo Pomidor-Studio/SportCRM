@@ -575,7 +575,7 @@ class ClientSubscriptions(CompanyObjectModel):
                     new_end_date if new_end_date != self.end_date else None
                 )
             )
-            self.visits_left += int(added_visits)
+            self.visits_left += added_visits
             self.end_date = new_end_date
             self.save()
 
