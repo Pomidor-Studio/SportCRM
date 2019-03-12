@@ -164,8 +164,8 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
 
     def form_valid(self, form):
         self.object.extend_duration(
-            form['visit_limit'].data,
-            form['reason'].data
+            form.cleaned_data['visit_limit'],
+            form.cleaned_data['reason']
         )
         return super().form_valid(form)
 
