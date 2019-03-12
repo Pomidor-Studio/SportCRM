@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
+import decimal
 import uuid
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, time
 from itertools import count
 from typing import Callable, Dict, List, Optional
 
@@ -373,12 +374,39 @@ class EventClass(CompanyObjectModel):
             self.event_set.filter(date__range=(start_date, end_date))
         }
 
+        if start_date < self.date_from:
+            start_date = self.date_from
+
         if self.date_to and self.date_to < end_date:
             end_date = self.date_to
 
+        days_time = {
+            x['day']: (x['start_time'], x['end_time'])
+            for x in
+            self.dayoftheweekclass_set
+                .all()
+                .values('day', 'start_time', 'end_time')
+        }
+
         for event_date in next_day(start_date, end_date, Weekdays(self.days())):
             if event_date not in events:
-                events[event_date] = Event(date=event_date, event_class=self)
+                event = Event(
+                    date=event_date,
+                    event_class=self
+                )
+                events[event_date] = event
+            else:
+                event = events[event_date]
+
+            # Pre-set data to event can reduce response time in ten times
+            # For example non-optimized response of full calendar for one month
+            # is running for 929ms, after optimization only 80ms
+            event.event_class_name = self.name
+            try:
+                event.start_time = days_time[event_date.weekday()][0]
+                event.end_time = days_time[event_date.weekday()][1]
+            except KeyError:
+                pass
 
         return events
 
@@ -583,8 +611,9 @@ class Client(CompanyObjectModel):
     birthday = models.DateField("Дата рождения", null=True, blank=True)
     phone_number = models.CharField("Телефон", max_length=50, blank=True)
     email_address = models.CharField("Email", max_length=50, blank=True)
+
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
-    balance = models.FloatField("Баланс", default=0)
+    balance = models.DecimalField("Баланс", max_digits=9, decimal_places=2, default=0)
     qr_code = models.UUIDField(
         "QR код",
         blank=True,
@@ -611,6 +640,21 @@ class Client(CompanyObjectModel):
     @property
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
+
+    def update_balance(self, top_up_amount):
+        self.balance = self.balance + decimal.Decimal(top_up_amount)
+        self.save()
+
+    def add_balance_in_history(self, top_up_amount, reason):
+        with transaction.atomic():
+            ClientBalanceChangeHistory.objects.get_or_create(
+                change_value=top_up_amount,
+                client=self,
+                reason=reason,
+                entry_date=datetime.now(),
+                actual_entry_date=datetime.now()
+            )
+            self.update_balance(top_up_amount)
 
 
 class ClientSubscriptionQuerySet(TenantQuerySet):
@@ -929,6 +973,40 @@ class ClientSubscriptions(CompanyObjectModel):
         return f'{self.subscription.name} (до {self.end_date:%d.%m.%Y})'
 
 
+class ClientBalanceChangeHistory(CompanyObjectModel):
+    change_value = models.DecimalField(
+        "Баланс",
+        max_digits=9,
+        decimal_places=2,
+        default=0
+    )
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик"
+    )
+    reason = models.TextField(
+        "Причина изменения баланса",
+        blank=True
+    )
+    subscription = TenantForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        blank=True,
+        verbose_name="Абонемент Клиента",
+        null=True,
+        default=None
+    )
+    entry_date = models.DateTimeField(
+        "Дата зачисления",
+        default=datetime.now()
+    )
+    actual_entry_date = models.DateTimeField(
+        "Фактическая дата зачисления",
+        default=datetime.now()
+    )
+
+
 @reversion.register()
 class ExtensionHistory(CompanyObjectModel):
     client_subscription = TenantForeignKey(
@@ -1074,6 +1152,50 @@ class Event(CompanyObjectModel):
     @property
     def is_overpast(self):
         return self.date <= date.today()
+
+    # Hack to cache event class name in useful cases
+    # Usage can be seen in EventClass.get_calendar
+    _ec_name: str = None
+    _start_time: time = None
+    _end_time: time = None
+
+    @property
+    def event_class_name(self) -> str:
+        return self._ec_name if self._ec_name else self.event_class.name
+
+    @event_class_name.setter
+    def event_class_name(self, val):
+        self._ec_name = val
+
+    @property
+    def start_time(self):
+        if self._start_time:
+            return self._start_time
+
+        weekday = self.date.weekday()
+        start_time = self.event_class.dayoftheweekclass_set.filter(
+            day=weekday
+        ).first().start_time
+        return start_time
+
+    @start_time.setter
+    def start_time(self, val):
+        self._start_time = val
+
+    @property
+    def end_time(self):
+        if self._end_time:
+            return self._end_time
+
+        weekday = self.date.weekday()
+        end_time = self.event_class.dayoftheweekclass_set.filter(
+            day=weekday
+        ).first().end_time
+        return end_time
+
+    @end_time.setter
+    def end_time(self, val):
+        self._end_time = val
 
     def cancel_event(self, extend_subscriptions=False):
         if not self.is_active:

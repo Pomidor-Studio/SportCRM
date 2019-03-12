@@ -7,6 +7,7 @@ from crm.views.manager import (
     core as manager_core_views,
     coach as manager_coach_views,
     client as manager_client_views,
+    balance as manager_balance_views,
     subscription as manager_subs_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
@@ -89,9 +90,14 @@ manager_client_subs_urlpatterns = ([
     ),
 ], 'subscription')
 
+manager_client_balance_urlpatterns = ([
+    path('', manager_balance_views.Create.as_view(), name='new')
+], 'balance')
+
 manager_clients_urlpatterns = ([
     path('', manager_client_views.List.as_view(), name='list'),
     path('<int:pk>/', manager_client_views.Detail.as_view(), name='detail'),
+    path('<int:pk>/balance/', include(manager_client_balance_urlpatterns)),
     path('new/', manager_client_views.Create.as_view(), name='new'),
     path(
         '<int:pk>/update/',
@@ -150,8 +156,9 @@ manager_subscriptions_urlpatterns = ([
 ], 'subscription')
 
 # TODO: Remove obsolete views and urls
+#  Calendar.as_view - is active view
 manager_events_urlpatterns = ([
-    path('', manager_event_views.List.as_view(), name='list'),
+    path('', manager_event_views.Calendar.as_view(), name='calendar'),
     path('new/', manager_event_views.Create.as_view(), name='new'),
     path(
         '<int:pk>/update/',

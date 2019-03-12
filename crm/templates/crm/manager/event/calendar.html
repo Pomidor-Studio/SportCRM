@@ -1,0 +1,36 @@
+{% extends "crm/base.html" %}
+
+{% load html_helper %}
+
+{% block extrahead %}
+  {% css 'css/fullcalendar.min.css' %}
+  {% js 'js/fullcalendar.min.js' %}
+  {% js 'js/fullcalendar-locale-ru.js' %}
+  <script type="text/javascript">
+    $(function() {
+      $('#calendar').fullCalendar({
+        locale: 'ru',
+        height: 'auto',
+        aspectRatio: 3,
+        themeSystem: 'bootstrap4',
+        timeFormat: 'H:mm',
+        displayEventTime: true,
+        displayEventEnd: true,
+        eventSources: [
+          {
+            url: '{% url 'api-v1:manager:event:calendar' %}',
+          }
+        ]
+      });
+    });
+  </script>
+{% endblock %}
+
+{% block content %}
+
+  <div class="ml-4 mt-4 mr-4">
+    <h1 class="border-bottom mb-2">Календарь тренировок</h1>
+    <div id="calendar"></div>
+  </div>
+
+{% endblock content %}
