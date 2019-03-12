@@ -56,6 +56,8 @@
         $("#id_price").val($(this).find("option:selected").attr("price"));
         $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
         {% if allow_check_overlapping %}
+        $('div.overlapping').hide();
+        $('#is-overlapping').hide();
         if (canCheckOverlapping()) {
           checkOverlapping();
         }
