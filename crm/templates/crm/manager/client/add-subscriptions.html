@@ -17,6 +17,8 @@
           $('#id_visits_left').val();
       }
       function checkOverlapping() {
+        $('div.overlapping').hide();
+        $('#is-overlapping').hide();
         $.get(
           '{% url "crm:manager:client:check-overlapping" %}',
           {
