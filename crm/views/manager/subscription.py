@@ -25,7 +25,7 @@ class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
     template_name = 'crm/manager/subscription/form.html'
 
 
-class Update(PermissionRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
+class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     permission_required = 'subscription.edit'
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
