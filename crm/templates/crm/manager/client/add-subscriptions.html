@@ -17,6 +17,8 @@
           $('#id_visits_left').val();
       }
       function checkOverlapping() {
+        $('div.overlapping').hide();
+        $('#is-overlapping').hide();
         $.get(
           '{% url "crm:manager:client:check-overlapping" %}',
           {
@@ -56,8 +58,6 @@
         $("#id_price").val($(this).find("option:selected").attr("price"));
         $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
         {% if allow_check_overlapping %}
-        $('div.overlapping').hide();
-        $('#is-overlapping').hide();
         if (canCheckOverlapping()) {
           checkOverlapping();
         }
@@ -66,8 +66,6 @@
 
       {% if allow_check_overlapping %}
       $('#id_start_date, #id_visits_left').on('input', function() {
-        $('div.overlapping').hide();
-        $('#is-overlapping').hide();
         if (canCheckOverlapping()) {
           checkOverlapping();
         }
