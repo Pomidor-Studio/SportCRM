@@ -1213,8 +1213,8 @@ class Event(CompanyObjectModel):
                 ClientSubscriptions.objects.extend_by_cancellation(self)
 
             try:
-                from bot.tasks import notify_event_cancellation
-                notify_event_cancellation.delay(self.id)
+                from google_tasks.tasks import enqueue
+                enqueue('notify_event_cancellation', self.id)
             except ImportError:
                 pass
 

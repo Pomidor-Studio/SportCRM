@@ -1,10 +1,7 @@
-from sportcrm import celery_app
-
 from crm.models import Event, ClientSubscriptions, Client
 from bot.api.messages.event import CancelledEvent
 
 
-@celery_app.task
 def notify_event_cancellation(event_id: int):
     try:
         event = Event.objects.get(id=event_id)
