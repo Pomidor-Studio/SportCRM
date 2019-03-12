@@ -1,11 +1,11 @@
 from datetime import date
 
 import pytest
-from hamcrest import (
-    assert_that, calling, contains, raises,
-)
+from hamcrest import assert_that, calling, has_length, is_, raises
+from pytest_mock import MockFixture
 
 from crm import models
+from crm.events import range_days
 
 pytestmark = pytest.mark.django_db
 
@@ -21,19 +21,85 @@ def test_nearest_infinite_no_days(event_class_factory):
     )
 
 
-@pytest.mark.parametrize('days', [
-    [0, 1, 2, 3, 4, 5, 6],
-    [0],
-    [6],
-    [0, 2, 4],
-    [1, 3, 5]
-])
-def test_gen_calendar_behaviour(days, event_class_factory):
-    monday = date(2019, 2, 25)
-    last_day = date(2019, 3, 10)
-    ec = event_class_factory(date_from=monday, days=days)
+def test_get_calendar(event_class_factory):
+    start = date(2019, 1, 1)
+    ec = event_class_factory(date_from=start)
 
-    dumb_cal = ec.get_calendar(monday, last_day)
-    gen_cal = ec.get_calendar_gen(monday, last_day)
+    assert_that(
+        ec.get_calendar(start, date(2019, 1, 31)).values(),
+        has_length(31)
+    )
 
-    assert_that(dumb_cal, contains(*gen_cal))
+
+def test_get_calendar_start_is_less_than_event_from(event_class_factory):
+    start = date(2019, 1, 1)
+    ec = event_class_factory(date_from=date(2019, 1, 21))
+
+    assert_that(
+        ec.get_calendar(start, date(2019, 1, 31)).values(),
+        has_length(11)
+    )
+
+
+def test_get_calendar_end_is_greater_than_event_to(event_class_factory):
+    start = date(2019, 1, 1)
+    ec = event_class_factory(date_from=start, date_to=date(2019, 1, 10))
+
+    assert_that(
+        ec.get_calendar(start, date(2019, 1, 31)).values(),
+        has_length(10)
+    )
+
+
+def test_get_calendar_all_absent(
+    event_class_factory,
+    mocker: MockFixture
+):
+    start = date(2019, 1, 1)
+    ec = event_class_factory(date_from=start)
+    spy = mocker.spy(models, 'Event')
+
+    ec.get_calendar(start, date(2019, 1, 31))
+    assert_that(
+        spy.call_count, is_(31)
+    )
+
+
+def test_get_calendar_partial_events_exists(
+    event_class_factory,
+    event_factory,
+    mocker: MockFixture
+):
+    start = date(2019, 1, 1)
+    ec = event_class_factory(date_from=start)
+    for day in range_days(start, date(2019, 1, 4)):
+        event_factory(
+            company=ec.company,
+            event_class=ec,
+            date=day
+        )
+
+    spy = mocker.spy(models, 'Event')
+
+    ec.get_calendar(start, date(2019, 1, 10))
+    assert_that(spy.call_count, is_(7))
+
+
+def test_get_calendar_all_events_exists(
+    event_class_factory,
+    event_factory,
+    mocker: MockFixture
+):
+    start = date(2019, 1, 1)
+    ec = event_class_factory(date_from=start)
+    for day in range_days(start, date(2019, 1, 11)):
+        event_factory(
+            company=ec.company,
+            event_class=ec,
+            date=day
+        )
+
+    spy = mocker.spy(models, 'Event')
+
+    ec.get_calendar(start, date(2019, 1, 10))
+    assert_that(spy.call_count, is_(0))

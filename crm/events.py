@@ -103,3 +103,13 @@ def next_day(
     while current <= stop:
         yield current
         current += timedelta(days=next(rr_deltas))
+
+
+def range_days(start: date, stop: date) -> Generator[date, None, None]:
+    if start > stop:
+        raise ValueError('Start of period is greater than end date')
+
+    current = start
+    while current < stop:
+        yield current
+        current += timedelta(days=1)

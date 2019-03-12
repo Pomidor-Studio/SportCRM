@@ -7,6 +7,8 @@ from django.views.generic import (
 
 from datetime import datetime
 from django_filters.views import FilterView
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.serializers import DateField, IntegerField
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
@@ -15,7 +17,11 @@ from crm.forms import (
     AttendanceForm, ClientForm, ClientSubscriptionForm,
     ExtendClientSubscriptionForm,
 )
-from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory
+from crm.models import (
+    Attendance, Client, ClientSubscriptions,
+    ExtensionHistory, SubscriptionsType,
+)
+from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -63,6 +69,16 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['client_id'] = (
+            self.object.client_id
+            if self.object and hasattr(self.object, 'client')
+            else self.kwargs['client_id']
+        )
+        context['allow_check_overlapping'] = True
+        return context
+
     def form_valid(self, form):
         cash_earned = form.cleaned_data['cash_earned']
         abon_price = form.cleaned_data['price']
@@ -76,6 +92,41 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
             form.instance.client_id = self.kwargs['client_id']
             client.save()
         return super().form_valid(form)
+
+
+class AddSubscriptionWithExtending(AddSubscription):
+
+    object: ClientSubscriptions = ...
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            ret_val = super().form_valid(form)
+
+            to_cancel_events = self.object.canceled_events()[:len(
+                self.object.remained_events()
+            )]
+            for event in to_cancel_events:
+                self.object.extend_by_cancellation(event)
+        return ret_val
+
+
+class CheckOverlapping(RetrieveAPIView):
+    serializer_class = ClientSubscriptionCheckOverlappingSerializer
+
+    def get_object(self):
+        subscription = SubscriptionsType.objects.get(
+            id=self.request.query_params.get('st'))
+        start_date = DateField(input_formats=['%d.%m.%Y']).to_internal_value(
+            self.request.query_params.get('start'))
+        visits_left = IntegerField().to_internal_value(
+            self.request.query_params.get('vl'))
+
+        return ClientSubscriptions(
+            subscription=subscription,
+            start_date=start_date,
+            end_date=subscription.end_date(start_date),
+            visits_left=visits_left
+        )
 
 
 class AddAttendance(PermissionRequiredMixin, RevisionMixin, CreateView):
@@ -119,8 +170,8 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
 
     def form_valid(self, form):
         self.object.extend_duration(
-            form['visit_limit'].data,
-            form['reason'].data
+            form.cleaned_data['visit_limit'],
+            form.cleaned_data['reason']
         )
         return super().form_valid(form)
 
@@ -139,6 +190,12 @@ class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
         context = super().get_context_data(**kwargs)
         context['history'] = ExtensionHistory.objects.filter(
             client_subscription=self.object.id)
+        context['client_id'] = (
+            self.object.client_id
+            if self.object and hasattr(self.object, 'client')
+            else self.kwargs['client_id']
+        )
+        context['allow_check_overlapping'] = False
         return context
 
 

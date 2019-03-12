@@ -111,7 +111,7 @@ class SubscriptionsTypeAdmin(CompareVersionAdmin):
 
 @admin.register(models.Client)
 class ClientAdmin(CompareVersionAdmin):
-    pass
+    list_display = ('name', 'vk_user_id', 'company')
 
 
 @admin.register(models.ClientSubscriptions)
