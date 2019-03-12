@@ -12,7 +12,7 @@ from django_multitenant.utils import get_current_tenant
 from .models import (
     Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
     EventClass, SubscriptionsType,
-    ClientBalance)
+    ClientBalanceChangeHistory)
 
 
 class TenantModelForm(forms.ModelForm):
@@ -55,11 +55,11 @@ class ClientForm(TenantModelForm):
 class Balance(TenantModelForm):
 
     class Meta:
-        model = ClientBalance
+        model = ClientBalanceChangeHistory
         widgets = {
-            'balance': forms.NumberInput(),
+            'change_value': forms.NumberInput(),
             'reason': forms.TextInput(attrs={"class": "form-control", "placeholder": "Укажите причину изменения баланса"}),
-            'entry_date': DatePickerInput(format='%d.%m.%Y 18:00',
+            'entry_date': DatePickerInput(format='%d.%m.%Y',
                                           attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"})
         }
         exclude = ('client', 'actual_entry_date',)

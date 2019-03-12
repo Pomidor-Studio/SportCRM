@@ -522,12 +522,15 @@ class Client(CompanyObjectModel):
         self.save()
 
     def add_balance_in_history(self, top_up_amount, reason):
-        ClientBalance.objects.get_or_create(balance=top_up_amount,
-                                            client=self,
-                                            reason=reason,
-                                            entry_date=datetime.now(),
-                                            actual_entry_date=datetime.now())
-        self.update_balance(top_up_amount)
+        with transaction.atomic():
+            ClientBalanceChangeHistory.objects.get_or_create(
+                change_value=top_up_amount,
+                client=self,
+                reason=reason,
+                entry_date=datetime.now(),
+                actual_entry_date=datetime.now()
+            )
+            self.update_balance(top_up_amount)
 
 
 class ClientSubscriptionQuerySet(models.QuerySet):
@@ -686,28 +689,38 @@ class ClientSubscriptions(CompanyObjectModel):
         return f'{self.subscription.name} (до {self.end_date:%d.%m.%Y})'
 
 
-class ClientBalance(CompanyObjectModel):
-    balance = models.FloatField("Баланс",
-                                default=0,
-                                blank=True)
-    client = TenantForeignKey(Client,
-                              on_delete=models.PROTECT,
-                              verbose_name="Ученик"
-                              )
-    reason = models.TextField("Причина изменения баланса", null=True, blank=True)
-    subscription = TenantForeignKey(ClientSubscriptions,
-                                    on_delete=models.PROTECT,
-                                    blank=True,
-                                    verbose_name="Абонемент Клиента",
-                                    null=True,
-                                    default=None
-                                    )
-    entry_date = models.DateTimeField("Дата зачисления",
-                                      default=datetime.now()
-                                      )
-    actual_entry_date = models.DateTimeField("Фактическая дата зачисления",
-                                             default=datetime.now()
-                                             )
+class ClientBalanceChangeHistory(CompanyObjectModel):
+    change_value = models.DecimalField(
+        "Баланс",
+        max_digits=9,
+        decimal_places=2,
+        default=0
+    )
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик"
+    )
+    reason = models.TextField(
+        "Причина изменения баланса",
+        blank=True
+    )
+    subscription = TenantForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        blank=True,
+        verbose_name="Абонемент Клиента",
+        null=True,
+        default=None
+    )
+    entry_date = models.DateTimeField(
+        "Дата зачисления",
+        default=datetime.now()
+    )
+    actual_entry_date = models.DateTimeField(
+        "Фактическая дата зачисления",
+        default=datetime.now()
+    )
 
 
 @reversion.register()

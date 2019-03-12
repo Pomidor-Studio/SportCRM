@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -14,7 +15,7 @@ from crm.forms import (
     AttendanceForm, ClientForm, ClientSubscriptionForm,
     ExtendClientSubscriptionForm,
 )
-from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory, ClientBalance
+from crm.models import Attendance, Client, ClientSubscriptions, ExtensionHistory
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -67,12 +68,13 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
         abon_price = form.cleaned_data['price']
         client = Client.objects.get(id=self.kwargs['client_id'])
         default_reason = 'Покупка абонемента'
-        client.add_balance_in_history(-abon_price, default_reason)
-        if cash_earned:
-            default_reason = 'Перечесление средств за абонемент'
-            client.add_balance_in_history(abon_price, default_reason)
-        form.instance.client_id = self.kwargs['client_id']
-        client.save()
+        with transaction.atomic():
+            client.add_balance_in_history(-abon_price, default_reason)
+            if cash_earned:
+                default_reason = 'Перечесление средств за абонемент'
+                client.add_balance_in_history(abon_price, default_reason)
+            form.instance.client_id = self.kwargs['client_id']
+            client.save()
         return super().form_valid(form)
 
 

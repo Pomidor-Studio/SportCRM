@@ -1,14 +1,15 @@
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views.generic import CreateView
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.forms import Balance
-from crm.models import ClientBalance, Client
+from crm.models import ClientBalanceChangeHistory, Client
 
 
 class Create(PermissionRequiredMixin, CreateView):
-    model = ClientBalance
+    model = ClientBalanceChangeHistory
     template_name = 'crm/manager/balance/form.html'
     permission_required = 'client-balance.add'
     form_class = Balance
@@ -26,6 +27,7 @@ class Create(PermissionRequiredMixin, CreateView):
     def form_valid(self, form):
         client_id = self.kwargs['pk']
         form.instance.client_id = client_id
-        Client.objects.get(id=client_id).update_balance(form.instance.balance)
-        return super().form_valid(form)
+        with transaction.atomic():
+            Client.objects.get(id=client_id).update_balance(form.instance.change_value)
+            return super().form_valid(form)
 

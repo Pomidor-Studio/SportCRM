@@ -191,10 +191,10 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for bal in object.clientbalance_set.all  %} {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
+                {% for bal in object.clientbalancechangehistory_set.all  %} {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
                 <tr>
                     <td>{{ bal.entry_date }}</td>
-                    <td>{{ bal.balance }}</td>
+                    <td>{{ bal.change_value }}</td>
                     <td>{{ bal.reason }}</td>
                     <td>{{ bal.subscription.subscription.name }}</td>
                 </tr>
