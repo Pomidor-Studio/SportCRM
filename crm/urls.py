@@ -150,8 +150,9 @@ manager_subscriptions_urlpatterns = ([
 ], 'subscription')
 
 # TODO: Remove obsolete views and urls
+#  Calendar.as_view - is active view
 manager_events_urlpatterns = ([
-    path('', manager_event_views.List.as_view(), name='list'),
+    path('', manager_event_views.Calendar.as_view(), name='calendar'),
     path('new/', manager_event_views.Create.as_view(), name='new'),
     path(
         '<int:pk>/update/',
