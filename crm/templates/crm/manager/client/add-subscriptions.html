@@ -66,6 +66,8 @@
 
       {% if allow_check_overlapping %}
       $('#id_start_date, #id_visits_left').on('input', function() {
+        $('div.overlapping').hide();
+        $('#is-overlapping').hide();
         if (canCheckOverlapping()) {
           checkOverlapping();
         }
