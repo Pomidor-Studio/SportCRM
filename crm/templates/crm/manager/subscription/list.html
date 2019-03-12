@@ -1,26 +1,34 @@
 {% extends "crm/base.html" %}
 
-{% block nav %}
-{% endblock nav %}
+{% load html_helper %}
 
 {% block content %}
   <script type="text/javascript"></script>
   <script>window.page_name = "Абонементы";</script>
-  <form id="clientsForm" method="POST"
-        style="width: 100%;">
+  <form
+    id="clientsForm" method="POST"
+    style="width: 100%;"
+  >
     <div class="ml-4 mt-4 mr-4">
       <legend class="border-bottom mb-2">Абонементы</legend>
       <div style="background-color: #FFFFFF;" class="sticky-top">
-        <a name="add-new" href="{% url 'crm:manager:subscription:new' %}"
-           class="btn btn-sm btn-info mb-2">Добавить абонемент</a>
-        <a
-          name="toggle-archive"
-          href="{% url 'crm:manager:subscription:list' %}?{{ filter.toggled_data.urlencode }}"
-          class="btn btn-sm btn-secondary mb-2"
-        >
-          <i class="fas fa-archive"></i>
-          {% if filter.form.with_archive.data %}Cкрыть{% else %}Показать{% endif %} архив
-        </a>
+        {% ifhasperm 'subscription.add' user %}
+          <a
+            name="add-new" href="{% url 'crm:manager:subscription:new' %}"
+            class="btn btn-sm btn-info mb-2"
+          >Добавить абонемент</a>
+        {% endifhasperm %}
+        {% ifhasperm 'subscription.view_archive' user %}
+          <a
+            name="toggle-archive"
+            href="{% url 'crm:manager:subscription:list' %}?{{ filter.toggled_data.urlencode }}"
+            class="btn btn-sm btn-secondary mb-2"
+          >
+            <i class="fas fa-archive"></i>
+            {% if filter.form.with_archive.data %}Cкрыть{% else %}
+              Показать{% endif %} архив
+          </a>
+        {% endifhasperm %}
       </div>
 
       <table class="table table-sm table-bordered">
@@ -30,8 +38,12 @@
           <th scope="col">Цена</th>
           <th scope="col">Продолжительность</th>
           <th scope="col">Лимит посещений</th>
-          <th scope="col" style="width:5%"></th>
-          <th scope="col" style="width:5%"></th>
+          {% ifhasperm 'subscription.edit' user %}
+            <th scope="col" style="width:5%"></th>
+          {% endifhasperm %}
+          {% ifhasperm 'subscription.delete' user %}
+            <th scope="col" style="width:5%"></th>
+          {% endifhasperm %}
         </tr>
         </thead>
         <tbody>
@@ -54,33 +66,39 @@
             <td>
               {{ subscription.visit_limit }}
             </td>
-            <td>
-              {% if not subscription.deleted %}
-                <a name="edit"
-                   href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                   class="btn btn-sm btn-outline-info"
-                >
-                  Редактировать
-                </a>
-              {% endif %}
-            </td>
-            <td>
-              {% if subscription.deleted %}
-                <a
-                  href="{% url "crm:manager:subscription:undelete" subscription.id %}"
-                  class="btn btn-secondary"
-                >
-                  Вернуть
-                </a>
-              {% else %}
-                <a
-                  href="{% url "crm:manager:subscription:delete" subscription.id %}"
-                  class="btn btn-danger"
-                >
-                  Удалить
-                </a>
-              {% endif %}
-            </td>
+
+            {% ifhasperm 'subscription.edit' user %}
+              <td>
+                {% if not subscription.deleted %}
+                  <a
+                    name="edit"
+                    href="{% url 'crm:manager:subscription:update' subscription.id %}"
+                    class="btn btn-sm btn-outline-info"
+                  >
+                    Редактировать
+                  </a>
+                {% endif %}
+              </td>
+            {% endifhasperm %}
+            {% ifhasperm 'subscription.delete' user %}
+              <td>
+                {% if subscription.deleted %}
+                  <a
+                    href="{% url "crm:manager:subscription:undelete" subscription.id %}"
+                    class="btn btn-secondary"
+                  >
+                    Вернуть
+                  </a>
+                {% else %}
+                  <a
+                    href="{% url "crm:manager:subscription:delete" subscription.id %}"
+                    class="btn btn-danger"
+                  >
+                    Удалить
+                  </a>
+                {% endif %}
+              </td>
+            {% endifhasperm %}
           </tr>
         {% endfor %}
         </tbody>

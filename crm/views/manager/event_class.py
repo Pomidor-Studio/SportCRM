@@ -1,18 +1,16 @@
-from uuid import UUID
 from datetime import date, timedelta
 from typing import List, Optional
+from uuid import UUID
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, ListView,
-    TemplateView,
-    RedirectView)
+    CreateView, DeleteView, DetailView, ListView, RedirectView, TemplateView,
+)
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -20,28 +18,32 @@ from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
-from crm.models import (Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions,
-                        SubscriptionsType,
-                        ClientAttendanceExists)
+from crm.models import (
+    Attendance, Client, ClientAttendanceExists, ClientSubscriptions,
+    DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
+)
 from crm.serializers import CalendarEventSerializer
-from crm.views.mixin import UserManagerMixin, RedirectWithActionView
+from crm.views.mixin import RedirectWithActionView
 
 
-class ObjList(LoginRequiredMixin, UserManagerMixin, ListView):
+class ObjList(PermissionRequiredMixin, ListView):
     model = EventClass
     template_name = 'crm/manager/event_class/list.html'
+    permission_required = 'event_class'
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
+class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:manager:event-class:list')
     template_name = 'crm/manager/event_class/confirm_delete.html'
+    permission_required = 'event_class.delete'
 
 
-class Calendar(LoginRequiredMixin, UserManagerMixin, DetailView):
+class Calendar(PermissionRequiredMixin, DetailView):
     model = EventClass
     context_object_name = 'event_class'
     template_name = 'crm/manager/event_class/calendar.html'
+    permission_required = 'event'
 
 
 class ApiCalendar(ListAPIView):
@@ -165,13 +167,13 @@ class ActivateWithRevoke(
 
 
 class MarkEventAttendance(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
     CreateView
 ):
     template_name = 'crm/manager/client/add-attendance.html'
     form_class = EventAttendanceForm
+    permission_required = 'is_manager'
 
     def get_object(self, queryset=None):
         event_date = date(
@@ -193,18 +195,15 @@ class MarkEventAttendance(
 
 
 class MarkClientAttendance(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
+    EventByDateMixin,
     RevisionMixin,
     RedirectView
 ):
+    permission_required = 'event.mark_attendance'
 
     def get(self, request, *args, **kwargs):
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
-                                               date=event_date)
+        event = self.get_object()
         subscription_id = self.kwargs.pop('subscription_id')
         subscription = ClientSubscriptions.objects.get(id=subscription_id)
         subscription.mark_visit(event)
@@ -212,17 +211,18 @@ class MarkClientAttendance(
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+        return reverse(
+            'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class CreateEdit(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
     TemplateView
 ):
 
     template_name = 'crm/manager/event_class/form.html'
+    permission_required = 'event_class.add'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -1,4 +1,3 @@
-from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.views.generic import RedirectView
@@ -6,18 +5,6 @@ from django.views.generic.detail import (
     BaseDetailView,
     SingleObjectTemplateResponseMixin,
 )
-
-
-class UserManagerMixin(UserPassesTestMixin):
-
-    def test_func(self):
-        return self.request.user.is_manager
-
-
-class UserCoachMixin(UserPassesTestMixin):
-
-    def test_func(self):
-        return self.request.user.is_coach
 
 
 class UnDeletionMixin:
