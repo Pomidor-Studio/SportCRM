@@ -160,6 +160,7 @@
                 <tr>
                     <th scope="col">Дата</th>
                     <th scope="col">Тренировка</th>
+                    <th scope="col">Абонемент</th>
                     <th style="width:5%" scope="col"></th>
                 </tr>
                 </thead>
@@ -168,6 +169,7 @@
                 <tr>
                     <td>{{ sub.event.date|date }}</td>
                     <td>{{ sub.event.event_class }}</td>
+                    <td>{{ sub.subscription }}</td>
                     <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:attendance:delete' sub.id %}">Удалить</a></td>
                 </tr>
                 {% endfor %}
