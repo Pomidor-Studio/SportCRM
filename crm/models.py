@@ -397,13 +397,13 @@ class EventClass(CompanyObjectModel):
             else:
                 event = events[event_date]
 
-            # Preset data to event can reduce response time in ten times
+            # Pre-set data to event can reduce response time in ten times
             # For example non-optimized response of full calendar for one month
             # is running for 929ms, after optimization only 80ms
             event.event_class_name = self.name
             try:
                 event.start_time = days_time[event_date.weekday()][0]
-                event.end_time = days_time[event_date.weekday()][0]
+                event.end_time = days_time[event_date.weekday()][1]
             except KeyError:
                 pass
 
