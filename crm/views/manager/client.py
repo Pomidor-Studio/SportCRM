@@ -4,6 +4,8 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
 )
+
+from datetime import datetime
 from django_filters.views import FilterView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.serializers import DateField, IntegerField
@@ -79,12 +81,16 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
 
     def form_valid(self, form):
         cash_earned = form.cleaned_data['cash_earned']
-        if not cash_earned:
-            abon_price = form.cleaned_data['price']
-            client = Client.objects.get(id=self.kwargs['client_id'])
-            client.balance -= abon_price
+        abon_price = form.cleaned_data['price']
+        client = Client.objects.get(id=self.kwargs['client_id'])
+        default_reason = 'Покупка абонемента'
+        with transaction.atomic():
+            client.add_balance_in_history(-abon_price, default_reason)
+            if cash_earned:
+                default_reason = 'Перечесление средств за абонемент'
+                client.add_balance_in_history(abon_price, default_reason)
+            form.instance.client_id = self.kwargs['client_id']
             client.save()
-        form.instance.client_id = self.kwargs['client_id']
         return super().form_valid(form)
 
 
