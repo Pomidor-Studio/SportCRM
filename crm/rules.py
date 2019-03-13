@@ -36,6 +36,8 @@ rules.add_perm('is_manager', is_logged_manager)
 rules.add_perm('is_coach', is_logged_coach)
 
 
+rules.add_perm('client-balance.add', is_logged_personnel)
+
 rules.add_perm('client', is_logged_personnel)
 rules.add_perm('client.add', is_logged_manager)
 rules.add_perm('client.edit', is_logged_manager)

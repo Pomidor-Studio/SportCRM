@@ -1,0 +1,41 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 %}
+{% load render_table from django_tables2 %}
+
+{% block extrahead %}
+{{ filter.form.media.css }}
+{% endblock extrahead %}
+
+{% block content %}
+
+<div class="ml-4 mt-4 mr-4">
+  <h1 class="border-bottom mb-2">Отчет по тренировкам</h1>
+  <div class="sticky-top">
+    <form class="form-inline mb-2"
+          action="{% url 'crm:manager:event:report' %}" method="GET">
+      {% csrf_token %}
+      <div>
+        {{ filter.form.date.label }}
+       {% bootstrap_field filter.form.date show_label=false %}
+      </div>
+      <div class="ml-2">
+        {{ filter.form.coach.label }}
+       {% bootstrap_field filter.form.coach show_label=false %}
+      </div>
+      <div class="ml-2">
+        {{ filter.form.event_class.label }}
+       {% bootstrap_field filter.form.event_class show_label=false %}
+      </div>
+
+      <input type="submit"
+                   value="Поиск" class="mt-4 ml-2 btn btn-success"/>
+    </form>
+  </div>
+  {% render_table table %}
+</div>
+{% endblock content %}
+{% block extra %}
+{{ filter.form.media.js }}
+{% endblock extra %}
+

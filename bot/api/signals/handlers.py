@@ -1,7 +1,6 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from crm.models import ClientSubscriptions
-from bot.api.settings import *
 from bot.api.vkapi import send_message
 
 
@@ -10,6 +9,7 @@ def sub_client(sender, created, **kwargs):
     client_subscription: ClientSubscriptions = kwargs['instance']
 
     vk_user_id = client_subscription.client.vk_user_id
+    token = client_subscription.client.vk_message_token
     message = []
 
     if vk_user_id is None:

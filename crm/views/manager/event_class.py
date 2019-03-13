@@ -1,6 +1,8 @@
+from uuid import UUID
 from datetime import date, timedelta
 from typing import List, Optional
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import transaction
 from django.http import HttpResponseRedirect
@@ -19,7 +21,9 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from crm.enums import GRANULARITY
 from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
-from crm.models import Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions, SubscriptionsType
+from crm.models import (Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions,
+                        SubscriptionsType,
+                        ClientAttendanceExists)
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import UserManagerMixin, RedirectWithActionView
 
@@ -61,7 +65,7 @@ class ApiCalendar(ListAPIView):
 
 
 class EventByDateMixin:
-    def get_object(self, queryset=None):
+    def get_object(self, queryset=None) -> Event:
         event_date = date(
             self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
         )
@@ -329,3 +333,90 @@ class CreateEdit(
 
         return HttpResponseRedirect(reverse(
             'crm:manager:event-class:update', kwargs={'pk': self.object.id}))
+
+
+class Scanner(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    TemplateView
+):
+    permission_required = 'event.mark_attendance'
+    template_name = 'crm/manager/event/scanner.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['event'] = self.get_object()
+        return context
+
+
+class DoScan(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView
+):
+    permission_required = 'event.mark_attendance'
+    pattern_name = 'crm:manager:event-class:event:scanner'
+
+    def run_action(self):
+        code = self.kwargs.get('code')
+
+        if not code:
+            messages.error(self.request, 'Не передан код')
+            return
+        try:
+            uuid = UUID(code)
+        except ValueError:
+            messages.error(self.request, f'Некорректный формат кода "{code}"')
+            return
+
+        try:
+            client = Client.objects.get(qr_code=uuid)
+        except Client.DoesNotExist:
+            messages.error(self.request, f'Ученик с QR кодом {code} не найден')
+            return
+        event = self.get_object()
+        subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(
+            client=client).order_by(
+            'purchase_date').first()
+        if not subscription:
+            messages.warning(self.request, f'У {client} нет действующего абонемента')
+            return
+        try:
+            subscription.mark_visit(event)
+        except ClientAttendanceExists:
+            messages.warning(self.request, f'{client} уже отмечен')
+        else:
+            messages.info(self.request, f'{client} отмечен по абонементу {subscription}')
+            return
+
+    def get_redirect_url(self, *args, **kwargs):
+        kwargs.pop('code')
+        return super().get_redirect_url(*args, **kwargs)
+
+
+class DoCloseEvent(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView
+):
+    permission_required = 'event.mark_attendance'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.close_event()
+        return
+
+
+class DoOpenEvent(
+    PermissionRequiredMixin,
+    EventByDateMixin,
+    RedirectWithActionView
+):
+    permission_required = 'event.mark_attendance'
+    pattern_name = 'crm:manager:event-class:event:event-by-date'
+
+    def run_action(self):
+        event = self.get_object()
+        event.open_event()
+        return

@@ -8,11 +8,12 @@ from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_multitenant.utils import get_current_tenant
+from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import (
     Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
     EventClass, SubscriptionsType,
-)
+    ClientBalanceChangeHistory)
 
 
 class TenantModelForm(forms.ModelForm):
@@ -39,7 +40,7 @@ class ClientForm(TenantModelForm):
         model = Client
 
         fields = ['name', 'address',
-                  'birthday', 'phone_number', 'email_address', 'vk_user_id']
+                  'birthday', 'phone_number', 'email_address', 'vk_user_id', 'qr_code']
         widgets = {
             'birthday': DatePickerInput(format='%d.%m.%Y',
                                         attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
@@ -52,14 +53,30 @@ class ClientForm(TenantModelForm):
         }
 
 
+class Balance(TenantModelForm):
+
+    class Meta:
+        model = ClientBalanceChangeHistory
+        widgets = {
+            'change_value': forms.NumberInput(),
+            'reason': forms.TextInput(attrs={"class": "form-control", "placeholder": "Укажите причину изменения баланса"}),
+            'entry_date': DatePickerInput(format='%d.%m.%Y',
+                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"})
+        }
+        exclude = ('client', 'actual_entry_date',)
+
+    # def __init__(self, attrs=None, choices=(), data=None):
+    #     super().__init__(attrs, choices)
+    #     self.data = data or {}
+
+
 class DataAttributesSelect(forms.Select):
 
     def __init__(self, attrs=None, choices=(), data=None):
         super().__init__(attrs, choices)
         self.data = data or {}
 
-    def create_option(self, name, value, label, selected, index,
-                      subindex=None, attrs=None):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=None, attrs=None)
         for data_attr, values in self.data.items():
@@ -75,45 +92,61 @@ class SubscriptionsTypeForm(TenantModelForm):
 
 
 class ExtendClientSubscriptionForm(forms.Form):
-    visit_limit = forms.CharField(label='Добавить посещений')
+    visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
     reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
 
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
 
-        self.fields['visit_limit'].initial = \
-            self.subscription.subscription.visit_limit
-
 
 class ClientSubscriptionForm(TenantModelForm):
-    cash_earned = forms.BooleanField(label='Деньги получены', required=False, initial=True)
-
-    def __init__(self, *args, **kwargs):
-        super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
-        choices = []
-        choices.append(("", "--------------"))
-        for st in SubscriptionsType.objects.all():
-            choices.append((st.id, st.name))
-
-        data = {'price': {'': ''}, 'visit_limit': {'': ''}}
-        for f in SubscriptionsType.objects.all():
-            data['price'][f.id] = f.price
-            data['visit_limit'][f.id] = f.visit_limit
-
-        self.fields['subscription'].widget = DataAttributesSelect(choices=choices, data=data)
+    cash_earned = forms.BooleanField(
+        label='Деньги получены',
+        required=False,
+        initial=True
+    )
 
     class Meta:
         model = ClientSubscriptions
         widgets = {
-            'purchase_date': DatePickerInput(format='%d.%m.%Y',
-                                             attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
-            'start_date': DatePickerInput(format='%d.%m.%Y',
-                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
-            'price': forms.TextInput(attrs={"class": "form-control", "placeholder": "Стоимость в рублях"}),
-            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": "Кол-во посещений"}),
+            'purchase_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'start_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'price': forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Стоимость в рублях"
+                }
+            ),
+            'visits_left': forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Кол-во посещений"
+                }
+            ),
         }
         exclude = ('client', 'end_date')
+
+    def __init__(self, *args, **kwargs):
+        super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
+
+        choices = [("", "--------------")]
+        data = {'price': {'': ''}, 'visit_limit': {'': ''}}
+
+        for st in SubscriptionsType.objects.all():
+            choices.append((st.id, st.name))
+
+            data['price'][st.id] = st.price
+            data['visit_limit'][st.id] = st.visit_limit
+
+        self.fields['subscription'].widget = DataAttributesSelect(
+            choices=choices, data=data)
 
 
 class AttendanceForm(TenantModelForm):
@@ -222,7 +255,9 @@ class CoachForm(TenantModelForm):
         model = Coach
         fields = ('phone_number',)
         widgets = {
-            'phone_number': forms.TextInput(attrs={'data-inputmask': True})
+            'phone_number': PhoneNumberInternationalFallbackWidget(
+                attrs={'data-phone': True}
+            )
         }
 
 

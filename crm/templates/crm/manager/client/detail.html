@@ -1,6 +1,6 @@
 {% extends "crm/base.html" %}
 
-{% load html_helper %}
+{% load html_helper qr_code %}
 
 {% block nav %}
 {% endblock nav %}
@@ -48,9 +48,9 @@
 
 
 <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">{{ object.name }}</legend>
-    <div class="row mb-2">
-      <div class="container-fluid">
+    <legend class="mb-2">{{ object.name }}</legend>
+    <div class="row border-top mb-2">
+      <div class="container-fluid mt-1">
         {% ifhasperm 'client.edit' user %}
         <a class="btn btn-sm btn-outline-info"
            href="{% url 'crm:manager:client:update' object.id %}">Изменить</a>
@@ -84,6 +84,9 @@
             {% if object.balance %}
                 <div class="font-weight-bold">Баланс:</div>
             {% endif %}
+            {% if object.qr_code %}
+                <div class="font-weight-bold">QR код:</div>
+            {% endif %}
         </div>
         <div class="col">
             <div>{{ object.address }} </div>
@@ -92,16 +95,19 @@
             <div>{{ object.email_address }} </div>
             <div><a id="id_vk_url"></a></div>
             {% if object.balance %}
-                <div>{{ object.balance }} ₽</div>
+              <div>{{ object.balance }} ₽</div>
+            {% endif %}
+            {% if object.qr_code %}
+                <img src="{% qr_url_from_text object.qr_code.hex error_correction="H" size=8 %}" alt="object.qr_code">
             {% endif %}
         </div>
         <div class="col-2 border-right">
             <img id="profile_pic" class="rounded"/>
         </div>
     </div>
-    <div class="row border-top">
+    <div class="row border-top border-bottom">
         <div class="col">
-            <span class="font-weight-bold ">Абонементы: </span>
+            <span class="font-weight-bold "><h5>Абонементы: </h5></span>
             <div class="mb-2 mt-2">
                 <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:new-subscription' object.id %}">Продать
                     абонемент</a>
@@ -143,9 +149,9 @@
             </table>
         </div>
     </div>
-    <div class="row">
+    <div class="row border-bottom mt-1">
         <div class="col">
-            <span class="font-weight-bold ">Посещения: </span>
+            <span class="font-weight-bold "><h5>Посещения: </h5></span>
             <div class="mb-2 mt-2">
                 <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:new-attendance' object.id %}">Отметить посещение</a>
             </div>
@@ -154,6 +160,7 @@
                 <tr>
                     <th scope="col">Дата</th>
                     <th scope="col">Тренировка</th>
+                    <th scope="col">Абонемент</th>
                     <th style="width:5%" scope="col"></th>
                 </tr>
                 </thead>
@@ -162,7 +169,36 @@
                 <tr>
                     <td>{{ sub.event.date|date }}</td>
                     <td>{{ sub.event.event_class }}</td>
+                    <td>{{ sub.subscription }}</td>
                     <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:attendance:delete' sub.id %}">Удалить</a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row border-bottom mt-1">
+        <div class="col">
+            <span class="font-weight-bold "><h5>История пополнения баланса: </h5></span>
+            <div class="mb-2 mt-2">
+                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить баланс</a>
+            </div>
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Дата</th>
+                    <th scope="col">Платеж</th>
+                    <th scope="col">Причина изменения баланса</th>
+                    <th scope="col">Абонемент</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for bal in object.clientbalancechangehistory_set.all  %} {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
+                <tr>
+                    <td>{{ bal.entry_date }}</td>
+                    <td>{{ bal.change_value }}</td>
+                    <td>{{ bal.reason }}</td>
+                    <td>{{ bal.subscription.subscription.name }}</td>
                 </tr>
                 {% endfor %}
                 </tbody>

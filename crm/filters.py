@@ -1,8 +1,14 @@
+from datetime import datetime, timedelta
+
 import django_filters
+from dateutil.relativedelta import relativedelta
 from django import forms
 from django.http import QueryDict
+from django_select2.forms import Select2MultipleWidget
+from phonenumber_field import modelfields
 
 from crm import models
+from crm.utils import BootstrapDateFromToRangeFilter
 
 
 class ClientFilter(django_filters.FilterSet):
@@ -14,6 +20,36 @@ class ClientFilter(django_filters.FilterSet):
     class Meta:
         model = models.Client
         fields = ('name',)
+
+
+class EventReportFilter(django_filters.FilterSet):
+    date = BootstrapDateFromToRangeFilter(label='Диапазон дат:', field_name='date')
+
+    # date = django_filters.DateFromToRangeFilter(field_name='date')
+    coach = django_filters.ModelMultipleChoiceFilter(
+        label='Тренер:',
+        field_name='event_class__coach',
+        queryset=models.Coach.objects.all(),
+        widget=Select2MultipleWidget
+    )
+    event_class = django_filters.ModelMultipleChoiceFilter(
+        label='Тип тренировки:',
+        field_name='event_class',
+        queryset=models.EventClass.objects.all(),
+        widget=Select2MultipleWidget
+    )
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        with_defaults_data = data.copy() if data is not None else QueryDict(mutable=True)
+        # Подставляем текущий месяц
+        if data is None:
+            with_defaults_data['date_after'] = datetime.today().replace(day=1)
+            with_defaults_data['date_before'] = datetime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)
+        super().__init__(with_defaults_data , queryset, request=request, prefix=prefix)
+
+    class Meta:
+        model = models.Event
+        fields = ('date',)
 
 
 class ArchivableFilterSet(django_filters.FilterSet):
@@ -55,6 +91,11 @@ class CoachFilter(ArchivableFilterSet):
     class Meta:
         model = models.Coach
         fields = '__all__'
+        filter_overrides = {
+            modelfields.PhoneNumberField: {
+                'filter_class': django_filters.CharFilter
+            }
+        }
 
 
 class LocationFilter(ArchivableFilterSet):

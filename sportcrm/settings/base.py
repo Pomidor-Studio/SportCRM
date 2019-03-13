@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # social_django MUST be defined BEFORE crm.apps.CrmConfig
 # as we redefine social_django admin for purposes of django-reversion
 INSTALLED_APPS = [
+    'phonenumber_field',
     'rest_framework',
     'bootstrap_datepicker_plus',
     'bootstrap4',
@@ -43,6 +44,7 @@ INSTALLED_APPS = [
     'reversion',
     'reversion_compare',
     'crm.apps.CrmConfig',
+    'django_filters',
     'bot.apps.BotConfig',
     'bot.apps.SignalsConfig',
     'django.contrib.admin',
@@ -51,6 +53,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_select2',
+    'django_tables2',
+    'qr_code',
+    'google_tasks.apps.GoogleTasksConfig',
 ]
 
 BOOTSTRAP4 = {
@@ -161,7 +167,7 @@ LOGGING = {
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = "/static/"
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -172,6 +178,8 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.vk.VKOAuth2',
     'sesame.backends.ModelBackend',
     'rules.permissions.ObjectPermissionBackend',
+    'crm.auth.backends.PhoneBackend',
+    'crm.auth.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -193,3 +201,6 @@ SOCIAL_AUTH_VK_OAUTH2_KEY = ''
 SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
 
 SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
+
+PHONENUMBER_DB_FORMAT = 'E164'
+PHONENUMBER_DEFAULT_REGION = 'RU'

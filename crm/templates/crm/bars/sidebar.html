@@ -2,13 +2,14 @@
 <nav class="col-md-2 d-none d-md-block sidebar" id="sidebar">
   <div class="sidebar-sticky">
     <ul class="navbar-nav flex-column">
-      {% ifhasperm 'coach' user %}
+      {% ifhasperm 'event_class' user %}
       <li class="nav-item">
         <a
           class="nav-link"
-          href="{% url 'crm:manager:coach:list' %}"
+          href="{% url 'crm:manager:event-class:list' %}"
+          name="Тренировки"
         >
-          Тренеры
+          Тренировки
         </a>
       </li>
       {% endifhasperm %}
@@ -23,14 +24,13 @@
         </a>
       </li>
       {% endifhasperm %}
-      {% ifhasperm 'event_class' user %}
+      {% ifhasperm 'coach' user %}
       <li class="nav-item">
         <a
           class="nav-link"
-          href="{% url 'crm:manager:event-class:list' %}"
-          name="Тренировки"
+          href="{% url 'crm:manager:coach:list' %}"
         >
-            Тренировки
+          Тренеры
         </a>
       </li>
       {% endifhasperm %}
@@ -41,7 +41,7 @@
           href="{% url 'crm:manager:subscription:list' %}"
           name="Абонементы"
         >
-            Абонементы
+          Абонементы
         </a>
       </li>
       {% endifhasperm %}
@@ -49,7 +49,7 @@
       <li class="nav-item">
         <a
           class="nav-link"
-          href="{% url 'crm:manager:event:list' %}"
+          href="{% url 'crm:manager:event:calendar' %}"
           name="Календарь тренировок"
         >
           Календарь тренировок
@@ -67,6 +67,15 @@
         </a>
       </li>
       {% endifhasperm %}
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          href="{% url 'crm:manager:reports' %}"
+          name="Отчеты"
+        >
+          Отчеты
+        </a>
+      </li>
       <li class="nav-item">
         <a
           class="nav-link"
