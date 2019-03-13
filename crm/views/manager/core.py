@@ -1,4 +1,5 @@
 from django.views.generic import TemplateView
+from rules.contrib.views import PermissionRequiredMixin
 
 
 class Home(PermissionRequiredMixin, TemplateView):

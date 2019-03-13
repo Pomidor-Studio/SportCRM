@@ -20,8 +20,7 @@
         class="btn btn-sm btn-secondary"
       >
         <i class="fas fa-archive"></i>
-        {% if filter.form.with_archive.data %}Cкрыть{% else %}
-          Показать{% endif %} архив
+        {% if filter.form.with_archive.data %}Cкрыть{% else %}Показать{% endif %} архив
       </a>
     {% endifhasperm %}
     <table class="table table-striped table-borderless">
@@ -36,7 +35,7 @@
       </tr>
       </thead>
       <tbody>
-      {% for coach in coachs %}s
+      {% for coach in coachs %}
         <tr>
           <td>
 
@@ -60,6 +59,7 @@
                 {{ coach.user.vk_link|safe }}
               </a>
             {% endif %}
+          </td>
 
             {% ifhasperm 'coach.delete' user %}
               <td>
