@@ -1,7 +1,7 @@
 import rules
 
 # Detail about rule system: https://github.com/dfunckt/django-rules
-from crm.models import Event
+from crm.models import Event, SubscriptionsType
 
 
 @rules.predicate
@@ -17,6 +17,11 @@ def is_coach(user) -> bool:
 @rules.predicate
 def is_coach_event(user, event: Event):
     return event.event_class.coach == user.coach
+
+
+@rules.predicate
+def is_not_one_time_sub(user, obj: SubscriptionsType):
+    return not obj.one_time
 
 
 is_logged_manager = rules.is_authenticated & is_manager
@@ -64,5 +69,5 @@ rules.add_perm('location.delete', is_logged_manager)
 
 rules.add_perm('subscription', is_logged_manager)
 rules.add_perm('subscription.add', is_logged_manager)
-rules.add_perm('subscription.edit', is_logged_manager)
+rules.add_perm('subscription.edit', is_logged_manager & is_not_one_time_sub)
 rules.add_perm('subscription.delete', is_logged_manager)

@@ -497,6 +497,7 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         EventClass,
         verbose_name="Допустимые тренировки"
     )
+    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
 
     def __str__(self):
         return self.name
