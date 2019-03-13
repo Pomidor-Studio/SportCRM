@@ -644,6 +644,8 @@ class Client(CompanyObjectModel):
     def update_balance(self, top_up_amount):
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
+        from google_tasks.tasks import enqueue
+        enqueue('notify_client_balance', self.id)
 
     def add_balance_in_history(self, top_up_amount, reason):
         with transaction.atomic():
@@ -956,6 +958,8 @@ class ClientSubscriptions(CompanyObjectModel):
             if created:
                 self.visits_left = self.visits_left - 1
                 self.save()
+                from google_tasks.tasks import enqueue
+                enqueue('notify_client_subscription_visit', self.id)
             else:
                 raise ClientAttendanceExists(
                     'Client attendance for this event already exists')
@@ -965,6 +969,8 @@ class ClientSubscriptions(CompanyObjectModel):
             attendance.delete()
             self.visits_left = self.visits_left + 1
             self.save()
+            from google_tasks.tasks import enqueue
+            enqueue('notify_client_subscription_visit', self.id)
 
     class Meta:
         ordering = ['purchase_date']

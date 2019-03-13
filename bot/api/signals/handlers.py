@@ -3,7 +3,7 @@ from django.dispatch import receiver
 from crm.models import ClientSubscriptions
 from bot.api.vkapi import send_message
 
-
+'''
 @receiver(post_save, sender=ClientSubscriptions)
 def sub_client(sender, created, **kwargs):
     client_subscription: ClientSubscriptions = kwargs['instance']
@@ -34,3 +34,4 @@ def sub_client(sender, created, **kwargs):
 
             send_message(vk_user_id, token, message, '')
         return
+'''

@@ -23,6 +23,8 @@ from crm.models import (
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 
+from google_tasks.tasks import enqueue
+
 
 class List(PermissionRequiredMixin, FilterView):
     model = Client
@@ -91,7 +93,9 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
                 client.add_balance_in_history(abon_price, default_reason)
             form.instance.client_id = self.kwargs['client_id']
             client.save()
-        return super().form_valid(form)
+            code = super().form_valid(form)
+            enqueue('notify_client_buy_subscription', self.kwargs['client_id'])
+        return code
 
 
 class AddSubscriptionWithExtending(AddSubscription):
