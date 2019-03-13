@@ -67,7 +67,7 @@
               {{ subscription.visit_limit }}
             </td>
 
-            {% ifhasperm 'subscription.edit' user %}
+            {% ifhasperm 'subscription.edit' user subscription %}
               <td>
                 {% if not subscription.deleted %}
                   <a

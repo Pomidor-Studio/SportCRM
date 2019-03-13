@@ -11,25 +11,25 @@ class ObjList(PermissionRequiredMixin, ListView):
     template_name = 'crm/manager/location/list.html'
     context_object_name = 'locations'
     ordering = ['id']
-    permission_required = 'subscription'
+    permission_required = 'location'
 
 
 class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
     model = Location
     fields = ('name', 'address')
     template_name = 'crm/manager/location/form.html'
-    permission_required = 'subscription.add'
+    permission_required = 'location.add'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = Location
     fields = ('name', 'address')
     template_name = 'crm/manager/location/form.html'
-    permission_required = 'subscription.edit'
+    permission_required = 'location.edit'
 
 
 class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = Location
     success_url = reverse_lazy('crm:manager:locations:list')
     template_name = 'crm/manager/location/confirm_delete.html'
-    permission_required = 'subscription.delete'
+    permission_required = 'location.delete'

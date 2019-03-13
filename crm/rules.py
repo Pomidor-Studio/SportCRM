@@ -21,7 +21,7 @@ def is_coach_event(user, event: Event):
 
 @rules.predicate
 def is_not_one_time_sub(user, obj: SubscriptionsType):
-    return not obj.one_time
+    return not obj.one_time if obj else True
 
 
 is_logged_manager = rules.is_authenticated & is_manager
@@ -79,6 +79,10 @@ rules.add_perm('subscription.edit', is_logged_manager & is_not_one_time_sub)
 rules.add_perm('subscription.extend', is_logged_manager)
 rules.add_perm('subscription.delete', is_logged_manager)
 rules.add_perm('subscription.undelete', is_logged_manager)
+
+rules.add_perm('client_subscription.extend', is_logged_manager)
+rules.add_perm('client_subscription.delete', is_logged_manager)
+rules.add_perm('client_subscription.edit', is_logged_manager)
 
 rules.add_perm('client_subscription.sale', is_logged_personnel)
 

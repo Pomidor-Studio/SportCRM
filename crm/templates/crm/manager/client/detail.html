@@ -130,13 +130,13 @@
             <th scope="col">Дата начала</th>
             <th scope="col">Дата окончания</th>
             <th scope="col">Осталось посещений</th>
-            {% ifhasperm 'subscription.extend' user %}
+            {% ifhasperm 'client_subscription.extend' user %}
               <th style="width:5%" scope="col"></th>
             {% endifhasperm %}
-            {% ifhasperm 'subscription.edit' user %}
+            {% ifhasperm 'client_subscription.edit' user %}
               <th style="width:5%" scope="col"></th>
             {% endifhasperm %}
-            {% ifhasperm 'subscription.delete' user %}
+            {% ifhasperm 'client_subscription.delete' user %}
               <th style="width:5%" scope="col"></th>
             {% endifhasperm %}
           </tr>
@@ -155,7 +155,7 @@
               <td>{{ sub.start_date|date:'d N Y' }}</td>
               <td>{{ sub.end_date|date:'d N Y' }}</td>
               <td>{{ sub.visits_left }}</td>
-              {% ifhasperm 'subscription.extend' user %}
+              {% ifhasperm 'client_subscription.extend' user %}
                 <td>
                   <a
                     class="btn btn-sm btn-outline-info"
@@ -163,7 +163,7 @@
                   >Продлить</a>
                 </td>
               {% endifhasperm %}
-              {% ifhasperm 'subscription.edit' user %}
+              {% ifhasperm 'client_subscription.edit' user %}
                 <td>
                   <a
                     class="btn btn-sm btn-outline-info"
@@ -171,7 +171,7 @@
                   >Изменить</a>
                 </td>
               {% endifhasperm %}
-              {% ifhasperm 'subscription.delete' user %}
+              {% ifhasperm 'client_subscription.delete' user %}
                 <td><a
                   class="btn btn-sm btn-outline-danger"
                   href="{% url 'crm:manager:client:subscription:delete' sub.id %}"

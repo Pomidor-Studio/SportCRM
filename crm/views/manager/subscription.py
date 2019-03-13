@@ -31,7 +31,6 @@ class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
-    permission_required = 'subscription.edit'
 
 
 class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):

@@ -147,7 +147,7 @@ class AddAttendance(PermissionRequiredMixin, RevisionMixin, CreateView):
 class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
     form_class = ExtendClientSubscriptionForm
     template_name = 'crm/manager/client/subscription_extend.html'
-    permission_required = 'subscription.extend'
+    permission_required = 'client_subscription.extend'
 
     object: ClientSubscriptions = ...
 
@@ -184,7 +184,7 @@ class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = ClientSubscriptions
     form_class = ClientSubscriptionForm
     template_name = 'crm/manager/client/add-subscriptions.html'
-    permission_required = 'subscription.edit'
+    permission_required = 'client_subscription.edit'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -202,7 +202,7 @@ class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
 class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = ClientSubscriptions
     template_name = 'crm/manager/client/subscription_confirm_delete.html'
-    permission_required = 'subscription.delete'
+    permission_required = 'client_subscription.delete'
 
     def get_success_url(self):
         return reverse(
