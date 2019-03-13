@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import logging
+import decimal
 import uuid
-from datetime import date, timedelta, time
+from datetime import date, datetime, timedelta, time
 from itertools import count
 from typing import Callable, Dict, List, Optional
 
@@ -496,6 +497,7 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         EventClass,
         verbose_name="Допустимые тренировки"
     )
+    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
 
     def __str__(self):
         return self.name
@@ -610,8 +612,9 @@ class Client(CompanyObjectModel):
     birthday = models.DateField("Дата рождения", null=True, blank=True)
     phone_number = models.CharField("Телефон", max_length=50, blank=True)
     email_address = models.CharField("Email", max_length=50, blank=True)
+
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
-    balance = models.FloatField("Баланс", default=0)
+    balance = models.DecimalField("Баланс", max_digits=9, decimal_places=2, default=0)
     qr_code = models.UUIDField(
         "QR код",
         blank=True,
@@ -638,6 +641,21 @@ class Client(CompanyObjectModel):
     @property
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
+
+    def update_balance(self, top_up_amount):
+        self.balance = self.balance + decimal.Decimal(top_up_amount)
+        self.save()
+
+    def add_balance_in_history(self, top_up_amount, reason):
+        with transaction.atomic():
+            ClientBalanceChangeHistory.objects.get_or_create(
+                change_value=top_up_amount,
+                client=self,
+                reason=reason,
+                entry_date=datetime.now(),
+                actual_entry_date=datetime.now()
+            )
+            self.update_balance(top_up_amount)
 
 
 class ClientSubscriptionQuerySet(TenantQuerySet):
@@ -956,6 +974,40 @@ class ClientSubscriptions(CompanyObjectModel):
         return f'{self.subscription.name} (до {self.end_date:%d.%m.%Y})'
 
 
+class ClientBalanceChangeHistory(CompanyObjectModel):
+    change_value = models.DecimalField(
+        "Баланс",
+        max_digits=9,
+        decimal_places=2,
+        default=0
+    )
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик"
+    )
+    reason = models.TextField(
+        "Причина изменения баланса",
+        blank=True
+    )
+    subscription = TenantForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        blank=True,
+        verbose_name="Абонемент Клиента",
+        null=True,
+        default=None
+    )
+    entry_date = models.DateTimeField(
+        "Дата зачисления",
+        default=datetime.now()
+    )
+    actual_entry_date = models.DateTimeField(
+        "Фактическая дата зачисления",
+        default=datetime.now()
+    )
+
+
 @reversion.register()
 class ExtensionHistory(CompanyObjectModel):
     client_subscription = TenantForeignKey(
@@ -1162,8 +1214,8 @@ class Event(CompanyObjectModel):
                 ClientSubscriptions.objects.extend_by_cancellation(self)
 
             try:
-                from bot.tasks import notify_event_cancellation
-                notify_event_cancellation.delay(self.id)
+                from google_tasks.tasks import enqueue
+                enqueue('notify_event_cancellation', self.id)
             except ImportError:
                 pass
 

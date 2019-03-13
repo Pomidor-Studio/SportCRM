@@ -105,4 +105,8 @@ venv.bak/
 
 .idea/
 
-sportcrm/settings/local.py
+# developers settings
+sportcrm/settings/local*.py
+
+# static folder
+static/

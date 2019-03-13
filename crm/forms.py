@@ -13,7 +13,7 @@ from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 from .models import (
     Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
     EventClass, SubscriptionsType,
-)
+    ClientBalanceChangeHistory)
 
 
 class TenantModelForm(forms.ModelForm):
@@ -53,14 +53,30 @@ class ClientForm(TenantModelForm):
         }
 
 
+class Balance(TenantModelForm):
+
+    class Meta:
+        model = ClientBalanceChangeHistory
+        widgets = {
+            'change_value': forms.NumberInput(),
+            'reason': forms.TextInput(attrs={"class": "form-control", "placeholder": "Укажите причину изменения баланса"}),
+            'entry_date': DatePickerInput(format='%d.%m.%Y',
+                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"})
+        }
+        exclude = ('client', 'actual_entry_date',)
+
+    # def __init__(self, attrs=None, choices=(), data=None):
+    #     super().__init__(attrs, choices)
+    #     self.data = data or {}
+
+
 class DataAttributesSelect(forms.Select):
 
     def __init__(self, attrs=None, choices=(), data=None):
         super().__init__(attrs, choices)
         self.data = data or {}
 
-    def create_option(self, name, value, label, selected, index,
-                      subindex=None, attrs=None):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=None, attrs=None)
         for data_attr, values in self.data.items():
@@ -146,9 +162,11 @@ class EventAttendanceForm(TenantModelForm):
 
 
 class EventClassForm(TenantModelForm):
+    one_time_price = forms.IntegerField(label='Стоимость разового посещения', initial='', min_value=0, required=False)
+
     class Meta:
         model = EventClass
-        fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
+        fields = ['name', 'location', 'coach', 'date_from', 'date_to', 'one_time_price']
         widgets = {
             'date_from': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
             'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),

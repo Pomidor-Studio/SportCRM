@@ -1,7 +1,7 @@
 import rules
 
 # Detail about rule system: https://github.com/dfunckt/django-rules
-from crm.models import Event
+from crm.models import Event, SubscriptionsType
 
 
 @rules.predicate
@@ -19,6 +19,11 @@ def is_coach_event(user, event: Event):
     return event.event_class.coach == user.coach
 
 
+@rules.predicate
+def is_not_one_time_sub(user, obj: SubscriptionsType):
+    return not obj.one_time
+
+
 is_logged_manager = rules.is_authenticated & is_manager
 is_logged_coach = rules.is_authenticated & is_coach
 is_logged_personnel = rules.is_authenticated & (is_manager | is_coach)
@@ -30,6 +35,8 @@ is_editable_by_coach = is_logged_coach & is_coach_event
 rules.add_perm('is_manager', is_logged_manager)
 rules.add_perm('is_coach', is_logged_coach)
 
+
+rules.add_perm('client-balance.add', is_logged_personnel)
 
 rules.add_perm('client', is_logged_personnel)
 rules.add_perm('client.add', is_logged_manager)
@@ -68,8 +75,8 @@ rules.add_perm('location.delete', is_logged_manager)
 rules.add_perm('subscription', is_logged_manager)
 rules.add_perm('subscription.view_archive', is_logged_manager)
 rules.add_perm('subscription.add', is_logged_manager)
+rules.add_perm('subscription.edit', is_logged_manager & is_not_one_time_sub)
 rules.add_perm('subscription.extend', is_logged_manager)
-rules.add_perm('subscription.edit', is_logged_manager)
 rules.add_perm('subscription.delete', is_logged_manager)
 rules.add_perm('subscription.undelete', is_logged_manager)
 

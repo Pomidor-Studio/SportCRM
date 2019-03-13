@@ -27,6 +27,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
+    permission_required = 'subscription.edit'
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
