@@ -34,7 +34,7 @@ class Detail(LoginRequiredMixin, UserManagerMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['login_temp_link'] = '{host}{url}{qs}'.format(
             host=self.request.get_host(),
-            url=reverse('crm:coach:home'),
+            url=reverse('crm:accounts:profile'),
             qs=sesame.utils.get_query_string(self.object.user)
         )
         return context

@@ -13,7 +13,7 @@ from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 from .models import (
     Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
     EventClass, SubscriptionsType,
-)
+    ClientBalanceChangeHistory)
 
 
 class TenantModelForm(forms.ModelForm):
@@ -53,14 +53,30 @@ class ClientForm(TenantModelForm):
         }
 
 
+class Balance(TenantModelForm):
+
+    class Meta:
+        model = ClientBalanceChangeHistory
+        widgets = {
+            'change_value': forms.NumberInput(),
+            'reason': forms.TextInput(attrs={"class": "form-control", "placeholder": "Укажите причину изменения баланса"}),
+            'entry_date': DatePickerInput(format='%d.%m.%Y',
+                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"})
+        }
+        exclude = ('client', 'actual_entry_date',)
+
+    # def __init__(self, attrs=None, choices=(), data=None):
+    #     super().__init__(attrs, choices)
+    #     self.data = data or {}
+
+
 class DataAttributesSelect(forms.Select):
 
     def __init__(self, attrs=None, choices=(), data=None):
         super().__init__(attrs, choices)
         self.data = data or {}
 
-    def create_option(self, name, value, label, selected, index,
-                      subindex=None, attrs=None):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=None, attrs=None)
         for data_attr, values in self.data.items():
@@ -85,33 +101,52 @@ class ExtendClientSubscriptionForm(forms.Form):
 
 
 class ClientSubscriptionForm(TenantModelForm):
-    cash_earned = forms.BooleanField(label='Деньги получены', required=False, initial=True)
-
-    def __init__(self, *args, **kwargs):
-        super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
-        choices = []
-        choices.append(("", "--------------"))
-        for st in SubscriptionsType.objects.all():
-            choices.append((st.id, st.name))
-
-        data = {'price': {'': ''}, 'visit_limit': {'': ''}}
-        for f in SubscriptionsType.objects.all():
-            data['price'][f.id] = f.price
-            data['visit_limit'][f.id] = f.visit_limit
-
-        self.fields['subscription'].widget = DataAttributesSelect(choices=choices, data=data)
+    cash_earned = forms.BooleanField(
+        label='Деньги получены',
+        required=False,
+        initial=True
+    )
 
     class Meta:
         model = ClientSubscriptions
         widgets = {
-            'purchase_date': DatePickerInput(format='%d.%m.%Y',
-                                             attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
-            'start_date': DatePickerInput(format='%d.%m.%Y',
-                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
-            'price': forms.TextInput(attrs={"class": "form-control", "placeholder": "Стоимость в рублях"}),
-            'visits_left': forms.TextInput(attrs={"class": "form-control", "placeholder": "Кол-во посещений"}),
+            'purchase_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'start_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'price': forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Стоимость в рублях"
+                }
+            ),
+            'visits_left': forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Кол-во посещений"
+                }
+            ),
         }
         exclude = ('client', 'end_date')
+
+    def __init__(self, *args, **kwargs):
+        super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
+
+        choices = [("", "--------------")]
+        data = {'price': {'': ''}, 'visit_limit': {'': ''}}
+
+        for st in SubscriptionsType.objects.all():
+            choices.append((st.id, st.name))
+
+            data['price'][st.id] = st.price
+            data['visit_limit'][st.id] = st.visit_limit
+
+        self.fields['subscription'].widget = DataAttributesSelect(
+            choices=choices, data=data)
 
 
 class AttendanceForm(TenantModelForm):

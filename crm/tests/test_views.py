@@ -17,7 +17,7 @@ def test_anonymous_login(client):
 
 
 @pytest.mark.parametrize('path', [
-    'crm:manager:event:list',
+    'crm:manager:event:calendar',
     'crm:manager:event:new',
     'crm:manager:client:list',
     'crm:manager:client:new',
@@ -33,7 +33,6 @@ def test_manager_urls_for_non_loged(path, client):
 
 
 @pytest.mark.parametrize('path', [
-    'crm:manager:event:list',
     'crm:manager:event:new',
     'crm:manager:client:new',
     'crm:manager:subscription:list',

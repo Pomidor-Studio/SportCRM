@@ -15,7 +15,7 @@ def test_cancel_with_extending(
     event = event_factory()
     mock = mocker.patch(
         'crm.models.ClientSubscriptionsManager.extend_by_cancellation')
-    mock_celery = mocker.patch('bot.tasks.notify_event_cancellation.delay')
+    mock_google_tasks = mocker.patch('google_tasks.tasks.enqueue')
     with freeze_time('2019-02-25'):
         event.cancel_event(extend_subscriptions=True)
 
@@ -26,7 +26,7 @@ def test_cancel_with_extending(
         canceled_with_extending=True
     ))
     mock.assert_called_once_with(event)
-    mock_celery.assert_called_once_with(event.id)
+    mock_google_tasks.assert_called_once_with('notify_event_cancellation', event.id)
 
 
 def test_cancel_without_extending(
@@ -36,7 +36,7 @@ def test_cancel_without_extending(
     event = event_factory()
     mock = mocker.patch(
         'crm.models.ClientSubscriptionsManager.extend_by_cancellation')
-    mock_celery = mocker.patch('bot.tasks.notify_event_cancellation.delay')
+    mock_google_tasks = mocker.patch('google_tasks.tasks.enqueue')
     with freeze_time('2019-02-25'):
         event.cancel_event(extend_subscriptions=False)
 
@@ -47,7 +47,7 @@ def test_cancel_without_extending(
         canceled_with_extending=False
     ))
     mock.assert_not_called()
-    mock_celery.assert_called_once_with(event.id)
+    mock_google_tasks.assert_called_once_with('notify_event_cancellation', event.id)
 
 
 def test_cancel_outdated(event_factory):
