@@ -747,6 +747,8 @@ class ClientSubscriptions(CompanyObjectModel):
             self.visits_left += added_visits
             self.end_date = new_end_date
             self.save()
+            from google_tasks.tasks import enqueue
+            enqueue('notify_client_subscription_extend', self.id)
 
     def extend_by_cancellation(self, cancelled_event: Event):
         possible_extension_date = self.nearest_extended_end_date(
