@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'crm.apps.CrmConfig',
     'django_filters',
     'bot.apps.BotConfig',
-    'bot.apps.SignalsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
