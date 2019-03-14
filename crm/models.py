@@ -119,6 +119,10 @@ class Company(models.Model):
         null=True,
         blank=True
     )
+    # Active to - means that company can access to site, and data until
+    # date. If `active_to` is None, it means that company have unlimited
+    # access, without any restriction
+    active_to = models.DateField('Компания активна до', null=True, blank=True)
     tenant_id = 'id'
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -1000,11 +1004,11 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
     )
     entry_date = models.DateTimeField(
         "Дата зачисления",
-        default=datetime.now()
+        default=timezone.now
     )
     actual_entry_date = models.DateTimeField(
         "Фактическая дата зачисления",
-        default=datetime.now()
+        default=timezone.now
     )
 
 

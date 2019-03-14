@@ -73,7 +73,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'sesame.middleware.AuthenticationMiddleware',
-    'crm.middleware.SetTenantMiddleware'
+    'crm.middleware.SetTenantMiddleware',
+    'crm.middleware.TimedAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'sportcrm.urls'
