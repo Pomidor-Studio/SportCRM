@@ -186,9 +186,6 @@
     <div class="row border-bottom mt-1">
         <div class="col">
             <span class="font-weight-bold "><h5>Посещения: </h5></span>
-            <div class="mb-2 mt-2">
-                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:new-attendance' object.id %}">Отметить посещение</a>
-            </div>
             <table class="table table-sm">
                 <thead>
                 <tr>
@@ -199,7 +196,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for sub in object.attendance_set.all  %} {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
+                {% for sub in object.attendance_set.all  %}
                 <tr>
                     <td>{{ sub.event.date|date }}</td>
                     <td>{{ sub.event.event_class }}</td>

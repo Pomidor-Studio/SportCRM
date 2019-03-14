@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, ListView, RedirectView, TemplateView,
+    DeleteView, DetailView, ListView, RedirectView, TemplateView,
 )
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
@@ -18,9 +18,9 @@ from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.enums import GRANULARITY
-from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
+from crm.forms import DayOfTheWeekClassForm, EventClassForm
 from crm.models import (
-    Attendance, Client, ClientAttendanceExists, ClientSubscriptions,
+    Client, ClientAttendanceExists, ClientSubscriptions,
     DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
 )
 from crm.serializers import CalendarEventSerializer
@@ -85,30 +85,38 @@ class EventByDate(
     template_name = 'crm/manager/event/detail.html'
     permission_required = 'event'
 
-    def get_clients_subscriptions(self, attendance_list, subscriptions):
+    def get_possible_clients(self, attendance_qs):
+        subscriptions = (
+            ClientSubscriptions.objects
+            .active_subscriptions(self.object)
+            .exclude(
+                client__in=attendance_qs.values_list('client_id', flat=True)
+            )
+        )
+
         clients_subscriptions = {}
-        attendance_client_list = [attendance.client for attendance in attendance_list]
+
         for subscription in subscriptions:
-            client = subscription.client
-            if client not in attendance_client_list:
-                if client in clients_subscriptions.keys():
-                    clients_subscriptions.get(client).append(subscription)
-                else:
-                    clients_subscriptions.update({client: [subscription]})
+            clients_subscriptions.setdefault(
+                subscription.client, []
+            ).append(subscription)
+
         return clients_subscriptions
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
-        event_class = self.object.event_class
-        subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
-        subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
-                                                           start_date__lte=self.object.date,
-                                                           end_date__gte=self.object.date,
-                                                           visits_left__gt=0)
-        clients_subscriptions = self.get_clients_subscriptions(attendance_list, subscriptions)
+
+        attendance_qs = (
+            self.object.attendance_set
+                .all()
+                .select_related('client')
+                .order_by('client__name')
+        )
+
+        clients_subscriptions = self.get_possible_clients(attendance_qs)
+
         context.update({
-            'attendance_list': attendance_list,
+            'attendance_list': attendance_qs,
             'clients_subscriptions': clients_subscriptions
         })
 
@@ -167,41 +175,13 @@ class ActivateWithRevoke(
         event.activate_event(revoke_extending=True)
 
 
-class MarkEventAttendance(
-    PermissionRequiredMixin,
-    RevisionMixin,
-    CreateView
-):
-    template_name = 'crm/manager/client/add-attendance.html'
-    form_class = EventAttendanceForm
-    permission_required = 'is_manager'
-
-    def get_object(self, queryset=None):
-        event_date = date(
-            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
-        )
-        event, _ = Event.objects.get_or_create(
-            event_class_id=self.kwargs['event_class_id'],
-            date=event_date)
-
-        return Attendance(event=event)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'instance': self.get_object()})
-        return kwargs
-
-    def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
-
-
 class MarkClientAttendance(
     PermissionRequiredMixin,
     EventByDateMixin,
     RevisionMixin,
     RedirectView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -340,7 +320,7 @@ class Scanner(
     EventByDateMixin,
     TemplateView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     template_name = 'crm/manager/event/scanner.html'
 
     def get_context_data(self, **kwargs):
@@ -354,7 +334,7 @@ class DoScan(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     pattern_name = 'crm:manager:event-class:event:scanner'
 
     def run_action(self):
@@ -399,7 +379,7 @@ class DoCloseEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):
@@ -413,7 +393,7 @@ class DoOpenEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):

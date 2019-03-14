@@ -1,5 +1,7 @@
 {% extends "crm/base.html" %}
 
+{% load html_helper %}
+
 {% block content %}
 
 <script type="text/javascript">
@@ -27,9 +29,6 @@
       {% if not event.is_closed %}
         <div class="mb-2 mt-2">
           <a class="btn btn-sm btn-outline-info"
-             href="{% url 'crm:manager:event-class:event:mark-attendance' event.event_class.id event.date.year event.date.month event.date.day %}">Отметить
-            посещение</a>
-          <a class="btn btn-sm btn-outline-info"
              href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">Сканнер</a>
         </div>
       {% endif %}
@@ -47,13 +46,13 @@
               <div class="col"></div>
               <div class="col"></div>
               <div class="col">
-                {% if not event.is_closed %}
-                  {% if not event.is_non_editable %}
-                    <a
-                      class="btn btn-sm btn-outline-danger"
-                      href="{% url 'crm:manager:attendance:delete' attendance.id %}"
-                    >Удалить</a>
-                  {% endif %}
+                {% if not event.is_non_editable %}
+                  {% ifhasperm 'event.mark-attendance' user event %}
+                  <a
+                    class="btn btn-sm btn-outline-danger"
+                    href="{% url 'crm:manager:attendance:delete' attendance.id %}"
+                  >Удалить</a>
+                  {% endifhasperm %}
                 {% endif %}
               </div>
             </div>
@@ -61,30 +60,30 @@
         </div>
       </div>
       <div class="border-top mt-2"></div>
-      {% if not event.is_closed %}
-        {% if not event.is_non_editable %}
+      {% if not event.is_non_editable %}
+        <div class="border-top">
+          <span class="font-weight-bold ">Не отмеченные ученики: </span>
           <div class="border-top">
-            <span class="font-weight-bold ">Не отмеченные ученики: </span>
-            <div class="border-top">
-              {% for key, value in clients_subscriptions.items %}
-                <div class="row border-top ml-0 mr-0">
-                  <div class="col pl-0">
-                    {{ key.name }}
-                  </div>
-                  <div class="col"></div>
-                  <div class="col"></div>
-                  <div class="col">
-                    {% for subscription in value %}
-                      <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
-                        {{ subscription.subscription.name }}
-                      </a>
-                    {% endfor %}
-                  </div>
+            {% for key, value in clients_subscriptions.items %}
+              <div class="row border-top ml-0 mr-0">
+                <div class="col pl-0">
+                  {{ key.name }}
                 </div>
-              {% endfor %}
-            </div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col">
+                  {% for subscription in value %}
+                    {% ifhasperm 'event.mark-attendance' user event %}
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
+                      {{ subscription.subscription.name }}
+                    </a>
+                    {% endifhasperm %}
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
           </div>
-        {% endif %}
+        </div>
       {% endif %}
     </div>
   </div>
@@ -93,6 +92,7 @@
       <div class="alert alert-light" role="alert">
         {% if not event.is_closed %}
           {% if not event.is_canceled %}
+            {% ifhasperm 'event.cancel' user event %}
             <a
               href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
               class="btn btn-outline-danger mr-2"
@@ -107,7 +107,9 @@
             >
               Отменить и продлить абонементы
             </a>
+            {% endifhasperm %}
           {% else %}
+            {% ifhasperm 'event.activate' user event %}
             <a
               href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}"
               class="btn btn-outline-success mr-2"
@@ -124,6 +126,7 @@
                 Вернуть тренировку и отменить проделния
               </a>
             {% endif %}
+            {% endifhasperm %}
           {% endif %}
         {% endif %}
       </div>
@@ -133,6 +136,7 @@
   {% if event.is_overpast %}
     <!--Отоброзит кнопку, если тренировку еще не закрыли-->
     {% if not event.is_closed %}
+      {% ifhasperm 'event.close' user event %}
       <div class="row">
         <div class="alert alert-light" role="alert">
           <a
@@ -145,6 +149,7 @@
           </a>
         </div>
       </div>
+      {% endifhasperm %}
       <div id="close-confirm" class="card text-white mb-3" style="display: none;">
         <div class="card-header bg-danger">Вы действительно хотите закрыть тренировку?</div>
         <div class="card-body">
@@ -166,6 +171,7 @@
         </div>
       </div>
     {% else %}
+      {% ifhasperm 'event.open' user event %}
       <div class="row">
         <div class="alert alert-light" role="alert">
           <a
@@ -178,6 +184,7 @@
           </a>
         </div>
       </div>
+      {% endifhasperm %}
       <div id="open-confirm" class="card text-white mb-3" style="display: none;">
         <div class="card-header bg-info">Вы действительно хотите открыть тренировку?</div>
         <div class="card-body">

@@ -1148,7 +1148,7 @@ class Event(CompanyObjectModel):
 
     @property
     def is_non_editable(self):
-        return self.is_canceled or not self.is_active
+        return self.is_canceled or self.is_closed
 
     @property
     def is_overpast(self):

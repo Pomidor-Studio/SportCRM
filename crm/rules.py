@@ -58,12 +58,13 @@ rules.add_perm('event_class.delete', is_logged_manager)
 
 rules.add_perm('event', is_logged_personnel)
 rules.add_perm(
-    'event.mark_attendance',
+    'event.mark-attendance',
     is_logged_manager | is_editable_by_coach
 )
-rules.add_perm('event.cancel', is_logged_manager)
-rules.add_perm('event.activate', is_logged_manager)
-rules.add_perm('event.undo_cancel', is_logged_manager)
+rules.add_perm('event.cancel', is_logged_manager | is_editable_by_coach)
+rules.add_perm('event.activate', is_logged_manager | is_editable_by_coach)
+rules.add_perm('event.close', is_logged_manager | is_editable_by_coach)
+rules.add_perm('event.open', is_logged_manager | is_editable_by_coach)
 
 rules.add_perm('attendance.delete', is_logged_personnel)
 

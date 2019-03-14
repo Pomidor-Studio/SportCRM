@@ -1,19 +1,18 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from django.views.generic import TemplateView
 
-from crm.views import coach as coach_views, auth as scrm_auth_views
+from crm.views import auth as scrm_auth_views, coach as coach_views
 from crm.views.manager import (
-    core as manager_core_views,
-    coach as manager_coach_views,
-    client as manager_client_views,
+    attendance as manager_attendance_views,
     balance as manager_balance_views,
-    subscription as manager_subs_views,
+    client as manager_client_views,
+    coach as manager_coach_views,
+    core as manager_core_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
-    attendance as manager_attendance_views,
     location as manager_locations_views,
-    report as manager_report_views
+    report as manager_report_views,
+    subscription as manager_subs_views,
 )
 
 app_name = 'crm'
@@ -121,11 +120,6 @@ manager_clients_urlpatterns = ([
         name='add-subscription-with-extending'
     ),
     path(
-        '<int:client_id>/add-attendance/',
-        manager_client_views.AddAttendance.as_view(),
-        name='new-attendance'
-    ),
-    path(
         'subscription/',
         include(manager_client_subs_urlpatterns)
     ),
@@ -170,11 +164,6 @@ manager_event_urlpatterns = ([
         '',
         manager_event_class_views.EventByDate.as_view(),
         name='event-by-date'
-    ),
-    path(
-        'mark/',
-        manager_event_class_views.MarkEventAttendance.as_view(),
-        name='mark-attendance'
     ),
     path(
         'mark/<int:subscription_id>',
