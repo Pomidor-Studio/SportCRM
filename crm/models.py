@@ -976,7 +976,7 @@ class ClientSubscriptions(CompanyObjectModel):
 
 class ClientBalanceChangeHistory(CompanyObjectModel):
     change_value = models.DecimalField(
-        "Баланс",
+        "Сумма изменения баланса",
         max_digits=9,
         decimal_places=2,
         default=0
