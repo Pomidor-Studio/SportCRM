@@ -93,9 +93,9 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
                 client.add_balance_in_history(abon_price, default_reason)
             form.instance.client_id = self.kwargs['client_id']
             client.save()
-            code = super().form_valid(form)
+            response = super().form_valid(form)
             enqueue('notify_client_buy_subscription', self.kwargs['client_id'])
-        return code
+        return response
 
 
 class AddSubscriptionWithExtending(AddSubscription):
