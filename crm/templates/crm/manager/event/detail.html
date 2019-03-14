@@ -11,6 +11,7 @@
         <span class="font-weight-bold ">Отмеченные ученики: </span>
         <div class="border-top">
           {% for attendance in attendance_list %}
+          {% if attendance.marked %}
             <div class="row border-top ml-0 mr-0">
               <div class="col pl-0">
                 {{ attendance.client.name }}
@@ -22,16 +23,51 @@
               <div class="col"></div>
               <div class="col">
                 {% if not event.is_closed %}
+                {% if not attendance.signed_up %}
                   <a
                     class="btn btn-sm btn-outline-danger"
                     href="{% url 'crm:manager:attendance:delete' attendance.id %}"
-                  >Удалить</a>
+                  >Отменить отметку</a>
+                {% else %}
+                <a
+                    class="btn btn-sm btn-outline-danger"
+                    href="{% url 'crm:manager:event-class:event:unmark-client' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id %}"
+                  >Отменить отметку</a>
+                {% endif %}
                 {% endif %}
               </div>
             </div>
+          {% endif %}
           {% endfor %}
         </div>
       </div>
+      <div class="border-top mt-2"></div>
+      {% if not event.is_closed %}
+        <div class="border-top">
+          <span class="font-weight-bold ">Записанные ученики: </span>
+          <div class="border-top">
+            {% for attendance in attendance_list %}
+            {% if not attendance.marked and attendance.signed_up %}
+              <div class="row border-top ml-0 mr-0">
+                <div class="col pl-0">
+                  {{ key.name }}
+                </div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col">
+                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id %}">
+                    Отметить
+                  </a>
+                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:attendance:delete' attendance.id %}">
+                    Отменить запись
+                  </a>
+                </div>
+              </div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
       <div class="border-top mt-2"></div>
       {% if not event.is_closed %}
         <div class="border-top">
@@ -45,11 +81,9 @@
                 <div class="col"></div>
                 <div class="col"></div>
                 <div class="col">
-                  {% for subscription in value %}
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day subscription.id %}">
-                      {{ subscription.subscription.name }}
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day key.id %}">
+                      записать на тренировку
                     </a>
-                  {% endfor %}
                 </div>
               </div>
             {% endfor %}

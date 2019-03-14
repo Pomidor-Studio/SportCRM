@@ -507,6 +507,30 @@ class Client(CompanyObjectModel):
         #  MAYBE return self.company.vk_token
         return 'some-token'
 
+    def signup_for_event(self, event):
+        Attendance.objects.create(
+            event=event,
+            client=self,
+            signed_up=True
+        )
+
+    def cancel_signup_for_event(self, event):
+        attendance = Attendance.objects.get(client=self, event=event)
+        attendance.delete()
+
+    def mark_visit(self, event):
+        attendance, _ = Attendance.objects.get_or_create(client=self, event=event)
+        if (attendance.subscription):
+            attendance.subscription.mark_visit()
+        attendance.mark_visit()
+
+    def restore_visit(self, event):
+        attendance = Attendance.objects.get(client=self, event=event)
+        if (attendance.subscription):
+            attendance.subscription.restore_visit()
+        attendance.restore_visit()
+
+
 
 class ClientSubscriptionQuerySet(models.QuerySet):
     def active_subscriptions(self, event: Event):
@@ -630,20 +654,14 @@ class ClientSubscriptions(CompanyObjectModel):
         delta = self.end_date - date.today()
         return delta.days <= 7 or self.visits_left == 1
 
-    def mark_visit(self, event):
-        with transaction.atomic():
-            if self.visits_left > 0:
-                Attendance.objects.create(event=event,
-                                          client=self.client,
-                                          subscription=self)
-                self.visits_left = self.visits_left - 1
-                self.save()
-
-    def restore_visit(self, attendance):
-        with transaction.atomic():
-            attendance.delete()
-            self.visits_left = self.visits_left + 1
+    def mark_visit(self):
+        if self.visits_left > 0:
+            self.visits_left = self.visits_left - 1
             self.save()
+
+    def restore_visit(self):
+        self.visits_left = self.visits_left + 1
+        self.save()
 
     class Meta:
         ordering = ['purchase_date']
@@ -840,6 +858,28 @@ class Attendance(CompanyObjectModel):
         null=True,
         default=None
     )
+    marked = models.BooleanField(
+        'Присутствовал на мероприятии',
+        default=False
+    )
+    signed_up = models.BooleanField(
+        'Записан на мероприятие',
+        default=False
+    )
+
+    def mark_visit(self):
+        with transaction.atomic:
+            self.visited = True
+            if (self.subscription):
+                self.subscription.mark_visit()
+            self.save()
+
+    def restore_visit(self):
+        with transaction.atomic:
+            self.visited = False
+            if (self.subscription):
+                self.subscription.restore_vusit()
+            self.save()
 
     class Meta:
         unique_together = ('client', 'event',)

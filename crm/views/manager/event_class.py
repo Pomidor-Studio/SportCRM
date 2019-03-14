@@ -188,7 +188,7 @@ class MarkEventAttendance(
         return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
-class MarkClientAttendance(
+class SignUpClient(
     LoginRequiredMixin,
     UserManagerMixin,
     RevisionMixin,
@@ -201,9 +201,52 @@ class MarkClientAttendance(
                           self.kwargs['day'])
         event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
                                                date=event_date)
-        subscription_id = self.kwargs.pop('subscription_id')
-        subscription = ClientSubscriptions.objects.get(id=subscription_id)
-        subscription.mark_visit(event)
+        client_id = self.kwargs.pop('client_id')
+        client = Client.objects.get(id=client_id)
+        client.signup_for_event(event)
+        self.url = self.get_success_url()
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+
+
+class UnMarkClient(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    RedirectView
+):
+    def get(self, request, *args, **kwargs):
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
+        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
+                                               date=event_date)
+        client = Client.objects.get(id=self.kwargs['client_id'])
+        client.restore_visit(event)
+        self.url = self.get_success_url()
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+
+
+class MarkClient (
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    RedirectView
+):
+
+    def get(self, request, *args, **kwargs):
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
+        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
+                                               date=event_date)
+        client = Client.objects.get(id=self.kwargs['client_id'])
+        client.mark_visit(event)
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 
