@@ -94,7 +94,7 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
             form.instance.client_id = self.kwargs['client_id']
             client.save()
             response = super().form_valid(form)
-            enqueue('notify_client_buy_subscription', self.kwargs['client_id'])
+            enqueue('notify_client_buy_subscription', self.object.id)
         return response
 
 

@@ -14,9 +14,9 @@ def notify_event_cancellation(event_id: int):
     CancelledEvent(clients, event=event).send_message()
 
 
-def notify_client_buy_subscription(client_id: int):
+def notify_client_buy_subscription(subscription_id: int):
     try:
-        client_sub = ClientSubscriptions.objects.filter(client_id=client_id).latest('id')
+        client_sub = ClientSubscriptions.objects.get(id=subscription_id)
     except ClientSubscriptions.DoesNotExist:
         # Invalid event id passed
         return
@@ -51,4 +51,4 @@ def notify_client_balance(client_id: int):
         # Invalid event id passed
         return
 
-    ClientUpdateBalance(client, thisclient=client).send_message()
+    ClientUpdateBalance(client).send_message()

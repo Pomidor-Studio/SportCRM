@@ -2,12 +2,15 @@ from bot.api.messages.base import Message
 from crm.models import ClientSubscriptions, Client
 
 
-class ClientSubscriptionBuy(Message):
+class ClientSubscriptionMessage(Message):
 
     def __init__(self, client, personalized=False, *, clientsub: ClientSubscriptions):
         self.clientsub = clientsub
 
         super().__init__(client, personalized)
+
+
+class ClientSubscriptionBuy(ClientSubscriptionMessage):
 
     def prepare_generalized_msg(self):
         return (
@@ -16,12 +19,7 @@ class ClientSubscriptionBuy(Message):
         )
 
 
-class ClientSubscriptionVisit(Message):
-
-    def __init__(self, client, personalized=False, *, clientsub: ClientSubscriptions):
-        self.clientsub = clientsub
-
-        super().__init__(client, personalized)
+class ClientSubscriptionVisit(ClientSubscriptionMessage):
 
     def prepare_generalized_msg(self):
         return (
@@ -30,12 +28,7 @@ class ClientSubscriptionVisit(Message):
         )
 
 
-class ClientSubscriptionExtend(Message):
-
-    def __init__(self, client, personalized=False, *, clientsub: ClientSubscriptions):
-        self.clientsub = clientsub
-
-        super().__init__(client, personalized)
+class ClientSubscriptionExtend(ClientSubscriptionMessage):
 
     def prepare_generalized_msg(self):
         return (
@@ -46,12 +39,7 @@ class ClientSubscriptionExtend(Message):
 
 class ClientUpdateBalance(Message):
 
-    def __init__(self, client, personalized=False, *, thisclient: Client):
-        self.thisclient = thisclient
-
-        super().__init__(client, personalized)
-
     def prepare_generalized_msg(self):
         return (
-            f'{self.thisclient.name}!\nВаш баланс составляет: {self.thisclient.balance} ₽'
+            f'{self.clients[0].name}!\nВаш баланс составляет: {self.clients[0].balance} ₽'
         )
