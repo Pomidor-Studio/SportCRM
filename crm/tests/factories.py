@@ -143,7 +143,7 @@ class EventFactory(factory.DjangoModelFactory):
 
     @factory.lazy_attribute
     def date(self):
-        return list(self.event_class.get_calendar_gen(
+        return list(self.event_class.get_calendar(
             self.event_class.date_from,
             self.event_class.date_from + datetime.timedelta(days=1)
         ).keys())[0]
@@ -183,3 +183,16 @@ class ClientSubscriptionFactory(factory.DjangoModelFactory):
     end_date = factory.Faker('future_datetime')
     price = factory.Faker('pyfloat', left_digits=3)
     visits_left = factory.Faker('random_int', min=1, max=30)
+
+
+class ExtensionHistoryFactory(factory.DjangoModelFactory):
+    class Meta:
+        model = models.ExtensionHistory
+
+    company = factory.SubFactory('crm.tests.factories.CompanyFactory')
+    client_subscription = factory.SubFactory(
+        'crm.tests.factories.ClientSubscriptionFactory',
+        company=factory.SelfAttribute('..company')
+    )
+    reason = factory.Faker('pystr', min_chars=10, max_chars=20)
+    added_visits = 1
