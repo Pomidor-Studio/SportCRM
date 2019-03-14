@@ -1,58 +1,57 @@
-from crm.models import ClientSubscriptions
-from bot.api.vkapi import send_message
+from bot.api.messages.base import Message
+from crm.models import ClientSubscriptions, Client
 
 
-def client_subscriptions_buy(client_subscription):
+class ClientSubscriptionBuy(Message):
 
-    vk_user_id = client_subscription.client.vk_user_id
-    token = client_subscription.client.vk_message_token
-    message = []
+    def __init__(self, client, personalized=False, *, clientsub: ClientSubscriptions):
+        self.clientsub = clientsub
 
-    if vk_user_id is None:
-        return
+        super().__init__(client, personalized)
 
-    end_date = '{:%d-%m-%Y}'.format(client_subscription.end_date)
-
-    message.extend([client_subscription.client.name, '!\nВы приобрели абонемент:\n',
-                    client_subscription.subscription.name, '!\nДействующий до:\n', end_date])
-    message = ''.join(message)
-
-    send_message(vk_user_id, token, message, '')
-    return
+    def prepare_generalized_msg(self):
+        return (
+            f'{self.clientsub.client.name} !\nВы приобрели абонемент:\n'
+            f'{self.clientsub.subscription.name} !\nДействующий до:\n{self.clientsub.end_date:%d.%m.%Y}'
+        )
 
 
-def client_subscriptions_visits(client_subscription):
+class ClientSubscriptionVisit(Message):
 
-    vk_user_id = client_subscription.client.vk_user_id
-    token = client_subscription.client.vk_message_token
-    message = []
+    def __init__(self, client, personalized=False, *, clientsub: ClientSubscriptions):
+        self.clientsub = clientsub
 
-    if vk_user_id is None:
-        return
+        super().__init__(client, personalized)
 
-    message.extend([client_subscription.client.name, '!\nНа вашем абонементе:\n',
-                    client_subscription.subscription.name, '\nОстаток посещений: ',
-                    str(client_subscription.visits_left)])
-    message = ''.join(message)
-
-    send_message(vk_user_id, token, message, '')
-
-    return
+    def prepare_generalized_msg(self):
+        return (
+            f'{self.clientsub.client.name} !\nНа вашем абонементе:\n'
+            f'{self.clientsub.subscription.name}\nОстаток посещений: {self.clientsub.visits_left}'
+        )
 
 
-def client_update_balance(client):
+class ClientSubscriptionExtend(Message):
 
-    vk_user_id = client.vk_user_id
-    token = client.vk_message_token
-    balance = client.balance
-    message = []
+    def __init__(self, client, personalized=False, *, clientsub: ClientSubscriptions):
+        self.clientsub = clientsub
 
-    if vk_user_id is None:
-        return
+        super().__init__(client, personalized)
 
-    message.extend([client.name, '!\nВаш баланс состовляет: ', str(balance)])
-    message = ''.join(message)
+    def prepare_generalized_msg(self):
+        return (
+            f'{self.clientsub.client.name} !\nВам продлили абонемент:\n'
+            f'{self.clientsub.subscription.name}\nОстаток посещений: {self.clientsub.visits_left}'
+        )
 
-    send_message(vk_user_id, token, message, '')
 
-    return
+class ClientUpdateBalance(Message):
+
+    def __init__(self, client, personalized=False, *, thisclient: Client):
+        self.thisclient = thisclient
+
+        super().__init__(client, personalized)
+
+    def prepare_generalized_msg(self):
+        return (
+            f'{self.thisclient.name}!\nВаш баланс составляет: {self.thisclient.balance} ₽'
+        )

@@ -1,6 +1,6 @@
 from crm.models import Event, ClientSubscriptions, Client
 from bot.api.messages.event import CancelledEvent
-from bot.api.messages.clients_info import client_subscriptions_buy, client_subscriptions_visits, client_update_balance
+from bot.api.messages.clients_info import ClientSubscriptionBuy, ClientSubscriptionVisit, ClientUpdateBalance, ClientSubscriptionExtend
 
 
 def notify_event_cancellation(event_id: int):
@@ -21,7 +21,7 @@ def notify_client_buy_subscription(client_id: int):
         # Invalid event id passed
         return
 
-    client_subscriptions_buy(client_sub)
+    ClientSubscriptionBuy(client_sub.client, clientsub=client_sub).send_message()
 
 
 def notify_client_subscription_visit(subscription_id: int):
@@ -31,7 +31,17 @@ def notify_client_subscription_visit(subscription_id: int):
         # Invalid event id passed
         return
 
-    client_subscriptions_visits(client_sub)
+    ClientSubscriptionVisit(client_sub.client, clientsub=client_sub).send_message()
+
+
+def notify_client_subscription_extend(subscription_id: int):
+    try:
+        client_sub = ClientSubscriptions.objects.get(id=subscription_id)
+    except ClientSubscriptions.DoesNotExist:
+        # Invalid event id passed
+        return
+
+    ClientSubscriptionExtend(client_sub.client, clientsub=client_sub).send_message()
 
 
 def notify_client_balance(client_id: int):
@@ -41,4 +51,4 @@ def notify_client_balance(client_id: int):
         # Invalid event id passed
         return
 
-    client_update_balance(client)
+    ClientUpdateBalance(client, thisclient=client).send_message()
