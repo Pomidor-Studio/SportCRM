@@ -51,7 +51,7 @@ class Clients(Command):
                     str(idx), ') ', sub.subscription.name,
                     '\nОстаток посещений: ', str(sub.visits_left),
                     '\nДействующий по: ',
-                    '{:%d-%m-%Y}'.format(sub.end_date), '\n'
+                    '{:%d.%m.%Y}'.format(sub.end_date), '\n'
                 ])
 
         return ''.join(messages), ''

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
+from django_multitenant.utils import set_current_tenant
 from bot.api.messageHandler import create_answer
 from crm.models import Company
 
@@ -34,7 +35,9 @@ def gl(request): #url: https://mysite.ru/vkbot/
             return HttpResponse(confirmation_token, content_type="text/plain", status=200)
 
         if (data['type'] == 'message_new'):# if VK server send a message
-            token = Company.objects.get(vk_group_id=data['group_id']).vk_access_token
+            company = Company.objects.get(vk_group_id=data['group_id'])
+            set_current_tenant(company)
+            token = company.vk_access_token
 
             create_answer(data['object'], token)
 
