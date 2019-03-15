@@ -8,43 +8,42 @@
 {% block extrahead %}
   <script
     src="https://vk.com/js/api/openapi.js?160"
-    type="text/javascript">
+    type="text/javascript"
+  >
   </script>
 {% endblock extrahead %}
 
 {% block content %}
 
-<script>
-    $( document ).ready(function() {
-        var id = $("#id_vk_user_id").text();
-        console.log(id);
-        getUserPicture(id);
+  <script>
+    $(function () {
+      getUserPicture($("#id_vk_user_id").text());
     });
 
     function getUserPicture(id) {
-        var returnData;
-        var access_token = '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4'
-        $.ajax({
-            url: 'https://api.vk.com/method/users.get',
-            data: {
-                user_ids: id,
-                fields: "photo_200,domain",
-                access_token: access_token,
-                v: 5.63
-            },
-            type: 'GET',
-            dataType: 'jsonp',
-            crossDomain: true,
-            async: false,
-            success: function(data) {
-                $("#profile_pic").attr("src", data.response[0].photo_200);
+      let access_token = '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4';
+      $.ajax({
+        url: 'https://api.vk.com/method/users.get',
+        data: {
+          user_ids: id,
+          fields: "photo_200,domain",
+          access_token: access_token,
+          v: 5.63
+        },
+        type: 'GET',
+        dataType: 'jsonp',
+        crossDomain: true,
+        async: false,
+        success: function (data) {
+          $("#profile_pic").attr("src", data.response[0].photo_200);
 
-                $("#id_vk_url").text("vk.com/" + data.response[0].domain);
-                $("#id_vk_url").attr("href", "https://vk.com/" + data.response[0].domain);
-            }
-        });
+          $("#id_vk_url")
+            .text("vk.com/" + data.response[0].domain)
+            .attr("href", "https://vk.com/" + data.response[0].domain);
+        }
+      });
     }
-</script>
+  </script>
 
 
 <div class="container-fluid mt-4 ml-2">
@@ -52,14 +51,20 @@
     <div class="row border-top mb-2">
       <div class="container-fluid mt-1">
         {% ifhasperm 'client.edit' user %}
-        <a class="btn btn-sm btn-outline-info"
-           href="{% url 'crm:manager:client:update' object.id %}">Изменить</a>
+          <a
+            class="btn btn-sm btn-outline-info"
+            href="{% url 'crm:manager:client:update' object.id %}"
+          >Изменить</a>
         {% endifhasperm %}
-        <a name="cancel" href="{% url 'crm:manager:client:list' %}"
-           class="btn btn-sm btn-outline-info">Назад</a>
+        <a
+          name="cancel" href="{% url 'crm:manager:client:list' %}"
+          class="btn btn-sm btn-outline-info"
+        >Назад</a>
         {% ifhasperm 'client.delete' user %}
-        <a class="btn btn-sm btn-outline-danger"
-           href="{% url 'crm:manager:client:delete' object.id %}">Удалить</a>
+          <a
+            class="btn btn-sm btn-outline-danger"
+            href="{% url 'crm:manager:client:delete' object.id %}"
+          >Удалить</a>
         {% endifhasperm %}
       </div>
     </div>
@@ -106,55 +111,81 @@
         </div>
     </div>
     <div class="row border-top border-bottom">
-        <div class="col">
-            <span class="font-weight-bold "><h5>Абонементы: </h5></span>
-            <div class="mb-2 mt-2">
-                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:new-subscription' object.id %}">Продать
-                    абонемент</a>
-            </div>
-            <table class="table table-sm">
-                <thead>
-                <tr>
-                    <th scope="col">Название</th>
-                    <th scope="col">Дата покупки</th>
-                    <th scope="col">Дата начала</th>
-                    <th scope="col">Дата окончания</th>
-                    <th scope="col">Осталось посещений</th>
-                    <th style="width:5%" scope="col"></th>
-                    <th style="width:5%" scope="col"></th>
-                    <th style="width:5%" scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for sub in object.clientsubscriptions_set.all %}
-                <tr>
-                    <td>{% if sub.is_expiring %}
-                            <i title="Абонемент скоро заканчивается" class="fas fa-exclamation-circle"></i>
-                        {% endif %}
-                        {{ sub.subscription.name }}</td>
-                    <td>{{ sub.purchase_date|date:'d N Y'}}</td>
-                    <td>{{ sub.start_date|date:'d N Y' }}</td>
-                    <td>{{ sub.end_date|date:'d N Y' }}</td>
-                    <td>{{ sub.visits_left }}</td>
-                    <td >
-                        <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:subscription:extend' sub.id %}">Продлить</a>
-                    </td>
-                    <td >
-                        <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:subscription:update' sub.id %}">Изменить</a>
-                    </td>
-                    <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:client:subscription:delete' sub.id %}">Удалить</a></td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+      <div class="col">
+        <span class="font-weight-bold "><h5>Абонементы: </h5></span>
+        {% ifhasperm 'client_subscription.sale' user %}
+          <div class="mb-2 mt-2">
+            <a
+              class="btn btn-sm btn-outline-info"
+              href="{% url 'crm:manager:client:new-subscription' object.id %}"
+            >Продать
+              абонемент</a>
+          </div>
+        {% endifhasperm %}
+        <table class="table table-sm">
+          <thead>
+          <tr>
+            <th scope="col">Название</th>
+            <th scope="col">Дата покупки</th>
+            <th scope="col">Дата начала</th>
+            <th scope="col">Дата окончания</th>
+            <th scope="col">Осталось посещений</th>
+            {% ifhasperm 'client_subscription.extend' user %}
+              <th style="width:5%" scope="col"></th>
+            {% endifhasperm %}
+            {% ifhasperm 'client_subscription.edit' user %}
+              <th style="width:5%" scope="col"></th>
+            {% endifhasperm %}
+            {% ifhasperm 'client_subscription.delete' user %}
+              <th style="width:5%" scope="col"></th>
+            {% endifhasperm %}
+          </tr>
+          </thead>
+          <tbody>
+          {% for sub in object.clientsubscriptions_set.all %}
+            <tr>
+              <td>{% if sub.is_expiring %}
+                <i
+                  title="Абонемент скоро заканчивается"
+                  class="fas fa-exclamation-circle"
+                ></i>
+              {% endif %}
+                {{ sub.subscription.name }}</td>
+              <td>{{ sub.purchase_date|date:'d N Y' }}</td>
+              <td>{{ sub.start_date|date:'d N Y' }}</td>
+              <td>{{ sub.end_date|date:'d N Y' }}</td>
+              <td>{{ sub.visits_left }}</td>
+              {% ifhasperm 'client_subscription.extend' user %}
+                <td>
+                  <a
+                    class="btn btn-sm btn-outline-info"
+                    href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
+                  >Продлить</a>
+                </td>
+              {% endifhasperm %}
+              {% ifhasperm 'client_subscription.edit' user %}
+                <td>
+                  <a
+                    class="btn btn-sm btn-outline-info"
+                    href="{% url 'crm:manager:client:subscription:update' sub.id %}"
+                  >Изменить</a>
+                </td>
+              {% endifhasperm %}
+              {% ifhasperm 'client_subscription.delete' user %}
+                <td><a
+                  class="btn btn-sm btn-outline-danger"
+                  href="{% url 'crm:manager:client:subscription:delete' sub.id %}"
+                >Удалить</a></td>
+              {% endifhasperm %}
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
     <div class="row border-bottom mt-1">
         <div class="col">
             <span class="font-weight-bold "><h5>Посещения: </h5></span>
-            <div class="mb-2 mt-2">
-                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:new-attendance' object.id %}">Отметить посещение</a>
-            </div>
             <table class="table table-sm">
                 <thead>
                 <tr>
@@ -165,7 +196,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for sub in object.attendance_set.all  %} {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
+                {% for sub in object.attendance_set.all  %}
                 <tr>
                     <td>{{ sub.event.date|date }}</td>
                     <td>{{ sub.event.event_class }}</td>
@@ -205,6 +236,6 @@
             </table>
         </div>
     </div>
-</div>
+  </div>
 
 {% endblock content %}

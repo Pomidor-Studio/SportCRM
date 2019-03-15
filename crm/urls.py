@@ -1,18 +1,18 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
-from django.views.generic import TemplateView
 
-from crm.views import coach as coach_views, auth as scrm_auth_views
+from crm.views import auth as scrm_auth_views, coach as coach_views
 from crm.views.manager import (
-    core as manager_core_views,
-    coach as manager_coach_views,
-    client as manager_client_views,
+    attendance as manager_attendance_views,
     balance as manager_balance_views,
-    subscription as manager_subs_views,
+    client as manager_client_views,
+    coach as manager_coach_views,
+    core as manager_core_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
-    attendance as manager_attendance_views,
-    location as manager_locations_views
+    location as manager_locations_views,
+    report as manager_report_views,
+    subscription as manager_subs_views,
 )
 
 app_name = 'crm'
@@ -120,11 +120,6 @@ manager_clients_urlpatterns = ([
         name='add-subscription-with-extending'
     ),
     path(
-        '<int:client_id>/add-attendance/',
-        manager_client_views.AddAttendance.as_view(),
-        name='new-attendance'
-    ),
-    path(
         'subscription/',
         include(manager_client_subs_urlpatterns)
     ),
@@ -155,31 +150,8 @@ manager_subscriptions_urlpatterns = ([
     path('new/', manager_subs_views.Create.as_view(), name='new'),
 ], 'subscription')
 
-# TODO: Remove obsolete views and urls
-#  Calendar.as_view - is active view
 manager_events_urlpatterns = ([
     path('', manager_event_views.Calendar.as_view(), name='calendar'),
-    path('new/', manager_event_views.Create.as_view(), name='new'),
-    path(
-        '<int:pk>/update/',
-        manager_event_views.Update.as_view(),
-        name='update'
-    ),
-    path(
-        '<int:pk>/delete/',
-        manager_event_views.Delete.as_view(),
-        name='delete'
-    ),
-    path(
-        '<int:pk>/',
-        manager_event_views.Detail.as_view(),
-        name='detail'
-    ),
-    path(
-        '<int:event_id>/add-attendance/',
-        manager_event_views.EventAttendanceCreate.as_view(),
-        name='new-attendance'
-    ),
     path(
         'report/',
         manager_event_views.Report.as_view(),
@@ -192,11 +164,6 @@ manager_event_urlpatterns = ([
         '',
         manager_event_class_views.EventByDate.as_view(),
         name='event-by-date'
-    ),
-    path(
-        'mark/',
-        manager_event_class_views.MarkEventAttendance.as_view(),
-        name='mark-attendance'
     ),
     path(
         'mark/<int:subscription_id>',
@@ -307,7 +274,11 @@ manager_urlpatterns = ([
     path('event-class/', include(manager_event_class_urlpatterns)),
     path('attendance/', include(manager_attendance_urlpatterns)),
     path('locations/', include(manager_locations_urlpatterns)),
-    path('reports/', TemplateView.as_view(template_name='crm/manager/reports.html'),name='reports')
+    path(
+        'reports/',
+        manager_report_views.ReportList.as_view(),
+        name='reports'
+    )
 ], 'manager')
 
 urlpatterns = [

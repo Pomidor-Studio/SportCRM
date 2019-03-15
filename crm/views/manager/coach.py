@@ -1,7 +1,6 @@
 import sesame.utils
-from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
@@ -10,25 +9,28 @@ from django.views.generic import (
 )
 from django_filters.views import FilterView
 from reversion.views import RevisionMixin
+from rules.contrib.views import PermissionRequiredMixin
 
 from crm.filters import CoachFilter
 from crm.forms import CoachMultiForm
 from crm.models import Coach
-from crm.views.mixin import UnDeleteView, UserManagerMixin
+from crm.views.mixin import UnDeleteView
 
 
-class List(LoginRequiredMixin, UserManagerMixin, FilterView):
+class List(PermissionRequiredMixin, FilterView):
     model = Coach
     template_name = 'crm/manager/coach/list.html'
     context_object_name = 'coachs'
     paginate_by = 25
     filterset_class = CoachFilter
+    permission_required = 'coach'
 
 
-class Detail(LoginRequiredMixin, UserManagerMixin, DetailView):
+class Detail(PermissionRequiredMixin, DetailView):
     template_name = 'crm/manager/coach/detail.html'
     model = Coach
     context_object_name = 'coach'
+    permission_required = 'coach.view_detail'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -40,10 +42,11 @@ class Detail(LoginRequiredMixin, UserManagerMixin, DetailView):
         return context
 
 
-class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
     template_name = 'crm/manager/coach/form.html'
     model = Coach
     form_class = CoachMultiForm
+    permission_required = 'coach.add'
 
     def form_valid(self, form):
         # User is generated manually as we need create
@@ -59,10 +62,11 @@ class Create(LoginRequiredMixin, UserManagerMixin, RevisionMixin, CreateView):
         return redirect(self.get_success_url())
 
 
-class Update(LoginRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
+class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     template_name = 'crm/manager/coach/form.html'
     model = Coach
     form_class = CoachMultiForm
+    permission_required = 'coach.edit'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -89,11 +93,12 @@ class Update(LoginRequiredMixin, UserManagerMixin, RevisionMixin, UpdateView):
         return kwargs
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
+class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     template_name = 'crm/manager/coach/confirm_delete.html'
     model = Coach
     context_object_name = 'coach'
     success_url = reverse_lazy('crm:manager:coach:list')
+    permission_required = 'coach.delete'
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
@@ -119,8 +124,7 @@ class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
 
 
 class Undelete(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
     UnDeleteView
 ):
@@ -128,6 +132,7 @@ class Undelete(
     model = Coach
     context_object_name = 'coach'
     success_url = reverse_lazy('crm:manager:coach:list')
+    permission_required = 'coach.undelete'
 
     def undelete(self, request, *args, **kwargs):
         self.object = self.get_object()

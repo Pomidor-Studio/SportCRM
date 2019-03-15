@@ -4,8 +4,6 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
 )
-
-from datetime import datetime
 from django_filters.views import FilterView
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.serializers import DateField, IntegerField
@@ -14,12 +12,10 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from crm.filters import ClientFilter
 from crm.forms import (
-    AttendanceForm, ClientForm, ClientSubscriptionForm,
-    ExtendClientSubscriptionForm,
+    ClientForm, ClientSubscriptionForm, ExtendClientSubscriptionForm,
 )
 from crm.models import (
-    Attendance, Client, ClientSubscriptions,
-    ExtensionHistory, SubscriptionsType,
+    Client, ClientSubscriptions, ExtensionHistory, SubscriptionsType,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 
@@ -65,7 +61,7 @@ class Detail(PermissionRequiredMixin, DetailView):
 class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
     form_class = ClientSubscriptionForm
     template_name = "crm/manager/client/add-subscriptions.html"
-    permission_required = 'is_manager'
+    permission_required = 'client_subscription.sale'
 
     def get_success_url(self):
         return reverse(
@@ -133,25 +129,10 @@ class CheckOverlapping(RetrieveAPIView):
         )
 
 
-class AddAttendance(PermissionRequiredMixin, RevisionMixin, CreateView):
-    model = Attendance
-    form_class = AttendanceForm
-    template_name = "crm/manager/client/add-attendance.html"
-    permission_required = 'is_manager'
-
-    def form_valid(self, form):
-        form.instance.client_id = self.kwargs['client_id']
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse(
-            'crm:manager:client:detail', args=[self.kwargs['client_id']])
-
-
 class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
     form_class = ExtendClientSubscriptionForm
     template_name = 'crm/manager/client/subscription_extend.html'
-    permission_required = 'is_manager'
+    permission_required = 'client_subscription.extend'
 
     object: ClientSubscriptions = ...
 
@@ -188,7 +169,7 @@ class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = ClientSubscriptions
     form_class = ClientSubscriptionForm
     template_name = 'crm/manager/client/add-subscriptions.html'
-    permission_required = 'is_manager'
+    permission_required = 'client_subscription.edit'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -206,7 +187,7 @@ class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
 class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = ClientSubscriptions
     template_name = 'crm/manager/client/subscription_confirm_delete.html'
-    permission_required = 'is_manager'
+    permission_required = 'client_subscription.delete'
 
     def get_success_url(self):
         return reverse(

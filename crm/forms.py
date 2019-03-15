@@ -11,9 +11,9 @@ from django_multitenant.utils import get_current_tenant
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import (
-    Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
-    EventClass, SubscriptionsType,
-    ClientBalanceChangeHistory)
+    Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
+    DayOfTheWeekClass, EventClass, SubscriptionsType,
+)
 
 
 class TenantModelForm(forms.ModelForm):
@@ -147,18 +147,6 @@ class ClientSubscriptionForm(TenantModelForm):
 
         self.fields['subscription'].widget = DataAttributesSelect(
             choices=choices, data=data)
-
-
-class AttendanceForm(TenantModelForm):
-    class Meta:
-        model = Attendance
-        exclude = ('client',)
-
-
-class EventAttendanceForm(TenantModelForm):
-    class Meta:
-        model = Attendance
-        exclude = ('event',)
 
 
 class EventClassForm(TenantModelForm):
