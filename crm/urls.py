@@ -196,6 +196,12 @@ manager_event_urlpatterns = ([
         manager_event_class_views.MarkClient.as_view(),
         name='mark-client'
     ),
+
+    path(
+        'mark-without-subscription',
+        manager_event_class_views.MarkClientWithoutSubscription.as_view(),
+        name='mark-client-without-subscription'
+    ),
     path(
         'unmark/<int:client_id>',
         manager_event_class_views.UnMarkClient.as_view(),

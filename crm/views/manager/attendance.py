@@ -14,8 +14,8 @@ class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         self.object = self.get_object()
+        self.object.delete()
         success_url = self.get_success_url()
-        self.object.subscription.restore_visit(self.object)
         return HttpResponseRedirect(success_url)
 
     def get_success_url(self):

@@ -4,7 +4,8 @@ from typing import List, Optional
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction
+from django.db import transaction, models
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -12,14 +13,15 @@ from django.utils import timezone
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView,
     TemplateView,
-    RedirectView)
+    RedirectView, FormView)
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
-from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm
+from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm, SubscriptionsTypeForm, \
+    MarkClientWithoutSubscriptionForm
 from crm.models import (Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions,
                         SubscriptionsType,
                         ClientAttendanceExists)
@@ -94,9 +96,40 @@ class EventByDate(
                     clients_subscriptions.update({client: [subscription]})
         return clients_subscriptions
 
+    def get_clients_subscriptions_wattendance(self, attendance_list, subscriptions):
+        clients_subscriptions = {}
+        attendance_client_list = [attendance.client for attendance in attendance_list]
+        for subscription in subscriptions:
+            client = subscription.client
+            if client in attendance_client_list:
+                if client in clients_subscriptions.keys():
+                    clients_subscriptions.get(client).append(subscription)
+                else:
+                    clients_subscriptions.update({client: [subscription]})
+        return clients_subscriptions
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        marked_clients = Client.objects.with_active_subscription_to_event(self.object).filter(
+            attendance__event__event_class=self.object.event_class,
+            attendance__marked = True
+        )
+        signed_up_clients = Client.objects.with_active_subscription_to_event(self.object).filter(
+            attendance__event__event_class = self.object.event_class,
+            attendance__marked=False,
+            attendance__signed_up=True
+        )
+
+        for client in signed_up_clients:
+            subs = client.clientsubscriptions_set.all()
+
+        unmarked_clients = Client.objects.with_active_subscription_to_event(self.object).exclude(
+             clientsubscriptions__subscription__event_class = self.object.event_class,
+             attendance__event__event_class=self.object.event_class,
+        )
+
         attendance_list = self.object.attendance_set.all().select_related('client').order_by('client__name')
+        attendance_list_signed_up = self.object.attendance_set.filter(signed_up=True, marked=False).select_related('client').order_by('client__name')
         event_class = self.object.event_class
         subscriptions_types = SubscriptionsType.objects.filter(event_class=event_class)
         subscriptions = ClientSubscriptions.objects.filter(subscription__in=subscriptions_types,
@@ -104,9 +137,15 @@ class EventByDate(
                                                            end_date__gte=self.object.date,
                                                            visits_left__gt=0)
         clients_subscriptions = self.get_clients_subscriptions(attendance_list, subscriptions)
+        clients_subscriptions_wattendance = self.get_clients_subscriptions_wattendance(attendance_list_signed_up, subscriptions)
+
         context.update({
-            'attendance_list': attendance_list,
-            'clients_subscriptions': clients_subscriptions
+            'attendance_list' : attendance_list,
+            'clients_subscriptions' : clients_subscriptions,
+            'clients_subscriptions_wattendance' : clients_subscriptions_wattendance,
+            'marked_clients': marked_clients,
+            'signed_up_clients': signed_up_clients,
+            'unmarked_clients': unmarked_clients
         })
 
         return context
@@ -192,6 +231,28 @@ class MarkEventAttendance(
         return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
+class UnMarkClient(
+    LoginRequiredMixin,
+    UserManagerMixin,
+    RevisionMixin,
+    RedirectView
+):
+    def get(self, request, *args, **kwargs):
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
+        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
+                                               date=event_date)
+        client_id = self.kwargs.pop('client_id')
+        client = Client.objects.get(id=client_id)
+        client.restore_visit(event)
+        self.url = self.get_success_url()
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+
+
 class SignUpClient(
     LoginRequiredMixin,
     UserManagerMixin,
@@ -215,22 +276,37 @@ class SignUpClient(
         return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
-class UnMarkClient(
-    LoginRequiredMixin,
-    UserManagerMixin,
+class MarkClientWithoutSubscription (
+    PermissionRequiredMixin,
     RevisionMixin,
-    RedirectView
+    FormView
 ):
-    def get(self, request, *args, **kwargs):
+    form_class = MarkClientWithoutSubscriptionForm
+    template_name = 'crm/manager/event/mark_client_without_sub.html'
+    permission_required = 'is_manager'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         event_date = date(self.kwargs['year'],
                           self.kwargs['month'],
                           self.kwargs['day'])
         event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
                                                date=event_date)
-        client = Client.objects.get(id=self.kwargs['client_id'])
-        client.restore_visit(event)
-        self.url = self.get_success_url()
-        return super().get(request, *args, **kwargs)
+        context.update({
+            'event': event
+        })
+        return context
+
+    def form_valid(self, form):
+        clients = form.cleaned_data['client']
+        event_date = date(self.kwargs['year'],
+                          self.kwargs['month'],
+                          self.kwargs['day'])
+        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
+                                               date=event_date)
+        for client in clients:
+            client.signup_for_event(event)
+        return super(MarkClientWithoutSubscription, self).form_valid(form)
 
     def get_success_url(self):
         return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
@@ -249,7 +325,8 @@ class MarkClient (
                           self.kwargs['day'])
         event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
                                                date=event_date)
-        client = Client.objects.get(id=self.kwargs['client_id'])
+        client_id = self.kwargs.pop('client_id')
+        client = Client.objects.get(id=client_id)
         client.mark_visit(event)
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
