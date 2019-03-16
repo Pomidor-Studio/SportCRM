@@ -1,5 +1,5 @@
-from crm.models import Event, ClientSubscriptions, Client
-from bot.api.messages.event import CancelledEvent
+from crm.models import Event, ClientSubscriptions, Client, Manager
+from bot.api.messages.event import CancelledEvent, ClosedEvent, OpenedEvent
 from bot.api.messages.clients_info import ClientSubscriptionBuy, ClientSubscriptionVisit, ClientUpdateBalance, ClientSubscriptionExtend
 
 
@@ -52,3 +52,25 @@ def notify_client_balance(client_id: int):
         return
 
     ClientUpdateBalance(client).send_message()
+
+
+def notify_manager_event_closed(event_id: int, company_id: int):
+    try:
+        event = Event.objects.get(id=event_id)
+    except Client.DoesNotExist:
+        # Invalid event id passed
+        return
+
+    managers = list(Manager.objects.filter(company_id=company_id))
+    ClosedEvent(managers, event=event).send_message()
+
+
+def notify_manager_event_opened(event_id: int, company_id: int):
+    try:
+        event = Event.objects.get(id=event_id)
+    except Client.DoesNotExist:
+        # Invalid event id passed
+        return
+
+    managers = list(Manager.objects.filter(company_id=company_id))
+    OpenedEvent(managers, event=event).send_message()
