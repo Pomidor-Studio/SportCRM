@@ -109,6 +109,7 @@ class ClientSubscriptionForm(TenantModelForm):
 
     class Meta:
         model = ClientSubscriptions
+
         widgets = {
             'purchase_date': DatePickerInput(
                 format='%d.%m.%Y',
@@ -139,7 +140,7 @@ class ClientSubscriptionForm(TenantModelForm):
         choices = [("", "--------------")]
         data = {'price': {'': ''}, 'visit_limit': {'': ''}}
 
-        for st in SubscriptionsType.objects.all():
+        for st in SubscriptionsType.objects.filter(one_time=False):
             choices.append((st.id, st.name))
 
             data['price'][st.id] = st.price
