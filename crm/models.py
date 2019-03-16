@@ -658,6 +658,8 @@ class Client(CompanyObjectModel):
 
     def cancel_signup_for_event(self, event):
         attendance = Attendance.objects.get(client=self, event=event)
+        if (attendance.subscription and attendance.marked):
+            attendance.subscription.restore_visit()
         attendance.delete()
 
     def mark_visit(self, event):
@@ -668,8 +670,6 @@ class Client(CompanyObjectModel):
 
     def restore_visit(self, event):
         attendance = Attendance.objects.get(client=self, event=event)
-        if (attendance.subscription):
-            attendance.subscription.restore_visit()
         attendance.restore_visit()
 
 
@@ -969,11 +969,9 @@ class ClientSubscriptions(CompanyObjectModel):
                 raise ClientAttendanceExists(
                     'Client attendance for this event already exists')
 
-    def restore_visit(self, attendance):
-        with transaction.atomic():
-            attendance.delete()
-            self.visits_left = self.visits_left + 1
-            self.save()
+    def restore_visit(self):
+        self.visits_left = self.visits_left + 1
+        self.save()
 
     class Meta:
         ordering = ['purchase_date']

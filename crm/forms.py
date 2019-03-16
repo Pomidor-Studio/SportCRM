@@ -76,7 +76,7 @@ class SubscriptionsTypeForm(TenantModelForm):
         fields = '__all__'
 
 
-class MarkClientWithoutSubscriptionForm(forms.Form):
+class SignUpClientWithoutSubscriptionForm(forms.Form):
     client = forms.ModelMultipleChoiceField(
         queryset=Client.objects.all(),
         label='Ученик',

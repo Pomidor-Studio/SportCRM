@@ -14,8 +14,7 @@
       <div class="border-top">
         <span class="font-weight-bold ">Отмеченные ученики: </span>
         <div class="border-top">
-          {% for attendance in attendance_list %}
-          {% if attendance.marked %}
+          {% for attendance in attendance_list_marked %}
             <div class="row border-top ml-0 mr-0">
               <div class="col pl-0">
                 {{ attendance.client.name }}
@@ -25,20 +24,23 @@
                 Был записан
                 {% else %}
                 Не был записан
-
                 {% endif %}
               </div>
               <div class="col"></div>
               <div class="col">
                 {% if not event.is_closed %}
-                  <a
-                    class="btn btn-sm btn-outline-danger"
-                    href=""
-                  >Отменить отметку</a>
+                {% if attendance.signed_up %}
+                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:unmark-client' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id%}">
+                    Убрать отметку
+                  </a>
+                {% else %}
+                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id%}">
+                    Убрать отметку
+                  </a>
+                {% endif %}
                 {% endif %}
               </div>
             </div>
-          {% endif %}
           {% endfor %}
         </div>
       </div>
@@ -47,7 +49,7 @@
         <div class="border-top">
           <span class="font-weight-bold ">Записанные ученики: </span>
           <div class="border-top">
-            {% for client, subscriptions in clients_subscriptions_wattendance.items %}
+            {% for client, subscriptions in signed_up_clients.items %}
               <div class="row border-top ml-0 mr-0">
                 <div class="col pl-0">
                   {{ client.name }}
@@ -56,11 +58,11 @@
                 <div class="col"></div>
                 <div class="col">
                   {% for subscription in subscriptions %}
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}">
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id%}">
                       {{ subscription.subscription.name }}
                     </a>
                   {% endfor %}
-                  <a class="btn btn-sm btn-outline-info" href="">
+                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day client.id%}">
                     Отменить запись
                   </a>
                 </div>
@@ -74,7 +76,7 @@
         <div class="border-top">
           <span class="font-weight-bold ">Не отмеченные ученики: </span>
           <div class="border-top">
-              {% for client, subscriptions in clients_subscriptions.items %}
+              {% for client, subscriptions in unmarked_clients.items %}
               <div class="row border-top ml-0 mr-0">
                 <div class="col pl-0">
                   {{ client.name }}
@@ -83,12 +85,12 @@
                 <div class="col"></div>
                 <div class="col">
                   {% for subscription in subscriptions %}
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}">
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id%}">
                       {{ subscription.subscription.name }}
                     </a>
                   {% endfor %}
-                  <a class="btn btn-sm btn-outline-info" href="">
-                    Отменить запись
+                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:sign-up-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}">
+                    Записать
                   </a>
                 </div>
               </div>

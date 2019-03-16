@@ -192,14 +192,13 @@ manager_event_urlpatterns = ([
         name='mark-attendance'
     ),
     path(
-        'mark/<int:client_id>',
+        'mark/<int:client_id>/<int:subscription_id>',
         manager_event_class_views.MarkClient.as_view(),
         name='mark-client'
     ),
-
     path(
         'mark-without-subscription',
-        manager_event_class_views.MarkClientWithoutSubscription.as_view(),
+        manager_event_class_views.SignUpClientWithoutSubscription.as_view(),
         name='mark-client-without-subscription'
     ),
     path(
@@ -208,9 +207,14 @@ manager_event_urlpatterns = ([
         name='unmark-client'
     ),
     path(
-        'sugn-up/<int:client_id>',
+        'sign-up/<int:client_id>',
         manager_event_class_views.SignUpClient.as_view(),
         name='sign-up-client'
+    ),
+    path(
+        'cancel-att/<int:client_id>',
+        manager_event_class_views.CancelAttendance.as_view(),
+        name='cancel-att'
     ),
     path(
         'cancel/without-extending/',
