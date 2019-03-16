@@ -1,0 +1,16 @@
+# [START django_app]
+runtime: python37
+instance_class: B1
+service: background
+
+# any environment variables you want to pass to your application.
+# accessible through os.environ['VARIABLE_NAME']
+env_variables:
+  DJANGO_SETTINGS_MODULE: 'sportcrm.settings.gcp_production_background'
+
+# [END django_app]
+
+
+basic_scaling:
+    max_instances: 1
+    idle_timeout: 10m
