@@ -1253,6 +1253,8 @@ class Event(CompanyObjectModel):
 
         self.is_closed = True
         self.save()
+        from google_tasks.tasks import enqueue
+        enqueue('notify_manager_event_closed', self.id, self.company.id)
 
     def open_event(self):
         """Открыть тренировку"""
@@ -1261,6 +1263,8 @@ class Event(CompanyObjectModel):
 
         self.is_closed = False
         self.save()
+        from google_tasks.tasks import enqueue
+        enqueue('notify_manager_event_opened', self.id, self.company.id)
 
 
 @reversion.register()
