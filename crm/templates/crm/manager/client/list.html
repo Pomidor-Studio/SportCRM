@@ -64,6 +64,7 @@
     <table class="table table-sm table-bordered">
       <thead>
       <tr>
+        <th scope="col">Общение</th>
         <th scope="col">Инфо</th>
         <th scope="col">Абонемент</th>
         <th scope="col">Баланс</th>
@@ -73,7 +74,23 @@
       {% for client in clients %}
         <tr>
           <td>
-            {% ifhasperm 'client' user %}
+            <div>
+              {% if client.phone_number %}
+                <a class="btn btn-sm btn-outline-info" href="#">
+                  Позвонить
+                </a>
+              {% endif %}
+            </div>
+            <div>
+              {% if client.vk_user_id %}
+                <a class="btn btn-sm btn-outline-info" target="_blank" href="https://vk.com/im?sel={{ client.vk_user_id }}">
+                  Написать в VK
+                </a>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+          {% ifhasperm 'client' user %}
             <a href="{% url 'crm:manager:client:detail' client.id %}">
               <div class="font-weight-bold">{{ client.name }}</div>
               <div>{{ client.phone_number }}</div>
