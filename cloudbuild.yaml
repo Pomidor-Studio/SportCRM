@@ -50,7 +50,7 @@ steps:
       args: ['./manage.py', 'collectstatic', '--noinput', '--settings=sportcrm.settings.gcp_production']
       env:
           - 'PYTHONPATH=./venv'
-      waitFor: ['pip-install']
+      waitFor: ['pip-install', 'background deploy']
 
 
     # deploy on app engine
