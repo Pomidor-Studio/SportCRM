@@ -35,6 +35,7 @@ ALLOWED_HOSTS = []
 # social_django MUST be defined BEFORE crm.apps.CrmConfig
 # as we redefine social_django admin for purposes of django-reversion
 INSTALLED_APPS = [
+    'phonenumber_field',
     'rest_framework',
     'bootstrap_datepicker_plus',
     'bootstrap4',
@@ -54,6 +55,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_select2',
     'django_tables2',
+    'qr_code',
 ]
 
 BOOTSTRAP4 = {
@@ -175,6 +177,8 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.vk.VKOAuth2',
     'sesame.backends.ModelBackend',
     'rules.permissions.ObjectPermissionBackend',
+    'crm.auth.backends.PhoneBackend',
+    'crm.auth.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -201,3 +205,6 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_BEAT_SCHEDULE = {}  # For configuration of periodical tasks
 CELERY_BROKER_URL = 'redis://HOST:PORT/DB'
 CELERY_RESULT_BACKEND = 'redis://HOST:PORT/DB'
+
+PHONENUMBER_DB_FORMAT = 'E164'
+PHONENUMBER_DEFAULT_REGION = 'RU'
