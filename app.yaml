@@ -12,12 +12,14 @@ handlers:
 # the entire handlers section) when there are no static files defined.
 - url: /.*
   script: auto
-# [END django_app]
+  secure: always
 
 # any environment variables you want to pass to your application.
 # accessible through os.environ['VARIABLE_NAME']
 env_variables:
   DJANGO_SETTINGS_MODULE: 'sportcrm.settings.gcp_production'
+
+# [END django_app]
 
 automatic_scaling:
     max_instances: 3

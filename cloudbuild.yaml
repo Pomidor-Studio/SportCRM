@@ -1,8 +1,14 @@
 steps:
+    # deploy background on app engine
+    - name: "gcr.io/cloud-builders/gcloud"
+      args: ["app", "deploy", "dispatch.yaml", "app-background.yaml", "--version=production1"]
+      waitFor: ['-']
+
     # Install pip dependencies
     - id: 'pip-install'
       name: 'python:3.7'
       entrypoint: python3
+      waitFor: ['-']
       args: ['-m', 'pip', 'install', '-t', './venv', '-r', 'requirements.txt']
 
 
@@ -35,7 +41,6 @@ steps:
             path: /cloudsql
       waitFor: ['pip-install']
 
-
     # Collect static
     - id: "collect-static"
       name: 'python:3.7'
@@ -48,7 +53,7 @@ steps:
 
     # deploy on app engine
     - name: "gcr.io/cloud-builders/gcloud"
-      args: ["app", "deploy"]
+      args: ["app", "deploy", "app.yaml", "--version=production1"]
       waitFor: ['collect-static']
 
 timeout: "1600s"
