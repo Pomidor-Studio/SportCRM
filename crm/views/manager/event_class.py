@@ -170,11 +170,11 @@ class ActivateWithRevoke(
 
 
 class MarkEventAttendance(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
     CreateView
 ):
+    permission_required = 'event'
     template_name = 'crm/manager/client/add-attendance.html'
     form_class = EventAttendanceForm
 
@@ -198,17 +198,15 @@ class MarkEventAttendance(
 
 
 class UnMarkClient(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
+    EventByDateMixin,
     RedirectView
 ):
+    permission_required = 'event'
+
     def get(self, request, *args, **kwargs):
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
-                                               date=event_date)
+        event = self.get_object()
         client_id = self.kwargs.pop('client_id')
         client = Client.objects.get(id=client_id)
         client.restore_visit(event)
@@ -220,18 +218,15 @@ class UnMarkClient(
 
 
 class SignUpClient(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
+    EventByDateMixin,
     RedirectView
 ):
+    permission_required = 'event'
 
     def get(self, request, *args, **kwargs):
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
-                                               date=event_date)
+        event = self.get_object()
         client_id = self.kwargs.pop('client_id')
         client = Client.objects.get(id=client_id)
         client.signup_for_event(event)
@@ -243,18 +238,15 @@ class SignUpClient(
 
 
 class CancelAttendance(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
+    EventByDateMixin,
     RedirectView
 ):
+    permission_required = 'event'
 
     def get(self, request, *args, **kwargs):
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
-                                               date=event_date)
+        event = self.get_object()
         client_id = self.kwargs.pop('client_id')
         client = Client.objects.get(id=client_id)
         client.cancel_signup_for_event(event)
@@ -268,19 +260,16 @@ class CancelAttendance(
 class SignUpClientWithoutSubscription (
     PermissionRequiredMixin,
     RevisionMixin,
+    EventByDateMixin,
     FormView
 ):
     form_class = SignUpClientWithoutSubscriptionForm
     template_name = 'crm/manager/event/mark_client_without_sub.html'
-    permission_required = 'is_manager'
+    permission_required = 'event'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
-                                               date=event_date)
+        event = self.get_object()
         context.update({
             'event': event
         })
@@ -288,11 +277,7 @@ class SignUpClientWithoutSubscription (
 
     def form_valid(self, form):
         clients = form.cleaned_data['client']
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
-                                               date=event_date)
+        event = self.get_object()
         for client in clients:
             client.signup_for_event(event)
         return super(SignUpClientWithoutSubscription, self).form_valid(form)
@@ -302,21 +287,20 @@ class SignUpClientWithoutSubscription (
 
 
 class MarkClient (
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
+    EventByDateMixin,
     RedirectView
 ):
+    permission_required = 'event'
 
     def get(self, request, *args, **kwargs):
-        event_date = date(self.kwargs['year'],
-                          self.kwargs['month'],
-                          self.kwargs['day'])
-        event, _ = Event.objects.get_or_create(event_class_id=self.kwargs['event_class_id'],
-                                               date=event_date)
+        event = self.get_object()
         client_id = self.kwargs.pop('client_id')
+        subscription_id = self.kwargs.pop('subscription_id')
         client = Client.objects.get(id=client_id)
-        client.mark_visit(event)
+        client_sub = ClientSubscriptions.objects.get(id=subscription_id)
+        client.mark_visit(event, client_sub)
         self.url = self.get_success_url()
         return super().get(request, *args, **kwargs)
 

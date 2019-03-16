@@ -657,16 +657,14 @@ class Client(CompanyObjectModel):
         )
 
     def cancel_signup_for_event(self, event):
-        attendance = Attendance.objects.get(client=self, event=event)
-        if (attendance.subscription and attendance.marked):
-            attendance.subscription.restore_visit()
-        attendance.delete()
+        with transaction.atomic():
+            attendance = Attendance.objects.get(client=self, event=event)
+            if attendance.subscription and attendance.marked:
+                attendance.subscription.restore_visit()
+            attendance.delete()
 
-    def mark_visit(self, event):
-        attendance, _ = Attendance.objects.get_or_create(client=self, event=event)
-        if (attendance.subscription):
-            attendance.subscription.mark_visit()
-        attendance.mark_visit()
+    def mark_visit(self, event, subscription: ClientSubscriptions):
+        subscription.mark_visit(event)
 
     def restore_visit(self, event):
         attendance = Attendance.objects.get(client=self, event=event)
@@ -958,11 +956,13 @@ class ClientSubscriptions(CompanyObjectModel):
             raise ValueError('Subscription or event is incorrect')
 
         with transaction.atomic():
-            _, created = Attendance.objects.get_or_create(
+            created, _ = Attendance.objects.get_or_create(
                 event=event,
                 client=self.client,
+                marked=False,
                 defaults={'subscription': self})
             if created:
+                created.mark_visit(self)
                 self.visits_left = self.visits_left - 1
                 self.save()
             else:
@@ -1292,17 +1292,17 @@ class Attendance(CompanyObjectModel):
         default=False
     )
 
-    def mark_visit(self):
+    def mark_visit(self, subscription: ClientSubscriptions ):
+        self.subscription = subscription
         self.marked = True
-        if (self.subscription):
-            self.subscription.mark_visit()
         self.save()
 
     def restore_visit(self):
-        self.marked = False
-        if (self.subscription):
-            self.subscription.restore_vusit()
-        self.save()
+        with transaction.atomic():
+            self.marked = False
+            if self.subscription:
+                self.subscription.restore_visit()
+            self.save()
 
     class Meta:
         unique_together = ('client', 'event',)
