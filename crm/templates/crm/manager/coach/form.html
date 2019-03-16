@@ -49,17 +49,6 @@
       {% csrf_token %}
       {% bootstrap_form form.user %}
       {% bootstrap_form form.coach %}
-      {% if object.id and not object.user.has_vk_auth %}
-        <div class="form-group">
-          <div class="alert alert-primary" role="alert">
-            Тренер не привязал аккаунт в VK, для этого нужно передать ему
-            временную ссылку.
-          </div>
-          <label for="coach_temp_login">Временная ссылка для привязки VK</label>
-          <input type="text" class="form-control" readonly id="coach_temp_login"
-                 value="{{ login_temp_link }}">
-        </div>
-      {% endif %}
       <div class="form-group">
         <button class="btn btn-outline-info" type="submit">
           {% if object.id %}Сохранить{% else %}Добавить{% endif %}
