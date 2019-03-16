@@ -1,8 +1,8 @@
 from bot.api.messages.base import Message
-from crm.models import ClientSubscriptions, Client
+from crm.models import ClientSubscriptions
 
 
-class ClientSubscriptionMessage(Message):
+class ClientSubscriptionMessage(Message, abstract=True):
 
     def __init__(self, client, personalized=True, *, clientsub: ClientSubscriptions):
         self.clientsub = clientsub
@@ -11,6 +11,8 @@ class ClientSubscriptionMessage(Message):
 
 
 class ClientSubscriptionBuy(ClientSubscriptionMessage):
+
+    detailed_description = 'Уведомление при покупке абонемента'
 
     def prepare_generalized_msg(self):
         return (
@@ -21,6 +23,8 @@ class ClientSubscriptionBuy(ClientSubscriptionMessage):
 
 class ClientSubscriptionVisit(ClientSubscriptionMessage):
 
+    detailed_description = 'Уведомление при посещении занятия'
+
     def prepare_generalized_msg(self):
         return (
             f'\nНа вашем абонементе:\n'
@@ -30,6 +34,8 @@ class ClientSubscriptionVisit(ClientSubscriptionMessage):
 
 class ClientSubscriptionExtend(ClientSubscriptionMessage):
 
+    detailed_description = 'Уведомление при продление абонемента'
+
     def prepare_generalized_msg(self):
         return (
             f'\nВам продлили абонемент:\n'
@@ -38,6 +44,8 @@ class ClientSubscriptionExtend(ClientSubscriptionMessage):
 
 
 class ClientUpdateBalance(Message):
+
+    detailed_description = 'Уведомление при изменении баланса клиента'
 
     def prepare_generalized_msg(self):
         return (

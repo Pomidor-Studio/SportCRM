@@ -2,13 +2,17 @@ from __future__ import annotations
 
 from typing import List, Union
 
-from crm.models import Client
 from bot.api.vkapi import send_message
+from crm.models import Client
 
 
 class Message:
 
+    detailed_description: str
+    _registry = []
+
     def __init__(self, client: Union[Client, List[Client]], personalized=False):
+
         self.personalized = personalized
 
         if isinstance(client, Client):
@@ -19,7 +23,27 @@ class Message:
         else:
             raise ValueError('Invalid client argument passed')
 
+    def __init_subclass__(cls, abstract=False, *args, **kwargs) -> None:
+        super().__init_subclass__()
+        if abstract:
+            return
+
+        if not hasattr(cls, 'detailed_description') or \
+                cls.detailed_description is None:
+            raise ValueError(
+                'detailed_description must be set on '
+                f'{cls.__module__}.{cls.__qualname__}, '
+                'as it will be shown for manager in UI'
+            )
+        __class__._registry.append(cls)
+
+    def is_enabled_message(self) -> bool:
+        return True
+
     def send_message(self):
+        if not self.is_enabled_message():
+            return
+
         if not len(self.clients):
             # Early check for empty list, for skip message generation
             return

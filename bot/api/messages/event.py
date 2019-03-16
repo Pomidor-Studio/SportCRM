@@ -4,6 +4,8 @@ from crm.models import Event
 
 class CancelledEvent(Message):
 
+    detailed_description = 'Уведомление при отмене тренировки'
+
     def __init__(self, client, personalized=False, *, event: Event):
         self.event = event
 
