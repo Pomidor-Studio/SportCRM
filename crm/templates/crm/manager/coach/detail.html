@@ -45,8 +45,19 @@
         <td>Ссылка для входа тренера <br/>
           <small>Передайте её вашему тренеру, чтобы он смог войти в систему первый раз или если забудет пароль</small></td>
         <td>
-          <span  id="login_link"> {{ login_temp_link }}</span>
-          <button class="btn" data-clipboard-target="#login_link" data-toggle="tooltip" title="Скопировано">Скопировать в буфер обмена</button>
+          {#          <span  id="login_link"> {{ login_temp_link }}</span>#}
+          {#          <button class="btn" data-clipboard-target="#login_link" data-toggle="tooltip" title="Скопировано">Скопировать в буфер обмена</button>#}
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btnt" id="btnGroupAddon2" data-clipboard-target="#login_link" data-toggle="tooltip"
+                      title="Скопировано" type="button">Скопировать в буфер обмена
+              </button>
+            </div>
+            <input id="login_link" type="text" class="form-control" placeholder="Input group example"
+                   aria-label="Input group example"
+                   aria-describedby="btnGroupAddon2"
+                   value="{{ login_temp_link }}" readonly>
+          </div>
         </td>
 
       </tr>
