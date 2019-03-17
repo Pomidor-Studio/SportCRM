@@ -21,7 +21,8 @@ def notify_client_buy_subscription(subscription_id: int):
         return
 
     messages.ClientSubscriptionBuy(
-        client_sub.client, clientsub=client_sub).send_message()
+        client_sub.client, personalized=True, clientsub=client_sub
+    ).send_message()
 
 
 def notify_client_subscription_visit(subscription_id: int):
@@ -32,7 +33,8 @@ def notify_client_subscription_visit(subscription_id: int):
         return
 
     messages.ClientSubscriptionVisit(
-        client_sub.client, clientsub=client_sub).send_message()
+        client_sub.client, personalized=True, clientsub=client_sub
+    ).send_message()
 
 
 def notify_client_subscription_extend(subscription_id: int):
@@ -43,7 +45,8 @@ def notify_client_subscription_extend(subscription_id: int):
         return
 
     messages.ClientSubscriptionExtend(
-        client_sub.client, clientsub=client_sub).send_message()
+        client_sub.client, personalized=True, clientsub=client_sub
+    ).send_message()
 
 
 def notify_client_balance(client_id: int):
@@ -53,4 +56,4 @@ def notify_client_balance(client_id: int):
         # Invalid event id passed
         return
 
-    messages.ClientUpdateBalance(client).send_message()
+    messages.ClientUpdateBalance(client, personalized=True).send_message()

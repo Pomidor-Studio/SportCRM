@@ -4,7 +4,13 @@ from crm.models import ClientSubscriptions
 
 class ClientSubscriptionMessage(Message, abstract=True):
 
-    def __init__(self, recipient, personalized=True, *, clientsub: ClientSubscriptions):
+    def __init__(
+        self,
+        recipient,
+        personalized=False,
+        *,
+        clientsub: ClientSubscriptions
+    ):
         self.clientsub = clientsub
 
         super().__init__(recipient, personalized)
@@ -16,8 +22,9 @@ class ClientSubscriptionBuy(ClientSubscriptionMessage):
 
     def prepare_generalized_message(self):
         return (
-            f'\nВы приобрели абонемент:\n'
-            f'{self.clientsub.subscription.name} !\nДействующий до:\n{self.clientsub.end_date:%d.%m.%Y}'
+            f'Вы приобрели абонемент:\n'
+            f'{self.clientsub.subscription.name}!\n'
+            f'Действующий до:\n{self.clientsub.end_date:%d.%m.%Y}'
         )
 
 
@@ -27,8 +34,9 @@ class ClientSubscriptionVisit(ClientSubscriptionMessage):
 
     def prepare_generalized_message(self):
         return (
-            f'\nНа вашем абонементе:\n'
-            f'{self.clientsub.subscription.name}\nОстаток посещений: {self.clientsub.visits_left}'
+            f'На вашем абонементе:\n'
+            f'{self.clientsub.subscription.name}\n'
+            f'остаток посещений: {self.clientsub.visits_left}'
         )
 
 
@@ -38,8 +46,9 @@ class ClientSubscriptionExtend(ClientSubscriptionMessage):
 
     def prepare_generalized_message(self):
         return (
-            f'\nВам продлили абонемент:\n'
-            f'{self.clientsub.subscription.name}\nОстаток посещений: {self.clientsub.visits_left}'
+            f'Вам продлили абонемент:\n'
+            f'{self.clientsub.subscription.name}\n'
+            f'Остаток посещений: {self.clientsub.visits_left}'
         )
 
 
@@ -49,5 +58,5 @@ class ClientUpdateBalance(Message):
 
     def prepare_generalized_message(self):
         return (
-            f'{self.recipients[0].name}!\nВаш баланс составляет: {self.recipients[0].balance} ₽'
+            f'Ваш баланс составляет: {self.recipients[0].balance} ₽'
         )
