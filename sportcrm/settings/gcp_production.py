@@ -23,3 +23,4 @@ DATABASES = {
     }
 }
 
+USE_GOOGLE_TASKS: bool = True

@@ -5,9 +5,8 @@ from django.shortcuts import get_object_or_404
 from django_multitenant.utils import set_current_tenant, get_current_tenant
 
 from google.cloud import tasks_v2beta3
-# from google.protobuf import timestamp_pb2
-# from google.cloud.tasks_v2beta3.proto.task_pb2 import Task
-# Create a client.
+from django.conf import settings
+
 
 from crm.models import Company
 import bot.tasks
@@ -16,23 +15,10 @@ import bot.tasks
 project = 'sport-srm-test'
 queue = 'sport-crm-test-queue'
 location = 'us-east1'
-# payload = 'hello'
 
 
 def enqueue(method: str, *args, **kwargs):
 
-    client = tasks_v2beta3.CloudTasksClient()
-
-    # Construct the fully qualified queue name.
-    parent = client.queue_path(project, location, queue)
-
-    # Construct the request body.
-    task = {
-        'app_engine_http_request': {  # Specify the type of request.
-            'http_method': 'POST',
-            'relative_uri': '/google_task_handler/'
-        }
-    }
     payload = {'method': method,
                'args': args,
                'kwargs': kwargs,
@@ -44,14 +30,28 @@ def enqueue(method: str, *args, **kwargs):
 
     converted_payload = json_payload.encode()
 
-    # Add the payload to the request.
-    task['app_engine_http_request']['body'] = converted_payload
+    if settings.USE_GOOGLE_TASKS:
+        client = tasks_v2beta3.CloudTasksClient()
 
-    # Use the client to build and send the task.
-    response = client.create_task(parent, task)
+        # Construct the fully qualified queue name.
+        parent = client.queue_path(project, location, queue)
 
-    # print('Created task {}'.format(response.name))
-    # return response
+        # Construct the request body.
+        task = {
+            'app_engine_http_request': {  # Specify the type of request.
+                'http_method': 'POST',
+                'relative_uri': '/google_task_handler/'
+            }
+        }
+        # Add the payload to the request.
+        task['app_engine_http_request']['body'] = converted_payload
+
+        # Use the client to build and send the task.
+        response = client.create_task(parent, task)
+    else:
+        do_result = do(converted_payload)
+        if not do_result=='OK':
+            raise RuntimeError(f'DO result: {do_result}')
 
 
 def do(body_payload: bytes) -> str:

@@ -205,4 +205,6 @@ SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
 PHONENUMBER_DB_FORMAT = 'E164'
 PHONENUMBER_DEFAULT_REGION = 'RU'
 
-BACKGROUND_MODE: bool = False
+BACKGROUND_MODE: bool = False # True for run as background tasks worker
+USE_GOOGLE_TASKS: bool = False
+

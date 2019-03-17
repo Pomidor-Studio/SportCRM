@@ -19,7 +19,7 @@ from django.urls import path
 from django.conf import settings
 
 app_name = 'sportcrm'
-if not getattr(settings, "BACKGROUND_MODE", False):
+if not settings.BACKGROUND_MODE:
     urlpatterns = [
         path('admin/', admin.site.urls, name='admin'),
         path('', include('crm.urls')),
