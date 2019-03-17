@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'django_tables2',
     'qr_code',
     'google_tasks.apps.GoogleTasksConfig',
+    'analytical',
 ]
 
 BOOTSTRAP4 = {
@@ -204,3 +205,6 @@ SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
 
 PHONENUMBER_DB_FORMAT = 'E164'
 PHONENUMBER_DEFAULT_REGION = 'RU'
+
+YANDEX_METRICA_COUNTER_ID = '52839823' # devtest metrika
+YANDEX_METRICA_WEBVISOR = True
