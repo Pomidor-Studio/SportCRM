@@ -1,12 +1,20 @@
-# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponse
-from django_multitenant.utils import set_current_tenant
-from bot.api.messageHandler import create_answer
-from crm.models import Company
 
 import json
+from operator import itemgetter
+
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import ListView
+from django_multitenant.utils import set_current_tenant
+from rest_framework.generics import UpdateAPIView
+from rules.contrib.views import PermissionRequiredMixin
+
+from bot.api.messageHandler import create_answer
+from bot.api.messages.base import Message
+from bot.models import MessageIgnorance
+from bot.serializers import MessageIgnoranceSerializer
+from crm.models import Company
 
 """
 Using VK Callback API version 5.90
@@ -24,17 +32,25 @@ Decorator <@csrf_exempt> marks a view as being exempt from the protection
 ensured by the Django middleware.
 For cross site request protection will be used secret key from VK
 """
-@csrf_exempt #exempt index() function from built-in Django protection
-def gl(request): #url: https://mysite.ru/vkbot/
+@csrf_exempt
+def gl(request):
+    # url: https://mysite.ru/vkbot/
 
-    if (request.method == "POST"):
-        data = json.loads(request.body)# take POST request from auto-generated variable <request.body> in json format
+    if request.method == "POST":
+        # take POST request from auto-generated variable <request.body>
+        # in json format
+        data = json.loads(request.body)
 
-        if (data['type'] == 'confirmation'):#if VK server request confirmation
-            confirmation_token = Company.objects.get(vk_group_id=data['group_id']).vk_confirmation_token
-            return HttpResponse(confirmation_token, content_type="text/plain", status=200)
+        if data['type'] == 'confirmation':
+            # VK server request confirmation
+            confirmation_token = Company.objects.get(
+                vk_group_id=data['group_id']
+            ).vk_confirmation_token
+            return HttpResponse(
+                confirmation_token, content_type="text/plain", status=200)
 
-        if (data['type'] == 'message_new'):# if VK server send a message
+        if data['type'] == 'message_new':
+            # VK server send a message
             company = Company.objects.get(vk_group_id=data['group_id'])
             set_current_tenant(company)
             token = company.vk_access_token
@@ -42,3 +58,43 @@ def gl(request): #url: https://mysite.ru/vkbot/
             create_answer(data['object'], token)
 
     return HttpResponse('ok', content_type="text/plain", status=200)
+
+
+class IgnoranceList(PermissionRequiredMixin, ListView):
+    permission_required = 'message_ignorance'
+    template_name = 'bot/message/ignorance.html'
+    context_object_name = 'vk_messages'
+
+    def get_queryset(self):
+        items = []
+        for message_type in Message._registry:
+            items.append({
+                'type': message_type.__full_qualname__(),
+                'help_text': message_type.detailed_description,
+                'is_enabled': message_type.is_enabled_message()
+            })
+        return sorted(items, key=itemgetter('type'))
+
+
+class ToggleIgnorance(UpdateAPIView):
+    lookup_url_kwarg = 'type'
+    lookup_field = 'type'
+    serializer_class = MessageIgnoranceSerializer
+
+    def get_object(self):
+        lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
+
+        assert lookup_url_kwarg in self.kwargs, (
+            'Expected view %s to be called with a URL keyword argument '
+            'named "%s". Fix your URL conf, or set the `.lookup_field` '
+            'attribute on the view correctly.' %
+            (self.__class__.__name__, lookup_url_kwarg)
+        )
+
+        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
+        obj, _ = MessageIgnorance.objects.get_or_create(**filter_kwargs)
+
+        # May raise a permission denied
+        self.check_object_permissions(self.request, obj)
+
+        return obj

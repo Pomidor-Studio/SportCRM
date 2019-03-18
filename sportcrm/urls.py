@@ -25,8 +25,18 @@ if not getattr(settings, "BACKGROUND_MODE", False):
         path('', include('crm.urls')),
         path('', include('bot.urls')),
         path('', include('social_django.urls', namespace='social')),
-        path('api/v1/', include(('crm.urls_api', 'api-v1'), namespace='api-v1')),
-        path('qr_code/', include(('qr_code.urls', 'qr_code'), namespace="qr_code")),
+        path(
+            'api/v1/',
+            include(('crm.urls_api', 'api-v1'), namespace='api-v1')
+        ),
+        path(
+            'api/v1/',
+            include(('bot.urls_api', 'bot-api-v1'), namespace='bot-api-v1')
+        ),
+        path(
+            'qr_code/',
+            include(('qr_code.urls', 'qr_code'), namespace="qr_code")
+        ),
     ]
 else:
     urlpatterns = [

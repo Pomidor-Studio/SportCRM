@@ -5,76 +5,88 @@
       <li class="nav-item">
         <a
           class="nav-link"
-          href="{% if user.is_manager %}{% url 'crm:manager:event-class:list' %}{% else %}{% url 'crm:coach:home' %}{% endif %}"
+          href="
+            {% if user.is_manager %}{% url 'crm:manager:event-class:list' %}{% else %}{% url 'crm:coach:home' %}{% endif %}"
           name="Тренировки"
         >
           Тренировки
         </a>
       </li>
       {% ifhasperm 'client' user %}
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'crm:manager:client:list' %}"
-          name="Ученики"
-        >
-          Ученики
-        </a>
-      </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'crm:manager:client:list' %}"
+            name="Ученики"
+          >
+            Ученики
+          </a>
+        </li>
       {% endifhasperm %}
       {% ifhasperm 'coach' user %}
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'crm:manager:coach:list' %}"
-        >
-          Тренеры
-        </a>
-      </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'crm:manager:coach:list' %}"
+          >
+            Тренеры
+          </a>
+        </li>
       {% endifhasperm %}
       {% ifhasperm 'subscription' user %}
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'crm:manager:subscription:list' %}"
-          name="Абонементы"
-        >
-          Абонементы
-        </a>
-      </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'crm:manager:subscription:list' %}"
+            name="Абонементы"
+          >
+            Абонементы
+          </a>
+        </li>
       {% endifhasperm %}
       {% ifhasperm 'is_manager' user %}
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'crm:manager:event:calendar' %}"
-          name="Календарь тренировок"
-        >
-          Календарь тренировок
-        </a>
-      </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'crm:manager:event:calendar' %}"
+            name="Календарь тренировок"
+          >
+            Календарь тренировок
+          </a>
+        </li>
       {% endifhasperm %}
       {% ifhasperm 'location' user %}
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'crm:manager:locations:list' %}"
-          name="Места проведения"
-        >
-          Места проведения
-        </a>
-      </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'crm:manager:locations:list' %}"
+            name="Места проведения"
+          >
+            Места проведения
+          </a>
+        </li>
       {% endifhasperm %}
       {% ifhasperm 'report.list' user %}
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="{% url 'crm:manager:reports' %}"
-          name="Отчеты"
-        >
-          Отчеты
-        </a>
-      </li>
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'crm:manager:reports' %}"
+            name="Отчеты"
+          >
+            Отчеты
+          </a>
+        </li>
+      {% endifhasperm %}
+      {% ifhasperm 'message_ignorance' user %}
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'bot:messages' %}"
+            name="Управления VK сообщениями"
+          >
+            Управления VK сообщениями
+          </a>
+        </li>
       {% endifhasperm %}
       <li class="nav-item">
         <a
@@ -85,6 +97,8 @@
           Профиль
         </a>
       </li>
+
+
     </ul>
   </div>
 </nav>

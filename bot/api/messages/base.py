@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any, Optional, Sequence, Union
 
 from bot.api.vkapi import send_bulk_message, send_message
+from bot.models import MessageIgnorance
 from crm.models import Client, Coach, Manager
 
 Recipient = Union[Client, Manager, Coach]
@@ -52,8 +53,18 @@ class Message:
             )
         __class__._registry.append(cls)
 
-    def is_enabled_message(self) -> bool:
-        return True
+    @classmethod
+    def __full_qualname__(cls):
+        return f'{cls.__module__}.{cls.__qualname__}'
+
+    @classmethod
+    def is_enabled_message(cls) -> bool:
+        try:
+            return MessageIgnorance.objects.get(
+                type=cls.__full_qualname__()
+            ).is_enabled
+        except MessageIgnorance.DoesNotExist:
+            return True
 
     def send_message(self):
         if not self.is_enabled_message():
