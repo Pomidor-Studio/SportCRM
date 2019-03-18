@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Sequence, Union
+from typing import Any, Dict, Sequence, Union
 from uuid import UUID, uuid5
 
 from django.template import Context, Template
@@ -11,17 +11,65 @@ from bot.const import SPORTCRM_NAMESPACE
 from bot.models import MessageMeta
 from crm.models import Client, Coach, Manager
 
-Recipient = Union[Client, Manager, Coach]
-
-
-def is_valid_recipient(recipient: Any) -> bool:
-    return isinstance(recipient, (Client, Manager, Coach))
+InputRecipient = Union[Client, Manager, Coach]
 
 
 @dataclass
 class TemplateItem:
     text: str
     example: Any
+
+
+class Recipient:
+    @classmethod
+    def from_input_object(cls, input_object: InputRecipient) -> Recipient:
+        if isinstance(input_object, Client):
+            return ClientRecipient(input_object)
+        elif isinstance(input_object, (Manager, Coach)):
+            return UserRecipient(input_object)
+        else:
+            raise ValueError('Unsupported recipient object')
+
+    @staticmethod
+    def is_valid(recipient: Any) -> bool:
+        return isinstance(recipient, (Client, Manager, Coach))
+
+    def __init__(self, recipient_object: InputRecipient) -> None:
+        self.object = recipient_object
+        super().__init__()
+
+    def get_vk_id(self) -> int:
+        raise NotImplementedError()
+
+    def get_vk_message_token(self) -> str:
+        raise NotImplementedError()
+
+    def get_name(self) -> str:
+        raise NotImplementedError()
+
+
+class ClientRecipient(Recipient):
+
+    def get_vk_id(self) -> int:
+        return self.object.vk_user_id
+
+    def get_vk_message_token(self) -> str:
+        return self.object.vk_message_token
+
+    def get_name(self) -> str:
+        return self.object.name
+
+
+class UserRecipient(Recipient):
+
+    def get_vk_id(self) -> int:
+        return self.object.user.vk_id
+
+    def get_vk_message_token(self) -> str:
+        return self.object.user.vk_message_token
+
+    def get_name(self) -> str:
+        return self.object.user.get_full_name()
 
 
 class Message:
@@ -33,14 +81,14 @@ class Message:
     default_template: str
     # Describe all allowed template items, for one message
     # This items will be populated in template rendering
-    template_args: Dict[str, str] = {}
+    template_args: Dict[str, TemplateItem] = {}
 
     _registry = []
     message: str = None
 
     def __init__(
         self,
-        recipient: Union[Recipient, Sequence[Recipient]],
+        recipient: Union[InputRecipient, Sequence[InputRecipient]],
         personalized=False
     ):
 
@@ -49,12 +97,15 @@ class Message:
         # Use direct check of instance as typing provides *static* check
         # and usage of Recipient.__args__ can be dangerous. As this function
         # isn't documented.
-        if is_valid_recipient(recipient):
-            self.recipients = [recipient]
+        if Recipient.is_valid(recipient):
+            self.recipients = [Recipient.from_input_object(recipient)]
         elif isinstance(recipient, Sequence):
             # Filter iterable, to skip non-valid recipient items
             # Empty list is valid data, but no message will be sent
-            self.recipients = list(filter(is_valid_recipient, recipient))
+            self.recipients = [
+                Recipient.from_input_object(x)
+                for x in filter(Recipient.is_valid, recipient)
+            ]
         else:
             raise ValueError('Invalid client argument passed')
 
@@ -120,8 +171,8 @@ class Message:
 
     def send_personalized_message(self):
         for recipient in self.recipients:
-            vk_id = self.get_recipient_vk_id(recipient)
-            vk_message_token = self.get_recipient_message_token(recipient)
+            vk_id = recipient.get_vk_id()
+            vk_message_token = recipient.get_vk_message_token()
             if not vk_id or not vk_message_token:
                 # Skip users without vk params
                 continue
@@ -132,12 +183,12 @@ class Message:
 
     def send_bulk_message(self):
         send_bulk_message(
-            [self.get_recipient_vk_id(x) for x in self.recipients],
+            [x.get_vk_id() for x in self.recipients],
             # TODO: to dispute what to do if in recipients list accidentally
             #  was added users from different company. Possible resolutions:
             #  1. Check in message init and raise ValueError
             #  2. Make bulk message params for every company
-            self.get_recipient_message_token(self.recipients[0]),
+            self.recipients[0].get_vk_message_token(),
             self.message
         )
 
@@ -172,33 +223,10 @@ class Message:
         return Template(template_data)
 
     @staticmethod
-    def get_recipient_vk_id(recipient: Recipient) -> Optional[int]:
-        if isinstance(recipient, (Coach, Manager)):
-            return recipient.user.vk_id
-
-        # Don't explicit check recipient instance, as it was checked at init
-        return recipient.vk_user_id
-
-    @staticmethod
-    def get_recipient_message_token(recipient: Recipient) -> Optional[str]:
-        if isinstance(recipient, (Coach, Manager)):
-            return recipient.user.vk_message_token
-
-        # Don't explicit check recipient instance, as it was checked at init
-        return recipient.vk_message_token
-
-    @staticmethod
-    def get_recipient_name(recipient: Recipient) -> str:
-        if isinstance(recipient, (Coach, Manager)):
-            return recipient.user.get_full_name()
-
-        # Don't explicit check recipient instance, as it was checked at init
-        return recipient.name
-
-    def personalize(self, msg: str, recipient: Recipient) -> str:
+    def personalize(msg: str, recipient: Recipient) -> str:
         # Ignore check for empty msg, as at this moment it will be already
         # non empty
         fixed_msg = msg[0].lower() + msg[1:]
-        name = self.get_recipient_name(recipient)
+        name = recipient.get_name()
 
         return f'{name}, {fixed_msg}'
