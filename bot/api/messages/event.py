@@ -1,4 +1,6 @@
-from bot.api.messages.base import Message
+from datetime import date
+
+from bot.api.messages.base import Message, TemplateItem
 from crm.models import Event
 
 
@@ -9,8 +11,11 @@ class CancelledEvent(Message):
         'Была отменена тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}'
     )
     template_args = {
-        'DATE': 'Дата тренировки, в формате ДД.ММ.ГГГГ',
-        'NAME': 'Название тренировки'
+        'DATE': TemplateItem(
+            text='Дата тренировки, в формате ДД.ММ.ГГГГ',
+            example=date(2019, 2, 12)
+        ),
+        'NAME': TemplateItem(text='Название тренировки', example='Волейбол')
     }
 
     def __init__(self, recipient, personalized=False, *, event: Event):

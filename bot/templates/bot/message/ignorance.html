@@ -1,12 +1,17 @@
 {% extends 'crm/base.html' %}
 
 {% block extrahead %}
-  <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"></script>
+  <link
+    href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css"
+    rel="stylesheet"
+  >
+  <script
+    src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"
+  ></script>
 
   <script type="text/javascript">
-    $(function() {
-      $('input.status-toggle').change(function() {
+    $(function () {
+      $('input.status-toggle').change(function () {
         let $this = $(this);
         $.ajax({
             url: `/api/v1/messages/${$this.data('message-id')}/toggle/`,
@@ -30,6 +35,7 @@
     <tr>
       <th>Тип сообщения</th>
       <th>Статус</th>
+      <th></th>
     </tr>
     </thead>
     {% for message in vk_messages %}
@@ -42,7 +48,7 @@
             class="status-toggle"
             type="checkbox"
             {% if message.is_enabled %}
-              checked
+            checked
             {% endif %}
             data-toggle="toggle"
             data-onstyle="outline-success"
@@ -51,6 +57,14 @@
             data-off="Выключено"
             data-message-id="{{ message.uuid }}"
           >
+        </td>
+        <td>
+          <a
+            class="btn btn-info"
+            href="{% url 'bot:messages:template-edit' message.uuid %}"
+          >
+            Редактировать шаблон сообщения
+          </a>
         </td>
       </tr>
     {% endfor %}

@@ -1,13 +1,14 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Sequence, Union, Dict
-from uuid import uuid5, UUID
+from dataclasses import dataclass
+from typing import Any, Dict, Optional, Sequence, Union
+from uuid import UUID, uuid5
 
-from django.template import Template, Context
+from django.template import Context, Template
 
 from bot.api.vkapi import send_bulk_message, send_message
-from bot.models import MessageMeta
 from bot.const import SPORTCRM_NAMESPACE
+from bot.models import MessageMeta
 from crm.models import Client, Coach, Manager
 
 Recipient = Union[Client, Manager, Coach]
@@ -15,6 +16,12 @@ Recipient = Union[Client, Manager, Coach]
 
 def is_valid_recipient(recipient: Any) -> bool:
     return isinstance(recipient, (Client, Manager, Coach))
+
+
+@dataclass
+class TemplateItem:
+    text: str
+    example: Any
 
 
 class Message:
@@ -137,8 +144,19 @@ class Message:
     def prepare_generalized_message(self) -> str:
         return self.get_template().render(self.get_template_context())
 
+    @classmethod
+    def prepare_example_generalized_message(cls) -> str:
+        return cls.get_template().render(cls.get_example_template_context())
+
     def get_template_context(self) -> Context:
         return Context()
+
+    @classmethod
+    def get_example_template_context(cls) -> Context:
+        return Context({
+            ctx_name: ctx.example
+            for ctx_name, ctx in cls.template_args.items()
+        })
 
     @classmethod
     def get_template(cls) -> Template:

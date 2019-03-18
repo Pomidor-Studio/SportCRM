@@ -1,12 +1,23 @@
-from bot.api.messages.base import Message
+from datetime import date
+
+from bot.api.messages.base import Message, TemplateItem
 from crm.models import ClientSubscriptions
 
 
 class ClientSubscriptionMessage(Message, abstract=True):
     template_args = {
-        'SUBSCRIPTION_NAME': 'Название абонемента',
-        'END_DATE': 'Дата окончания абонемента',
-        'VISITS_LEFT': 'Количество визитов оставшихся на абонементе'
+        'SUBSCRIPTION_NAME': TemplateItem(
+            text='Название абонемента',
+            example='Базовый месячный'
+        ),
+        'END_DATE': TemplateItem(
+            text='Дата окончания абонемента',
+            example=date(2019, 3, 29),
+        ),
+        'VISITS_LEFT': TemplateItem(
+            text='Количество визитов оставшихся на абонементе',
+            example=10
+        )
     }
 
     def __init__(
@@ -63,7 +74,7 @@ class ClientUpdateBalance(Message):
     detailed_description = 'Уведомление при изменении баланса клиента'
     default_template = 'Ваш баланс составляет: {{BALANCE}} ₽'
     template_args = {
-        'BALANCE': 'Балас клиента'
+        'BALANCE': TemplateItem(text='Балас клиента', example=1500)
     }
 
     def get_template_context(self):

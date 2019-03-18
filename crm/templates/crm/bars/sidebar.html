@@ -77,11 +77,11 @@
           </a>
         </li>
       {% endifhasperm %}
-      {% ifhasperm 'message_ignorance' user %}
+      {% ifhasperm 'message.ignorance' user %}
         <li class="nav-item">
           <a
             class="nav-link"
-            href="{% url 'bot:messages' %}"
+            href="{% url 'bot:messages:list' %}"
             name="Управления VK сообщениями"
           >
             Управления VK сообщениями
