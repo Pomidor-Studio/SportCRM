@@ -3,6 +3,11 @@ from crm.models import ClientSubscriptions
 
 
 class ClientSubscriptionMessage(Message, abstract=True):
+    template_args = {
+        'SUBSCRIPTION_NAME': 'Название абонемента',
+        'END_DATE': 'Дата окончания абонемента',
+        'VISITS_LEFT': 'Количество визитов оставшихся на абонементе'
+    }
 
     def __init__(
         self,
@@ -15,48 +20,55 @@ class ClientSubscriptionMessage(Message, abstract=True):
 
         super().__init__(recipient, personalized)
 
+    def get_template_context(self):
+        context = super().get_template_context()
+        context.update({
+            'SUBSCRIPTION_NAME': self.clientsub.subscription.name,
+            'END_DATE': self.clientsub.end_date,
+            'VISITS_LEFT': self.clientsub.visits_left
+        })
+        return context
+
 
 class ClientSubscriptionBuy(ClientSubscriptionMessage):
 
     detailed_description = 'Уведомление при покупке абонемента'
-
-    def prepare_generalized_message(self):
-        return (
-            f'Вы приобрели абонемент:\n'
-            f'{self.clientsub.subscription.name}!\n'
-            f'Действующий до:\n{self.clientsub.end_date:%d.%m.%Y}'
-        )
+    default_template = (
+        'Вы приобрели абонемент:\n{{SUBSCRIPTION_NAME}}!\n'
+        'Действующий до:\n{{END_DATE|date:"d.m.Y"}}'
+    )
 
 
 class ClientSubscriptionVisit(ClientSubscriptionMessage):
 
     detailed_description = 'Уведомление при посещении занятия'
-
-    def prepare_generalized_message(self):
-        return (
-            f'На вашем абонементе:\n'
-            f'{self.clientsub.subscription.name}\n'
-            f'остаток посещений: {self.clientsub.visits_left}'
-        )
+    default_template = (
+        'На вашем абонементе:\n{{SUBSCRIPTION_NAME}}\n'
+        'остаток посещений: {{VISITS_LEFT}}'
+    )
 
 
 class ClientSubscriptionExtend(ClientSubscriptionMessage):
 
     detailed_description = 'Уведомление при продление абонемента'
 
-    def prepare_generalized_message(self):
-        return (
-            f'Вам продлили абонемент:\n'
-            f'{self.clientsub.subscription.name}\n'
-            f'Остаток посещений: {self.clientsub.visits_left}'
-        )
+    default_template = (
+        'Вам продлили абонемент:\n{{SUBSCRIPTION_NAME}}\n'
+        'Остаток посещений: {{VISITS_LEFT}}'
+    )
 
 
 class ClientUpdateBalance(Message):
 
     detailed_description = 'Уведомление при изменении баланса клиента'
+    default_template = 'Ваш баланс составляет: {{BALANCE}} ₽'
+    template_args = {
+        'BALANCE': 'Балас клиента'
+    }
 
-    def prepare_generalized_message(self):
-        return (
-            f'Ваш баланс составляет: {self.recipients[0].balance} ₽'
-        )
+    def get_template_context(self):
+        context = super().get_template_context()
+        context.update({
+            'BALANCE': self.recipients[0].balance
+        })
+        return context

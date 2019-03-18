@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Optional, Sequence, Union, Dict
+from uuid import uuid5, UUID
+
+from django.template import Template, Context
 
 from bot.api.vkapi import send_bulk_message, send_message
-from bot.models import MessageIgnorance
+from bot.models import MessageMeta
+from bot.const import SPORTCRM_NAMESPACE
 from crm.models import Client, Coach, Manager
 
 Recipient = Union[Client, Manager, Coach]
@@ -15,7 +19,15 @@ def is_valid_recipient(recipient: Any) -> bool:
 
 class Message:
 
+    # Human readable detailed description of message.
+    # Will be provided for client in UI part.
     detailed_description: str
+    # Default message template, if user won't create any custom template
+    default_template: str
+    # Describe all allowed template items, for one message
+    # This items will be populated in template rendering
+    template_args: Dict[str, str] = {}
+
     _registry = []
     message: str = None
 
@@ -51,19 +63,30 @@ class Message:
                 f'{cls.__module__}.{cls.__qualname__}, '
                 'as it will be shown for manager in UI'
             )
+        if not hasattr(cls, 'default_template') or \
+                cls.default_template is None:
+            raise ValueError(
+                'default_template must be set on '
+                f'{cls.__module__}.{cls.__qualname__}, '
+                'as it will be shown for manager in UI'
+            )
         __class__._registry.append(cls)
 
     @classmethod
-    def __full_qualname__(cls):
+    def __full_qualname__(cls) -> str:
         return f'{cls.__module__}.{cls.__qualname__}'
+
+    @classmethod
+    def uuid(cls) -> UUID:
+        return uuid5(SPORTCRM_NAMESPACE, cls.__full_qualname__())
 
     @classmethod
     def is_enabled_message(cls) -> bool:
         try:
-            return MessageIgnorance.objects.get(
-                type=cls.__full_qualname__()
+            return MessageMeta.objects.only('is_enabled').get(
+                uuid=cls.uuid()
             ).is_enabled
-        except MessageIgnorance.DoesNotExist:
+        except MessageMeta.DoesNotExist:
             return True
 
     def send_message(self):
@@ -111,8 +134,24 @@ class Message:
             self.message
         )
 
-    def prepare_generalized_message(self):
-        raise NotImplementedError()
+    def prepare_generalized_message(self) -> str:
+        return self.get_template().render(self.get_template_context())
+
+    def get_template_context(self) -> Context:
+        return Context()
+
+    @classmethod
+    def get_template(cls) -> Template:
+        try:
+            template_data = MessageMeta.objects.only('template').get(
+                uuid=cls.uuid()
+            ).template
+            if not template_data:
+                template_data = cls.default_template
+        except MessageMeta.DoesNotExist:
+            template_data = cls.default_template
+
+        return Template(template_data)
 
     @staticmethod
     def get_recipient_vk_id(recipient: Recipient) -> Optional[int]:

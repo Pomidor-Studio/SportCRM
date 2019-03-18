@@ -12,7 +12,7 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from bot.api.messageHandler import create_answer
 from bot.api.messages.base import Message
-from bot.models import MessageIgnorance
+from bot.models import MessageMeta
 from bot.serializers import MessageIgnoranceSerializer
 from crm.models import Company
 
@@ -69,16 +69,16 @@ class IgnoranceList(PermissionRequiredMixin, ListView):
         items = []
         for message_type in Message._registry:
             items.append({
-                'type': message_type.__full_qualname__(),
+                'uuid': message_type.uuid(),
                 'help_text': message_type.detailed_description,
                 'is_enabled': message_type.is_enabled_message()
             })
-        return sorted(items, key=itemgetter('type'))
+        return sorted(items, key=itemgetter('uuid'))
 
 
 class ToggleIgnorance(UpdateAPIView):
-    lookup_url_kwarg = 'type'
-    lookup_field = 'type'
+    lookup_url_kwarg = 'uuid'
+    lookup_field = 'uuid'
     serializer_class = MessageIgnoranceSerializer
 
     def get_object(self):
@@ -92,7 +92,7 @@ class ToggleIgnorance(UpdateAPIView):
         )
 
         filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
-        obj, _ = MessageIgnorance.objects.get_or_create(**filter_kwargs)
+        obj, _ = MessageMeta.objects.get_or_create(**filter_kwargs)
 
         # May raise a permission denied
         self.check_object_permissions(self.request, obj)
