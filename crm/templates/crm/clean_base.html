@@ -1,5 +1,8 @@
 <!DOCTYPE html>
 {% load static html_helper bootstrap4 %}
+{% load yandex_metrica %}
+{% load google_analytics_js  %}
+
 <html class="h-100">
 
 <head>
@@ -73,7 +76,8 @@
     <title>SportAdmin</title>
   {% endif %}
 
-
+  {% yandex_metrica %}
+  {% google_analytics_js %}
 </head>
 
 <body style="height: 100%;">
