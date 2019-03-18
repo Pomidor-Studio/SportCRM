@@ -76,15 +76,22 @@
           <td>
             <div>
               {% if client.phone_number %}
-                <a class="btn btn-sm btn-outline-info" href="#">
+                <a class="btn btn-sm btn-outline-info" href="tel:{{ client.phone_number }}">
                   Позвонить
                 </a>
               {% endif %}
             </div>
             <div>
               {% if client.vk_user_id %}
-                <a class="btn btn-sm btn-outline-info" target="_blank" href="https://vk.com/im?sel={{ client.vk_user_id }}">
+                <a class="btn btn-sm btn-outline-info" target="_blank" href="https://vk.com/gim176552308?sel={{ client.vk_user_id }}">
                   Написать в VK
+                </a>
+              {% endif %}
+            </div>
+            <div>
+              {% if client.email_address %}
+                <a class="btn btn-sm btn-outline-info" href="mailto:{{ client.email_address }}">
+                  Написать на почту
                 </a>
               {% endif %}
             </div>
