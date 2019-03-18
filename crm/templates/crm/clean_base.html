@@ -103,11 +103,16 @@
 
   {% block extrahead %}
   {% endblock %}
-  {% if title %}
-    <title>SportAdmin - {{ title }}</title>
-  {% else %}
-    <title>SportAdmin</title>
-  {% endif %}
+  <title>
+    SportAdmin{% block title %}{% endblock %}
+    {% if user.is_manager %}
+      {% if company.active_to %}
+        (активен до {{ company.active_to|date:"d.m.Y" }})
+      {% else %}
+        (активен без ограничений)
+      {% endif %}
+    {% endif %}
+  </title>
 
   {% yandex_metrica %}
   {% google_analytics_js %}
@@ -126,6 +131,13 @@
       alt="logo"
     >
     SportAdmin
+    {% if user.is_manager %}
+      {% if company.active_to %}
+        (активен до {{ company.active_to|date:"d.m.Y" }})
+      {% else %}
+        (активен без ограничений)
+      {% endif %}
+    {% endif %}
   </a>
 
   {% if user.is_authenticated %}
