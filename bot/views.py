@@ -167,6 +167,15 @@ class MessageTemplateEdit(
     def get_success_url(self):
         return reverse('bot:messages:template-edit', args=(self.object.uuid,))
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        form.msg_type = self.msg_type
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            return self.form_invalid(form)
+
 
 class ResetMessageTemplate(
     SingleMessageMixin,
