@@ -17,6 +17,10 @@ class ClientSubscriptionMessage(Message, abstract=True):
         'VISITS_LEFT': TemplateItem(
             text='Количество визитов оставшихся на абонементе',
             example=10
+        ),
+        'PRICE': TemplateItem(
+            text='Стоимость абонемента',
+            example=5000
         )
     }
 
@@ -36,7 +40,8 @@ class ClientSubscriptionMessage(Message, abstract=True):
         context.update({
             'SUBSCRIPTION_NAME': self.clientsub.subscription.name,
             'END_DATE': self.clientsub.end_date,
-            'VISITS_LEFT': self.clientsub.visits_left
+            'VISITS_LEFT': self.clientsub.visits_left,
+            'PRICE': self.clientsub.subscription.price
         })
         return context
 
@@ -46,6 +51,7 @@ class ClientSubscriptionBuy(ClientSubscriptionMessage):
     detailed_description = 'Уведомление при покупке абонемента'
     default_template = (
         'Вы приобрели абонемент:\n{{SUBSCRIPTION_NAME}}!\n'
+        'Стоимостью: {{PRICE}} ₽\n'
         'Действующий до:\n{{END_DATE|date:"d.m.Y"}}'
     )
 
@@ -80,6 +86,6 @@ class ClientUpdateBalance(Message):
     def get_template_context(self):
         context = super().get_template_context()
         context.update({
-            'BALANCE': self.recipients[0].balance
+            'BALANCE': self.recipients[0].get_balance()
         })
         return context
