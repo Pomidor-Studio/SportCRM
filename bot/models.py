@@ -12,4 +12,4 @@ class MessageMeta(CompanyObjectModel):
     template = models.TextField('Шаблон сообщения', max_length=10000)
 
     class Meta:
-        unique_together = ['id', 'company', 'uuid']
+        unique_together = ['company', 'uuid']
