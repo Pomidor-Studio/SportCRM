@@ -145,6 +145,14 @@ class Location(SafeDeleteModel, CompanyObjectModel):
     def get_absolute_url(self):
         return reverse_lazy('crm:manager:locations:list')
 
+    @property
+    def has_active_events(self):
+        today = timezone.now().date()
+        return self.eventclass_set.filter(
+            Q(date_from__gt=today) |
+            Q(date_to__gt=today)
+        ).exists()
+
 
 @reversion.register()
 class Coach(SafeDeleteModel, CompanyObjectModel):

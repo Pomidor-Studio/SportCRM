@@ -212,7 +212,7 @@ manager_attendance_urlpatterns = ([
 manager_locations_urlpatterns = ([
     path(
         '',
-        manager_locations_views.ObjList.as_view(),
+        manager_locations_views.List.as_view(),
         name='list'
     ),
     path('new/', manager_locations_views.Create.as_view(), name='new'),
@@ -226,6 +226,11 @@ manager_locations_urlpatterns = ([
         manager_locations_views.Delete.as_view(),
         name='delete'
     ),
+    path(
+        '<int:pk>/undelete/',
+        manager_locations_views.Undelete.as_view(),
+        name='undelete'
+    )
 ], 'locations')
 
 manager_urlpatterns = ([
