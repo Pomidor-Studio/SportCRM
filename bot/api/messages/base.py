@@ -47,6 +47,9 @@ class Recipient:
     def get_name(self) -> str:
         raise NotImplementedError()
 
+    def get_balance(self) -> str:
+        raise NotImplementedError()
+
 
 class ClientRecipient(Recipient):
 
@@ -59,6 +62,9 @@ class ClientRecipient(Recipient):
     def get_name(self) -> str:
         return self.object.name
 
+    def get_balance(self) -> int:
+        return self.object.balance
+
 
 class UserRecipient(Recipient):
 
@@ -70,6 +76,9 @@ class UserRecipient(Recipient):
 
     def get_name(self) -> str:
         return self.object.user.get_full_name()
+
+    def get_balance(self) -> int:
+        return 0
 
 
 class Message:
