@@ -135,10 +135,14 @@ class SingleMessageMixin(SingleObjectMixin):
                 template=self.msg_type.default_template
             )
 
+    def dispatch(self, request, *args, **kwargs):
+        self.msg_type = self.get_message_type()
+        return super().dispatch(request, *args, **kwargs)
+
 
 class MessageTemplateEdit(
-    PermissionRequiredMixin,
     SingleMessageMixin,
+    PermissionRequiredMixin,
     UpdateView
 ):
     permission_required = 'message.template'
@@ -148,10 +152,6 @@ class MessageTemplateEdit(
     slug_url_kwarg = 'uuid'
     template_name = 'bot/message/template-edit.html'
     msg_type: Message = None
-
-    def get(self, request, *args, **kwargs):
-        self.msg_type = self.get_message_type()
-        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -169,8 +169,8 @@ class MessageTemplateEdit(
 
 
 class ResetMessageTemplate(
-    PermissionRequiredMixin,
     SingleMessageMixin,
+    PermissionRequiredMixin,
     RedirectWithActionView
 ):
     permission_required = 'message.template'
@@ -180,8 +180,7 @@ class ResetMessageTemplate(
     model = MessageMeta
 
     def run_action(self):
-        msg_type = self.get_message_type()
         obj = self.get_object()
-        obj.template = msg_type.default_template
+        obj.template = self.msg_type.default_template
         obj.save()
 
