@@ -16,14 +16,29 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include
 from django.urls import path
-
+from django.conf import settings
 
 app_name = 'sportcrm'
-urlpatterns = [
-    path('admin/', admin.site.urls, name='admin'),
-    path('', include('crm.urls')),
-    path('', include('bot.urls')),
-    path('', include('social_django.urls', namespace='social')),
-    path('api/v1/', include(('crm.urls_api', 'api-v1'), namespace='api-v1')),
-    path('qr_code/', include(('qr_code.urls', 'qr_code'), namespace="qr_code")),
-]
+if not settings.BACKGROUND_MODE:
+    urlpatterns = [
+        path('admin/', admin.site.urls, name='admin'),
+        path('', include('crm.urls')),
+        path('', include('bot.urls')),
+        path('', include('social_django.urls', namespace='social')),
+        path(
+            'api/v1/',
+            include(('crm.urls_api', 'api-v1'), namespace='api-v1')
+        ),
+        path(
+            'api/v1/',
+            include(('bot.urls_api', 'bot-api-v1'), namespace='bot-api-v1')
+        ),
+        path(
+            'qr_code/',
+            include(('qr_code.urls', 'qr_code'), namespace="qr_code")
+        ),
+    ]
+else:
+    urlpatterns = [
+        path('', include('google_tasks.urls')),
+    ]

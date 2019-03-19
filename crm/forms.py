@@ -12,8 +12,9 @@ from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidg
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import (
-    Attendance, Client, ClientSubscriptions, Coach, DayOfTheWeekClass,
-    EventClass, SubscriptionsType,
+    Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
+    DayOfTheWeekClass, EventClass, SubscriptionsType,
+    Manager,
 )
 
 
@@ -54,14 +55,30 @@ class ClientForm(TenantModelForm):
         }
 
 
+class Balance(TenantModelForm):
+
+    class Meta:
+        model = ClientBalanceChangeHistory
+        widgets = {
+            'change_value': forms.NumberInput(),
+            'reason': forms.TextInput(attrs={"class": "form-control", "placeholder": "Укажите причину изменения баланса"}),
+            'entry_date': DatePickerInput(format='%d.%m.%Y',
+                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"})
+        }
+        exclude = ('client', 'actual_entry_date',)
+
+    # def __init__(self, attrs=None, choices=(), data=None):
+    #     super().__init__(attrs, choices)
+    #     self.data = data or {}
+
+
 class DataAttributesSelect(forms.Select):
 
     def __init__(self, attrs=None, choices=(), data=None):
         super().__init__(attrs, choices)
         self.data = data or {}
 
-    def create_option(self, name, value, label, selected, index,
-                      subindex=None, attrs=None):
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=None, attrs=None)
         for data_attr, values in self.data.items():
@@ -101,6 +118,7 @@ class ClientSubscriptionForm(TenantModelForm):
 
     class Meta:
         model = ClientSubscriptions
+
         widgets = {
             'purchase_date': DatePickerInput(
                 format='%d.%m.%Y',
@@ -131,7 +149,7 @@ class ClientSubscriptionForm(TenantModelForm):
         choices = [("", "--------------")]
         data = {'price': {'': ''}, 'visit_limit': {'': ''}}
 
-        for st in SubscriptionsType.objects.all():
+        for st in SubscriptionsType.objects.filter(one_time=False):
             choices.append((st.id, st.name))
 
             data['price'][st.id] = st.price
@@ -141,22 +159,12 @@ class ClientSubscriptionForm(TenantModelForm):
             choices=choices, data=data)
 
 
-class AttendanceForm(TenantModelForm):
-    class Meta:
-        model = Attendance
-        exclude = ('client',)
-
-
-class EventAttendanceForm(TenantModelForm):
-    class Meta:
-        model = Attendance
-        exclude = ('event',)
-
-
 class EventClassForm(TenantModelForm):
+    one_time_price = forms.IntegerField(label='Стоимость разового посещения', initial='', min_value=0, required=False)
+
     class Meta:
         model = EventClass
-        fields = ['name', 'location', 'coach', 'date_from', 'date_to',]
+        fields = ['name', 'location', 'coach', 'date_from', 'date_to', 'one_time_price']
         widgets = {
             'date_from': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
             'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
@@ -208,9 +216,32 @@ class FakeNameValidator:
 
       
 class ProfileUserForm(TenantModelForm):
+    fullname = forms.CharField(
+        label='ФИО',
+        widget=forms.TextInput(attrs={'data-name-edit': True})
+    )
+
     class Meta:
         model = get_user_model()
-        fields = ('username',)
+        fields = ('username', 'first_name', 'last_name', 'email')
+        widgets = {
+            'first_name': forms.HiddenInput(),
+            'last_name': forms.HiddenInput()
+        }
+        labels = {
+            'username': 'Логин'
+        }
+
+    def __init__(self, *args, **kwargs):
+        initial = kwargs.pop('initial', {})
+        instance = kwargs.get('instance', None)
+
+        if instance:
+            if initial is None:
+                initial = {}
+            initial['fullname'] = instance.get_full_name()
+
+        super(ProfileUserForm, self).__init__(*args, initial=initial, **kwargs)
 
 
 class UserForm(TenantModelForm):
@@ -251,8 +282,33 @@ class CoachForm(TenantModelForm):
         }
 
 
+class ManagerForm(TenantModelForm):
+    class Meta:
+        model = Manager
+        fields = ('phone_number',)
+        widgets = {
+            'phone_number': PhoneNumberInternationalFallbackWidget(
+                attrs={'data-phone': True}
+            )
+        }
+
+
 class CoachMultiForm(MultiModelForm):
     form_classes = {
         'user': UserForm,
         'coach': CoachForm
+    }
+
+
+class ProfileManagerForm(MultiModelForm):
+    form_classes = {
+        'user': ProfileUserForm,
+        'detail': ManagerForm
+    }
+
+
+class ProfileCoachForm(MultiModelForm):
+    form_classes = {
+        'user': ProfileUserForm,
+        'detail': CoachForm
     }

@@ -36,6 +36,7 @@ def test_cancelled_event_message(
 
     msg_sender = CancelledEvent(cs.client, event=event)
 
-    assert_that(msg_sender.prepare_generalized_msg(), is_(
-        f'Была отменена тренировка на {event.date} по {event.event_class}'
+    assert_that(msg_sender.prepare_generalized_message(), is_(
+        f'Была отменена тренировка на {event.date:%d.%m.%Y} по '
+        f'{event.event_class}'
     ))

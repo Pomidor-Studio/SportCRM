@@ -1,49 +1,50 @@
-from uuid import UUID
 from datetime import date, timedelta
 from typing import List, Optional
+from uuid import UUID
 
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db import transaction, models
-from django.db.models import Q
+from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, ListView,
-    TemplateView,
-    RedirectView, FormView)
+    DeleteView, DetailView, ListView, RedirectView, TemplateView,
+)
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
-from crm.forms import DayOfTheWeekClassForm, EventAttendanceForm, EventClassForm, SubscriptionsTypeForm, \
-    SignUpClientWithoutSubscriptionForm
-from crm.models import (Attendance, DayOfTheWeekClass, Event, EventClass, Client, ClientSubscriptions,
-                        SubscriptionsType,
-                        ClientAttendanceExists)
+from crm.enums import GRANULARITY
+from crm.forms import DayOfTheWeekClassForm, EventClassForm
+from crm.models import (
+    Client, ClientAttendanceExists, ClientSubscriptions,
+    DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
+)
 from crm.serializers import CalendarEventSerializer
-from crm.views.mixin import UserManagerMixin, RedirectWithActionView
+from crm.views.mixin import RedirectWithActionView
 
 
-class ObjList(LoginRequiredMixin, UserManagerMixin, ListView):
+class ObjList(PermissionRequiredMixin, ListView):
     model = EventClass
     template_name = 'crm/manager/event_class/list.html'
+    permission_required = 'event_class'
 
 
-class Delete(LoginRequiredMixin, UserManagerMixin, RevisionMixin, DeleteView):
+class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:manager:event-class:list')
     template_name = 'crm/manager/event_class/confirm_delete.html'
+    permission_required = 'event_class.delete'
 
 
-class Calendar(LoginRequiredMixin, UserManagerMixin, DetailView):
+class Calendar(PermissionRequiredMixin, DetailView):
     model = EventClass
     context_object_name = 'event_class'
     template_name = 'crm/manager/event_class/calendar.html'
+    permission_required = 'event'
 
 
 class ApiCalendar(ListAPIView):
@@ -174,7 +175,7 @@ class MarkEventAttendance(
     RevisionMixin,
     CreateView
 ):
-    permission_required = 'event'
+    permission_required = 'event.mark-attendance'
     template_name = 'crm/manager/client/add-attendance.html'
     form_class = EventAttendanceForm
 
@@ -203,7 +204,7 @@ class UnMarkClient(
     EventByDateMixin,
     RedirectView
 ):
-    permission_required = 'event'
+    permission_required = 'event.mark-attendance'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -305,17 +306,18 @@ class MarkClient (
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+        return reverse(
+            'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class CreateEdit(
-    LoginRequiredMixin,
-    UserManagerMixin,
+    PermissionRequiredMixin,
     RevisionMixin,
     TemplateView
 ):
 
     template_name = 'crm/manager/event_class/form.html'
+    permission_required = 'event_class.add'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -355,6 +357,14 @@ class CreateEdit(
                 prefix=f'weekday{i}',
                 initial={'checked': bool(sub_form_obj.id)}
             )
+
+        #Заполняем стоимость одноразового посещения
+        try:
+            one_time_sub = SubscriptionsType.objects.get(one_time=True, event_class=self.object)
+            self.form.fields['one_time_price'].initial = one_time_sub.price
+        except SubscriptionsType.DoesNotExist:
+            one_time_sub = None
+
         return super().get(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -363,6 +373,31 @@ class CreateEdit(
         self.form = EventClassForm(request.POST, instance=self.object)
         with transaction.atomic():
             self.object = self.form.save()
+            #Добавляем абонемент на разовое посещение, если цена указана и не равна нулю
+            one_time_price = self.form.cleaned_data['one_time_price']
+            name = self.object.name
+            try:
+                one_time_sub = SubscriptionsType.all_objects.get(one_time=True, event_class=self.object)
+                if one_time_price and one_time_price > 0:
+                    if one_time_sub.deleted:
+                        one_time_sub.undelete()
+                    one_time_sub.price = one_time_price
+                    one_time_sub.save()
+                else:
+                    one_time_sub.delete()
+            except SubscriptionsType.DoesNotExist:
+                if one_time_price and one_time_price > 0:
+                    sub = SubscriptionsType(
+                        name='Разовое посещение ' + name,
+                        price=one_time_price,
+                        duration_type=GRANULARITY.DAY,
+                        duration=1,
+                        rounding=False,
+                        visit_limit=1,
+                        one_time=True
+                    )
+                    sub.save()
+                    sub.event_class.add(self.object)
 
             # сохраняем или удаляем дни недели, которые уже
             # были у тренировки ранее
@@ -399,7 +434,7 @@ class Scanner(
     EventByDateMixin,
     TemplateView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     template_name = 'crm/manager/event/scanner.html'
 
     def get_context_data(self, **kwargs):
@@ -413,7 +448,7 @@ class DoScan(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     pattern_name = 'crm:manager:event-class:event:scanner'
 
     def run_action(self):
@@ -458,7 +493,7 @@ class DoCloseEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):
@@ -472,7 +507,7 @@ class DoOpenEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark_attendance'
+    permission_required = 'event.mark-attendance'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):

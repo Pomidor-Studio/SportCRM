@@ -1,6 +1,22 @@
 {% extends "crm/base.html" %}
 
+{% load html_helper %}
+
 {% block content %}
+
+<script type="text/javascript">
+  $(function() {
+    $('#show-close-confirm').click(function () {
+      $('#close-confirm').fadeIn(250);
+    });
+    $('#show-open-confirm').click(function () {
+      $('#open-confirm').fadeIn(250);
+    });
+    $('button.cancel-action').click(function() {
+      $(this).parents('div.card').first().hide();
+    });
+  });
+</script>
 
   {{ event.date }} - {{ event.event_class.name }} -
   {{ event.event_class.location }} - {{ event.event_class.coach }}
@@ -138,6 +154,82 @@
         {% endif %}
       </div>
     </div>
+  {% endif %}
+
+<!--Кнопка появится только при условии event.date <= date.today()-->
+  {% if event.is_overpast %}
+    <!--Отоброзит кнопку, если тренировку еще не закрыли-->
+    {% if not event.is_closed %}
+      {% ifhasperm 'event.close' user event %}
+      <div class="row">
+        <div class="alert alert-light" role="alert">
+          <a
+            id="show-close-confirm"
+            href="#"
+            class="btn btn-outline-danger mr-2"
+            role="button"
+          >
+            Закрыть тренировку
+          </a>
+        </div>
+      </div>
+      {% endifhasperm %}
+      <div id="close-confirm" class="card text-white mb-3" style="display: none;">
+        <div class="card-header bg-danger">Вы действительно хотите закрыть тренировку?</div>
+        <div class="card-body">
+          <a
+          href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day%}"
+          class="btn btn-outline-danger mr-2"
+          role="button"
+        >
+          Да
+        </a>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary mr-2 cancel-action"
+          aria-label="Close"
+        >
+          Нет
+        </button>
+        </div>
+      </div>
+    {% else %}
+      {% ifhasperm 'event.open' user event %}
+      <div class="row">
+        <div class="alert alert-light" role="alert">
+          <a
+            id="show-open-confirm"
+            href="#"
+            class="btn btn-sm btn-outline-info"
+            role="button"
+          >
+            Открыть тренировку
+          </a>
+        </div>
+      </div>
+      {% endifhasperm %}
+      <div id="open-confirm" class="card text-white mb-3" style="display: none;">
+        <div class="card-header bg-info">Вы действительно хотите открыть тренировку?</div>
+        <div class="card-body">
+          <a
+          href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day%}"
+          class="btn btn-outline-info mr-2"
+          role="button"
+        >
+          Да
+        </a>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary mr-2 cancel-action"
+          aria-label="Close"
+        >
+          Нет
+        </button>
+        </div>
+      </div>
+    {% endif %}
   {% endif %}
 
 {% endblock content %}

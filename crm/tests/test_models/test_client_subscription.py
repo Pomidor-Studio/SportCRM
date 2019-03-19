@@ -566,7 +566,7 @@ def test_is_active_to_date(
         visits_left=visits
     )
     mocker.patch.object(
-        cs, 'is_active_at_date', return_value=is_active_at_date)
+        cs, 'is_active_at_date_without_events', return_value=is_active_at_date)
     mocker.patch.object(
         cs.subscription, 'events_to_date', return_value=events_to_date)
 

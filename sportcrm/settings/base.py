@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'crm.apps.CrmConfig',
     'django_filters',
     'bot.apps.BotConfig',
-    'bot.apps.SignalsConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,6 +55,8 @@ INSTALLED_APPS = [
     'django_select2',
     'django_tables2',
     'qr_code',
+    'google_tasks.apps.GoogleTasksConfig',
+    'analytical',
 ]
 
 BOOTSTRAP4 = {
@@ -72,7 +73,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'sesame.middleware.AuthenticationMiddleware',
-    'crm.middleware.SetTenantMiddleware'
+    'crm.middleware.SetTenantMiddleware',
+    'crm.middleware.TimedAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'sportcrm.urls'
@@ -88,6 +90,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'crm.context_processors.company'
             ],
         },
     },
@@ -166,7 +169,7 @@ LOGGING = {
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = "/static/"
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -201,10 +204,16 @@ SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
 
 SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
 
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_BEAT_SCHEDULE = {}  # For configuration of periodical tasks
-CELERY_BROKER_URL = 'redis://HOST:PORT/DB'
-CELERY_RESULT_BACKEND = 'redis://HOST:PORT/DB'
-
 PHONENUMBER_DB_FORMAT = 'E164'
 PHONENUMBER_DEFAULT_REGION = 'RU'
+
+
+YANDEX_METRICA_COUNTER_ID = '52839823' # devtest metrika
+YANDEX_METRICA_WEBVISOR = True
+
+GOOGLE_ANALYTICS_JS_PROPERTY_ID = 'UA-136374884-1'
+
+BACKGROUND_MODE: bool = False # True for run as background tasks worker
+USE_GOOGLE_TASKS: bool = False
+
+

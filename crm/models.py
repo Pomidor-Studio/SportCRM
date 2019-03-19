@@ -119,6 +119,10 @@ class Company(models.Model):
         null=True,
         blank=True
     )
+    # Active to - means that company can access to site, and data until
+    # date. If `active_to` is None, it means that company have unlimited
+    # access, without any restriction
+    active_to = models.DateField('Компания активна до', null=True, blank=True)
     tenant_id = 'id'
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -299,6 +303,7 @@ class EventClass(CompanyObjectModel):
     def days(self) -> List[int]:
         """
         Get list of all weekdays of current event
+
         For example: [0, 2, 4] for monday, wednesday, friday
         """
         days = list(
@@ -316,6 +321,7 @@ class EventClass(CompanyObjectModel):
     def is_event_day(self, day: date) -> bool:
         """
         Возможна ли тренировка в указанный день
+
         :param day: День который надо проверить
         :return: Является ли указанный день - днем тренировки
         """
@@ -358,8 +364,10 @@ class EventClass(CompanyObjectModel):
         """
         Создает полный календарь одного типа тренировки. Создается список
         всех возможный дней трениовок, ограниченный диапазоном дат.
+
         Сами события треннировки не создаются фактически, а могут появится лишь
         когда на эту тренировку будут назначены ученики.
+
         :param start_date: Начальная дата календаря
         :param end_date: Конечная дата календаря
         :return: Словарь из даты и возможной тренировки
@@ -501,6 +509,7 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     def start_date(self, rounding_date: date) -> pendulum.Date:
         """
         Возвращает дату начала действия абонемента после округления.
+
         :param rounding_date: дата начала действия абонемента до округления
         """
         p_date: pendulum.Date = pendulum.Date.fromordinal(
@@ -553,11 +562,13 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         """
         Get list of all events that can be visited by this subscription type
         Event are sorted by date.
+
         :param to_date: End date of calendar
         :param from_date: Start date of calendar, if not provided date.today()
         will be used
         :param filter_runner: Filter event for given criteria. Default criteria
         select only active events.
+
         :return: List of all events
         """
         return sorted(
@@ -591,6 +602,7 @@ class ClientManager(TenantManagerMixin, models.Manager):
             ClientSubscriptions.objects
             .active_subscriptions(event)
             .order_by('client_id')
+            .distinct('client_id')
             .values_list('client_id', flat=True)
         )
         return self.get_queryset().filter(id__in=cs)
@@ -637,6 +649,8 @@ class Client(CompanyObjectModel):
     def update_balance(self, top_up_amount):
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
+        from google_tasks.tasks import enqueue
+        enqueue('notify_client_balance', self.id)
 
     def add_balance_in_history(self, top_up_amount, reason):
         with transaction.atomic():
@@ -759,6 +773,8 @@ class ClientSubscriptions(CompanyObjectModel):
             self.visits_left += added_visits
             self.end_date = new_end_date
             self.save()
+            from google_tasks.tasks import enqueue
+            enqueue('notify_client_subscription_extend', self.id)
 
     def extend_by_cancellation(self, cancelled_event: Event):
         possible_extension_date = self.nearest_extended_end_date(
@@ -859,6 +875,7 @@ class ClientSubscriptions(CompanyObjectModel):
         """
         Return list of remained events from today until end date. With care
         about left visits.
+
         :return: List of all events that can be visited one after one,
         by this client subscription
         """
@@ -871,6 +888,7 @@ class ClientSubscriptions(CompanyObjectModel):
         """
         Return information that client subscription allows visit more events
         than are planned
+
         :return: True if after visiting all events from calendar will remain
         some visits on this subscription
         """
@@ -882,6 +900,7 @@ class ClientSubscriptions(CompanyObjectModel):
         """
         Return information that client subscription allows visit more events
         than are planned, event with canceled events
+
         :return: True if after visiting all events from calendar will remain
         some visits on this subscription. And this quantity of remaining
         canceled events is greater that remaining visits minus active events
@@ -912,8 +931,10 @@ class ClientSubscriptions(CompanyObjectModel):
         It's simple check, without events investigation. Check only if
         client subscription have some visits left, and date is in allowed
         rage.
+
         This function can be used when we need check some attendance for
         past date.
+
         :param check_date: what date we check
         :return: is active subscription at date or not
         """
@@ -925,9 +946,11 @@ class ClientSubscriptions(CompanyObjectModel):
     def is_active_to_date(self, to_date: date) -> bool:
         """
         Check if current client subscription is valid until some date.
+
         This check is performed only from current day to future date. It all
         because we check current visits limit, and calculations about "how
         much visits was on some past date" ignored.
+
         :param to_date: until what date check activity
         :return: is active client subscription or not
         """
@@ -965,13 +988,18 @@ class ClientSubscriptions(CompanyObjectModel):
                 created.mark_visit(self)
                 self.visits_left = self.visits_left - 1
                 self.save()
+                from google_tasks.tasks import enqueue
+                enqueue('notify_client_subscription_visit', self.id)
             else:
                 raise ClientAttendanceExists(
                     'Client attendance for this event already exists')
 
     def restore_visit(self):
-        self.visits_left = self.visits_left + 1
-        self.save()
+        with transaction.atomic():
+            self.visits_left = self.visits_left + 1
+            self.save()
+            from google_tasks.tasks import enqueue
+            enqueue('notify_client_subscription_visit', self.id)
 
     class Meta:
         ordering = ['purchase_date']
@@ -982,7 +1010,7 @@ class ClientSubscriptions(CompanyObjectModel):
 
 class ClientBalanceChangeHistory(CompanyObjectModel):
     change_value = models.DecimalField(
-        "Баланс",
+        "Сумма изменения баланса",
         max_digits=9,
         decimal_places=2,
         default=0
@@ -1006,11 +1034,11 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
     )
     entry_date = models.DateTimeField(
         "Дата зачисления",
-        default=datetime.now()
+        default=timezone.now
     )
     actual_entry_date = models.DateTimeField(
         "Фактическая дата зачисления",
-        default=datetime.now()
+        default=timezone.now
     )
 
 
@@ -1154,7 +1182,7 @@ class Event(CompanyObjectModel):
 
     @property
     def is_non_editable(self):
-        return self.is_canceled or not self.is_active
+        return self.is_canceled or self.is_closed
 
     @property
     def is_overpast(self):

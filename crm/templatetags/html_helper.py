@@ -93,7 +93,7 @@ class IfHasPermNode(Node):
                 perm = self.resolve(condition[0], context)
                 user = self.resolve(condition[1], context)
                 try:
-                    obj = self.resolve(condition[3], context)
+                    obj = self.resolve(condition[2], context)
                 except IndexError:
                     obj = None
 
