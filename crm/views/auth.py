@@ -9,7 +9,7 @@ from django.views.generic import (
     RedirectView, TemplateView, UpdateView,
 )
 
-from crm.forms import ProfileUserForm
+from crm.forms import ProfileCoachForm, ProfileManagerForm
 
 
 class CheckPasswordMixin:
@@ -82,11 +82,27 @@ class ResetPasswordView(LoginRequiredMixin, TemplateView):
 
 class ProfileView(LoginRequiredMixin, CheckPasswordMixin, UpdateView):
     template_name = 'crm/auth/profile.html'
-    form_class = ProfileUserForm
     success_url = reverse_lazy('crm:accounts:profile')
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def get_form_class(self):
+        if self.request.user.is_manager:
+            return ProfileManagerForm
+        else:
+            return ProfileCoachForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(instance={
+            'user': self.object,
+            'detail':
+                self.object.manager
+                if self.object.is_manager
+                else self.object.coach,
+        })
+        return kwargs
 
     def get(self, request, *args, **kwargs):
         self.notify_empty_password()

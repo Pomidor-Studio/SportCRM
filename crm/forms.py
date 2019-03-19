@@ -13,6 +13,7 @@ from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, SubscriptionsType,
+    Manager,
 )
 
 
@@ -207,9 +208,32 @@ class FakeNameValidator:
 
       
 class ProfileUserForm(TenantModelForm):
+    fullname = forms.CharField(
+        label='ФИО',
+        widget=forms.TextInput(attrs={'data-name-edit': True})
+    )
+
     class Meta:
         model = get_user_model()
-        fields = ('username',)
+        fields = ('username', 'first_name', 'last_name', 'email')
+        widgets = {
+            'first_name': forms.HiddenInput(),
+            'last_name': forms.HiddenInput()
+        }
+        labels = {
+            'username': 'Логин'
+        }
+
+    def __init__(self, *args, **kwargs):
+        initial = kwargs.pop('initial', {})
+        instance = kwargs.get('instance', None)
+
+        if instance:
+            if initial is None:
+                initial = {}
+            initial['fullname'] = instance.get_full_name()
+
+        super(ProfileUserForm, self).__init__(*args, initial=initial, **kwargs)
 
 
 class UserForm(TenantModelForm):
@@ -250,8 +274,33 @@ class CoachForm(TenantModelForm):
         }
 
 
+class ManagerForm(TenantModelForm):
+    class Meta:
+        model = Manager
+        fields = ('phone_number',)
+        widgets = {
+            'phone_number': PhoneNumberInternationalFallbackWidget(
+                attrs={'data-phone': True}
+            )
+        }
+
+
 class CoachMultiForm(MultiModelForm):
     form_classes = {
         'user': UserForm,
         'coach': CoachForm
+    }
+
+
+class ProfileManagerForm(MultiModelForm):
+    form_classes = {
+        'user': ProfileUserForm,
+        'detail': ManagerForm
+    }
+
+
+class ProfileCoachForm(MultiModelForm):
+    form_classes = {
+        'user': ProfileUserForm,
+        'detail': CoachForm
     }
