@@ -10,7 +10,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
     DeleteView, DetailView, ListView, RedirectView, TemplateView,
-)
+    FormView)
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -18,7 +18,7 @@ from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.enums import GRANULARITY
-from crm.forms import DayOfTheWeekClassForm, EventClassForm
+from crm.forms import DayOfTheWeekClassForm, EventClassForm, SignUpClientWithoutSubscriptionForm
 from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
     DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
@@ -168,34 +168,6 @@ class ActivateWithRevoke(
     def run_action(self):
         event = self.get_object()
         event.activate_event(revoke_extending=True)
-
-
-class MarkEventAttendance(
-    PermissionRequiredMixin,
-    RevisionMixin,
-    CreateView
-):
-    permission_required = 'event.mark-attendance'
-    template_name = 'crm/manager/client/add-attendance.html'
-    form_class = EventAttendanceForm
-
-    def get_object(self, queryset=None):
-        event_date = date(
-            self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
-        )
-        event, _ = Event.objects.get_or_create(
-            event_class_id=self.kwargs['event_class_id'],
-            date=event_date)
-
-        return Attendance(event=event)
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs.update({'instance': self.get_object()})
-        return kwargs
-
-    def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class UnMarkClient(
