@@ -20,8 +20,6 @@ from bot.serializers import MessageIgnoranceSerializer
 from crm.models import Company
 from crm.views.mixin import RedirectWithActionView
 
-from google_tasks.tasks import enqueue
-
 """
 Using VK Callback API version 5.90
 For more ditalies visit https://vk.com/dev/callback_api

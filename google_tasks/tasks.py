@@ -10,7 +10,6 @@ from django.conf import settings
 
 from crm.models import Company
 import bot.tasks
-import bot.api.messageHandler
 
 # TODO: переместить в конфиги
 project = 'sport-srm-test'
