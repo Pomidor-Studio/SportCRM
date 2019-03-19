@@ -58,9 +58,10 @@ def gl(request):
         if data['type'] == 'message_new':
             # VK server send a message
             company = Company.objects.get(vk_group_id=data['group_id'])
+            set_current_tenant(company)
             token = company.vk_access_token
 
-            enqueue('create_answer', data['object'], token)
+            create_answer(data['object'], token)
 
     return HttpResponse('ok', content_type="text/plain", status=200)
 
