@@ -80,6 +80,6 @@ class ClientUpdateBalance(Message):
     def get_template_context(self):
         context = super().get_template_context()
         context.update({
-            'BALANCE': self.recipients[0].balance
+            'BALANCE': self.recipients[0].get_balance()
         })
         return context

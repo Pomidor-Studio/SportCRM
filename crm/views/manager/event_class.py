@@ -10,6 +10,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
     DeleteView, DetailView, FormView, ListView, RedirectView, TemplateView,
+    CreateView,
 )
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
@@ -20,6 +21,7 @@ from rules.contrib.views import PermissionRequiredMixin
 from crm.enums import GRANULARITY
 from crm.forms import (
     DayOfTheWeekClassForm, EventClassForm, SignUpClientWithoutSubscriptionForm,
+    InplaceSellSubscriptionForm,
 )
 from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
@@ -27,6 +29,7 @@ from crm.models import (
 )
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import RedirectWithActionView
+from google_tasks.tasks import enqueue
 
 
 class ObjList(PermissionRequiredMixin, ListView):
@@ -87,32 +90,36 @@ class EventByDate(
     template_name = 'crm/manager/event/detail.html'
     permission_required = 'event'
 
-    def get_clients_subscriptions(self, clients_qs, event: Event):
+    def get_clients_subscriptions(self, clients_qs):
         result = {}
         for client in clients_qs:
-            result.update({client: []})
-            subs = client.clientsubscriptions_set.active_subscriptions(event)
+            client_subscriptions = result.setdefault(client, [])
+            subs = client.clientsubscriptions_set.active_subscriptions(
+                self.object
+            )
             for sub in subs:
-                result.get(client).append(sub)
+                client_subscriptions.append(sub)
         return result
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         signed_up_clients_qs = Client.objects.filter(
-            attendance__event=self.object,
-            attendance__marked=False,
-            attendance__signed_up=True
+            id__in=self.object.attendance_set
+            .filter(marked=False, signed_up=True)
+            .values_list('client', flat=True)
         )
-        signed_up_clients = self.get_clients_subscriptions(
-            signed_up_clients_qs, self.object)
+        signed_up_clients = self.get_clients_subscriptions(signed_up_clients_qs)
         unmarked_clients_qs = (
             Client.objects
             .with_active_subscription_to_event(self.object)
-            .filter(attendance__isnull=True)
+            .exclude(
+                id__in=self.object
+                .attendance_set
+                .values_list('client', flat=True)
+            )
         )
-        unmarked_clients = self.get_clients_subscriptions(
-            unmarked_clients_qs, self.object)
+        unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs)
         attendance_list_marked = (
             self.object.attendance_set
             .filter(marked=True)
@@ -123,7 +130,11 @@ class EventByDate(
         context.update({
             'attendance_list_marked': attendance_list_marked,
             'signed_up_clients': signed_up_clients,
-            'unmarked_clients': unmarked_clients
+            'unmarked_clients': unmarked_clients,
+            'sell_subscription_form': InplaceSellSubscriptionForm(
+                subscription_type_qs=SubscriptionsType.objects.filter(
+                    event_class=self.object.event_class)
+            )
         })
 
         return context
@@ -221,6 +232,37 @@ class SignUpClient(
     def get_success_url(self):
         return reverse(
             'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+
+
+class SellAndMark(
+    PermissionRequiredMixin,
+    RevisionMixin,
+    EventByDateMixin,
+    CreateView
+):
+    form_class = InplaceSellSubscriptionForm
+    template_name = "crm/manager/client/add-subscriptions.html"
+    permission_required = 'client_subscription.sale'
+
+    def get_success_url(self):
+        return reverse(
+             'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+
+    def form_valid(self, form):
+        cash_earned = form.cleaned_data['cash_earned']
+        abon_price = form.cleaned_data['price']
+        client = form.cleaned_data['client']
+        default_reason = 'Покупка абонемента'
+        with transaction.atomic():
+            client.add_balance_in_history(-abon_price, default_reason)
+            if cash_earned:
+                default_reason = 'Перечесление средств за абонемент'
+                client.add_balance_in_history(abon_price, default_reason)
+            client.save()
+            subscription = form.save()
+            client.mark_visit(self.get_object(), subscription)
+            enqueue('notify_client_buy_subscription', subscription.id)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class CancelAttendance(

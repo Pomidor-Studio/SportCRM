@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_multitenant.utils import get_current_tenant
-from django_select2.forms import Select2MultipleWidget
+from django_select2.forms import Select2MultipleWidget, Select2Widget
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import (
@@ -133,6 +133,77 @@ class ExtendClientSubscriptionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
+
+
+class Select2WidgetAttributed(Select2Widget):
+    option_inherits_attrs = True
+
+    def __init__(self, attrs=None, choices=(), attr_getter=lambda x: None):
+        self.attr_geter = attr_getter
+        super().__init__(attrs, choices)
+
+    def create_option(self, name, value, label, selected, index, subindex=None,
+                      attrs=None):
+        attrs = self.attr_geter(value) if value else None
+        return super().create_option(
+            name, value, label, selected, index, subindex=None,
+            attrs=attrs)
+
+
+def subcription_type_attrs(sub_id):
+    try:
+        subs = SubscriptionsType.objects.get(id=sub_id)
+    except SubscriptionsType.DoesNotExist:
+        return None
+    return {
+        'data-price': subs.price,
+        'data-visits': subs.visit_limit
+    }
+
+
+class InplaceSellSubscriptionForm(TenantModelForm):
+    cash_earned = forms.BooleanField(
+        label='Деньги получены',
+        required=False,
+        initial=True
+    )
+    subscription = forms.ModelChoiceField(
+        empty_label='',
+        queryset=SubscriptionsType.objects.all(),
+        label='Абонемент',
+        widget=Select2WidgetAttributed(
+            attr_getter=subcription_type_attrs)
+    )
+
+    class Meta:
+        model = ClientSubscriptions
+
+        widgets = {
+            'purchase_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'start_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'price': forms.TextInput(
+                attrs={"placeholder": "Стоимость в рублях"}
+            ),
+            'visits_left': forms.TextInput(
+                attrs={"placeholder": "Кол-во посещений"}
+            ),
+            'client': forms.HiddenInput(),
+
+        }
+        exclude = ('end_date',)
+
+    def __init__(self, *args, **kwargs):
+        st_qs = kwargs.pop(
+            'subscription_type_qs', SubscriptionsType.objects.all())
+        super().__init__(*args, **kwargs)
+
+        self.fields['subscription'].queryset = st_qs
 
 
 class ClientSubscriptionForm(TenantModelForm):
