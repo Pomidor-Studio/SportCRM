@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_multitenant.utils import get_current_tenant
+from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget, Select2Widget
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import (
@@ -91,6 +92,13 @@ class SubscriptionsTypeForm(TenantModelForm):
         model = SubscriptionsType
         fields = '__all__'
 
+
+class SignUpClientWithoutSubscriptionForm(forms.Form):
+    client = forms.ModelMultipleChoiceField(
+        queryset=Client.objects.all(),
+        label='Ученик',
+        widget=Select2MultipleWidget
+    )
 
 class ExtendClientSubscriptionForm(forms.Form):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)

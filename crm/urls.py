@@ -166,9 +166,29 @@ manager_event_urlpatterns = ([
         name='event-by-date'
     ),
     path(
-        'mark/<int:subscription_id>',
-        manager_event_class_views.MarkClientAttendance.as_view(),
-        name='mark-client-attendance'
+        'mark/<int:client_id>/<int:subscription_id>',
+        manager_event_class_views.MarkClient.as_view(),
+        name='mark-client'
+    ),
+    path(
+        'mark-without-subscription',
+        manager_event_class_views.SignUpClientWithoutSubscription.as_view(),
+        name='mark-client-without-subscription'
+    ),
+    path(
+        'unmark/<int:client_id>',
+        manager_event_class_views.UnMarkClient.as_view(),
+        name='unmark-client'
+    ),
+    path(
+        'sign-up/<int:client_id>',
+        manager_event_class_views.SignUpClient.as_view(),
+        name='sign-up-client'
+    ),
+    path(
+        'cancel-att/<int:client_id>',
+        manager_event_class_views.CancelAttendance.as_view(),
+        name='cancel-att'
     ),
     path(
         'cancel/without-extending/',

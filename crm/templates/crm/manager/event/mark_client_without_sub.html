@@ -1,0 +1,27 @@
+{% extends "crm/base.html" %}
+{% load bootstrap4 %}
+{% block extrahead %}
+{{ form.media.css }}
+{% endblock %}
+{% block content %}
+
+<div class="container-fluid mt-4 ml-2">
+  <legend class="border-bottom mb-2">Тренировка</legend>
+  <div class="w-25">
+    <form method="POST">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        {% bootstrap_form form %}
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-info" type="submit">Отметить</button>
+        <a name="cancel" href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}"
+           class="btn btn-outline-info">Назад</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
+{% block extra %}
+{{ form.media.js }}
+{% endblock extra %}

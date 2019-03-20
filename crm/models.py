@@ -663,6 +663,27 @@ class Client(CompanyObjectModel):
             )
             self.update_balance(top_up_amount)
 
+    def signup_for_event(self, event):
+        Attendance.objects.create(
+            event=event,
+            client=self,
+            signed_up=True
+        )
+
+    def cancel_signup_for_event(self, event):
+        with transaction.atomic():
+            attendance = Attendance.objects.get(client=self, event=event)
+            if attendance.subscription and attendance.marked:
+                attendance.subscription.restore_visit()
+            attendance.delete()
+
+    def mark_visit(self, event, subscription: ClientSubscriptions):
+        subscription.mark_visit(event)
+
+    def restore_visit(self, event):
+        attendance = Attendance.objects.get(client=self, event=event)
+        attendance.restore_visit()
+
 
 class ClientSubscriptionQuerySet(TenantQuerySet):
     def active_subscriptions(self, event: Event):
@@ -958,11 +979,13 @@ class ClientSubscriptions(CompanyObjectModel):
             raise ValueError('Subscription or event is incorrect')
 
         with transaction.atomic():
-            _, created = Attendance.objects.get_or_create(
+            created, _ = Attendance.objects.get_or_create(
                 event=event,
                 client=self.client,
+                marked=False,
                 defaults={'subscription': self})
             if created:
+                created.mark_visit(self)
                 self.visits_left = self.visits_left - 1
                 self.save()
                 from google_tasks.tasks import enqueue
@@ -971,9 +994,8 @@ class ClientSubscriptions(CompanyObjectModel):
                 raise ClientAttendanceExists(
                     'Client attendance for this event already exists')
 
-    def restore_visit(self, attendance):
+    def restore_visit(self):
         with transaction.atomic():
-            attendance.delete()
             self.visits_left = self.visits_left + 1
             self.save()
             from google_tasks.tasks import enqueue
@@ -1288,6 +1310,27 @@ class Attendance(CompanyObjectModel):
         null=True,
         default=None
     )
+
+    marked = models.BooleanField(
+        'Присутствовал на мероприятии',
+        default=False
+    )
+    signed_up = models.BooleanField(
+        'Записан на мероприятие',
+        default=False
+    )
+
+    def mark_visit(self, subscription: ClientSubscriptions ):
+        self.subscription = subscription
+        self.marked = True
+        self.save()
+
+    def restore_visit(self):
+        with transaction.atomic():
+            self.marked = False
+            if self.subscription:
+                self.subscription.restore_visit()
+            self.save()
 
     class Meta:
         unique_together = ('client', 'event',)
