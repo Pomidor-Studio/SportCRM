@@ -9,6 +9,7 @@ from django.template import Context, Template
 from bot.api.vkapi import send_bulk_message, send_message
 from bot.const import SPORTCRM_NAMESPACE
 from bot.models import MessageMeta
+from bot.template import EasyEngine, EasyTemplate
 from crm.models import Client, Coach, Manager
 
 InputRecipient = Union[Client, Manager, Coach]
@@ -199,6 +200,12 @@ class Message:
     def prepare_example_generalized_message(cls) -> str:
         return cls.get_template().render(cls.get_example_template_context())
 
+    @classmethod
+    def prepare_raw_template(cls, template_string) -> str:
+        return EasyTemplate(template_string, engine=EasyEngine()).render(
+            cls.get_example_template_context()
+        )
+
     def get_template_context(self) -> Context:
         return Context()
 
@@ -220,7 +227,7 @@ class Message:
         except MessageMeta.DoesNotExist:
             template_data = cls.default_template
 
-        return Template(template_data)
+        return EasyTemplate(template_data, engine=EasyEngine())
 
     @staticmethod
     def personalize(msg: str, recipient: Recipient) -> str:
