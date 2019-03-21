@@ -191,6 +191,11 @@ manager_event_urlpatterns = ([
         name='sell-and-mark'
     ),
     path(
+        'sell-and-mark/<int:client_id>',
+        manager_event_class_views.SellAndMark.as_view(),
+        name='sell-and-mark-to-client'
+    ),
+    path(
         'cancel-att/<int:client_id>',
         manager_event_class_views.CancelAttendance.as_view(),
         name='cancel-att'

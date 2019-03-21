@@ -188,9 +188,9 @@
     </div>
   {% endif %}
 
-  <!--Кнопка появится только при условии event.date <= date.today()-->
+  {# Кнопка появится только при условии event.date <= date.today() #}
   {% if event.is_overpast %}
-    <!--Отоброзит кнопку, если тренировку еще не закрыли-->
+    {# Отоброзит кнопку, если тренировку еще не закрыли #}
     {% if not event.is_closed %}
       {% ifhasperm 'event.close' user event %}
         <div class="row">
