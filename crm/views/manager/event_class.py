@@ -271,6 +271,12 @@ class SellAndMark(
             initial['client'] = self.kwargs['client_id']
         return initial
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['subscription_type_qs'] = SubscriptionsType.objects.filter(
+            event_class=self.get_object().event_class)
+        return kwargs
+
     def get_success_url(self):
         self.kwargs.pop('client_id', None)
         if 'scanner' in self.request.GET:
