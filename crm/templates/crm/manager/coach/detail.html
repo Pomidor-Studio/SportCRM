@@ -10,17 +10,23 @@
     <legend class="border-bottom mb-2">Тренер: {{ coach }}</legend>
     <div class="row mb-2">
       <div class="container-fluid">
-        <a class="btn btn-sm btn-outline-info"
-           href="{% url 'crm:manager:coach:update' coach.id %}">
+        <a
+          class="btn btn-sm btn-outline-info"
+          href="{% url 'crm:manager:coach:update' coach.id %}"
+        >
           Изменить
         </a>
-        <a name="cancel"
-           href="{% url 'crm:manager:coach:list' %}"
-           class="btn btn-sm btn-outline-info">
+        <a
+          name="cancel"
+          href="{% url 'crm:manager:coach:list' %}"
+          class="btn btn-sm btn-outline-info"
+        >
           Назад
         </a>
-        <a class="btn btn-sm btn-outline-danger"
-           href="{% url 'crm:manager:coach:delete' coach.id %}">
+        <a
+          class="btn btn-sm btn-outline-danger"
+          href="{% url 'crm:manager:coach:delete' coach.id %}"
+        >
           Удалить
         </a>
       </div>
@@ -35,7 +41,7 @@
         <td>VK</td>
         <td>
           {% if coach.user.has_vk_auth %}
-            <a href="vk.com/id{{ coach.user.vk_id }}">Страница тренера VK</a>
+            <a href="{{ coach.user.vk_link|safe }}">Страница тренера VK</a>
           {% else %}
             Тренер не привязал аккаунт в VK
           {% endif %}

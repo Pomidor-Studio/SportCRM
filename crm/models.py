@@ -201,7 +201,7 @@ class User(TenantModel, AbstractUser):
 
     @property
     def vk_id(self) -> Optional[str]:
-        return self.vk_data('id')
+        return self.vk_data('id') or self.vk_data('uid')
 
     @property
     def vk_link(self) -> Optional[str]:
@@ -213,6 +213,9 @@ class User(TenantModel, AbstractUser):
             social = self.social_auth.get(provider='vk-oauth2')
         except models.ObjectDoesNotExist:
             return None
+
+        if data_key == 'uid':
+            return social.uid
 
         return social.extra_data.get(data_key)
 
@@ -501,7 +504,11 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         EventClass,
         verbose_name="Допустимые тренировки"
     )
-    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
+    one_time = models.BooleanField(
+        "Разовый абонемент",
+        editable=False,
+        default=False
+    )
 
     def __str__(self):
         return self.name
@@ -614,11 +621,16 @@ class Client(CompanyObjectModel):
     name = models.CharField("Имя", max_length=100)
     address = models.CharField("Адрес", max_length=255, blank=True)
     birthday = models.DateField("Дата рождения", null=True, blank=True)
-    phone_number = models.CharField("Телефон", max_length=50, blank=True)
+    phone_number = PhoneNumberField("Телефон", blank=True)
     email_address = models.CharField("Email", max_length=50, blank=True)
 
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
-    balance = models.DecimalField("Баланс", max_digits=9, decimal_places=2, default=0)
+    balance = models.DecimalField(
+        "Баланс",
+        max_digits=9,
+        decimal_places=2,
+        default=0
+    )
     qr_code = models.UUIDField(
         "QR код",
         blank=True,
@@ -663,12 +675,15 @@ class Client(CompanyObjectModel):
             )
             self.update_balance(top_up_amount)
 
-    def signup_for_event(self, event):
-        Attendance.objects.create(
-            event=event,
-            client=self,
-            signed_up=True
-        )
+    def signup_for_event(self, event: Event):
+        with transaction.atomic():
+            if not event.id:
+                event.save()
+            Attendance.objects.create(
+                event=event,
+                client=self,
+                signed_up=True
+            )
 
     def cancel_signup_for_event(self, event):
         with transaction.atomic():

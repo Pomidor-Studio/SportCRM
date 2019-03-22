@@ -9,8 +9,9 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
-    DeleteView, DetailView, ListView, RedirectView, TemplateView,
-    FormView)
+    DeleteView, DetailView, FormView, ListView, RedirectView, TemplateView,
+    CreateView,
+)
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -18,13 +19,17 @@ from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.enums import GRANULARITY
-from crm.forms import DayOfTheWeekClassForm, EventClassForm, SignUpClientWithoutSubscriptionForm
+from crm.forms import (
+    DayOfTheWeekClassForm, EventClassForm, SignUpClientWithoutSubscriptionForm,
+    InplaceSellSubscriptionForm,
+)
 from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
     DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
 )
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import RedirectWithActionView
+from google_tasks.tasks import enqueue
 
 
 class ObjList(PermissionRequiredMixin, ListView):
@@ -85,34 +90,53 @@ class EventByDate(
     template_name = 'crm/manager/event/detail.html'
     permission_required = 'event'
 
-    def get_clients_subscriptions(self, clients_qs, event: Event):
+    def get_clients_subscriptions(self, clients_qs):
         result = {}
         for client in clients_qs:
-            result.update({client:[]})
-            subs = client.clientsubscriptions_set.active_subscriptions(event)
+            client_subscriptions = result.setdefault(client, [])
+            subs = client.clientsubscriptions_set.active_subscriptions(
+                self.object
+            )
             for sub in subs:
-                result.get(client).append(sub)
+                client_subscriptions.append(sub)
         return result
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
         signed_up_clients_qs = Client.objects.filter(
-            attendance__event=self.object,
-            attendance__marked=False,
-            attendance__signed_up=True
+            id__in=self.object.attendance_set
+            .filter(marked=False, signed_up=True)
+            .values_list('client', flat=True)
         )
-        signed_up_clients = self.get_clients_subscriptions(signed_up_clients_qs, self.object)
-        unmarked_clients_qs = Client.objects.with_active_subscription_to_event(self.object).filter(
-            attendance__isnull=True
+        signed_up_clients = self.get_clients_subscriptions(signed_up_clients_qs)
+        unmarked_clients_qs = (
+            Client.objects
+            .with_active_subscription_to_event(self.object)
+            .exclude(
+                id__in=self.object
+                .attendance_set
+                .values_list('client', flat=True)
+            )
         )
-        unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs, self.object)
-        attendance_list_marked = self.object.attendance_set.filter(marked=True).select_related('client').order_by('client__name')
+        unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs)
+        attendance_list_marked = (
+            self.object.attendance_set
+            .filter(marked=True)
+            .select_related('client')
+            .order_by('client__name')
+        )
+
+        self.object.save()
 
         context.update({
-            'attendance_list_marked' : attendance_list_marked,
+            'attendance_list_marked': attendance_list_marked,
             'signed_up_clients': signed_up_clients,
-            'unmarked_clients': unmarked_clients
+            'unmarked_clients': unmarked_clients,
+            'sell_subscription_form': InplaceSellSubscriptionForm(
+                subscription_type_qs=SubscriptionsType.objects.filter(
+                    event_class=self.object.event_class)
+            )
         })
 
         return context
@@ -187,7 +211,8 @@ class UnMarkClient(
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+        return reverse(
+            'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class SignUpClient(
@@ -207,7 +232,92 @@ class SignUpClient(
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+        return reverse(
+            'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+
+
+class SellAndMark(
+    PermissionRequiredMixin,
+    RevisionMixin,
+    EventByDateMixin,
+    CreateView
+):
+    """
+    Sell subscription to client and sign up client for event.
+    This view can work in two modes - as single page, and only as form processor
+    Single page mode can be acquired by providing 'client_id' in kwargs,
+    as form must know for which client we sell subscription.
+    Form processor mode - work with form posted from other pages, and we assume
+    that hidden client field will be populated with correct client_id
+    There is no more difference with this two modes.
+
+    By default if form was filled correct redirect will be on event page,
+    but this behaviour can be changed if will be provided query string argument
+    *scanner*. In this case redirected page will be scanner page for event.
+    """
+    form_class = InplaceSellSubscriptionForm
+    template_name = 'crm/manager/event/sell-and-mark.html'
+    permission_required = 'client_subscription.sale'
+
+    def get(self, request, *args, **kwargs):
+        # Prevent access to form page without client id.
+        # In this case form is unusable
+        if 'client_id' not in kwargs:
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().get(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super().get_initial()
+        if 'client_id' in self.kwargs:
+            initial['client'] = self.kwargs['client_id']
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['subscription_type_qs'] = SubscriptionsType.objects.filter(
+            event_class=self.get_object().event_class)
+        return kwargs
+
+    def get_success_url(self):
+        self.kwargs.pop('client_id', None)
+        if 'scanner' in self.request.GET:
+            return reverse(
+             'crm:manager:event-class:event:scanner', kwargs=self.kwargs)
+
+        return reverse(
+             'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if 'client_id' in self.kwargs or \
+                context['form'].cleaned_data['client']:
+            if 'client_id' in self.kwargs:
+                context['client'] = get_object_or_404(
+                    Client, id=self.kwargs['client_id'])
+            else:
+                context['client'] = context['form'].cleaned_data['client']
+
+        context['event'] = self.get_object()
+        context['form_back'] = self.get_success_url()
+        return context
+
+    def form_valid(self, form):
+        cash_earned = form.cleaned_data['cash_earned']
+        abon_price = form.cleaned_data['price']
+        client = form.cleaned_data['client']
+        default_reason = 'Покупка абонемента'
+        with transaction.atomic():
+            client.add_balance_in_history(-abon_price, default_reason)
+            if cash_earned:
+                default_reason = 'Перечесление средств за абонемент'
+                client.add_balance_in_history(abon_price, default_reason)
+            client.save()
+            subscription = form.save()
+            client.mark_visit(self.get_object(), subscription)
+            enqueue('notify_client_buy_subscription', subscription.id)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class CancelAttendance(
@@ -227,7 +337,8 @@ class CancelAttendance(
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+        return reverse(
+            'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class SignUpClientWithoutSubscription (
@@ -256,7 +367,8 @@ class SignUpClientWithoutSubscription (
         return super(SignUpClientWithoutSubscription, self).form_valid(form)
 
     def get_success_url(self):
-        return reverse('crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
+        return reverse(
+            'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
 class MarkClient (
@@ -330,9 +442,10 @@ class CreateEdit(
                 initial={'checked': bool(sub_form_obj.id)}
             )
 
-        #Заполняем стоимость одноразового посещения
+        # Заполняем стоимость одноразового посещения
         try:
-            one_time_sub = SubscriptionsType.objects.get(one_time=True, event_class=self.object)
+            one_time_sub = SubscriptionsType.objects.get(
+                one_time=True, event_class=self.object)
             self.form.fields['one_time_price'].initial = one_time_sub.price
         except SubscriptionsType.DoesNotExist:
             one_time_sub = None
@@ -345,11 +458,13 @@ class CreateEdit(
         self.form = EventClassForm(request.POST, instance=self.object)
         with transaction.atomic():
             self.object = self.form.save()
-            #Добавляем абонемент на разовое посещение, если цена указана и не равна нулю
+            # Добавляем абонемент на разовое посещение, если цена указана
+            # и не равна нулю
             one_time_price = self.form.cleaned_data['one_time_price']
             name = self.object.name
             try:
-                one_time_sub = SubscriptionsType.all_objects.get(one_time=True, event_class=self.object)
+                one_time_sub = SubscriptionsType.all_objects.get(
+                    one_time=True, event_class=self.object)
                 if one_time_price and one_time_price > 0:
                     if one_time_sub.deleted:
                         one_time_sub.undelete()
@@ -398,7 +513,7 @@ class CreateEdit(
                     self.weekdays[i] = weekdayform
 
         return HttpResponseRedirect(reverse(
-            'crm:manager:event-class:update', kwargs={'pk': self.object.id}))
+            'crm:manager:event-class:list'))
 
 
 class Scanner(
@@ -423,6 +538,11 @@ class DoScan(
     permission_required = 'event.mark-attendance'
     pattern_name = 'crm:manager:event-class:event:scanner'
 
+    # Id of client, for which we will sell new subscription
+    # Usable for case when client is marked to event, but don't have any
+    # active subscription
+    sell_to = None
+
     def run_action(self):
         code = self.kwargs.get('code')
 
@@ -441,23 +561,45 @@ class DoScan(
             messages.error(self.request, f'Ученик с QR кодом {code} не найден')
             return
         event = self.get_object()
-        subscription = ClientSubscriptions.objects.active_subscriptions(event).filter(
-            client=client).order_by(
-            'purchase_date').first()
+        subscription = (
+            ClientSubscriptions.objects
+            .active_subscriptions(event)
+            .filter(client=client)
+            .order_by('purchase_date')
+            .first()
+        )
         if not subscription:
-            messages.warning(self.request, f'У {client} нет действующего абонемента')
+            if event.attendance_set.filter(client=client, signed_up=True)\
+                    .exists():
+                # Change redirect behaviour, as we can sell subscription
+                self.sell_to = client.id
+            else:
+                messages.warning(
+                    self.request, f'У {client} нет действующего абонемента')
+
             return
         try:
             subscription.mark_visit(event)
         except ClientAttendanceExists:
             messages.warning(self.request, f'{client} уже отмечен')
         else:
-            messages.info(self.request, f'{client} отмечен по абонементу {subscription}')
+            messages.info(
+                self.request, f'{client} отмечен по абонементу {subscription}')
             return
 
     def get_redirect_url(self, *args, **kwargs):
         kwargs.pop('code')
-        return super().get_redirect_url(*args, **kwargs)
+        # In case of activation of sell mode - add back argument
+        if self.sell_to:
+            kwargs['client_id'] = self.sell_to
+            self.pattern_name = (
+                'crm:manager:event-class:event:sell-and-mark-to-client'
+            )
+            url = super().get_redirect_url(*args, **kwargs) + '?scanner=True'
+        else:
+            url = super().get_redirect_url(*args, **kwargs)
+
+        return url
 
 
 class DoCloseEvent(

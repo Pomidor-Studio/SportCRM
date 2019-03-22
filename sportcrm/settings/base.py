@@ -201,6 +201,8 @@ SOCIAL_AUTH_PIPELINE = (
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = ''
 SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
+# Token for api call. Get it from Сервисный ключ доступа
+VK_GROUP_TOKEN = ''
 
 SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
 

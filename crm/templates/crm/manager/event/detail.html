@@ -1,33 +1,35 @@
 {% extends "crm/base.html" %}
 
-{% load html_helper %}
+{% load html_helper bootstrap4 %}
 
 {% block content %}
 
-<script type="text/javascript">
-  $(function() {
-    $('#show-close-confirm').click(function () {
-      $('#close-confirm').fadeIn(250);
+  <script type="text/javascript">
+    $(function () {
+      $('#show-close-confirm').click(function () {
+        $('#close-confirm').fadeIn(250);
+      });
+      $('#show-open-confirm').click(function () {
+        $('#open-confirm').fadeIn(250);
+      });
+      $('button.cancel-action').click(function () {
+        $(this).parents('div.card').first().hide();
+      });
     });
-    $('#show-open-confirm').click(function () {
-      $('#open-confirm').fadeIn(250);
-    });
-    $('button.cancel-action').click(function() {
-      $(this).parents('div.card').first().hide();
-    });
-  });
-</script>
+  </script>
 
   {{ event.date }} - {{ event.event_class.name }} -
   {{ event.event_class.location }} - {{ event.event_class.coach }}
   <a
-                    class="btn btn-sm btn-outline-info"
-                    href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
-                  >Отметить без абонемента</a>
-{% if not event.is_closed %}
-          <a class="btn btn-sm btn-outline-info"
-             href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">Сканнер</a>
-      {% endif %}
+    class="btn btn-sm btn-outline-info"
+    href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
+  >Отметить без абонемента</a>
+  {% if not event.is_closed %}
+    <a
+      class="btn btn-sm btn-outline-info"
+      href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}"
+    >Сканнер</a>
+  {% endif %}
   <div class="border-top mt-2"></div>
   <div class="row">
     <div class="col">
@@ -40,24 +42,30 @@
                 {{ attendance.client.name }}
               </div>
               <div class="col">
-              {% if attendance.signed_up %}
-                Был записан
+                {% if attendance.signed_up %}
+                  Был записан
                 {% else %}
-                Не был записан
+                  Не был записан
                 {% endif %}
               </div>
               <div class="col"></div>
               <div class="col">
                 {% if not event.is_closed %}
-                {% if attendance.signed_up %}
-                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:unmark-client' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id%}">
-                    Убрать отметку
-                  </a>
-                {% else %}
-                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id%}">
-                    Убрать отметку
-                  </a>
-                {% endif %}
+                  {% if attendance.signed_up %}
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:event-class:event:unmark-client' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id %}"
+                    >
+                      Убрать отметку
+                    </a>
+                  {% else %}
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id %}"
+                    >
+                      Убрать отметку
+                    </a>
+                  {% endif %}
                 {% endif %}
               </div>
             </div>
@@ -78,11 +86,25 @@
                 <div class="col"></div>
                 <div class="col">
                   {% for subscription in subscriptions %}
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id%}">
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id %}"
+                    >
                       {{ subscription.subscription.name }}
                     </a>
+                  {% empty %}
+                    <a
+                      class="btn btn-sm btn-outline-info sell-and-mark"
+                      href="#"
+                      data-client-id="{{ client.id }}"
+                    >
+                      Продать абонемент и отметить
+                    </a>
                   {% endfor %}
-                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day client.id%}">
+                  <a
+                    class="btn btn-sm btn-outline-info"
+                    href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day client.id %}"
+                  >
                     Отменить запись
                   </a>
                 </div>
@@ -96,7 +118,7 @@
         <div class="border-top">
           <span class="font-weight-bold ">Не отмеченные ученики: </span>
           <div class="border-top">
-              {% for client, subscriptions in unmarked_clients.items %}
+            {% for client, subscriptions in unmarked_clients.items %}
               <div class="row border-top ml-0 mr-0">
                 <div class="col pl-0">
                   {{ client.name }}
@@ -105,11 +127,17 @@
                 <div class="col"></div>
                 <div class="col">
                   {% for subscription in subscriptions %}
-                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id%}">
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id %}"
+                    >
                       {{ subscription.subscription.name }}
                     </a>
                   {% endfor %}
-                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:sign-up-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}">
+                  <a
+                    class="btn btn-sm btn-outline-info"
+                    href="{% url 'crm:manager:event-class:event:sign-up-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}"
+                  >
                     Записать
                   </a>
                 </div>
@@ -160,80 +188,162 @@
     </div>
   {% endif %}
 
-<!--Кнопка появится только при условии event.date <= date.today()-->
+  {# Кнопка появится только при условии event.date <= date.today() #}
   {% if event.is_overpast %}
-    <!--Отоброзит кнопку, если тренировку еще не закрыли-->
+    {# Отоброзит кнопку, если тренировку еще не закрыли #}
     {% if not event.is_closed %}
       {% ifhasperm 'event.close' user event %}
-      <div class="row">
-        <div class="alert alert-light" role="alert">
+        <div class="row">
+          <div class="alert alert-light" role="alert">
+            <a
+              id="show-close-confirm"
+              href="#"
+              class="btn btn-outline-danger mr-2"
+              role="button"
+            >
+              Закрыть тренировку
+            </a>
+          </div>
+        </div>
+      {% endifhasperm %}
+      <div
+        id="close-confirm" class="card text-white mb-3" style="display: none;"
+      >
+        <div class="card-header bg-danger">Вы действительно хотите закрыть
+          тренировку?
+        </div>
+        <div class="card-body">
           <a
-            id="show-close-confirm"
-            href="#"
+            href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}"
             class="btn btn-outline-danger mr-2"
             role="button"
           >
-            Закрыть тренировку
+            Да
           </a>
-        </div>
-      </div>
-      {% endifhasperm %}
-      <div id="close-confirm" class="card text-white mb-3" style="display: none;">
-        <div class="card-header bg-danger">Вы действительно хотите закрыть тренировку?</div>
-        <div class="card-body">
-          <a
-          href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day%}"
-          class="btn btn-outline-danger mr-2"
-          role="button"
-        >
-          Да
-        </a>
 
-        <button
-          type="button"
-          class="btn btn-outline-secondary mr-2 cancel-action"
-          aria-label="Close"
-        >
-          Нет
-        </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary mr-2 cancel-action"
+            aria-label="Close"
+          >
+            Нет
+          </button>
         </div>
       </div>
     {% else %}
       {% ifhasperm 'event.open' user event %}
-      <div class="row">
-        <div class="alert alert-light" role="alert">
-          <a
-            id="show-open-confirm"
-            href="#"
-            class="btn btn-sm btn-outline-info"
-            role="button"
-          >
-            Открыть тренировку
-          </a>
+        <div class="row">
+          <div class="alert alert-light" role="alert">
+            <a
+              id="show-open-confirm"
+              href="#"
+              class="btn btn-sm btn-outline-info"
+              role="button"
+            >
+              Открыть тренировку
+            </a>
+          </div>
         </div>
-      </div>
       {% endifhasperm %}
-      <div id="open-confirm" class="card text-white mb-3" style="display: none;">
-        <div class="card-header bg-info">Вы действительно хотите открыть тренировку?</div>
+      <div
+        id="open-confirm" class="card text-white mb-3" style="display: none;"
+      >
+        <div class="card-header bg-info">Вы действительно хотите открыть
+          тренировку?
+        </div>
         <div class="card-body">
           <a
-          href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day%}"
-          class="btn btn-outline-info mr-2"
-          role="button"
-        >
-          Да
-        </a>
+            href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}"
+            class="btn btn-outline-info mr-2"
+            role="button"
+          >
+            Да
+          </a>
 
-        <button
-          type="button"
-          class="btn btn-outline-secondary mr-2 cancel-action"
-          aria-label="Close"
-        >
-          Нет
-        </button>
+          <button
+            type="button"
+            class="btn btn-outline-secondary mr-2 cancel-action"
+            aria-label="Close"
+          >
+            Нет
+          </button>
         </div>
       </div>
     {% endif %}
   {% endif %}
 
+
+  {# Modal form for sale  #}
+  <div
+    class="modal fade" id="sale-modal" tabindex="-1" role="dialog"
+    aria-labelledby="sale-modal-label" aria-hidden="true"
+  >
+    <form action="{% url 'crm:manager:event-class:event:sell-and-mark' event.event_class.id event.date.year event.date.month event.date.day %}" method="post">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="sale-modal-label">Продать абонемент и
+              отметить</h5>
+            <button
+              type="button" class="close" data-dismiss="modal"
+              aria-label="Отмена"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+            {% bootstrap_form sell_subscription_form %}
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button" class="btn btn-secondary" data-dismiss="modal"
+            >
+              Отмена
+            </button>
+            <button type="submit" class="btn btn-primary">Продать и отметить
+            </button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+
 {% endblock content %}
+
+{% block extrahead %}
+  {{ sell_subscription_form.media.css }}
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css"
+  >
+{% endblock %}
+
+{% block extra %}
+  {{ sell_subscription_form.media.js }}
+  <script type="text/javascript">
+    $(function () {
+      $('#{{ sell_subscription_form.subscription.id_for_label }}')
+        .select2({theme: 'bootstrap'})
+        .on('select2:select', function (e) {
+          let $visits = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
+          let $price = $('#{{ sell_subscription_form.price.id_for_label }}');
+          if (e.params.data.id === '') {
+            $visits.val('');
+            $price.val('');
+          } else {
+            let $elem = $(e.params.data.element);
+            $visits.val($elem.data('visits'));
+            $price.val($elem.data('price'));
+          }
+        });
+
+      $('a.sell-and-mark').click(function () {
+        let $this = $(this);
+        $('#sale-modal').modal('show');
+        $('#{{ sell_subscription_form.client.id_for_label }}')
+          .val($this.data('client-id'));
+      })
+    });
+  </script>
+{% endblock %}
