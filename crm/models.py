@@ -291,11 +291,11 @@ class EventClass(CompanyObjectModel):
     Описание шаблона мероприятия (Класс вид).
     Например, тренировки в зале бокса у Иванова по средам и пятницам
     """
-    name = models.CharField("Название", max_length=100)
+    name = models.CharField("Наименование", max_length=100)
     location = TenantForeignKey(
         Location,
         on_delete=models.PROTECT,
-        verbose_name="Расположение")
+        verbose_name="Место проведения")
     coach = TenantForeignKey(
         Coach,
         on_delete=models.PROTECT,
@@ -453,11 +453,11 @@ class DayOfTheWeekClass(CompanyObjectModel):
     )
     start_time = models.TimeField(
         "Время начала тренировки",
-        default=timezone.now
+        default=time(19)
     )
     end_time = models.TimeField(
         "Время окнчания тренировки",
-        default=timezone.now
+        default=time(20)
     )
 
     class Meta:

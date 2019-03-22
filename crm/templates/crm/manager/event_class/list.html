@@ -9,19 +9,44 @@
 
 <form action="/eventclass" id="eventForm" method="POST" style="width: 100%;">
     <div class="ml-4 mt-4 mr-4">
-    <legend class="border-bottom mb-2">Тренировки</legend>
+    <legend class="border-bottom mb-2">Настройки тренировок</legend>
         <div style="background-color: #FFFFFF;" class="sticky-top">
-            <a name="add-new" href="{% url 'crm:manager:event-class:new' %}" class="btn btn-sm btn-info mb-2">Новое мероприятие</a>
+            <a name="add-new" href="{% url 'crm:manager:event-class:new' %}" class="btn btn-sm btn-info">Новые тренировки</a>
         </div>
     {% if eventclass_list %}
-        <ul>
+      <table class="table table-striped table-borderless">
+        <thead>
+          <tr>
+            <th scope="col">Наименование</th>
+            <th scope="col">Место проведения</th>
+            <th scope="col">Тренер</th>
+            <th scope="col">Дата с</th>
+            <th scope="col">Дата до</th>
+{#            <th scope="col">Стоимость разового посещения</th>#}
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
         {% for eventclass in eventclass_list %}
-            <li><a href="{% url 'crm:manager:event-class:update' eventclass.pk %}">{{ eventclass.name }} - {{ eventclass.location }} - {{ eventclass.coach }}</a>
-                <a href="{% url 'crm:manager:event-class:delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a>
-                <a href="{% url 'crm:manager:event-class:calendar' eventclass.pk %}" ><i class="far fa-calendar-alt"></i></a>
-            </li>
+          <tr>
+            <td>
+              <a href="{% url 'crm:manager:event-class:update' eventclass.pk %}">
+                {{ eventclass.name }}
+              </a>
+            </td>
+            <td>{{ eventclass.location }}</td>
+            <td>{{ eventclass.coach }}</td>
+            <td>{{ eventclass.date_from }}</td>
+            <td>{{ eventclass.date_to }}</td>
+            <td>{# {{ eventclass. }} #}</td>
+            <td>
+              <a href="{% url 'crm:manager:event-class:delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a>
+              <a href="{% url 'crm:manager:event-class:calendar' eventclass.pk %}" ><i class="far fa-calendar-alt"></i></a>
+            </td>
+          </tr>
         {% endfor %}
-        </ul>
+        </tbody>
+      </table>
     {% else %}
         <p>No event_class are available.</p>
     {% endif %}

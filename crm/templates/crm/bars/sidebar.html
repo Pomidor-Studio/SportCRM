@@ -9,7 +9,7 @@
             {% if user.is_manager %}{% url 'crm:manager:event-class:list' %}{% else %}{% url 'crm:coach:home' %}{% endif %}"
           name="Тренировки"
         >
-          Тренировки
+          Настройки тренировок
         </a>
       </li>
       {% ifhasperm 'client' user %}
