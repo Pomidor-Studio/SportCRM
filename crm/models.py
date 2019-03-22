@@ -450,11 +450,11 @@ class DayOfTheWeekClass(CompanyObjectModel):
     )
     start_time = models.TimeField(
         "Время начала тренировки",
-        default=datetime.strptime('19:00', '%H:%M').time()
+        default=time(19)
     )
     end_time = models.TimeField(
         "Время окнчания тренировки",
-        default=datetime.strptime('20:00', '%H:%M').time()
+        default=time(20)
     )
 
     class Meta:
