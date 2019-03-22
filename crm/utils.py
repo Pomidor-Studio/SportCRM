@@ -1,4 +1,5 @@
 import datetime
+import re
 
 import django_filters
 from bootstrap_datepicker_plus import DatePickerInput
@@ -6,6 +7,9 @@ from django import forms
 from django_filters.fields import RangeField
 from django_filters.utils import handle_timezone
 from django_filters.widgets import SuffixedMultiWidget
+
+
+VK_PAGE_REGEXP = re.compile('vk.com/(?P<user_id>([A-Za-z0-9_])+)')
 
 
 class BootstrapRangeWidget(SuffixedMultiWidget):
@@ -65,4 +69,3 @@ def pluralize(singular, plural1, plural2, count):
         return plural2
 
     return singular
-

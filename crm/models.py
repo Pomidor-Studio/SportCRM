@@ -201,7 +201,7 @@ class User(TenantModel, AbstractUser):
 
     @property
     def vk_id(self) -> Optional[str]:
-        return self.vk_data('id')
+        return self.vk_data('id') or self.vk_data('uid')
 
     @property
     def vk_link(self) -> Optional[str]:
@@ -213,6 +213,9 @@ class User(TenantModel, AbstractUser):
             social = self.social_auth.get(provider='vk-oauth2')
         except models.ObjectDoesNotExist:
             return None
+
+        if data_key == 'uid':
+            return social.uid
 
         return social.extra_data.get(data_key)
 

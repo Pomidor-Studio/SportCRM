@@ -11,6 +11,7 @@ from django_multitenant.utils import get_current_tenant
 from django_select2.forms import Select2MultipleWidget, Select2Widget
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
+from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, Manager, SubscriptionsType,
@@ -383,6 +384,12 @@ class UserForm(TenantModelForm):
 
 
 class CoachForm(TenantModelForm):
+    vk_page = forms.RegexField(
+        label='Страница VK',
+        regex=VK_PAGE_REGEXP,
+        required=False
+    )
+
     class Meta:
         model = Coach
         fields = ('phone_number',)
