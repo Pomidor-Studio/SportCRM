@@ -16,6 +16,7 @@ from crm.forms import (
 )
 from crm.models import (
     Client, ClientSubscriptions, ExtensionHistory, SubscriptionsType,
+    EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 
@@ -29,6 +30,11 @@ class List(PermissionRequiredMixin, FilterView):
     context_object_name = 'clients'
     paginate_by = 25
     permission_required = 'client'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['has_active_event_class'] = EventClass.objects.active().exists()
+        return context
 
 
 class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
