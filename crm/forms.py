@@ -48,7 +48,9 @@ class ClientForm(TenantModelForm):
                                         attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
             'address': forms.TextInput(attrs={"class": "form-control", "placeholder": "Адрес проживания"}),
             'name': forms.TextInput(attrs={"class": "form-control", "placeholder": "ФИО"}),
-            'phone_number': forms.TextInput(attrs={"class": "form-control", "placeholder": "Номер телефона"}),
+            'phone_number': PhoneNumberInternationalFallbackWidget(
+                attrs={'data-phone': True}
+            ),
             'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@email.com"}),
             'vk_user_id': forms.HiddenInput(),
 

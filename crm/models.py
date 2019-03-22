@@ -621,7 +621,7 @@ class Client(CompanyObjectModel):
     name = models.CharField("Имя", max_length=100)
     address = models.CharField("Адрес", max_length=255, blank=True)
     birthday = models.DateField("Дата рождения", null=True, blank=True)
-    phone_number = models.CharField("Телефон", max_length=50, blank=True)
+    phone_number = PhoneNumberField("Телефон", blank=True)
     email_address = models.CharField("Email", max_length=50, blank=True)
 
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
