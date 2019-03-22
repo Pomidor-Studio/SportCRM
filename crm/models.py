@@ -1,26 +1,94 @@
-from datetime import date, datetime, timedelta
-from itertools import count
-from typing import Dict, Optional
+from __future__ import annotations
 
+import logging
+import decimal
+import uuid
+from datetime import date, datetime, timedelta, time
+from itertools import count
+from typing import Callable, Dict, List, Optional
+
+import pendulum
 import reversion
-from dateutil.relativedelta import relativedelta
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
 from django.db.models import Q
+from django.db.models.manager import BaseManager
+from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
-from django_multitenant.mixins import TenantManagerMixin
+from django_multitenant.mixins import TenantManagerMixin, TenantQuerySet
 from django_multitenant.models import TenantModel
 from django_multitenant.utils import get_current_tenant
+from phonenumber_field.modelfields import PhoneNumberField
 from psycopg2 import Error as Psycopg2Error
+from safedelete.managers import (
+    SafeDeleteAllManager, SafeDeleteDeletedManager, SafeDeleteManager,
+)
 from safedelete.models import SafeDeleteModel
 from transliterate import translit
 
+from crm.enums import GRANULARITY
+from crm.events import get_nearest_to, next_day, Weekdays
+from crm.utils import pluralize
+
 INTERNAL_COMPANY = 'INTERNAL'
+
+
+logger = logging.getLogger('crm.models')
+
+
+class NoFutureEvent(Exception):
+    pass
+
+
+class ScrmTenantManagerMixin:
+    """
+    Override TenantManagerMixin behaviour, as it ignore that queryset may be
+    already instance of TenantQuerySet
+    """
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if not isinstance(queryset, TenantQuerySet):
+            queryset = TenantQuerySet(self.model)
+
+        current_tenant = get_current_tenant()
+        if current_tenant:
+            current_tenant_id = getattr(current_tenant, current_tenant.tenant_id, None)
+
+            # TO CHANGE: tenant_id should be set in model Meta
+            kwargs = {self.model.tenant_id: current_tenant_id}
+
+            return super().get_queryset().filter(**kwargs)
+        return queryset
+
+
+class ScrmSafeDeleteManager(ScrmTenantManagerMixin, SafeDeleteManager):
+    pass
+
+
+class ScrmSafeDeleteAllManager(ScrmTenantManagerMixin, SafeDeleteAllManager):
+    pass
+
+
+class ScrmSafeDeleteDeletedManager(
+    ScrmTenantManagerMixin,
+    SafeDeleteDeletedManager
+):
+    pass
+
+
+class ScrmSafeDeleteModel(SafeDeleteModel):
+    objects = ScrmSafeDeleteManager()
+    all_objects = ScrmSafeDeleteAllManager()
+    deleted_objects = ScrmSafeDeleteDeletedManager()
+
+    class Meta:
+        abstract = True
 
 
 @reversion.register()
@@ -31,6 +99,30 @@ class Company(models.Model):
     # По факту является своеобразным uuid
     name = models.CharField("Название", max_length=100, unique=True)
     display_name = models.CharField('Отображаемое название', max_length=100)
+    vk_group_id = models.CharField(
+        'ИД группы вк',
+        max_length=20,
+        unique=True,
+        null=True,
+        blank=True
+    )
+    vk_access_token = models.CharField(
+        'Токен группы вк',
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True
+    )
+    vk_confirmation_token = models.CharField(
+        'Строка-подтверждение',
+        max_length=20,
+        null=True,
+        blank=True
+    )
+    # Active to - means that company can access to site, and data until
+    # date. If `active_to` is None, it means that company have unlimited
+    # access, without any restriction
+    active_to = models.DateField('Компания активна до', null=True, blank=True)
     tenant_id = 'id'
 
     def save(self, force_insert=False, force_update=False, using=None,
@@ -74,7 +166,12 @@ def get_user_current_tenant():
     current_tenant = get_current_tenant()
     if current_tenant is None:
         try:
-            return Company.objects.get(name=INTERNAL_COMPANY)
+            return (
+                Company.objects
+                .only('id')
+                .filter(name=INTERNAL_COMPANY)
+                .first()
+            )
         except (Company.DoesNotExist, Psycopg2Error, utils.Error):
             return None
 
@@ -119,6 +216,10 @@ class User(TenantModel, AbstractUser):
 
         return social.extra_data.get(data_key)
 
+    @property
+    def vk_message_token(self) -> str:
+        return self.company.vk_access_token
+
 
 class CompanyObjectModel(TenantModel):
     """Абстрактный класс для разделяемых по компаниям моделей"""
@@ -135,7 +236,7 @@ class CompanyObjectModel(TenantModel):
 
 
 @reversion.register()
-class Location(SafeDeleteModel, CompanyObjectModel):
+class Location(ScrmSafeDeleteModel, CompanyObjectModel):
     name = models.CharField("Название", max_length=100)
     address = models.CharField("Адрес", max_length=1000, blank=True)
 
@@ -155,12 +256,12 @@ class Location(SafeDeleteModel, CompanyObjectModel):
 
 
 @reversion.register()
-class Coach(SafeDeleteModel, CompanyObjectModel):
+class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     Профиль тренера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
-    phone_number = models.CharField("Телефон", max_length=50, blank=True)
+    phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -183,6 +284,7 @@ class Manager(CompanyObjectModel):
     Профиль менеджера
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
+    phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
         return self.user.get_full_name()
@@ -205,6 +307,24 @@ class EventClass(CompanyObjectModel):
         verbose_name="Тренер")
     date_from = models.DateField("Дата с", null=True, blank=True)
     date_to = models.DateField("Дата по", null=True, blank=True)
+
+    def days(self) -> List[int]:
+        """
+        Get list of all weekdays of current event
+
+        For example: [0, 2, 4] for monday, wednesday, friday
+        """
+        days = list(
+            self.dayoftheweekclass_set
+                .all()
+                .order_by('day')
+                .values_list('day', flat=True)
+        )
+
+        if not len(days):
+            raise ValueError("Event class don't have any days to spread")
+
+        return days
 
     def is_event_day(self, day: date) -> bool:
         """
@@ -231,8 +351,24 @@ class EventClass(CompanyObjectModel):
 
         return True
 
+    def get_nearest_event_to(self, required_day: date):
+        return get_nearest_to(
+            required_day, Weekdays(self.days()), self.date_to)
+
+    def get_nearest_event_to_or_none(
+        self,
+        required_day: date
+    ) -> Optional[date]:
+        try:
+            return self.get_nearest_event_to(required_day)
+        except ValueError:
+            return None
+
     def get_calendar(
-            self, start_date: date, end_date: date) -> Dict[date, 'Event']:
+        self,
+        start_date: date,
+        end_date: date
+    ) -> Dict[date, Event]:
         """
         Создает полный календарь одного типа тренировки. Создается список
         всех возможный дней трениовок, ограниченный диапазоном дат.
@@ -244,16 +380,45 @@ class EventClass(CompanyObjectModel):
         :param end_date: Конечная дата календаря
         :return: Словарь из даты и возможной тренировки
         """
-        events = {event.date: event for event in self.event_set.all()}
-        # Решение влоб - перебор всех дней с проверкой входят
-        # ли они в календарь.
-        # TODO: переписать на генератор(yield) -
-        #  EventClass может возвращать следующий день исходя из настроек
-        for n in range(int((end_date - start_date).days)):
-            curr_date = start_date + timedelta(n)
-            if curr_date not in events:
-                if self.is_event_day(curr_date):
-                    events[curr_date] = Event(date=curr_date, event_class=self)
+        events = {
+            event.date: event
+            for event in
+            self.event_set.filter(date__range=(start_date, end_date))
+        }
+
+        if start_date < self.date_from:
+            start_date = self.date_from
+
+        if self.date_to and self.date_to < end_date:
+            end_date = self.date_to
+
+        days_time = {
+            x['day']: (x['start_time'], x['end_time'])
+            for x in
+            self.dayoftheweekclass_set
+                .all()
+                .values('day', 'start_time', 'end_time')
+        }
+
+        for event_date in next_day(start_date, end_date, Weekdays(self.days())):
+            if event_date not in events:
+                event = Event(
+                    date=event_date,
+                    event_class=self
+                )
+                events[event_date] = event
+            else:
+                event = events[event_date]
+
+            # Pre-set data to event can reduce response time in ten times
+            # For example non-optimized response of full calendar for one month
+            # is running for 929ms, after optimization only 80ms
+            event.event_class_name = self.name
+            try:
+                event.start_time = days_time[event_date.weekday()][0]
+                event.end_time = days_time[event_date.weekday()][1]
+            except KeyError:
+                pass
 
         return events
 
@@ -304,16 +469,23 @@ class DayOfTheWeekClass(CompanyObjectModel):
         unique_together = ('day', 'event',)
 
 
-granularity = (
-    ('day', 'День'),
-    ('week', 'Неделя'),
-    ('month', 'Месяц'),
-    ('year', 'Год')
-)
+# noinspection PyPep8Naming
+class SubscriptionsTypeEventFilter:
+    @staticmethod
+    def ALL(event: Event) -> bool:
+        return True
+
+    @staticmethod
+    def ACTIVE(event: Event) -> bool:
+        return not event.is_canceled
+
+    @staticmethod
+    def CANCELED(event: Event) -> bool:
+        return event.is_canceled
 
 
 @reversion.register()
-class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
+class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     Типы абонементов
     Описывает продолжительность действия, количество посещений,
@@ -324,8 +496,8 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
     duration_type = models.CharField(
         "Временные рамки абонемента",
         max_length=20,
-        choices=granularity,
-        default=granularity[0]
+        choices=GRANULARITY,
+        default=GRANULARITY.DAY
     )
     duration = models.PositiveIntegerField("Продолжительность")
     rounding = models.BooleanField(
@@ -337,73 +509,133 @@ class SubscriptionsType(SafeDeleteModel, CompanyObjectModel):
         EventClass,
         verbose_name="Допустимые тренировки"
     )
+    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
 
     def __str__(self):
-        return 'name: (0)'.format(self.name)
+        return self.name
 
-    def get_start_date(self, rounding_date):
+    def start_date(self, rounding_date: date) -> pendulum.Date:
         """
         Возвращает дату начала действия абонемента после округления.
-        rounding_date - дата начала действия абонемента до округления
-        """
-        if self.rounding:
-            weekday = rounding_date.weekday()
-            if self.duration_type == granularity[0][0]:
-                start_date = rounding_date
-            elif self.duration_type == granularity[1][0]:
-                start_date = rounding_date - timedelta(weekday)
-            elif self.duration_type == granularity[2][0]:
-                start_date = datetime(
-                    rounding_date.year, rounding_date.month, 1)
-            elif self.duration_type == granularity[3][0]:
-                start_date = datetime(rounding_date.year, 1, 1)
-        else:
-            start_date = rounding_date
-        return start_date
 
-    def get_end_date(self, start_date):
+        :param rounding_date: дата начала действия абонемента до округления
+        """
+        p_date: pendulum.Date = pendulum.Date.fromordinal(
+            rounding_date.toordinal())
+        if not self.rounding:
+            return p_date
+
+        elif self.duration_type == GRANULARITY.DAY:
+            return p_date
+
+        elif self.duration_type == GRANULARITY.WEEK:
+            return p_date.start_of('week')
+
+        elif self.duration_type == GRANULARITY.MONTH:
+            return p_date.start_of('month')
+
+        elif self.duration_type == GRANULARITY.YEAR:
+            return p_date.start_of('year')
+
+        return p_date
+
+    def end_date(self, start_date: date) -> Optional[pendulum.Date]:
         """
         Возвращает дату окончания действия абонемента.
-        start_date - дата начала действия абонемента
+        :param start_date: дата начала действия абонемента
         """
-        end_date = None
-        if self.duration_type == granularity[0][0]:
-            end_date = start_date + relativedelta(days=self.duration)
-        elif self.duration_type == granularity[1][0]:
-            end_date = start_date + relativedelta(days=6 * self.duration)
-        elif self.duration_type == granularity[2][0]:
-            end_date = start_date + relativedelta(months=self.duration)
-        elif self.duration_type == granularity[3][0]:
-            end_date = start_date + relativedelta(years=self.duration)
-        return end_date
+        rounded_start_date = self.start_date(start_date)
+
+        if self.duration_type == GRANULARITY.DAY:
+            return rounded_start_date.add(days=self.duration)
+
+        elif self.duration_type == GRANULARITY.WEEK:
+            return rounded_start_date.add(weeks=self.duration)
+
+        elif self.duration_type == GRANULARITY.MONTH:
+            return rounded_start_date.add(months=self.duration)
+
+        elif self.duration_type == GRANULARITY.YEAR:
+            return rounded_start_date.add(years=self.duration)
+
+        return None
+
+    def events_to_date(
+        self, *,
+        to_date: date,
+        from_date: date = None,
+        filter_runner: Callable[[Event], bool] =
+            SubscriptionsTypeEventFilter.ACTIVE
+    ) -> List[Event]:
+        """
+        Get list of all events that can be visited by this subscription type
+        Event are sorted by date.
+
+        :param to_date: End date of calendar
+        :param from_date: Start date of calendar, if not provided date.today()
+        will be used
+        :param filter_runner: Filter event for given criteria. Default criteria
+        select only active events.
+
+        :return: List of all events
+        """
+        return sorted(
+            filter(
+                filter_runner,
+                [
+                    e for x in self.event_class.all()
+                    for e in
+                    x.get_calendar(from_date or date.today(), to_date).values()
+                ]
+            ),
+            key=lambda x: x.date
+        )
+
+    @property
+    def duration_postfix(self):
+        return pluralize(
+            *GRANULARITY.for_value(self.duration_type).pluralize,
+            self.duration
+        )
 
     @staticmethod
     def get_absolute_url():
         return reverse('crm:manager:subscription:list')
 
 
+class ClientManager(TenantManagerMixin, models.Manager):
+
+    def with_active_subscription_to_event(self, event: Event):
+        cs = (
+            ClientSubscriptions.objects
+            .active_subscriptions(event)
+            .order_by('client_id')
+            .distinct('client_id')
+            .values_list('client_id', flat=True)
+        )
+        return self.get_queryset().filter(id__in=cs)
+
+
 @reversion.register()
 class Client(CompanyObjectModel):
     """Клиент-Ученик. Котнактные данные. Баланс"""
-    name = models.CharField("Имя",
-                            max_length=100)
-    address = models.CharField("Адрес",
-                               max_length=255,
-                               blank=True)
-    birthday = models.DateField("Дата рождения",
-                                null=True,
-                                blank=True)
-    phone_number = models.CharField("Телефон",
-                                    max_length=50,
-                                    blank=True)
-    email_address = models.CharField("Email",
-                                     max_length=50,
-                                     blank=True)
-    vk_user_id = models.IntegerField("id ученика в ВК",
-                                     null=True,
-                                     blank=True)
-    balance = models.FloatField("Баланс",
-                                default=0)
+    name = models.CharField("Имя", max_length=100)
+    address = models.CharField("Адрес", max_length=255, blank=True)
+    birthday = models.DateField("Дата рождения", null=True, blank=True)
+    phone_number = models.CharField("Телефон", max_length=50, blank=True)
+    email_address = models.CharField("Email", max_length=50, blank=True)
+
+    vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
+    balance = models.DecimalField("Баланс", max_digits=9, decimal_places=2, default=0)
+    qr_code = models.UUIDField(
+        "QR код",
+        blank=True,
+        null=True,
+        unique=True,
+        default=uuid.uuid4
+    )
+
+    objects = ClientManager()
 
     class Meta:
         unique_together = ('company', 'name')
@@ -413,56 +645,409 @@ class Client(CompanyObjectModel):
 
     @property
     def last_sub(self):
-        return self.clientsubscriptions_set.order_by('purchase_date').first
+        return self.clientsubscriptions_set.order_by('purchase_date').first()
 
     def __str__(self):
         return self.name
+
+    @property
+    def vk_message_token(self) -> str:
+        return self.company.vk_access_token
+
+    def update_balance(self, top_up_amount):
+        self.balance = self.balance + decimal.Decimal(top_up_amount)
+        self.save()
+        from google_tasks.tasks import enqueue
+        enqueue('notify_client_balance', self.id)
+
+    def add_balance_in_history(self, top_up_amount, reason):
+        with transaction.atomic():
+            ClientBalanceChangeHistory.objects.get_or_create(
+                change_value=top_up_amount,
+                client=self,
+                reason=reason,
+                entry_date=datetime.now(),
+                actual_entry_date=datetime.now()
+            )
+            self.update_balance(top_up_amount)
+
+    def signup_for_event(self, event):
+        Attendance.objects.create(
+            event=event,
+            client=self,
+            signed_up=True
+        )
+
+    def cancel_signup_for_event(self, event):
+        with transaction.atomic():
+            attendance = Attendance.objects.get(client=self, event=event)
+            if attendance.subscription and attendance.marked:
+                attendance.subscription.restore_visit()
+            attendance.delete()
+
+    def mark_visit(self, event, subscription: ClientSubscriptions):
+        subscription.mark_visit(event)
+
+    def restore_visit(self, event):
+        attendance = Attendance.objects.get(client=self, event=event)
+        attendance.restore_visit()
+
+
+class ClientSubscriptionQuerySet(TenantQuerySet):
+    def active_subscriptions(self, event: Event):
+        """Get all active subscriptions for selected event"""
+        return self.filter(
+            subscription__event_class=event.event_class,
+            start_date__lte=event.date,
+            end_date__gte=event.date,
+            visits_left__gt=0
+        )
+
+
+class ClientSubscriptionsManager(
+    ScrmTenantManagerMixin,
+    BaseManager.from_queryset(ClientSubscriptionQuerySet)
+):
+    def active_subscriptions(self, event: Event):
+        return self.get_queryset().active_subscriptions(event)
+
+    def extend_by_cancellation(self, cancelled_event: Event):
+        for subscription in self.active_subscriptions(cancelled_event):
+            subscription.extend_by_cancellation(cancelled_event)
+
+    def revoke_extending(self, activated_event: Event):
+        # Don't try revoke on non-active events or non-canceled evens
+        if not activated_event.is_active or \
+                not activated_event.is_canceled or \
+                not activated_event.canceled_with_extending:
+            return
+
+        subs_ids = activated_event.extensionhistory_set.all().values_list(
+            'client_subscription_id', flat=True)
+
+        for subscription in self.get_queryset().filter(id__in=subs_ids):
+            subscription.revoke_extending(activated_event)
+
+
+class ClientAttendanceExists(Exception):
+    pass
 
 
 @reversion.register()
 class ClientSubscriptions(CompanyObjectModel):
     """Абонементы клиента"""
-    client = TenantForeignKey(Client,
-                              on_delete=models.PROTECT,
-                              verbose_name="Ученик")
-    subscription = TenantForeignKey(SubscriptionsType,
-                                    on_delete=models.PROTECT,
-                                    verbose_name="Тип Абонемента")
-    purchase_date = models.DateTimeField("Дата покупки", default=timezone.now)
-    start_date = models.DateTimeField("Дата начала", default=timezone.now)
-    end_date = models.DateTimeField(null=True)
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик")
+    subscription = TenantForeignKey(
+        SubscriptionsType,
+        on_delete=models.PROTECT,
+        verbose_name="Тип Абонемента")
+    purchase_date = models.DateField("Дата покупки", default=date.today)
+    start_date = models.DateField("Дата начала", default=date.today)
+    end_date = models.DateField(null=True)
     price = models.FloatField("Стоимость")
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
-    def save(self, *args, **kwargs):
-        self.start_date = self.subscription.get_start_date(self.start_date)
-        self.end_date = self.subscription.get_end_date(self.start_date)
-        super(ClientSubscriptions, self).save(*args, **kwargs)
+    objects = ClientSubscriptionsManager()
 
-    def extend_duration(self, added_visits, reason=''):
+    def save(self, *args, **kwargs):
+        # Prevent change end date for extended client subscription
+        if not self.id:
+            self.start_date = self.subscription.start_date(self.start_date)
+            self.end_date = self.subscription.end_date(self.start_date)
+
+        super().save(*args, **kwargs)
+
+    def extend_duration(self, added_visits: int, reason: str = ''):
+        new_end_date = self.nearest_extended_end_date()
+
+        if new_end_date == self.end_date and added_visits == 0:
+            return
+
         with transaction.atomic():
             ExtensionHistory.objects.create(
                 client_subscription=self,
                 reason=reason,
-                added_visits=added_visits
+                added_visits=added_visits,
+                extended_from=(
+                    self.end_date if new_end_date != self.end_date else None
+                ),
+                extended_to=(
+                    new_end_date if new_end_date != self.end_date else None
+                )
             )
-            self.visits_left += int(added_visits)
-            self.end_date = self.end_date + timedelta(
-                self.subscription.duration)
+            self.visits_left += added_visits
+            self.end_date = new_end_date
             self.save()
+            from google_tasks.tasks import enqueue
+            enqueue('notify_client_subscription_extend', self.id)
+
+    def extend_by_cancellation(self, cancelled_event: Event):
+        possible_extension_date = self.nearest_extended_end_date(
+            cancelled_event.event_class)
+
+        if possible_extension_date == self.end_date:
+            # Don't extend if there is no more future events for this
+            # event class
+            return
+
+        with transaction.atomic():
+            ExtensionHistory.objects.create(
+                client_subscription=self,
+                reason=f'В связи с отменой тренировки {cancelled_event}',
+                added_visits=0,
+                related_event=cancelled_event,
+                extended_from=self.end_date,
+                extended_to=possible_extension_date
+            )
+
+            self.end_date = possible_extension_date
+            self.save()
+
+    def revoke_extending(self, activated_event: Event):
+        extension_to_delete = (
+            activated_event.extensionhistory_set
+            .filter(client_subscription=self)
+            .order_by('date_extended')
+            .first()
+        )
+        if not extension_to_delete:
+            # Nothing to delete
+            return
+
+        extending_chain = ExtensionHistory.objects.filter(
+            client_subscription=self,
+            date_extended__gt=extension_to_delete.date_extended
+        )
+
+        # If we have any extension history AFTER removable,
+        # we must rebuild history date changing
+        # Set current extension history dates to next extension history item
+        # and so further.
+        # Last extension history extended_from will be used as real date,
+        # on which will be truncated client subscription
+        # If there is empty chain, it means that extension history is last one
+        # and no history rebuilding needed
+        prev_from = extension_to_delete.extended_from
+        prev_to = extension_to_delete.extended_to
+        with transaction.atomic():
+            for chained_extension in extending_chain:
+                current_from = chained_extension.extended_from
+                current_to = chained_extension.extended_to
+
+                chained_extension.extended_from = prev_from
+                chained_extension.extended_to = prev_to
+                chained_extension.save()
+
+                prev_from = current_from
+                prev_to = current_to
+
+            if prev_from:
+                self.end_date = prev_from
+                self.save()
+            else:
+                logger.error(
+                    'Subscription date extension with empty extended_from found'
+                )
+
+            extension_to_delete.delete()
+
+    def nearest_extended_end_date(self, event_class: EventClass = None):
+        possible_events = self.subscription.event_class.filter(
+            Q(date_to__isnull=True) | Q(date_to__gt=self.end_date)
+        )
+
+        if event_class:
+            possible_events = possible_events.filter(id=event_class.id)
+
+        if not possible_events.exists():
+            return self.end_date
+
+        new_end_date = list(filter(bool, [
+            x.get_nearest_event_to_or_none(self.end_date)
+            for x in possible_events
+        ]))
+
+        return min(new_end_date) if len(new_end_date) else self.end_date
+
+    def is_extended(self):
+        return self.extensionhistory_set.exists()
 
     def get_absolute_url(self):
         return reverse(
             'crm:manager:client:detail', kwargs={'pk': self.client.id})
 
-    def is_expiring(self):
-        current_date = datetime.now(timezone.utc)
-        end_date = self.end_date
-        delta = end_date - current_date
+    def remained_events(self) -> List[Event]:
+        """
+        Return list of remained events from today until end date. With care
+        about left visits.
+
+        :return: List of all events that can be visited one after one,
+        by this client subscription
+        """
+        return (
+            self.subscription
+                .events_to_date(to_date=self.end_date)[:self.visits_left]
+        )
+
+    def is_overlapping(self) -> bool:
+        """
+        Return information that client subscription allows visit more events
+        than are planned
+
+        :return: True if after visiting all events from calendar will remain
+        some visits on this subscription
+        """
+        return len(self.subscription.events_to_date(
+            from_date=self.start_date, to_date=self.end_date
+        )) < self.visits_left
+
+    def is_overlapping_with_cancelled(self) -> bool:
+        """
+        Return information that client subscription allows visit more events
+        than are planned, event with canceled events
+
+        :return: True if after visiting all events from calendar will remain
+        some visits on this subscription. And this quantity of remaining
+        canceled events is greater that remaining visits minus active events
+        """
+        return len(self.subscription.events_to_date(
+            from_date=self.start_date,
+            to_date=self.end_date,
+            filter_runner=SubscriptionsTypeEventFilter.ALL
+        )) < self.visits_left
+
+    def canceled_events(
+        self,
+        from_date: date = None,
+        to_date: date = None
+    ) -> List[Event]:
+        return self.subscription.events_to_date(
+            from_date=from_date or self.start_date,
+            to_date=to_date or self.end_date,
+            filter_runner=SubscriptionsTypeEventFilter.CANCELED
+        )
+
+    def canceled_events_count(self):
+        return len(self.canceled_events())
+
+    def is_active_at_date_without_events(self, check_date) -> bool:
+        """
+        Check if client subscription is active at particular date.
+        It's simple check, without events investigation. Check only if
+        client subscription have some visits left, and date is in allowed
+        rage.
+
+        This function can be used when we need check some attendance for
+        past date.
+
+        :param check_date: what date we check
+        :return: is active subscription at date or not
+        """
+        return (
+            self.start_date <= check_date <= self.end_date and
+            self.visits_left > 0
+        )
+
+    def is_active_to_date(self, to_date: date) -> bool:
+        """
+        Check if current client subscription is valid until some date.
+
+        This check is performed only from current day to future date. It all
+        because we check current visits limit, and calculations about "how
+        much visits was on some past date" ignored.
+
+        :param to_date: until what date check activity
+        :return: is active client subscription or not
+        """
+        if not self.is_active_at_date_without_events(to_date):
+            return False
+
+        # Extract one day - to check if subscriptions ends before date
+        future_events = self.subscription.events_to_date(
+            to_date=(to_date - timedelta(days=1)))
+
+        # If visits limit ends before date, we are sure that subscription is
+        # no more active
+        return not (self.visits_left - len(future_events) <= 0)
+
+    def is_active(self) -> bool:
+        return self.is_active_to_date(date.today())
+
+    @property
+    def is_expiring(self) -> bool:
+        delta = self.end_date - date.today()
         return delta.days <= 7 or self.visits_left == 1
+
+    def mark_visit(self, event):
+        """Отметить посещение по абонементу"""
+        if not self.is_active_at_date_without_events(event.date):
+            raise ValueError('Subscription or event is incorrect')
+
+        with transaction.atomic():
+            created, _ = Attendance.objects.get_or_create(
+                event=event,
+                client=self.client,
+                marked=False,
+                defaults={'subscription': self})
+            if created:
+                created.mark_visit(self)
+                self.visits_left = self.visits_left - 1
+                self.save()
+                from google_tasks.tasks import enqueue
+                enqueue('notify_client_subscription_visit', self.id)
+            else:
+                raise ClientAttendanceExists(
+                    'Client attendance for this event already exists')
+
+    def restore_visit(self):
+        with transaction.atomic():
+            self.visits_left = self.visits_left + 1
+            self.save()
+            from google_tasks.tasks import enqueue
+            enqueue('notify_client_subscription_visit', self.id)
 
     class Meta:
         ordering = ['purchase_date']
+
+    def __str__(self):
+        return f'{self.subscription.name} (до {self.end_date:%d.%m.%Y})'
+
+
+class ClientBalanceChangeHistory(CompanyObjectModel):
+    change_value = models.DecimalField(
+        "Сумма изменения баланса",
+        max_digits=9,
+        decimal_places=2,
+        default=0
+    )
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик"
+    )
+    reason = models.TextField(
+        "Причина изменения баланса",
+        blank=True
+    )
+    subscription = TenantForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        blank=True,
+        verbose_name="Абонемент Клиента",
+        null=True,
+        default=None
+    )
+    entry_date = models.DateTimeField(
+        "Дата зачисления",
+        default=timezone.now
+    )
+    actual_entry_date = models.DateTimeField(
+        "Фактическая дата зачисления",
+        default=timezone.now
+    )
 
 
 @reversion.register()
@@ -475,10 +1060,34 @@ class ExtensionHistory(CompanyObjectModel):
         'Дата продления',
         default=timezone.now)
     reason = models.CharField('Причина продления', max_length=255, blank=False)
+    related_event = TenantForeignKey(
+        to='Event',
+        on_delete=models.PROTECT,
+        null=True
+    )
     added_visits = models.PositiveIntegerField("Добавлено посещений")
+    extended_from = models.DateField(
+        'Абонеметы был продлен с',
+        blank=True,
+        null=True
+    )
+    extended_to = models.DateField(
+        'Абонемент продлен до дня',
+        blank=True,
+        null=True
+    )
 
     class Meta:
         ordering = ['date_extended']
+
+
+class EventManager(TenantManagerMixin, models.Manager):
+    def get_or_virtual(self, event_class_id: int, event_date: date) -> Event:
+        try:
+            return self.get(event_class_id=event_class_id, date=event_date)
+        except Event.DoesNotExist:
+            event_class = get_object_or_404(EventClass, id=event_class_id)
+            return Event(date=event_date, event_class=event_class)
 
 
 @reversion.register()
@@ -491,36 +1100,248 @@ class Event(CompanyObjectModel):
         on_delete=models.PROTECT,
         verbose_name="Тренировка"
     )
+    canceled_at = models.DateField('Дата отмены тренировки', null=True)
+    canceled_with_extending = models.BooleanField(
+        'Отмена была с продленим абонемента?',
+        default=False
+    )
+    is_closed = models.BooleanField(
+        'Тренировка закрыта',
+        default=False
+    )
+
+    objects = EventManager()
 
     class Meta:
         unique_together = ('event_class', 'date',)
 
     def clean(self):
         # Проверяем пренадлижит ли указанная дата тренировке
+        # TODO: Refactor dump Event.is_event_day
         if not self.event_class.is_event_day(self.date):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
 
+    def get_present_clients_count(self):
+        # Получаем количество посетивших данную тренировку клиентов
+        return self.attendance_set.all().count()
+
+    def get_clients_count_one_time_sub(self):
+        # Получаем количество посетивших данную тренировку
+        # по одноразовому абонементу
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class, visit_limit=1
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        return queryset.count()
+
+    def get_subs_sales(self):
+        # Получаем количество проданных абонементов
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        return queryset.count()
+
+    def get_profit(self):
+        # Получаем прибыль
+        queryset = ClientSubscriptions.objects.filter(
+            subscription__in=SubscriptionsType.objects.filter(
+                event_class=self.event_class
+            ),
+            purchase_date=self.date,
+            start_date=self.date,
+            client__in=[
+                attendance.client
+                for attendance in self.attendance_set.all()
+            ]
+        )
+        queryset = queryset.values_list('price', flat=True)
+
+        return sum(list(queryset))
+
     def __str__(self):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
+
+    @property
+    def is_virtual(self):
+        return self.id is None
+
+    @property
+    def is_canceled(self):
+        return self.canceled_at is not None
+
+    @property
+    def is_active(self):
+        return self.date >= date.today()
+
+    @property
+    def is_non_editable(self):
+        return self.is_canceled or self.is_closed
+
+    @property
+    def is_overpast(self):
+        return self.date <= date.today()
+
+    # Hack to cache event class name in useful cases
+    # Usage can be seen in EventClass.get_calendar
+    _ec_name: str = None
+    _start_time: time = None
+    _end_time: time = None
+
+    @property
+    def event_class_name(self) -> str:
+        return self._ec_name if self._ec_name else self.event_class.name
+
+    @event_class_name.setter
+    def event_class_name(self, val):
+        self._ec_name = val
+
+    @property
+    def start_time(self):
+        if self._start_time:
+            return self._start_time
+
+        weekday = self.date.weekday()
+        start_time = self.event_class.dayoftheweekclass_set.filter(
+            day=weekday
+        ).first().start_time
+        return start_time
+
+    @start_time.setter
+    def start_time(self, val):
+        self._start_time = val
+
+    @property
+    def end_time(self):
+        if self._end_time:
+            return self._end_time
+
+        weekday = self.date.weekday()
+        end_time = self.event_class.dayoftheweekclass_set.filter(
+            day=weekday
+        ).first().end_time
+        return end_time
+
+    @end_time.setter
+    def end_time(self, val):
+        self._end_time = val
+
+    def cancel_event(self, extend_subscriptions=False):
+        if not self.is_active:
+            raise ValueError("Event is outdated. It can't be canceled.")
+
+        if self.is_canceled:
+            raise ValueError("Event is already cancelled.")
+
+        with transaction.atomic():
+            self.canceled_at = date.today()
+            self.canceled_with_extending = extend_subscriptions
+            self.save()
+
+            if extend_subscriptions:
+                ClientSubscriptions.objects.extend_by_cancellation(self)
+
+            try:
+                from google_tasks.tasks import enqueue
+                enqueue('notify_event_cancellation', self.id)
+            except ImportError:
+                pass
+
+    def activate_event(self, revoke_extending=False):
+        if not self.is_active:
+            raise ValueError("Event is outdated. It can't be activated.")
+
+        if not self.is_canceled:
+            raise ValueError("Event is already in action.")
+
+        original_cwe = self.canceled_with_extending
+        with transaction.atomic():
+            self.canceled_at = None
+            self.canceled_with_extending = False
+            self.save()
+
+            if revoke_extending and original_cwe:
+                ClientSubscriptions.objects.revoke_extending(self)
+
+    def close_event(self):
+        """Закрыть тренировку"""
+        if not self.is_overpast:
+            raise ValueError("Event for future date, can't be closed")
+
+        if self.is_closed:
+            raise ValueError("Event is already closed")
+
+        self.is_closed = True
+        self.save()
+
+    def open_event(self):
+        """Открыть тренировку"""
+        if not self.is_closed:
+            raise ValueError("Event is already opened")
+
+        self.is_closed = False
+        self.save()
 
 
 @reversion.register()
 class Attendance(CompanyObjectModel):
     """Посещение клиентом мероприятия(тренировки)"""
-    client = TenantForeignKey(Client,
-                              on_delete=models.PROTECT,
-                              verbose_name="Ученик")
-    event = TenantForeignKey(Event,
-                             on_delete=models.PROTECT,
-                             verbose_name="Тренировка")
-    subscription = TenantForeignKey(ClientSubscriptions,
-                                    on_delete=models.PROTECT,
-                                    blank=True,
-                                    verbose_name="Абонемент Клиента",
-                                    null=True,
-                                    default=None)
+    client = TenantForeignKey(
+        Client,
+        on_delete=models.PROTECT,
+        verbose_name="Ученик"
+    )
+    event = TenantForeignKey(
+        Event,
+        on_delete=models.PROTECT,
+        verbose_name="Тренировка"
+    )
+    subscription = TenantForeignKey(
+        ClientSubscriptions,
+        on_delete=models.PROTECT,
+        blank=True,
+        verbose_name="Абонемент Клиента",
+        null=True,
+        default=None
+    )
+
+    marked = models.BooleanField(
+        'Присутствовал на мероприятии',
+        default=False
+    )
+    signed_up = models.BooleanField(
+        'Записан на мероприятие',
+        default=False
+    )
+
+    def mark_visit(self, subscription: ClientSubscriptions ):
+        self.subscription = subscription
+        self.marked = True
+        self.save()
+
+    def restore_visit(self):
+        with transaction.atomic():
+            self.marked = False
+            if self.subscription:
+                self.subscription.restore_visit()
+            self.save()
+
     class Meta:
         unique_together = ('client', 'event',)
 
     def __str__(self):
-        return self.client.name + " " + str(self.event)
+        return f'{self.client} {self.event}'

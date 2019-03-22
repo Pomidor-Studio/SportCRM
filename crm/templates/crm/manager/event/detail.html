@@ -1,60 +1,239 @@
 {% extends "crm/base.html" %}
-{% block nav %}
-{% endblock nav %}
+
+{% load html_helper %}
+
 {% block content %}
 
-  {{ event.date }} - {{ event.event_class.name }} - {{ event.event_class.location }} - {{ event.event_class.coach }}
+<script type="text/javascript">
+  $(function() {
+    $('#show-close-confirm').click(function () {
+      $('#close-confirm').fadeIn(250);
+    });
+    $('#show-open-confirm').click(function () {
+      $('#open-confirm').fadeIn(250);
+    });
+    $('button.cancel-action').click(function() {
+      $(this).parents('div.card').first().hide();
+    });
+  });
+</script>
+
+  {{ event.date }} - {{ event.event_class.name }} -
+  {{ event.event_class.location }} - {{ event.event_class.coach }}
+  <a
+                    class="btn btn-sm btn-outline-info"
+                    href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
+                  >Отметить без абонемента</a>
+{% if not event.is_closed %}
+          <a class="btn btn-sm btn-outline-info"
+             href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">Сканнер</a>
+      {% endif %}
   <div class="border-top mt-2"></div>
   <div class="row">
     <div class="col">
       <div class="border-top">
         <span class="font-weight-bold ">Отмеченные ученики: </span>
         <div class="border-top">
-          {% for attendance in attendance_list %}
+          {% for attendance in attendance_list_marked %}
             <div class="row border-top ml-0 mr-0">
               <div class="col pl-0">
                 {{ attendance.client.name }}
               </div>
               <div class="col">
-                {{ attendance.subscription.subscription.name }}
+              {% if attendance.signed_up %}
+                Был записан
+                {% else %}
+                Не был записан
+                {% endif %}
               </div>
+              <div class="col"></div>
               <div class="col">
-
-              </div>
-              <div class="col">
-
-              </div>
-              <div class="col">
-                <a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:attendance:delete' attendance.id %}">Удалить</a>
+                {% if not event.is_closed %}
+                {% if attendance.signed_up %}
+                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:unmark-client' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id%}">
+                    Убрать отметку
+                  </a>
+                {% else %}
+                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day attendance.client.id%}">
+                    Убрать отметку
+                  </a>
+                {% endif %}
+                {% endif %}
               </div>
             </div>
           {% endfor %}
         </div>
       </div>
       <div class="border-top mt-2"></div>
-      <div class="border-top">
-        <span class="font-weight-bold ">Не отмеченные ученики: </span>
+      {% if not event.is_closed %}
         <div class="border-top">
-          {% for client in clients %}
-            <div class="row border-top ml-0 mr-0">
-              <div class="col pl-0">
-                {{ client.name }}
+          <span class="font-weight-bold ">Записанные ученики: </span>
+          <div class="border-top">
+            {% for client, subscriptions in signed_up_clients.items %}
+              <div class="row border-top ml-0 mr-0">
+                <div class="col pl-0">
+                  {{ client.name }}
+                </div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col">
+                  {% for subscription in subscriptions %}
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id%}">
+                      {{ subscription.subscription.name }}
+                    </a>
+                  {% endfor %}
+                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day client.id%}">
+                    Отменить запись
+                  </a>
+                </div>
               </div>
-              <div class="col">
-
-              </div>
-              <div class="col">
-
-              </div>
-              <div class="col">
-                <a class="btn btn-sm btn-outline-info"
-                   href="{% url 'crm:manager:event-class:mark-client-attendance' event.event_class.id event.date.year event.date.month event.date.day client.id %}">Отметить посещение</a>
-              </div>
-            </div>
-          {% endfor %}
+            {% endfor %}
+          </div>
         </div>
-      </div>
+      {% endif %}
+      <div class="border-top mt-2"></div>
+      {% if not event.is_closed %}
+        <div class="border-top">
+          <span class="font-weight-bold ">Не отмеченные ученики: </span>
+          <div class="border-top">
+              {% for client, subscriptions in unmarked_clients.items %}
+              <div class="row border-top ml-0 mr-0">
+                <div class="col pl-0">
+                  {{ client.name }}
+                </div>
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col">
+                  {% for subscription in subscriptions %}
+                    <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id subscription.id%}">
+                      {{ subscription.subscription.name }}
+                    </a>
+                  {% endfor %}
+                  <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:event-class:event:sign-up-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}">
+                    Записать
+                  </a>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
     </div>
   </div>
+  {% if event.is_active %}
+    <div class="row">
+      <div class="alert alert-light" role="alert">
+        {% if not event.is_canceled %}
+          <a
+            href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
+            class="btn btn-outline-danger mr-2"
+            role="button"
+          >
+            Отменить тренировку
+          </a>
+          <a
+            href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}"
+            class="btn btn-outline-danger"
+            role="button"
+          >
+            Отменить и продлить абонементы
+          </a>
+        {% else %}
+          <a
+            href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}"
+            class="btn btn-outline-success mr-2"
+            role="button"
+          >
+            Вернуть тренировку
+          </a>
+          {% if event.canceled_with_extending %}
+            <a
+              href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}"
+              class="btn btn-outline-success"
+              role="button"
+            >
+              Вернуть тренировку и отменить проделния
+            </a>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+<!--Кнопка появится только при условии event.date <= date.today()-->
+  {% if event.is_overpast %}
+    <!--Отоброзит кнопку, если тренировку еще не закрыли-->
+    {% if not event.is_closed %}
+      {% ifhasperm 'event.close' user event %}
+      <div class="row">
+        <div class="alert alert-light" role="alert">
+          <a
+            id="show-close-confirm"
+            href="#"
+            class="btn btn-outline-danger mr-2"
+            role="button"
+          >
+            Закрыть тренировку
+          </a>
+        </div>
+      </div>
+      {% endifhasperm %}
+      <div id="close-confirm" class="card text-white mb-3" style="display: none;">
+        <div class="card-header bg-danger">Вы действительно хотите закрыть тренировку?</div>
+        <div class="card-body">
+          <a
+          href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day%}"
+          class="btn btn-outline-danger mr-2"
+          role="button"
+        >
+          Да
+        </a>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary mr-2 cancel-action"
+          aria-label="Close"
+        >
+          Нет
+        </button>
+        </div>
+      </div>
+    {% else %}
+      {% ifhasperm 'event.open' user event %}
+      <div class="row">
+        <div class="alert alert-light" role="alert">
+          <a
+            id="show-open-confirm"
+            href="#"
+            class="btn btn-sm btn-outline-info"
+            role="button"
+          >
+            Открыть тренировку
+          </a>
+        </div>
+      </div>
+      {% endifhasperm %}
+      <div id="open-confirm" class="card text-white mb-3" style="display: none;">
+        <div class="card-header bg-info">Вы действительно хотите открыть тренировку?</div>
+        <div class="card-body">
+          <a
+          href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day%}"
+          class="btn btn-outline-info mr-2"
+          role="button"
+        >
+          Да
+        </a>
+
+        <button
+          type="button"
+          class="btn btn-outline-secondary mr-2 cancel-action"
+          aria-label="Close"
+        >
+          Нет
+        </button>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
 
 {% endblock content %}

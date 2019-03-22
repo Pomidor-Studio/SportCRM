@@ -3,9 +3,31 @@
 {% block extrahead %}
   <script
     src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
+  <script
+    src="https://unpkg.com/libphonenumber-js@1.7.10/bundle/libphonenumber-max.js"></script>
+
   <script type="text/javascript">
     $(function () {
-      $('[data-inputmask]').inputmask({"mask": "+7 (999) 999-99-99"});
+      const phoneAYT = new libphonenumber.AsYouType('RU');
+      let oldData = $('[data-phone]').val();
+
+      $('[data-phone]').on('input', function(e) {
+        const data = $(this).val().trim();
+        const phone = phoneAYT.input(data);
+        const number = phoneAYT.getNumber();
+
+        if (number === undefined || number.isValid()) {
+            e.currentTarget.setCustomValidity('');
+        } else {
+            e.currentTarget.setCustomValidity('Неправильный номер');
+        }
+        if (oldData !== phone) {
+          $(e.currentTarget).val(phone);
+          oldData = phone;
+        }
+        phoneAYT.reset();
+      });
+
       $('[data-name-edit]').on('input', function () {
         var data = $(this).val().trim();
         var items = data.split(' ');
@@ -27,17 +49,6 @@
       {% csrf_token %}
       {% bootstrap_form form.user %}
       {% bootstrap_form form.coach %}
-      {% if object.id and not object.user.has_vk_auth %}
-        <div class="form-group">
-          <div class="alert alert-primary" role="alert">
-            Тренер не привязал аккаунт в VK, для этого нужно передать ему
-            временную ссылку.
-          </div>
-          <label for="coach_temp_login">Временная ссылка для привязки VK</label>
-          <input type="text" class="form-control" readonly id="coach_temp_login"
-                 value="{{ login_temp_link }}">
-        </div>
-      {% endif %}
       <div class="form-group">
         <button class="btn btn-outline-info" type="submit">
           {% if object.id %}Сохранить{% else %}Добавить{% endif %}

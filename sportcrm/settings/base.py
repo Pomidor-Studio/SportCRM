@@ -24,6 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 SECRET_KEY = '$+a*ui0^x+mdhq^$)vvl5aa+#9es)_bii00k!jqf4(_gcpmq1j'
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = False
 
 ALLOWED_HOSTS = []
@@ -34,6 +35,7 @@ ALLOWED_HOSTS = []
 # social_django MUST be defined BEFORE crm.apps.CrmConfig
 # as we redefine social_django admin for purposes of django-reversion
 INSTALLED_APPS = [
+    'phonenumber_field',
     'rest_framework',
     'bootstrap_datepicker_plus',
     'bootstrap4',
@@ -42,12 +44,19 @@ INSTALLED_APPS = [
     'reversion',
     'reversion_compare',
     'crm.apps.CrmConfig',
+    'django_filters',
+    'bot.apps.BotConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_select2',
+    'django_tables2',
+    'qr_code',
+    'google_tasks.apps.GoogleTasksConfig',
+    'analytical',
 ]
 
 BOOTSTRAP4 = {
@@ -64,7 +73,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'sesame.middleware.AuthenticationMiddleware',
-    'crm.middleware.SetTenantMiddleware'
+    'crm.middleware.SetTenantMiddleware',
+    'crm.middleware.TimedAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'sportcrm.urls'
@@ -80,6 +90,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'crm.context_processors.company'
             ],
         },
     },
@@ -158,7 +169,7 @@ LOGGING = {
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = "/static/"
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -169,6 +180,8 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.vk.VKOAuth2',
     'sesame.backends.ModelBackend',
     'rules.permissions.ObjectPermissionBackend',
+    'crm.auth.backends.PhoneBackend',
+    'crm.auth.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -190,3 +203,17 @@ SOCIAL_AUTH_VK_OAUTH2_KEY = ''
 SOCIAL_AUTH_VK_OAUTH2_SECRET = ''
 
 SESAME_MAX_AGE = 60 * 60 * 24 * 3  # Temporary link for coach will work 3 days
+
+PHONENUMBER_DB_FORMAT = 'E164'
+PHONENUMBER_DEFAULT_REGION = 'RU'
+
+
+YANDEX_METRICA_COUNTER_ID = '52839823' # devtest metrika
+YANDEX_METRICA_WEBVISOR = True
+
+GOOGLE_ANALYTICS_JS_PROPERTY_ID = 'UA-136374884-1'
+
+BACKGROUND_MODE: bool = False # True for run as background tasks worker
+USE_GOOGLE_TASKS: bool = False
+
+

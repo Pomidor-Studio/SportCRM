@@ -1,22 +1,10 @@
-from django.contrib.auth.mixins import UserPassesTestMixin
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
+from django.views.generic import RedirectView
 from django.views.generic.detail import (
     BaseDetailView,
     SingleObjectTemplateResponseMixin,
 )
-
-
-class UserManagerMixin(UserPassesTestMixin):
-
-    def test_func(self):
-        return self.request.user.is_manager
-
-
-class UserCoachMixin(UserPassesTestMixin):
-
-    def test_func(self):
-        return self.request.user.is_coach
 
 
 class UnDeletionMixin:
@@ -76,3 +64,13 @@ class UnDeleteView(SingleObjectTemplateResponseMixin, BaseUnDeleteView):
     response rendered by a template.
     """
     template_name_suffix = '_confirm_undelete'
+
+
+class RedirectWithActionView(RedirectView):
+    def run_action(self):
+        pass
+
+    def get(self, request, *args, **kwargs):
+        self.run_action()
+
+        return super().get(request, *args, **kwargs)

@@ -21,8 +21,10 @@
     <legend class="border-bottom mb-2">Ученики</legend>
     <div style="background-color: #FFFFFF;" class="sticky-top">
       <div class="row">
-        <div class="col-md-1">
-          {% ifhasperm 'client.add' user %}
+        <div class="col-md-6">
+          <form class="form-inline mb-2"
+                action="{% url 'crm:manager:client:list' %}" method="GET">
+            {% ifhasperm 'client.add' user %}
           <a name="add-new"
              href="{% url 'crm:manager:client:new' %}"
              class="btn btn-sm btn-info"
@@ -30,10 +32,6 @@
             Добавить ученика
           </a>
           {% endifhasperm %}
-        </div>
-        <div class="col-md-6">
-          <form class="form-inline mb-2"
-                action="{% url 'crm:manager:client:list' %}" method="GET">
             <div class="input-group  ml-2 w-50">
               <input
                 id="{{ filter.form.name.id_for_label }}"
@@ -66,15 +64,40 @@
     <table class="table table-sm table-bordered">
       <thead>
       <tr>
+        <th scope="col">Общение</th>
         <th scope="col">Инфо</th>
         <th scope="col">Абонемент</th>
+        <th scope="col">Баланс</th>
       </tr>
       </thead>
       <tbody>
       {% for client in clients %}
         <tr>
           <td>
-            {% ifhasperm 'client' user %}
+            <div>
+              {% if client.phone_number %}
+                <a class="btn btn-sm btn-outline-info" href="tel:{{ client.phone_number }}">
+                  Позвонить
+                </a>
+              {% endif %}
+            </div>
+            <div>
+              {% if client.vk_user_id %}
+                <a class="btn btn-sm btn-outline-info" target="_blank" href="https://vk.com/gim176552308?sel={{ client.vk_user_id }}">
+                  Написать в VK
+                </a>
+              {% endif %}
+            </div>
+            <div>
+              {% if client.email_address %}
+                <a class="btn btn-sm btn-outline-info" href="mailto:{{ client.email_address }}">
+                  Написать на почту
+                </a>
+              {% endif %}
+            </div>
+          </td>
+          <td>
+          {% ifhasperm 'client' user %}
             <a href="{% url 'crm:manager:client:detail' client.id %}">
               <div class="font-weight-bold">{{ client.name }}</div>
               <div>{{ client.phone_number }}</div>
@@ -99,6 +122,9 @@
                  href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}">Продлить</a>
               {% endifhasperm %}
             {% endif %}
+          </td>
+          <td>
+            {{ client.balance }} ₽
           </td>
         </tr>
       {% endfor %}

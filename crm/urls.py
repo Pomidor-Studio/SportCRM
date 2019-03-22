@@ -1,16 +1,18 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
-from crm.views import coach as coach_views, auth as scrm_auth_views
+from crm.views import auth as scrm_auth_views, coach as coach_views
 from crm.views.manager import (
-    core as manager_core_views,
-    coach as manager_coach_views,
+    attendance as manager_attendance_views,
+    balance as manager_balance_views,
     client as manager_client_views,
-    subscription as manager_subs_views,
+    coach as manager_coach_views,
+    core as manager_core_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
-    attendance as manager_attendance_views,
-    location as manager_locations_views
+    location as manager_locations_views,
+    report as manager_report_views,
+    subscription as manager_subs_views,
 )
 
 app_name = 'crm'
@@ -88,9 +90,14 @@ manager_client_subs_urlpatterns = ([
     ),
 ], 'subscription')
 
+manager_client_balance_urlpatterns = ([
+    path('', manager_balance_views.Create.as_view(), name='new')
+], 'balance')
+
 manager_clients_urlpatterns = ([
     path('', manager_client_views.List.as_view(), name='list'),
     path('<int:pk>/', manager_client_views.Detail.as_view(), name='detail'),
+    path('<int:pk>/balance/', include(manager_client_balance_urlpatterns)),
     path('new/', manager_client_views.Create.as_view(), name='new'),
     path(
         '<int:pk>/update/',
@@ -108,13 +115,18 @@ manager_clients_urlpatterns = ([
         name='new-subscription'
     ),
     path(
-        '<int:client_id>/add-attendance/',
-        manager_client_views.AddAttendance.as_view(),
-        name='new-attendance'
+        '<int:client_id>/add-subscription-with-extending',
+        manager_client_views.AddSubscriptionWithExtending.as_view(),
+        name='add-subscription-with-extending'
     ),
     path(
         'subscription/',
         include(manager_client_subs_urlpatterns)
+    ),
+    path(
+        'check-overlapping/',
+        manager_client_views.CheckOverlapping.as_view(),
+        name='check-overlapping'
     )
 ], 'client')
 
@@ -139,28 +151,85 @@ manager_subscriptions_urlpatterns = ([
 ], 'subscription')
 
 manager_events_urlpatterns = ([
-    path('', manager_event_views.List.as_view(), name='list'),
-    path('new/', manager_event_views.Create.as_view(), name='new'),
+    path('', manager_event_views.Calendar.as_view(), name='calendar'),
     path(
-        '<int:pk>/update/',
-        manager_event_views.Update.as_view(),
-        name='update'
+        'report/',
+        manager_event_views.Report.as_view(),
+        name='report'
+    ),
+], 'event')
+
+manager_event_urlpatterns = ([
+    path(
+        '',
+        manager_event_class_views.EventByDate.as_view(),
+        name='event-by-date'
     ),
     path(
-        '<int:pk>/delete/',
-        manager_event_views.Delete.as_view(),
-        name='delete'
+        'mark/<int:client_id>/<int:subscription_id>',
+        manager_event_class_views.MarkClient.as_view(),
+        name='mark-client'
     ),
     path(
-        '<int:pk>/',
-        manager_event_views.Detail.as_view(),
-        name='detail'
+        'mark-without-subscription',
+        manager_event_class_views.SignUpClientWithoutSubscription.as_view(),
+        name='mark-client-without-subscription'
     ),
     path(
-        '<int:event_id>/add-attendance/',
-        manager_event_views.EventAttendanceCreate.as_view(),
-        name='new-attendance'
+        'unmark/<int:client_id>',
+        manager_event_class_views.UnMarkClient.as_view(),
+        name='unmark-client'
     ),
+    path(
+        'sign-up/<int:client_id>',
+        manager_event_class_views.SignUpClient.as_view(),
+        name='sign-up-client'
+    ),
+    path(
+        'cancel-att/<int:client_id>',
+        manager_event_class_views.CancelAttendance.as_view(),
+        name='cancel-att'
+    ),
+    path(
+        'cancel/without-extending/',
+        manager_event_class_views.CancelWithoutExtending.as_view(),
+        name='cancel-without-extending'
+    ),
+    path(
+        'cancel/with-extending/',
+        manager_event_class_views.CancelWithExtending.as_view(),
+        name='cancel-with-extending'
+    ),
+    path(
+        'activate/without-revoke/',
+        manager_event_class_views.ActivateWithoutRevoke.as_view(),
+        name='activate-without-revoke'
+    ),
+    path(
+        'activate/with-revoke/',
+        manager_event_class_views.ActivateWithRevoke.as_view(),
+        name='activate-with-revoke'
+    ),
+    path(
+        'scan/',
+        manager_event_class_views.Scanner.as_view(),
+        name='scanner'
+    ),
+    path(
+        'scan/<str:code>/',
+        manager_event_class_views.DoScan.as_view(),
+        name='do-scan'
+    ),
+    path(
+        'close/',
+        manager_event_class_views.DoCloseEvent.as_view(),
+        name='close'
+    ),
+    path(
+        'open/',
+        manager_event_class_views.DoOpenEvent.as_view(),
+        name='open'
+    )
 ], 'event')
 
 manager_event_class_urlpatterns = ([
@@ -180,21 +249,9 @@ manager_event_class_urlpatterns = ([
         manager_event_class_views.Delete.as_view(),
         name='delete'
     ),
-
     path(
         '<int:event_class_id>/<int:year>/<int:month>/<int:day>/',
-        manager_event_class_views.EventByDate.as_view(),
-        name='event-by-date'
-    ),
-    path(
-        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/',
-        manager_event_class_views.MarkEventAttendance.as_view(),
-        name='mark-attendance'
-    ),
-    path(
-        '<int:event_class_id>/<int:year>/<int:month>/<int:day>/mark/<int:client_id>',
-        manager_event_class_views.MarkClientAttendance.as_view(),
-        name='mark-client-attendance'
+        include(manager_event_urlpatterns)
     ),
     path(
         '<int:pk>/calendar/',
@@ -242,6 +299,11 @@ manager_urlpatterns = ([
     path('event-class/', include(manager_event_class_urlpatterns)),
     path('attendance/', include(manager_attendance_urlpatterns)),
     path('locations/', include(manager_locations_urlpatterns)),
+    path(
+        'reports/',
+        manager_report_views.ReportList.as_view(),
+        name='reports'
+    )
 ], 'manager')
 
 urlpatterns = [

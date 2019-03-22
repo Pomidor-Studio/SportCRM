@@ -38,7 +38,10 @@ class AssociationAdmin(CompareVersionAdmin, AssociationOption):
 
 @admin.register(models.Company)
 class CompanyAdmin(CompareVersionAdmin):
-    fields = ('display_name', 'name')
+    fields = (
+        'name', 'display_name', 'vk_group_id', 'vk_access_token',
+        'vk_confirmation_token', 'active_to'
+    )
     readonly_fields = ('name',)
     list_display = ('display_name',)
 
@@ -111,7 +114,7 @@ class SubscriptionsTypeAdmin(CompareVersionAdmin):
 
 @admin.register(models.Client)
 class ClientAdmin(CompareVersionAdmin):
-    pass
+    list_display = ('name', 'vk_user_id', 'company')
 
 
 @admin.register(models.ClientSubscriptions)

@@ -1,0 +1,47 @@
+{% extends 'crm/base.html' %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Шаблон
+      сообщения {{ message_caption }}</legend>
+    <div class="w-25">
+      <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+          {% bootstrap_form form %}
+        </fieldset>
+        <h5></h5>
+        <table>
+          <tr>
+            <th>Элемент шаблона</th>
+            <th>Значение</th>
+          </tr>
+          {% for template_item_key, template_item in template_items.items %}
+            <tr>
+              <td>
+                {% templatetag openvariable %}{{ template_item_key }}{% templatetag closevariable %}</td>
+              <td>{{ template_item.text }}</td>
+            </tr>
+          {% endfor %}
+        </table>
+        <div class="form-group">
+          <button class="btn btn-outline-info" type="submit">Сохранить шаблон
+          </button>
+          <a
+            name="cancel" href="{% url 'bot:messages:template-reset' object.uuid %}"
+            class="btn btn-outline-warning"
+          >Сбросить на стандартный шаблон</a>
+        </div>
+      </form>
+    </div>
+
+    <div class="card" style="width: 18rem;">
+      <div class="card-body">
+        <h5 class="card-title">Пример сообщения</h5>
+        <p class="card-text">{{ message_example }}</p>
+      </div>
+    </div>
+  </div>
+{% endblock %}

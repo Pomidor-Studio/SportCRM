@@ -1,9 +1,13 @@
 from bootstrap4.components import render_alert
+from bootstrap4.text import text_value
+from bootstrap4.utils import render_tag
 from django import template
 from django.contrib.messages.storage.base import Message
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.template import TemplateSyntaxError, Node, NodeList
+from django.template import Node, NodeList, TemplateSyntaxError
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+from transliterate.utils import _
 
 register = template.Library()
 
@@ -89,7 +93,7 @@ class IfHasPermNode(Node):
                 perm = self.resolve(condition[0], context)
                 user = self.resolve(condition[1], context)
                 try:
-                    obj = self.resolve(condition[3], context)
+                    obj = self.resolve(condition[2], context)
                 except IndexError:
                     obj = None
 
@@ -135,3 +139,28 @@ def if_has_perm(parser, token):
 
     return IfHasPermNode(conditions_nodelists)
 
+
+def render_alert(content, alert_type=None, dismissable=True):
+    """
+    Render a Bootstrap alert
+    Port from bootstrap4, as it is bit buggy, and don't allow mark_safe
+    """
+    button = ""
+    if not alert_type:
+        alert_type = "info"
+    css_classes = ["alert", "alert-" + text_value(alert_type)]
+    if dismissable:
+        css_classes.append("alert-dismissable")
+        button = (
+            '<button type="button" class="close" '
+            + 'data-dismiss="alert" aria-label="{}">&times;</button>'
+        )
+        button = button.format(_("close"))
+    button_placeholder = mark_safe("__BUTTON__")
+    return mark_safe(
+        render_tag(
+            "div",
+            attrs={"class": " ".join(css_classes), "role": "alert"},
+            content=button_placeholder + text_value(content),
+        ).replace(button_placeholder, button)
+    )
