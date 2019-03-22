@@ -4,6 +4,7 @@ from typing import Optional
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.template.response import SimpleTemplateResponse
+from django.urls import resolve
 from django_multitenant.utils import set_current_tenant
 
 from crm.models import Company
@@ -46,14 +47,27 @@ class TimedAccessMiddleware:
     def __call__(self, request):
         company = get_user_company(request.user)
 
-        if company and company.active_to:
+        safe_url = (
+            'crm:accounts:login',
+            'crm:accounts:logout',
+            'admin',
+            'social'
+        )
+        rs = resolve(request.path)
+        is_safe_url = any(rs.view_name.startswith(x) for x in safe_url)
+
+        if not is_safe_url and company and company.active_to:
             today = datetime.date.today()
             closed_date = today + datetime.timedelta(days=14)
 
             # Do early exit if company use period ended
             if company.active_to < today:
                 return SimpleTemplateResponse(
-                    'crm/company/inactive.html').render()
+                    'crm/company/inactive.html', {
+                        'user': request.user,
+                        'company': company
+                    }
+                ).render()
             # Add notification if remains less than two weeks to the end
             # of active period
             elif today < company.active_to < closed_date:
