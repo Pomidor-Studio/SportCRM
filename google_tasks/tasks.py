@@ -10,6 +10,7 @@ from django.conf import settings
 
 from crm.models import Company
 import bot.tasks
+import bot.api.messageHandler
 
 # TODO: переместить в конфиги
 project = 'sport-srm-test'
@@ -64,13 +65,17 @@ def do(body_payload: bytes) -> str:
 
     args = payload['args']
     kwargs = payload['kwargs']
+    modules = {bot.tasks, bot.api.messageHandler}
     if company_id:
         company = get_object_or_404(Company, pk=company_id)
         set_current_tenant(company)
 
+    for module in modules:
+        if hasattr(module, method):
+            method_to_call = getattr(module, method)
+
     try:
-        method_to_call = getattr(bot.tasks, method)
-    except AttributeError:
-        return f'ERROR: no method "{method}" in bot.tasks module'
-    method_to_call(*args, **kwargs)
+        method_to_call(*args, **kwargs)
+    except UnboundLocalError:
+        return f'ERROR: no method "{method}" in modules'
     return 'OK'
