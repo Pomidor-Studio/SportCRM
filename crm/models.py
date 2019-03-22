@@ -285,6 +285,13 @@ class Manager(CompanyObjectModel):
         return self.user.get_full_name()
 
 
+class EventClassManager(TenantManagerMixin, models.Manager):
+    def active(self):
+        return self.get_queryset().filter(
+            Q(date_to__isnull=True) | Q(date_to__gte=date.today())
+        )
+
+
 @reversion.register()
 class EventClass(CompanyObjectModel):
     """
@@ -302,6 +309,8 @@ class EventClass(CompanyObjectModel):
         verbose_name="Тренер")
     date_from = models.DateField("Дата с", null=True, blank=True)
     date_to = models.DateField("Дата по", null=True, blank=True)
+
+    objects = EventClassManager()
 
     def days(self) -> List[int]:
         """
