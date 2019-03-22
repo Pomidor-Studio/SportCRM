@@ -109,6 +109,8 @@ class EventByDate(
         unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs, self.object)
         attendance_list_marked = self.object.attendance_set.filter(marked=True).select_related('client').order_by('client__name')
 
+        self.object.save()
+
         context.update({
             'attendance_list_marked' : attendance_list_marked,
             'signed_up_clients': signed_up_clients,
