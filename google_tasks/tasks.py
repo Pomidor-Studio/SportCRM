@@ -50,7 +50,7 @@ def enqueue(method: str, *args, **kwargs):
         response = client.create_task(parent, task)
     else:
         do_result = do(converted_payload)
-        if not do_result=='OK':
+        if not do_result == 'OK':
             raise RuntimeError(f'DO result: {do_result}')
 
 

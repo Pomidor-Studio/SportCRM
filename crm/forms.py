@@ -8,13 +8,12 @@ from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_multitenant.utils import get_current_tenant
-from django_select2.forms import Select2MultipleWidget, ModelSelect2MultipleWidget, Select2Widget
+from django_select2.forms import Select2MultipleWidget, Select2Widget
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
-    DayOfTheWeekClass, EventClass, SubscriptionsType,
-    Manager,
+    DayOfTheWeekClass, EventClass, Manager, SubscriptionsType,
 )
 
 
@@ -29,10 +28,15 @@ class TenantModelForm(forms.ModelForm):
         if tenant:
             for field in self.fields.values():
 
-                if isinstance(field, (forms.ModelChoiceField, forms.ModelMultipleChoiceField,)):
-                    # Check if the model being used for the ModelChoiceField has a tenant model field
+                if isinstance(
+                    field,
+                    (forms.ModelChoiceField, forms.ModelMultipleChoiceField)
+                ):
+                    # Check if the model being used for the ModelChoiceField
+                    # has a tenant model field
                     if hasattr(field.queryset.model, 'tenant_id'):
-                        # Add filter restricting queryset to values to this tenant only.
+                        # Add filter restricting queryset to values to this
+                        # tenant only.
                         kwargs = {field.queryset.model.tenant_id: tenant}
                         field.queryset = field.queryset.filter(**kwargs)
 
@@ -41,19 +45,33 @@ class ClientForm(TenantModelForm):
     class Meta:
         model = Client
 
-        fields = ['name', 'address',
-                  'birthday', 'phone_number', 'email_address', 'vk_user_id', 'qr_code']
+        fields = [
+            'name', 'address', 'birthday', 'phone_number',
+            'email_address', 'vk_user_id', 'qr_code'
+        ]
         widgets = {
-            'birthday': DatePickerInput(format='%d.%m.%Y',
-                                        attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
-            'address': forms.TextInput(attrs={"class": "form-control", "placeholder": "Адрес проживания"}),
-            'name': forms.TextInput(attrs={"class": "form-control", "placeholder": "ФИО"}),
+            'birthday': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'address': forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Адрес проживания"
+                }
+            ),
+            'name': forms.TextInput(
+                attrs={"class": "form-control", "placeholder": "ФИО"}
+            ),
             'phone_number': PhoneNumberInternationalFallbackWidget(
                 attrs={'data-phone': True}
             ),
-            'email_address': forms.EmailInput(attrs={"class": "form-control", "placeholder": "example@email.com"}),
+            'email_address': forms.EmailInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "example@email.com"}
+            ),
             'vk_user_id': forms.HiddenInput(),
-
         }
 
 
@@ -63,15 +81,17 @@ class Balance(TenantModelForm):
         model = ClientBalanceChangeHistory
         widgets = {
             'change_value': forms.NumberInput(),
-            'reason': forms.TextInput(attrs={"class": "form-control", "placeholder": "Укажите причину изменения баланса"}),
-            'entry_date': DatePickerInput(format='%d.%m.%Y',
-                                          attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"})
+            'reason': forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "Укажите причину изменения баланса"}
+            ),
+            'entry_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            )
         }
         exclude = ('client', 'actual_entry_date',)
-
-    # def __init__(self, attrs=None, choices=(), data=None):
-    #     super().__init__(attrs, choices)
-    #     self.data = data or {}
 
 
 class DataAttributesSelect(forms.Select):
@@ -80,7 +100,8 @@ class DataAttributesSelect(forms.Select):
         super().__init__(attrs, choices)
         self.data = data or {}
 
-    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+    def create_option(self, name, value, label, selected, index, subindex=None,
+                      attrs=None):
         option = super().create_option(
             name, value, label, selected, index, subindex=None, attrs=None)
         for data_attr, values in self.data.items():
@@ -102,6 +123,7 @@ class SignUpClientWithoutSubscriptionForm(forms.Form):
         widget=Select2MultipleWidget
     )
 
+
 class ExtendClientSubscriptionForm(forms.Form):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
     reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
@@ -109,6 +131,77 @@ class ExtendClientSubscriptionForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
+
+
+class Select2WidgetAttributed(Select2Widget):
+    option_inherits_attrs = True
+
+    def __init__(self, attrs=None, choices=(), attr_getter=lambda x: None):
+        self.attr_geter = attr_getter
+        super().__init__(attrs, choices)
+
+    def create_option(self, name, value, label, selected, index, subindex=None,
+                      attrs=None):
+        attrs = self.attr_geter(value) if value else None
+        return super().create_option(
+            name, value, label, selected, index, subindex=None,
+            attrs=attrs)
+
+
+def subcription_type_attrs(sub_id):
+    try:
+        subs = SubscriptionsType.objects.get(id=sub_id)
+    except SubscriptionsType.DoesNotExist:
+        return None
+    return {
+        'data-price': subs.price,
+        'data-visits': subs.visit_limit
+    }
+
+
+class InplaceSellSubscriptionForm(TenantModelForm):
+    cash_earned = forms.BooleanField(
+        label='Деньги получены',
+        required=False,
+        initial=True
+    )
+    subscription = forms.ModelChoiceField(
+        empty_label='',
+        queryset=SubscriptionsType.objects.all(),
+        label='Абонемент',
+        widget=Select2WidgetAttributed(
+            attr_getter=subcription_type_attrs)
+    )
+
+    class Meta:
+        model = ClientSubscriptions
+
+        widgets = {
+            'purchase_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'start_date': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'price': forms.TextInput(
+                attrs={"placeholder": "Стоимость в рублях"}
+            ),
+            'visits_left': forms.TextInput(
+                attrs={"placeholder": "Кол-во посещений"}
+            ),
+            'client': forms.HiddenInput(),
+
+        }
+        exclude = ('end_date',)
+
+    def __init__(self, *args, **kwargs):
+        st_qs = kwargs.pop(
+            'subscription_type_qs', SubscriptionsType.objects.all())
+        super().__init__(*args, **kwargs)
+
+        self.fields['subscription'].queryset = st_qs
 
 
 class ClientSubscriptionForm(TenantModelForm):
@@ -162,14 +255,28 @@ class ClientSubscriptionForm(TenantModelForm):
 
 
 class EventClassForm(TenantModelForm):
-    one_time_price = forms.IntegerField(label='Стоимость разового посещения', initial='', min_value=0, required=False)
+    one_time_price = forms.IntegerField(
+        label='Стоимость разового посещения',
+        initial='',
+        min_value=0,
+        required=False
+    )
 
     class Meta:
         model = EventClass
-        fields = ['name', 'location', 'coach', 'date_from', 'date_to', 'one_time_price']
+        fields = [
+            'name', 'location', 'coach', 'date_from', 'date_to',
+            'one_time_price'
+        ]
         widgets = {
-            'date_from': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
-            'date_to': DatePickerInput(format='%d.%m.%Y', attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}),
+            'date_from': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            ),
+            'date_to': DatePickerInput(
+                format='%d.%m.%Y',
+                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            ),
         }
         exclude = ('client',)
 
@@ -190,11 +297,13 @@ class DayOfTheWeekClassForm(TenantModelForm):
         super().__init__(*args, **kwargs)
         if 'instance' in kwargs:
             # выставляем лейбл для чекбокса в зависимости от дня
-            self.fields['checked'].label = _(calendar.day_name[kwargs['instance'].day])
+            self.fields['checked'].label = \
+                _(calendar.day_name[kwargs['instance'].day])
         # Все поля делаем необязательными
         for key, field in self.fields.items():
             field.required = False
-    # TODO: необходимо сделать проверку что если checked=true то остальные поля должны быть заполнены
+        # TODO: необходимо сделать проверку что если checked=true то остальные
+        #  поля должны быть заполнены
 
 
 @deconstructible
@@ -216,7 +325,7 @@ class FakeNameValidator:
             self.code == other.code
         )
 
-      
+
 class ProfileUserForm(TenantModelForm):
     fullname = forms.CharField(
         label='ФИО',

@@ -501,7 +501,11 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         EventClass,
         verbose_name="Допустимые тренировки"
     )
-    one_time = models.BooleanField("Разовый абонемент", editable=False, default=False)
+    one_time = models.BooleanField(
+        "Разовый абонемент",
+        editable=False,
+        default=False
+    )
 
     def __str__(self):
         return self.name
@@ -618,7 +622,12 @@ class Client(CompanyObjectModel):
     email_address = models.CharField("Email", max_length=50, blank=True)
 
     vk_user_id = models.IntegerField("id ученика в ВК", null=True, blank=True)
-    balance = models.DecimalField("Баланс", max_digits=9, decimal_places=2, default=0)
+    balance = models.DecimalField(
+        "Баланс",
+        max_digits=9,
+        decimal_places=2,
+        default=0
+    )
     qr_code = models.UUIDField(
         "QR код",
         blank=True,
@@ -663,12 +672,15 @@ class Client(CompanyObjectModel):
             )
             self.update_balance(top_up_amount)
 
-    def signup_for_event(self, event):
-        Attendance.objects.create(
-            event=event,
-            client=self,
-            signed_up=True
-        )
+    def signup_for_event(self, event: Event):
+        with transaction.atomic():
+            if not event.id:
+                event.save()
+            Attendance.objects.create(
+                event=event,
+                client=self,
+                signed_up=True
+            )
 
     def cancel_signup_for_event(self, event):
         with transaction.atomic():
