@@ -127,6 +127,8 @@ class EventByDate(
             .order_by('client__name')
         )
 
+        self.object.save()
+
         context.update({
             'attendance_list_marked': attendance_list_marked,
             'signed_up_clients': signed_up_clients,
@@ -511,7 +513,7 @@ class CreateEdit(
                     self.weekdays[i] = weekdayform
 
         return HttpResponseRedirect(reverse(
-            'crm:manager:event-class:update', kwargs={'pk': self.object.id}))
+            'crm:manager:event-class:list'))
 
 
 class Scanner(
