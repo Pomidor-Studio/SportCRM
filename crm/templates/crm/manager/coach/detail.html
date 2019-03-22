@@ -1,26 +1,27 @@
 {% extends "crm/base.html" %}
 
-{% block extrahead %}
-  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
-{% endblock %}
-
-
 {% block content %}
   <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">Тренер: {{ coach }}</legend>
     <div class="row mb-2">
       <div class="container-fluid">
-        <a class="btn btn-sm btn-outline-info"
-           href="{% url 'crm:manager:coach:update' coach.id %}">
+        <a
+          class="btn btn-sm btn-outline-info"
+          href="{% url 'crm:manager:coach:update' coach.id %}"
+        >
           Изменить
         </a>
-        <a name="cancel"
-           href="{% url 'crm:manager:coach:list' %}"
-           class="btn btn-sm btn-outline-info">
+        <a
+          name="cancel"
+          href="{% url 'crm:manager:coach:list' %}"
+          class="btn btn-sm btn-outline-info"
+        >
           Назад
         </a>
-        <a class="btn btn-sm btn-outline-danger"
-           href="{% url 'crm:manager:coach:delete' coach.id %}">
+        <a
+          class="btn btn-sm btn-outline-danger"
+          href="{% url 'crm:manager:coach:delete' coach.id %}"
+        >
           Удалить
         </a>
       </div>
@@ -35,51 +36,13 @@
         <td>VK</td>
         <td>
           {% if coach.user.has_vk_auth %}
-            <a href="vk.com/id{{ coach.user.vk_id }}">Страница тренера VK</a>
+            <a href="{{ coach.user.vk_link|safe }}">Страница тренера VK</a>
           {% else %}
             Тренер не привязал аккаунт в VK
           {% endif %}
         </td>
       </tr>
-      <tr>
-        <td>Ссылка для входа тренера <br/>
-          <small>Передайте её вашему тренеру, чтобы он смог войти в систему первый раз или если забудет пароль</small></td>
-        <td>
-          {#          <span  id="login_link"> {{ login_temp_link }}</span>#}
-          {#          <button class="btn" data-clipboard-target="#login_link" data-toggle="tooltip" title="Скопировано">Скопировать в буфер обмена</button>#}
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <button class="btnt" id="btnGroupAddon2" data-clipboard-target="#login_link" data-toggle="tooltip"
-                      title="Скопировано" type="button">Скопировать в буфер обмена
-              </button>
-            </div>
-            <input id="login_link" type="text" class="form-control" placeholder="Input group example"
-                   aria-label="Input group example"
-                   aria-describedby="btnGroupAddon2"
-                   value="{{ login_temp_link }}" readonly>
-          </div>
-        </td>
-
-      </tr>
       </tbody>
     </table>
   </div>
-
-  <script type="text/javascript">
-    $('[data-toggle="tooltip"]').tooltip({trigger: "click"}).on('show.bs.tooltip',
-        function(e){ let eventFired=e; setTimeout(function(){
-          $(eventFired.target).tooltip('hide');
-          }, 1000);}
-      );
-    var clipboardCopy = new ClipboardJS('[data-clipboard-target]');
-
-    clipboardCopy.on('success', function (e) {
-      e.clearSelection();
-      $(e.trigger).tooltip('show');
-    });
-    clipboardCopy.on('error', function (e) {
-      $(e.trigger).tooltip(e.action);
-
-    });
-  </script>
 {% endblock %}
