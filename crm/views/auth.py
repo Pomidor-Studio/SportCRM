@@ -36,6 +36,8 @@ class SportCrmLoginRedirectView(CheckPasswordMixin, RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         if self.request.user.is_anonymous:
             return reverse('crm:accounts:login')
+        elif self.request.user.is_superuser:
+            return reverse('admin:index')
         elif self.request.user.is_coach:
             return reverse('crm:coach:home')
         elif self.request.user.is_manager:
