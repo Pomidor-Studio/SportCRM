@@ -1,5 +1,10 @@
 {% extends "crm/base.html" %}
 
+{% block extrahead %}
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+{% endblock %}
+
+
 {% block content %}
   <div class="container-fluid mt-4 ml-2">
     <legend class="border-bottom mb-2">Тренер: {{ coach }}</legend>
@@ -42,7 +47,45 @@
           {% endif %}
         </td>
       </tr>
+      <tr>
+        <td>Ссылка для входа тренера <br/>
+          <small>Передайте её вашему тренеру, чтобы он смог войти в систему первый раз или если забудет пароль</small></td>
+        <td>
+          {#          <span  id="login_link"> {{ login_temp_link }}</span>#}
+          {#          <button class="btn" data-clipboard-target="#login_link" data-toggle="tooltip" title="Скопировано">Скопировать в буфер обмена</button>#}
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btnt" id="btnGroupAddon2" data-clipboard-target="#login_link" data-toggle="tooltip"
+                      title="Скопировано" type="button">Скопировать в буфер обмена
+              </button>
+            </div>
+            <input id="login_link" type="text" class="form-control" placeholder="Input group example"
+                   aria-label="Input group example"
+                   aria-describedby="btnGroupAddon2"
+                   value="{{ login_temp_link }}" readonly>
+          </div>
+        </td>
+
+      </tr>
       </tbody>
     </table>
   </div>
+
+  <script type="text/javascript">
+    $('[data-toggle="tooltip"]').tooltip({trigger: "click"}).on('show.bs.tooltip',
+        function(e){ let eventFired=e; setTimeout(function(){
+          $(eventFired.target).tooltip('hide');
+          }, 1000);}
+      );
+    var clipboardCopy = new ClipboardJS('[data-clipboard-target]');
+
+    clipboardCopy.on('success', function (e) {
+      e.clearSelection();
+      $(e.trigger).tooltip('show');
+    });
+    clipboardCopy.on('error', function (e) {
+      $(e.trigger).tooltip(e.action);
+
+    });
+  </script>
 {% endblock %}

@@ -138,6 +138,17 @@ class Update(
         initial['coach'] = {'vk_page': self.object.user.vk_link}
         return initial
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not self.object.user.has_vk_auth:
+            context['login_temp_link'] = '{host}{url}{qs}'.format(
+                host=self.request.get_host(),
+                url=reverse('crm:coach:home'),
+                qs=sesame.utils.get_query_string(self.object.user)
+            )
+
+        return context
+
     def form_valid(self, form):
         objects = form.save()
         self.object = objects['coach']
