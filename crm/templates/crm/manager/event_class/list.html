@@ -9,9 +9,9 @@
 
 <form action="/eventclass" id="eventForm" method="POST" style="width: 100%;">
     <div class="ml-4 mt-4 mr-4">
-    <legend class="border-bottom mb-2">Тренировки</legend>
+    <legend class="border-bottom mb-2">Настройки тренировок</legend>
         <div style="background-color: #FFFFFF;" class="sticky-top">
-            <a name="add-new" href="{% url 'crm:manager:event-class:new' %}" class="btn btn-sm btn-info mb-2">Новое мероприятие</a>
+            <a name="add-new" href="{% url 'crm:manager:event-class:new' %}" class="btn btn-sm btn-info mb-2">Новые тренировки</a>
         </div>
     {% if eventclass_list %}
         <ul>
