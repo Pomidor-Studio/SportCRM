@@ -72,6 +72,8 @@ rules.add_perm('location', is_logged_manager)
 rules.add_perm('location.add', is_logged_manager)
 rules.add_perm('location.edit', is_logged_manager)
 rules.add_perm('location.delete', is_logged_manager)
+rules.add_perm('location.undelete', is_logged_manager)
+rules.add_perm('location.view_archive', is_logged_manager)
 
 rules.add_perm('subscription', is_logged_manager)
 rules.add_perm('subscription.view_archive', is_logged_manager)

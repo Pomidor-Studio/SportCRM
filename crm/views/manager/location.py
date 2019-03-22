@@ -47,11 +47,10 @@ class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
         success_url = self.get_success_url()
 
         if self.object.has_active_events:
-            self.object.delete()
             messages.warning(self.request, f'Локация {self.object} удалена. На локации остались активные тренировки!')
         else:
-            self.object.delete()
             messages.info(self.request, f'Локация {self.object} удалена.')
+        self.object.delete()
 
         return HttpResponseRedirect(success_url)
 

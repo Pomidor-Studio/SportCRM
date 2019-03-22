@@ -250,7 +250,6 @@ class Location(ScrmSafeDeleteModel, CompanyObjectModel):
     def has_active_events(self):
         today = timezone.now().date()
         return self.eventclass_set.filter(
-            Q(date_from__gt=today) |
             Q(date_to__gt=today)
         ).exists()
 
