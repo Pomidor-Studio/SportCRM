@@ -315,7 +315,17 @@ class SellAndMark(
                 client.add_balance_in_history(abon_price, default_reason)
             client.save()
             subscription = form.save()
-            client.mark_visit(self.get_object(), subscription)
+            try:
+                client.mark_visit(self.get_object(), subscription)
+            except ValueError:
+                messages.warning(
+                    'Не получилось отметить визит - возможно абонемент был '
+                    'продан на будущую дату'
+                )
+            except ClientAttendanceExists:
+                # Strange case - sell - it's ok, but existent attendance won't
+                # be related with new subscription, as it exists
+                pass
             enqueue('notify_client_buy_subscription', subscription.id)
         return HttpResponseRedirect(self.get_success_url())
 
