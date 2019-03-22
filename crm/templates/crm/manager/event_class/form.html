@@ -108,7 +108,10 @@
         </div>
 
         <div class="row">
-          <input type="submit" class="btn btn-outline-info" value="Добавить">
+          <button class="btn btn-outline-info" href="{% url 'crm:manager:event-class:list' %}" type="submit">
+            Сохранить
+          </button>
+          <a name="cancel" href="{% url 'crm:manager:event-class:list' %}" class="btn btn-outline-info">Назад</a>
         </div>
       </form>
     </div>
