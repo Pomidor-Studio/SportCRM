@@ -59,7 +59,7 @@ class SocialAuthMixin:
                 access_token=settings.VK_GROUP_TOKEN,
                 user_ids=match.group('user_id')
             )[0]
-        except IndexError:
+        except (IndexError, AttributeError):
             return None
 
     def create_with_replace(self, user, vk_user):
