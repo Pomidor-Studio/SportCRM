@@ -1,5 +1,5 @@
 from bot.api import messages
-from crm.models import Client, ClientSubscriptions, Event
+from crm.models import Client, ClientSubscriptions, Event, Manager
 
 
 def notify_event_cancellation(event_id: int):
@@ -57,3 +57,25 @@ def notify_client_balance(client_id: int):
         return
 
     messages.ClientUpdateBalance(client, personalized=True).send_message()
+
+
+def notify_manager_event_closed(event_id: int):
+    try:
+        event = Event.objects.get(id=event_id)
+    except Event.DoesNotExist:
+        # Invalid event id passed
+        return
+
+    managers = list(Manager.objects.all())
+    messages.ClosedEvent(managers, event=event, personalized=True).send_message()
+
+
+def notify_manager_event_opened(event_id: int):
+    try:
+        event = Event.objects.get(id=event_id)
+    except Event.DoesNotExist:
+        # Invalid event id passed
+        return
+
+    managers = list(Manager.objects.all())
+    messages.OpenedEvent(managers, event=event, personalized=True).send_message()

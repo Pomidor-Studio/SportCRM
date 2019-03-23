@@ -674,13 +674,20 @@ class Client(CompanyObjectModel):
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
 
-    def update_balance(self, top_up_amount):
+    def update_balance(self, top_up_amount, skip_notification: bool = False):
+        '''
+        :param skip_notification: Prevent double notification send if buy sub
+        '''
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
-        from google_tasks.tasks import enqueue
-        enqueue('notify_client_balance', self.id)
+        if not skip_notification:
+            from google_tasks.tasks import enqueue
+            enqueue('notify_client_balance', self.id)
 
-    def add_balance_in_history(self, top_up_amount, reason):
+    def add_balance_in_history(self, top_up_amount, reason, skip_notification: bool = False):
+        '''
+        :param skip_notification: Prevent double notification send if buy sub
+        '''
         with transaction.atomic():
             ClientBalanceChangeHistory.objects.get_or_create(
                 change_value=top_up_amount,
@@ -689,7 +696,7 @@ class Client(CompanyObjectModel):
                 entry_date=datetime.now(),
                 actual_entry_date=datetime.now()
             )
-            self.update_balance(top_up_amount)
+            self.update_balance(top_up_amount, skip_notification)
 
     def signup_for_event(self, event: Event):
         with transaction.atomic():
@@ -1310,6 +1317,8 @@ class Event(CompanyObjectModel):
 
         self.is_closed = True
         self.save()
+        from google_tasks.tasks import enqueue
+        enqueue('notify_manager_event_closed', self.id)
 
     def open_event(self):
         """Открыть тренировку"""
@@ -1318,6 +1327,8 @@ class Event(CompanyObjectModel):
 
         self.is_closed = False
         self.save()
+        from google_tasks.tasks import enqueue
+        enqueue('notify_manager_event_opened', self.id)
 
 
 @reversion.register()

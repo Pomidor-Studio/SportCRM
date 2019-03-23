@@ -89,10 +89,10 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
         client = Client.objects.get(id=self.kwargs['client_id'])
         default_reason = 'Покупка абонемента'
         with transaction.atomic():
-            client.add_balance_in_history(-abon_price, default_reason)
+            client.add_balance_in_history(-abon_price, default_reason, skip_notification=True)
             if cash_earned:
                 default_reason = 'Перечесление средств за абонемент'
-                client.add_balance_in_history(abon_price, default_reason)
+                client.add_balance_in_history(abon_price, default_reason, skip_notification=True)
             form.instance.client_id = self.kwargs['client_id']
             client.save()
             response = super().form_valid(form)

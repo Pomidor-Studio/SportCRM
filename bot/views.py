@@ -20,6 +20,8 @@ from bot.serializers import MessageIgnoranceSerializer
 from crm.models import Company
 from crm.views.mixin import RedirectWithActionView
 
+from google_tasks.tasks import enqueue
+
 """
 Using VK Callback API version 5.90
 For more ditalies visit https://vk.com/dev/callback_api
@@ -58,8 +60,7 @@ def gl(request):
             company = Company.objects.get(vk_group_id=data['group_id'])
             set_current_tenant(company)
             token = company.vk_access_token
-
-            create_answer(data['object'], token)
+            enqueue('create_answer', data['object'], token)
 
     return HttpResponse('ok', content_type="text/plain", status=200)
 
