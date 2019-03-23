@@ -48,7 +48,7 @@ class ClientForm(TenantModelForm):
 
         fields = [
             'name', 'address', 'birthday', 'phone_number',
-            'email_address', 'vk_user_id', 'qr_code'
+            'email_address', 'vk_user_id'
         ]
         widgets = {
             'birthday': DatePickerInput(
