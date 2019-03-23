@@ -689,7 +689,7 @@ class Client(CompanyObjectModel):
         :param skip_notification: Prevent double notification send if buy sub
         """
         with transaction.atomic():
-            ClientBalanceChangeHistory.objects.get_or_create(
+            ClientBalanceChangeHistory.objects.create(
                 change_value=top_up_amount,
                 client=self,
                 reason=reason
