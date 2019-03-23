@@ -155,7 +155,7 @@
             {% endif %}
           </td>
           <td class="col-2">
-            {{ client.balance|intcomma }} ₽
+            {{ client.balance|floatformat:"-2"|intcomma }} ₽
             <a
               href="{% url 'crm:manager:client:balance:new' client.id %}"
               class="btn btn-sm btn-outline-info"
