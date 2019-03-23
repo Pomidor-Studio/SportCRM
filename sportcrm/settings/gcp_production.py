@@ -23,6 +23,18 @@ DATABASES = {
     }
 }
 
+# redislabs.com redis cache
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://:B8UBQa36iTJ9ys1NOcJYZnDEd4VLRh6q@redis-17157.c1.us-east1-2.gce.cloud.redislabs.com:17157/django-cache',
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "IGNORE_EXCEPTIONS": True,
+        }
+    }
+}
+
 USE_GOOGLE_TASKS: bool = True
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = '6910281'
