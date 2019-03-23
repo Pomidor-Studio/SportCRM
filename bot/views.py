@@ -21,8 +21,8 @@ from bot.serializers import MessageIgnoranceSerializer
 from crm.models import Company
 from crm.views.mixin import RedirectWithActionView
 
-import bot.api.cron.client_receivables
-import bot.api.cron.clients_birthday
+from google_tasks.tasks import enqueue
+import bot.api.cron.cron_client_events
 
 """
 Using VK Callback API version 5.90
@@ -199,19 +199,22 @@ class ResetMessageTemplate(
 
 
 def tasks(request):
-    modules = {bot.api.cron.client_receivables, bot.api.cron.clients_birthday}
+    modules = {bot.api.cron.cron_client_events}
+    method_to_call = None
+
     try:
         param = request.GET['param']
     except MultiValueDictKeyError:
-        return HttpResponse(status=404)
+        return HttpResponse(status=400)
 
     for module in modules:
         if hasattr(module, param):
             method_to_call = getattr(module, param)
+            break
 
-    try:
-        method_to_call()
-    except UnboundLocalError:
-        return HttpResponse(status=404)
+    if method_to_call is None:
+        return HttpResponse(status=400)
+
+    method_to_call()
 
     return HttpResponse(status=200)
