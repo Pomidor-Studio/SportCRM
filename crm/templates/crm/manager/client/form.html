@@ -7,8 +7,13 @@
 <script src="https://unpkg.com/libphonenumber-js@1.7.10/bundle/libphonenumber-max.js"></script>
 <script type="text/javascript">
     $(function () {
-        const phoneAYT = new libphonenumber.AsYouType('RU');
+      const phoneAYT = new libphonenumber.AsYouType('RU');
       let oldData = $('[data-phone]').val();
+      const vkUserId = $("#id_vk_user_id").val();
+
+      if (vkUserId !== undefined && vkUserId !== "") {
+        getUserData(vkUserId);
+       }
 
       $('[data-phone]').on('input', function(e) {
         const data = $(this).val().trim();
@@ -28,6 +33,7 @@
       });
 
         $("#vk_user_ref").change(function() {
+            const data = $(this).val().trim;
             var idRe = new RegExp("vk.com\/(?<user_id>([A-Za-z0-9_])+)");
             var matchString = $("#vk_user_ref").val();
 
@@ -49,10 +55,7 @@
         $("#profile_pic_container").hide();
         $("#alert")
           .text(errorText)
-          .show()
-          .fadeTo(2000, 500).slideUp(500, function() {
-            $("#alert").hide();
-        });
+          .show();
     }
 
     function getUserData(id) {
@@ -62,7 +65,7 @@
             url: 'https://api.vk.com/method/users.get',
             data: {
                 user_ids: id,
-                fields: "photo_100, bdate",
+                fields: "photo_100, bdate, domain",
                 access_token: access_token,
                 v: 5.63
             },
@@ -87,9 +90,15 @@
                             $birthday.val(data.response[0].bdate);
                         } catch (err) { }
                     }
-                    $("#id_vk_user_id").val(data.response[0].id);
+                    const vkUserId = $("#id_vk_user_id").val();
+                    if (vkUserId === undefined || vkUserId === "")
+                      $("#id_vk_user_id").val(data.response[0].id);
+                    else
+                      $("#vk_user_ref").val("vk.com/" + data.response[0].domain);
                     $("#profile_pic").attr("src", data.response[0].photo_100);
-                    $("#profile_pic_container").show();}
+                    $("#profile_pic_container").show();
+                    $("#alert").hide();
+                }
             },
             error: function (data) {
                 showError('Request error');
@@ -110,14 +119,14 @@
             <img id="profile_pic" class="rounded"/>
         </div>
         <div class="form-group">
-            <label>Ссылка на профиль vk</label>
+            <label>Профиль в Вконтакте</label>
             <input id="vk_user_ref" class="form-control" placeholder="Ссылка на профиль vk">
         </div>
         <form method="POST">
             {% csrf_token %}
             {% bootstrap_form form %}
             <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">{% if object.id %}Сохранить{% else %}Добавить{% endif %}</button>
+                <button class="btn btn-primary" type="submit">{% if object.id %}Сохранить{% else %}Добавить{% endif %}</button>
                 <a
                   name="cancel"
                   href="{% if object.id %}{% url 'crm:manager:client:detail' object.id %}{% else %}{% url 'crm:manager:client:list' %}{% endif %}"
