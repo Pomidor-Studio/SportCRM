@@ -1,0 +1,17 @@
+{% extends "crm/base.html" %}
+{% block content %}
+  <div class="content-section ml-4 mt-4">
+    <form method="post">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <legend class="border-bottom mb-2">Место проведения: {{ location }}</legend>
+        <h2>Вы действительно хотите вернуть место проведения "{{ location }}"?</h2>
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-success" type="submit">Вернуть</button>
+        <a class="btn btn-outline-info"
+           href="{% url 'crm:manager:locations:list' %}">Отмена</a>
+      </div>
+    </form>
+  </div>
+{% endblock content %}
