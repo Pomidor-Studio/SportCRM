@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import json
 from operator import itemgetter
 
+from django.utils.datastructures import MultiValueDictKeyError
 from django.http import Http404, HttpResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -19,6 +20,9 @@ from bot.models import MessageMeta
 from bot.serializers import MessageIgnoranceSerializer
 from crm.models import Company
 from crm.views.mixin import RedirectWithActionView
+
+import bot.api.cron.client_receivables
+import bot.api.cron.clients_birthday
 
 """
 Using VK Callback API version 5.90
@@ -193,3 +197,21 @@ class ResetMessageTemplate(
         obj.template = self.msg_type.default_template
         obj.save()
 
+
+def tasks(request):
+    modules = {bot.api.cron.client_receivables, bot.api.cron.clients_birthday}
+    try:
+        param = request.GET['param']
+    except MultiValueDictKeyError:
+        return HttpResponse(status=404)
+
+    for module in modules:
+        if hasattr(module, param):
+            method_to_call = getattr(module, param)
+
+    try:
+        method_to_call()
+    except UnboundLocalError:
+        return HttpResponse(status=404)
+
+    return HttpResponse(status=200)
