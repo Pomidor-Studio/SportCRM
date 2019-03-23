@@ -1,9 +1,12 @@
+import vk
 from bootstrap4.components import render_alert
 from bootstrap4.text import text_value
 from bootstrap4.utils import render_tag
 from django import template
+from django.conf import settings
 from django.contrib.messages.storage.base import Message
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.cache import cache
 from django.template import Node, NodeList, TemplateSyntaxError
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -53,6 +56,30 @@ DJANGO_TO_BOOTSTRAP = {
     'warning': 'warning',
     'error': 'danger'
 }
+
+
+@register.simple_tag
+def vk_small_avatar(vk_user_id):
+    cache_key = f'vk_photo_50_{vk_user_id}'
+    photo = cache.get(cache_key, None)
+    if photo:
+        return photo
+
+    session = vk.Session()
+    api = vk.API(session, v=5.90)
+
+    try:
+        photo = api.users.get(
+            access_token=settings.VK_GROUP_TOKEN,
+            user_ids=str(vk_user_id),
+            fields='photo_50'
+        )[0]['photo_50']
+    except (IndexError, KeyError):
+        photo = ''
+
+    cache.set(cache_key, photo, timeout=86400)  # Keep in cache one day
+
+    return photo
 
 
 @register.simple_tag
