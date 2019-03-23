@@ -1,6 +1,6 @@
 {% extends "crm/base.html" %}
 
-{% load bootstrap4 html_helper %}
+{% load bootstrap4 html_helper humanize %}
 
 {% block nav %}
 {% endblock nav %}
@@ -20,97 +20,117 @@
   <div class="ml-4 mt-4 mr-4 container-fluid">
     <legend class="border-bottom mb-2">Ученики</legend>
     <div style="background-color: #FFFFFF;" class="sticky-top">
-      <div class="row">
+      <div class="row justify-content-between">
         <div class="col-md-6">
-          <form class="form-inline mb-2"
-                action="{% url 'crm:manager:client:list' %}" method="GET">
-            {% ifhasperm 'client.add' user %}
-          <a name="add-new"
-             href="{% url 'crm:manager:client:new' %}"
-             class="btn btn-sm btn-info"
-          >
-            Добавить ученика
-          </a>
+          {% ifhasperm 'client.add' user %}
+            <a
+              name="add-new"
+              href="{% url 'crm:manager:client:new' %}"
+              class="btn btn-sm btn-info"
+            >
+              Добавить ученика
+            </a>
           {% endifhasperm %}
-            <div class="input-group  ml-2 w-50">
+        </div>
+        <div class="col-md-4">
+          <div class="float-right">
+          <form
+            class="form-inline mb-2"
+            action="{% url 'crm:manager:client:list' %}" method="GET"
+          >
+            <div class="input-group">
+              <div class="input-group-prepend bg-white border-right-0">
+                <span class="input-group-text bg-white"><i class="fas fa-search"  aria-hidden="true"></i></span>
+              </div>
               <input
                 id="{{ filter.form.name.id_for_label }}"
                 name="{{ filter.form.name.name }}"
-                placeholder="{{ filter.form.name.label }}"
+                placeholder="Найти"
                 value="{{ filter.form.name.data|default_if_none:'' }}"
                 type="search"
-                class="form-control form-control-sm"
+                class="form-control border-left-0"
               >
-              <div class="input-group-append">
-                <a
-                  href="#"
-                  id="clear-search"
-                  class="btn btn-sm btn-outline-danger"
-                  data-search-id="{{ filter.form.name.id_for_label }}"
-                >
-                  <i class="fas fa-times"></i>
-                </a>
-              </div>
             </div>
 
-            <input type="submit"
-                   value="Поиск" class=" ml-2 btn btn-sm btn-success"/>
+            <input
+              type="submit"
+              value="Поиск" class=" ml-2 btn btn-outline-secondary"
+            />
           </form>
+            </div>
         </div>
       </div>
     </div>
 
 
-    <table class="table table-sm table-bordered">
+    <table class="table table-sm table-striped table-borderless">
       <thead>
-      <tr>
-        <th scope="col">Общение</th>
-        <th scope="col">Инфо</th>
-        <th scope="col">Абонемент</th>
-        <th scope="col">Баланс</th>
+      <tr class="d-flex">
+        <th scope="col" class="col-2">Общение</th>
+        <th scope="col" class="col-4">Имя</th>
+        <th scope="col" class="col-4">Абонемент</th>
+        <th scope="col" class="col-2">Баланс</th>
       </tr>
       </thead>
       <tbody>
       {% for client in clients %}
-        <tr>
-          <td>
+        <tr class="d-flex">
+          <td class="col-2">
             <div>
               {% if client.phone_number %}
-                <a class="btn btn-sm btn-outline-info" href="tel:{{ client.phone_number }}">
+                <a
+                  class="btn btn-sm btn-outline-info"
+                  href="tel:{{ client.phone_number }}"
+                >
                   Позвонить
                 </a>
               {% endif %}
             </div>
             <div>
               {% if client.vk_user_id %}
-                <a class="btn btn-sm btn-outline-info" target="_blank" href="https://vk.com/gim176552308?sel={{ client.vk_user_id }}">
+                <a
+                  class="btn btn-sm btn-outline-info" target="_blank"
+                  href="https://vk.com/gim176552308?sel={{ client.vk_user_id }}"
+                >
                   Написать в VK
                 </a>
               {% endif %}
             </div>
             <div>
               {% if client.email_address %}
-                <a class="btn btn-sm btn-outline-info" href="mailto:{{ client.email_address }}">
+                <a
+                  class="btn btn-sm btn-outline-info"
+                  href="mailto:{{ client.email_address }}"
+                >
                   Написать на почту
                 </a>
               {% endif %}
             </div>
           </td>
-          <td>
-          {% ifhasperm 'client' user %}
-            <a href="{% url 'crm:manager:client:detail' client.id %}">
-              <div class="font-weight-bold">{{ client.name }}</div>
-              <div>{{ client.phone_number }}</div>
-              <div>{{ client.email_address }}</div>
-            </a>
+          <td class="col-4">
+            {% ifhasperm 'client' user %}
+              <div class="row">
+              {% if client.vk_user_id %}
+                <div class="float-left">
+                  <img src="{% vk_small_avatar client.vk_user_id %}">
+                </div>
+              {% endif %}
+              <a href="{% url 'crm:manager:client:detail' client.id %}">
+                <div class="font-weight-bold">{{ client.name }}</div>
+                <div>{{ client.phone_number }}</div>
+                <div>{{ client.email_address }}</div>
+              </a>
             {% endifhasperm %}
+            </div>
           </td>
-          <td>
+          <td class="col-4">
             {% if client.last_sub %}
               <div class="font-weight-bold">
                 {% if client.last_sub.is_expiring %}
-                  <i title="Абонемент скоро заканчивается"
-                     class="fas fa-exclamation-circle"></i>
+                  <i
+                    title="Абонемент скоро заканчивается"
+                    class="fas fa-exclamation-circle"
+                  ></i>
                 {% endif %}
                 {{ client.last_sub.subscription.name }}
               </div>
@@ -118,13 +138,28 @@
                 до {{ client.last_sub.end_date|date:'d N Y' }}</div>
               <div>Осталось {{ client.last_sub.visits_left }} посещений</div>
               {% ifhasperm 'is_manager' user %}
-              <a class="btn btn-sm btn-outline-info"
-                 href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}">Продлить</a>
+                <a
+                  class="btn btn-sm btn-outline-info"
+                  href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}"
+                >Продлить</a>
               {% endifhasperm %}
+            {% else %}
+              {% if has_active_event_class %}
+                <a
+                  class="btn btn-sm btn-outline-info"
+                  href="{% url 'crm:manager:client:new-subscription' client.id %}"
+                >
+                  Продать абонемент
+                </a>
+              {% endif %}
             {% endif %}
           </td>
-          <td>
-            {{ client.balance }} ₽
+          <td class="col-2">
+            {{ client.balance|floatformat:"-2"|intcomma }} ₽
+            <a
+              href="{% url 'crm:manager:client:balance:new' client.id %}"
+              class="btn btn-sm btn-outline-info"
+            >Пополнить</a>
           </td>
         </tr>
       {% endfor %}

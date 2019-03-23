@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 import json
 from operator import itemgetter
 
-from django.utils.datastructures import MultiValueDictKeyError
 from django.http import Http404, HttpResponse
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -62,8 +61,7 @@ def gl(request):
             company = Company.objects.get(vk_group_id=data['group_id'])
             set_current_tenant(company)
             token = company.vk_access_token
-
-            create_answer(data['object'], token)
+            enqueue('create_answer', data['object'], token)
 
     return HttpResponse('ok', content_type="text/plain", status=200)
 

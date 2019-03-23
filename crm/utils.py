@@ -9,7 +9,7 @@ from django_filters.utils import handle_timezone
 from django_filters.widgets import SuffixedMultiWidget
 
 
-VK_PAGE_REGEXP = re.compile('vk.com/(?P<user_id>([A-Za-z0-9_])+)')
+VK_PAGE_REGEXP = re.compile('(https?://)?vk.com/(?P<user_id>([A-Za-z0-9_])+)')
 
 
 class BootstrapRangeWidget(SuffixedMultiWidget):

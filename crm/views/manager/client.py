@@ -16,6 +16,7 @@ from crm.forms import (
 )
 from crm.models import (
     Client, ClientSubscriptions, ExtensionHistory, SubscriptionsType,
+    EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 
@@ -29,6 +30,11 @@ class List(PermissionRequiredMixin, FilterView):
     context_object_name = 'clients'
     paginate_by = 25
     permission_required = 'client'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(object_list=object_list, **kwargs)
+        context['has_active_event_class'] = EventClass.objects.active().exists()
+        return context
 
 
 class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
@@ -83,10 +89,10 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
         client = Client.objects.get(id=self.kwargs['client_id'])
         default_reason = 'Покупка абонемента'
         with transaction.atomic():
-            client.add_balance_in_history(-abon_price, default_reason)
+            client.add_balance_in_history(-abon_price, default_reason, skip_notification=True)
             if cash_earned:
                 default_reason = 'Перечесление средств за абонемент'
-                client.add_balance_in_history(abon_price, default_reason)
+                client.add_balance_in_history(abon_price, default_reason, skip_notification=True)
             form.instance.client_id = self.kwargs['client_id']
             client.save()
             response = super().form_valid(form)
