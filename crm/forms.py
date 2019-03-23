@@ -216,10 +216,7 @@ class ClientSubscriptionForm(TenantModelForm):
         model = ClientSubscriptions
 
         widgets = {
-            'purchase_date': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
-            ),
+            'client': forms.HiddenInput(),
             'start_date': DatePickerInput(
                 format='%d.%m.%Y',
                 attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
@@ -237,10 +234,27 @@ class ClientSubscriptionForm(TenantModelForm):
                 }
             ),
         }
-        exclude = ('client', 'end_date')
+        labels = {
+            'subscription': 'Абонемент',
+            'start_date': 'Начало действия',
+            'visits_left': 'Количество посещений'
+        }
+        exclude = ('purchase_date', 'end_date',)
 
     def __init__(self, *args, **kwargs):
+        disable_subscription_type = kwargs.pop(
+            'disable_subscription_type', False)
+        activated_subscription = kwargs.pop(
+            'activated_subscription', False)
+
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
+
+        if disable_subscription_type:
+            self.fields['subscription'].disabled = True
+
+        if activated_subscription:
+            for __, field in self.fields.items():
+                field.disabled = True
 
         choices = [("", "--------------")]
         data = {'price': {'': ''}, 'visit_limit': {'': ''}}

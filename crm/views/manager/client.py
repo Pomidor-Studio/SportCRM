@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -10,6 +11,7 @@ from rest_framework.serializers import DateField, IntegerField
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
+from crm.enums import BALANCE_REASON
 from crm.filters import ClientFilter
 from crm.forms import (
     ClientForm, ClientSubscriptionForm, ExtendClientSubscriptionForm,
@@ -64,7 +66,17 @@ class Detail(PermissionRequiredMixin, DetailView):
     permission_required = 'client'
 
 
-class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
+class ClientMixin:
+    def get_client(self) -> Client:
+        return get_object_or_404(Client, id=self.kwargs['client_id'])
+
+
+class AddSubscription(
+    PermissionRequiredMixin,
+    ClientMixin,
+    RevisionMixin,
+    CreateView
+):
     form_class = ClientSubscriptionForm
     template_name = "crm/manager/client/add-subscriptions.html"
     permission_required = 'client_subscription.sale'
@@ -73,30 +85,75 @@ class AddSubscription(PermissionRequiredMixin, RevisionMixin, CreateView):
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['client'] = self.get_client()
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['client_id'] = (
-            self.object.client_id
-            if self.object and hasattr(self.object, 'client')
-            else self.kwargs['client_id']
-        )
+        context['client'] = self.get_client()
         context['allow_check_overlapping'] = True
         return context
 
     def form_valid(self, form):
         cash_earned = form.cleaned_data['cash_earned']
         abon_price = form.cleaned_data['price']
-        client = Client.objects.get(id=self.kwargs['client_id'])
-        default_reason = 'Покупка абонемента'
+        client = self.get_client()
+
         with transaction.atomic():
-            client.add_balance_in_history(-abon_price, default_reason, skip_notification=True)
+            client.add_balance_in_history(
+                -abon_price, BALANCE_REASON.BY_SUBSCRIPTION,
+                skip_notification=True
+            )
             if cash_earned:
-                default_reason = 'Перечесление средств за абонемент'
-                client.add_balance_in_history(abon_price, default_reason, skip_notification=True)
-            form.instance.client_id = self.kwargs['client_id']
+                client.add_balance_in_history(
+                    abon_price, BALANCE_REASON.UPDATE_BALANCE,
+                    skip_notification=True
+                )
             client.save()
             response = super().form_valid(form)
             enqueue('notify_client_buy_subscription', self.object.id)
+
+        return response
+
+
+class SubscriptionUpdate(
+    PermissionRequiredMixin,
+    RevisionMixin,
+    UpdateView
+):
+    model = ClientSubscriptions
+    form_class = ClientSubscriptionForm
+    template_name = 'crm/manager/client/add-subscriptions.html'
+    permission_required = 'client_subscription.edit'
+
+    def activated_subscription(self):
+        return self.object.attendance_set.exists()
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['disable_subscription_type'] = True
+        kwargs['activated_subscription'] = self.activated_subscription()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['history'] = ExtensionHistory.objects.filter(
+            client_subscription=self.object.id)
+        context['client'] = self.object.client
+        context['activated_subscription'] = self.activated_subscription()
+        context['allow_check_overlapping'] = False
+        return context
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        if self.activated_subscription():
+            messages.warning(
+                self.request,
+                'По этому абонементу были посещения, по этому, его уже нельзя '
+                'редактировать.'
+            )
         return response
 
 
@@ -169,25 +226,6 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
     def get_success_url(self):
         return reverse(
             'crm:manager:client:detail', kwargs={'pk': self.object.client_id})
-
-
-class SubscriptionUpdate(PermissionRequiredMixin, RevisionMixin, UpdateView):
-    model = ClientSubscriptions
-    form_class = ClientSubscriptionForm
-    template_name = 'crm/manager/client/add-subscriptions.html'
-    permission_required = 'client_subscription.edit'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['history'] = ExtensionHistory.objects.filter(
-            client_subscription=self.object.id)
-        context['client_id'] = (
-            self.object.client_id
-            if self.object and hasattr(self.object, 'client')
-            else self.kwargs['client_id']
-        )
-        context['allow_check_overlapping'] = False
-        return context
 
 
 class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
