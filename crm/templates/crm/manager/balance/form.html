@@ -1,21 +1,42 @@
 {% extends "crm/base.html" %}
 
-{% load bootstrap4 %}
+{% load bootstrap4 humanize %}
 
-{% block nav %}
-{% endblock nav %}
+{% block extrahead %}
+  {{ form.media.css }}
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css"
+  >
+{% endblock %}
+
+{% block extra %}
+  {{ form.media.js }}
+{% endblock %}
 
 {% block content %}
-  <legend class="mb-2">Изменение баланса</legend>
-  <form class="" method="POST">
-    {% csrf_token %}
-    <fieldset class="form-group">
-      {% bootstrap_form form %}
-    </fieldset>
-    {{ object }}
-    <div class="form-group">
-      <button class="btn btn-outline-info" type="submit">Добавить</button>
-      <a name="cancel" href="{% url 'crm:manager:client:detail' client_id %}" class="btn btn-outline-info">Назад</a>
-    </div>
-  </form>
+  <legend class="mb-2">{{ client.name }} - Изменение баланса</legend>
+  <div class="mb-3">Текущий
+    баланс: {{ client.balance | floatformat:"-2" | intcomma }} ₽
+  </div>
+
+  <div class="row">
+    <form method="POST">
+      {% csrf_token %}
+
+      <fieldset class="form-group">
+        {% bootstrap_form form %}
+      </fieldset>
+
+      {{ object }}
+
+      <div class="form-group">
+        <button class="btn btn-primary" type="submit">Пополнить</button>
+        <a
+          name="cancel" href="{% url 'crm:manager:client:detail' client.id %}"
+          class="btn btn-outline-info"
+        >Назад</a>
+      </div>
+    </form>
+  </div>
 {% endblock content %}
