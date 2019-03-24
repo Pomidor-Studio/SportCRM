@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'qr_code',
     'google_tasks.apps.GoogleTasksConfig',
     'analytical',
+    'vk_group_app.apps.VkGroupAppConfig',
 ]
 
 BOOTSTRAP4 = {

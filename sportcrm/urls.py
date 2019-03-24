@@ -37,6 +37,7 @@ if not settings.BACKGROUND_MODE:
             'qr_code/',
             include(('qr_code.urls', 'qr_code'), namespace="qr_code")
         ),
+        path('', include('vk_group_app.urls')),
     ]
 else:
     urlpatterns = [
