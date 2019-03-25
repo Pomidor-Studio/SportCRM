@@ -679,17 +679,25 @@ class Client(CompanyObjectModel):
         return self.company.vk_access_token
 
     def update_balance(self, top_up_amount, skip_notification: bool = False):
-        '''
+        """
+        :param top_up_amount: Amount of added or removed from balance
         :param skip_notification: Prevent double notification send if buy sub
-        '''
+        """
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
         if not skip_notification:
             from google_tasks.tasks import enqueue
             enqueue('notify_client_balance', self.id)
 
-    def add_balance_in_history(self, top_up_amount, reason, skip_notification: bool = False):
+    def add_balance_in_history(
+        self,
+        top_up_amount: int,
+        reason: str,
+        skip_notification: bool = False
+    ):
         """
+        :param top_up_amount: Amount of added or removed from balance
+        :param reason: Reason of client balance modification
         :param skip_notification: Prevent double notification send if buy sub
         """
         with transaction.atomic():
