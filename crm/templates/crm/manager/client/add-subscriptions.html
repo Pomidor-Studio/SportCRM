@@ -11,75 +11,85 @@
   <script language="javascript">
     $(function () {
       {% if allow_check_overlapping %}
-      function canCheckOverlapping() {
-        return $("#id_subscription option:selected") &&
-          $('#id_start_date').val() &&
-          $('#id_visits_left').val();
-      }
-      function checkOverlapping() {
-        $('div.overlapping').hide();
-        $('#is-overlapping').hide();
-        $.get(
-          '{% url "crm:manager:client:check-overlapping" %}',
-          {
-            st: $("#id_subscription option:selected").attr('value'),
-            start: $('#id_start_date').val(),
-            vl: $('#id_visits_left').val()
-          },
-          function(data) {
-            if (data.is_overlapping && !data.is_overlapping_with_cancelled) {
-              $('#is-overlapping').show();
-              $('#add-with-autoextend').show();
-            } else if (
-              data.is_overlapping &&
-              data.is_overlapping_with_cancelled &&
-              data.canceled_events_count === 0
-            ) {
-              $('#is-overlapping-total').show();
-              //Don't show create with extend, as there no canceled events
-            } else if (
-              data.is_overlapping &&
-              data.is_overlapping_with_cancelled &&
-              data.canceled_events_count !== 0
-            ) {
-              $('#is-overlapping-with-canceled').show();
-              $('#add-with-autoextend').show();
-            } else {
-              $('div.overlapping').hide();
-              $('#is-overlapping').hide();
+        function canCheckOverlapping() {
+          return $("#id_subscription option:selected") &&
+            $('#id_start_date').val() &&
+            $('#id_visits_left').val();
+        }
+        function checkOverlapping() {
+          $('div.overlapping').hide();
+          $('#is-overlapping').hide();
+          $.get(
+            '{% url "crm:manager:client:check-overlapping" %}',
+            {
+              st: $("#id_subscription option:selected").attr('value'),
+              start: $('#id_start_date').val(),
+              vl: $('#id_visits_left').val()
+            },
+            function (data) {
+              if (data.is_overlapping && !data.is_overlapping_with_cancelled) {
+                $('#is-overlapping').show();
+                $('#add-with-autoextend').show();
+              } else if (
+                data.is_overlapping &&
+                data.is_overlapping_with_cancelled &&
+                data.canceled_events_count === 0
+              ) {
+                $('#is-overlapping-total').show();
+                //Don't show create with extend, as there no canceled events
+              } else if (
+                data.is_overlapping &&
+                data.is_overlapping_with_cancelled &&
+                data.canceled_events_count !== 0
+              ) {
+                $('#is-overlapping-with-canceled').show();
+                $('#add-with-autoextend').show();
+              } else {
+                $('div.overlapping').hide();
+                $('#is-overlapping').hide();
+              }
             }
-          }
-        );
-      }
+          );
+        }
       {% endif %}
 
+      $('#{{ form.subscription.id_for_label }}')
+        .on('select2:select', function (e) {
+          let $visits = $('#{{ form.visits_left.id_for_label }}');
+          let $price = $('#{{ form.price.id_for_label }}');
+          if (e.params.data.id === '') {
+            $visits.val('');
+            $price.val('');
+          } else {
+            let $elem = $(e.params.data.element);
+            $visits.val($elem.data('visits'));
+            $price.val($elem.data('price'));
+          }
+          {% if allow_check_overlapping %}
+            if (canCheckOverlapping()) {
+              checkOverlapping();
+            }
+          {% endif %}
+        });
 
-      $("#id_subscription").change(function () {
-        $("#id_price").val($(this).find("option:selected").attr("price"));
-        $("#id_visits_left").val($(this).find("option:selected").attr("visit_limit"));
-        {% if allow_check_overlapping %}
-        if (canCheckOverlapping()) {
-          checkOverlapping();
-        }
-        {% endif %}
-      });
 
       {% if allow_check_overlapping %}
-      $('#id_start_date, #id_visits_left').on('input', function() {
-        if (canCheckOverlapping()) {
-          checkOverlapping();
-        }
-      });
+        $('#id_start_date, #id_visits_left').on('input', function () {
+          if (canCheckOverlapping()) {
+            checkOverlapping();
+          }
+        });
 
-      $('button.add-subscription').click(function() {
-        $('#add-form').attr('action', $(this).data('action'));
-      });
+        $('button.add-subscription').click(function () {
+          $('#add-form').attr('action', $(this).data('action'));
+        });
       {% endif %}
     });
   </script>
 
   <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Абонемент</legend>
+    <legend class="border-bottom mb-2">{{ client.name }} - продажа абонемента
+    </legend>
     <div class="w-100">
       <div class="row">
         <div class="col">
@@ -102,7 +112,8 @@
               id="is-overlapping-with-canceled"
               style="display: none;"
             >
-              В тренировочной сетке есть отменённые занятия, но даже вместе с ними,
+              В тренировочной сетке есть отменённые занятия, но даже вместе с
+              ними,
               нельзя будет потратить все посещения.
             </div>
             <div
@@ -110,31 +121,36 @@
               id="is-overlapping-total"
               style="display: none;"
             >
-              Количество тренировок в сетке не позволяет потратить все посещения.
+              Количество тренировок в сетке не позволяет потратить все
+              посещения.
             </div>
             <div class="form-group">
-              <button
-                id="add"
-                class="btn btn-outline-info add-subscription"
-                type="submit"
-                data-action="{% url 'crm:manager:client:new-subscription' client_id %}"
-              >
-                Добавить
-              </button>
-              {% if allow_check_overlapping %}
-              <button
-                id="add-with-autoextend"
-                class="btn btn-outline-info add-subscription"
-                style="display: none;"
-                type="submit"
-                data-action="{% url 'crm:manager:client:add-subscription-with-extending' client_id %}"
-              >
-                Добавить с продлением абонемента
-              </button>
+              {% if not activated_subscription %}
+                <button
+                  id="add"
+                  class="btn btn-primary add-subscription"
+                  type="submit"
+                  data-action="{% url 'crm:manager:client:new-subscription' client.id %}"
+                >
+                  {% if object.id %}Изменить{% else %}Продать{% endif %}
+                </button>
               {% endif %}
-              <a name="cancel"
-                 href="{% url 'crm:manager:client:detail' client_id %}"
-                 class="btn btn-outline-info">
+              {% if allow_check_overlapping %}
+                <button
+                  id="add-with-autoextend"
+                  class="btn btn-outline-info add-subscription"
+                  style="display: none;"
+                  type="submit"
+                  data-action="{% url 'crm:manager:client:add-subscription-with-extending' client.id %}"
+                >
+                  Добавить с продлением абонемента
+                </button>
+              {% endif %}
+              <a
+                name="cancel"
+                href="{% url 'crm:manager:client:detail' client.id %}"
+                class="btn btn-outline-info"
+              >
                 Назад
               </a>
             </div>

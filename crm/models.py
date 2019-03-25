@@ -663,9 +663,13 @@ class Client(CompanyObjectModel):
     def get_absolute_url(self):
         return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
 
-    @property
-    def last_sub(self):
-        return self.clientsubscriptions_set.order_by('purchase_date').first()
+    def last_sub(self, with_deleted=False):
+        qs = self.clientsubscriptions_set
+
+        if not with_deleted:
+            qs = qs.filter(subscription__deleted__isnull=True)
+
+        return qs.order_by('-purchase_date').first()
 
     def __str__(self):
         return self.name
@@ -776,6 +780,9 @@ class ClientSubscriptions(CompanyObjectModel):
     start_date = models.DateField("Дата начала", default=date.today)
     end_date = models.DateField(null=True)
     price = models.FloatField("Стоимость")
+    visits_on_by_time = models.PositiveSmallIntegerField(
+        "Количество визитов на момент покупки"
+    )
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
     objects = ClientSubscriptionsManager()
@@ -785,6 +792,8 @@ class ClientSubscriptions(CompanyObjectModel):
         if not self.id:
             self.start_date = self.subscription.start_date(self.start_date)
             self.end_date = self.subscription.end_date(self.start_date)
+            # Save original provided client visits limit
+            self.visits_on_by_time = self.visits_left
 
         super().save(*args, **kwargs)
 

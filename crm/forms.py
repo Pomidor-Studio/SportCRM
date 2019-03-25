@@ -169,7 +169,34 @@ class ExtendClientSubscriptionForm(forms.Form):
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
 
 
-class Select2WidgetAttributed(Select2Widget):
+class Select2ThemedMixin:
+    """
+    Mixin that enables bootstrap theme for Select2Widgets
+
+    It can be used only for Select2Widgets, as assumes that function _get_media
+    is defined in parent class
+    """
+
+    def build_attrs(self, *args, **kwargs):
+        attrs = super().build_attrs(*args, **kwargs)
+        attrs.setdefault('data-theme', 'bootstrap')
+        return attrs
+
+    def _get_media(self):
+        media = (
+            super()._get_media() + forms.Media(
+            css={
+                'screen': (
+                    'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',  # noqa
+                )
+            })
+        )
+        return media
+
+    media = property(_get_media)
+
+
+class Select2WidgetAttributed(Select2ThemedMixin, Select2Widget):
     option_inherits_attrs = True
 
     def __init__(self, attrs=None, choices=(), attr_getter=lambda x: None):
@@ -203,7 +230,7 @@ class InplaceSellSubscriptionForm(TenantModelForm):
     )
     subscription = forms.ModelChoiceField(
         empty_label='',
-        queryset=SubscriptionsType.objects.all(),
+        queryset=SubscriptionsType.objects.exclude(one_time=True),
         label='Абонемент',
         widget=Select2WidgetAttributed(
             attr_getter=subcription_type_attrs)
@@ -230,11 +257,13 @@ class InplaceSellSubscriptionForm(TenantModelForm):
             'client': forms.HiddenInput(),
 
         }
-        exclude = ('end_date',)
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time')
 
     def __init__(self, *args, **kwargs):
         st_qs = kwargs.pop(
-            'subscription_type_qs', SubscriptionsType.objects.all())
+            'subscription_type_qs',
+            SubscriptionsType.objects.exclude(one_time=True)
+        )
         super().__init__(*args, **kwargs)
 
         self.fields['subscription'].queryset = st_qs
@@ -246,15 +275,19 @@ class ClientSubscriptionForm(TenantModelForm):
         required=False,
         initial=True
     )
+    subscription = forms.ModelChoiceField(
+        empty_label='',
+        queryset=SubscriptionsType.objects.all(),
+        label='Абонемент',
+        widget=Select2WidgetAttributed(
+            attr_getter=subcription_type_attrs)
+    )
 
     class Meta:
         model = ClientSubscriptions
 
         widgets = {
-            'purchase_date': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
-            ),
+            'client': forms.HiddenInput(),
             'start_date': DatePickerInput(
                 format='%d.%m.%Y',
                 attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
@@ -272,22 +305,36 @@ class ClientSubscriptionForm(TenantModelForm):
                 }
             ),
         }
-        exclude = ('client', 'end_date')
+        labels = {
+            'start_date': 'Начало действия',
+            'visits_left': 'Количество посещений'
+        }
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time')
 
     def __init__(self, *args, **kwargs):
+        disable_subscription_type = kwargs.pop(
+            'disable_subscription_type', False)
+        activated_subscription = kwargs.pop(
+            'activated_subscription', False)
+
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
 
-        choices = [("", "--------------")]
-        data = {'price': {'': ''}, 'visit_limit': {'': ''}}
+        # Set subscription queryset on init, as if it will be defined in
+        # class field initialization, it will ignore SafeDeleteMixin
+        if not disable_subscription_type:
+            self.fields['subscription'].queryset = \
+                SubscriptionsType.objects.exclude(one_time=True)
+        else:
+            self.fields['subscription'].disabled = True
+            # Select all subscriptions, as field is non-editable, and
+            # we can safely display subscription type, event it was in
+            # archive
+            self.fields['subscription'].queryset = \
+                SubscriptionsType.all_objects.exclude(one_time=True)
 
-        for st in SubscriptionsType.objects.filter(one_time=False):
-            choices.append((st.id, st.name))
-
-            data['price'][st.id] = st.price
-            data['visit_limit'][st.id] = st.visit_limit
-
-        self.fields['subscription'].widget = DataAttributesSelect(
-            choices=choices, data=data)
+        if activated_subscription:
+            for __, field in self.fields.items():
+                field.disabled = True
 
 
 class EventClassForm(TenantModelForm):
