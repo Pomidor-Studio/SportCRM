@@ -579,15 +579,10 @@ class DoScan(
             .first()
         )
         if not subscription:
-            if event.attendance_set.filter(client=client, signed_up=True)\
-                    .exists():
-                # Change redirect behaviour, as we can sell subscription
-                self.sell_to = client.id
-            else:
-                messages.warning(
-                    self.request, f'У {client} нет действующего абонемента')
-
+            # Change redirect behaviour, as we can sell subscription
+            self.sell_to = client.id
             return
+
         try:
             subscription.mark_visit(event)
         except ClientAttendanceExists:
