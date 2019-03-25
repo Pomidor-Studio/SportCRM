@@ -780,6 +780,9 @@ class ClientSubscriptions(CompanyObjectModel):
     start_date = models.DateField("Дата начала", default=date.today)
     end_date = models.DateField(null=True)
     price = models.FloatField("Стоимость")
+    visits_on_by_time = models.PositiveSmallIntegerField(
+        "Количество визитов на момент покупки"
+    )
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
     objects = ClientSubscriptionsManager()
@@ -789,6 +792,8 @@ class ClientSubscriptions(CompanyObjectModel):
         if not self.id:
             self.start_date = self.subscription.start_date(self.start_date)
             self.end_date = self.subscription.end_date(self.start_date)
+            # Save original provided client visits limit
+            self.visits_on_by_time = self.visits_left
 
         super().save(*args, **kwargs)
 
