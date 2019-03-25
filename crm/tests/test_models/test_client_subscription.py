@@ -331,7 +331,7 @@ def test_extend_by_cancellation_with_future_date(
     )
 
 
-def test_qs_active_subscriptions(
+def test_qs_active_subscriptions_to_event(
     subscriptions_type_factory,
     client_subscription_factory,
     event_factory
@@ -382,19 +382,19 @@ def test_qs_active_subscriptions(
         models.ClientSubscriptions
         .objects
         .get_queryset()
-        .active_subscriptions(event),
+        .active_subscriptions_to_event(event),
 
         contains_inanyorder(*active_subs)
     )
 
 
-def test_manager_active_subscriptions(
+def test_manager_active_subscriptions_to_event(
     mocker: MockFixture
 ):
     mock = mocker.patch(
-        'crm.models.ClientSubscriptionQuerySet.active_subscriptions')
+        'crm.models.ClientSubscriptionQuerySet.active_subscriptions_to_event')
 
-    models.ClientSubscriptions.objects.active_subscriptions(mocker.ANY)
+    models.ClientSubscriptions.objects.active_subscriptions_to_event(mocker.ANY)
 
     mock.assert_called_once_with(mocker.ANY)
 

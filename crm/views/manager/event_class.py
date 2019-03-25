@@ -94,7 +94,7 @@ class EventByDate(
         result = {}
         for client in clients_qs:
             client_subscriptions = result.setdefault(client, [])
-            subs = client.clientsubscriptions_set.active_subscriptions(
+            subs = client.clientsubscriptions_set.active_subscriptions_to_event(
                 self.object
             )
             for sub in subs:
@@ -573,7 +573,7 @@ class DoScan(
         event = self.get_object()
         subscription = (
             ClientSubscriptions.objects
-            .active_subscriptions(event)
+            .active_subscriptions_to_event(event)
             .filter(client=client)
             .order_by('purchase_date')
             .first()

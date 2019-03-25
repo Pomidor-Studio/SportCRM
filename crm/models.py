@@ -623,7 +623,7 @@ class ClientManager(TenantManagerMixin, models.Manager):
     def with_active_subscription_to_event(self, event: Event):
         cs = (
             ClientSubscriptions.objects
-            .active_subscriptions(event)
+            .active_subscriptions_to_event(event)
             .order_by('client_id')
             .distinct('client_id')
             .values_list('client_id', flat=True)
@@ -734,7 +734,7 @@ class Client(CompanyObjectModel):
 
 
 class ClientSubscriptionQuerySet(TenantQuerySet):
-    def active_subscriptions(self, event: Event):
+    def active_subscriptions_to_event(self, event: Event):
         """Get all active subscriptions for selected event"""
         return self.filter(
             subscription__event_class=event.event_class,
@@ -748,11 +748,11 @@ class ClientSubscriptionsManager(
     ScrmTenantManagerMixin,
     BaseManager.from_queryset(ClientSubscriptionQuerySet)
 ):
-    def active_subscriptions(self, event: Event):
-        return self.get_queryset().active_subscriptions(event)
+    def active_subscriptions_to_event(self, event: Event):
+        return self.get_queryset().active_subscriptions_to_event(event)
 
     def extend_by_cancellation(self, cancelled_event: Event):
-        for subscription in self.active_subscriptions(cancelled_event):
+        for subscription in self.active_subscriptions_to_event(cancelled_event):
             subscription.extend_by_cancellation(cancelled_event)
 
     def revoke_extending(self, activated_event: Event):
