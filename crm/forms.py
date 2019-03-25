@@ -8,7 +8,9 @@ from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_multitenant.utils import get_current_tenant
-from django_select2.forms import Select2MultipleWidget, Select2Widget
+from django_select2.forms import (
+    Select2Mixin, Select2MultipleWidget, Select2Widget,
+)
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from crm.utils import VK_PAGE_REGEXP
@@ -16,6 +18,27 @@ from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, Manager, SubscriptionsType,
 )
+
+
+class Select2ThemeMixin:
+    def build_attrs(self, *args, **kwargs):
+        self.attrs.setdefault('data-theme', 'bootstrap')
+        return super().build_attrs(*args, **kwargs)
+
+
+class Select2SingleTagMixin:
+    def build_attrs(self, *args, **kwargs):
+        self.attrs.setdefault('data-tags', 'true')
+        return super().build_attrs(*args, **kwargs)
+
+
+class Select2SingleTagWidget(
+    Select2SingleTagMixin,
+    Select2ThemeMixin,
+    Select2Mixin,
+    forms.Select
+):
+    pass
 
 
 class TenantModelForm(forms.ModelForm):
@@ -82,17 +105,29 @@ class Balance(TenantModelForm):
         model = ClientBalanceChangeHistory
         widgets = {
             'change_value': forms.NumberInput(),
-            'reason': forms.TextInput(
+            'reason': Select2SingleTagWidget(
+                choices=[
+                    ('Пополнение баланса', 'Пополнение баланса'),
+                    ('Покупка абонемента', 'Покупка абонемента'),
+                    ('Разовое посещение', 'Разовое посещение'),
+                    ('Исправление ошибки', 'Исправление ошибки'),
+                    ('Иное', 'Иное'),
+                ],
                 attrs={
-                    "class": "form-control",
-                    "placeholder": "Укажите причину изменения баланса"}
+                    'class': 'form-control',
+                    'placeholder': 'Укажите причину изменения баланса'
+                }
             ),
             'entry_date': DatePickerInput(
                 format='%d.%m.%Y',
                 attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
-            )
+            ),
+            'client': forms.HiddenInput()
         }
-        exclude = ('client', 'actual_entry_date',)
+        labels = {
+            'change_value': 'Сумма пополнения, ₽'
+        }
+        exclude = ('entry_date', 'subscription')
 
 
 class DataAttributesSelect(forms.Select):

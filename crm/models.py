@@ -685,16 +685,14 @@ class Client(CompanyObjectModel):
             enqueue('notify_client_balance', self.id)
 
     def add_balance_in_history(self, top_up_amount, reason, skip_notification: bool = False):
-        '''
+        """
         :param skip_notification: Prevent double notification send if buy sub
-        '''
+        """
         with transaction.atomic():
-            ClientBalanceChangeHistory.objects.get_or_create(
+            ClientBalanceChangeHistory.objects.create(
                 change_value=top_up_amount,
                 client=self,
-                reason=reason,
-                entry_date=datetime.now(),
-                actual_entry_date=datetime.now()
+                reason=reason
             )
             self.update_balance(top_up_amount, skip_notification)
 
@@ -1072,10 +1070,6 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
     )
     entry_date = models.DateTimeField(
         "Дата зачисления",
-        default=timezone.now
-    )
-    actual_entry_date = models.DateTimeField(
-        "Фактическая дата зачисления",
         default=timezone.now
     )
 
