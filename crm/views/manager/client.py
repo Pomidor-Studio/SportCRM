@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib import messages
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -87,7 +89,17 @@ class AddSubscription(
 
     def get_initial(self):
         initial = super().get_initial()
-        initial['client'] = self.get_client()
+        client = self.get_client()
+        initial['client'] = client
+
+        # Add preselected subscription type from previous client subscriptions
+        # history.
+        last_sub = client.last_sub()
+        if last_sub:
+            initial['subscription'] = last_sub.subscription
+            initial['visits_left'] = last_sub.subscription.visit_limit
+            initial['price'] = last_sub.subscription.price
+
         return initial
 
     def get_context_data(self, **kwargs):

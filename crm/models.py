@@ -663,9 +663,13 @@ class Client(CompanyObjectModel):
     def get_absolute_url(self):
         return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
 
-    @property
-    def last_sub(self):
-        return self.clientsubscriptions_set.order_by('purchase_date').first()
+    def last_sub(self, with_deleted=False):
+        qs = self.clientsubscriptions_set
+
+        if not with_deleted:
+            qs = qs.filter(subscription__deleted__isnull=True)
+
+        return qs.order_by('-purchase_date').first()
 
     def __str__(self):
         return self.name
