@@ -2,16 +2,17 @@
 <nav class="col-md-2 d-none d-md-block sidebar" id="sidebar">
   <div class="sidebar-sticky">
     <ul class="navbar-nav flex-column">
-      <li class="nav-item">
-        <a
-          class="nav-link"
-          href="
-            {% if user.is_manager %}{% url 'crm:manager:event-class:list' %}{% else %}{% url 'crm:coach:home' %}{% endif %}"
-          name="Тренировки"
-        >
-          Настройки тренировок
-        </a>
-      </li>
+      {% ifhasperm 'is_manager' user %}
+        <li class="nav-item">
+          <a
+            class="nav-link"
+            href="{% url 'crm:manager:event:calendar' %}"
+            name="Календарь тренировок"
+          >
+            Тренировки
+          </a>
+        </li>
+      {% endifhasperm %}
       {% ifhasperm 'client' user %}
         <li class="nav-item">
           <a
@@ -44,17 +45,16 @@
           </a>
         </li>
       {% endifhasperm %}
-      {% ifhasperm 'is_manager' user %}
-        <li class="nav-item">
-          <a
-            class="nav-link"
-            href="{% url 'crm:manager:event:calendar' %}"
-            name="Календарь тренировок"
-          >
-            Календарь тренировок
-          </a>
-        </li>
-      {% endifhasperm %}
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          href="
+            {% if user.is_manager %}{% url 'crm:manager:event-class:list' %}{% else %}{% url 'crm:coach:home' %}{% endif %}"
+          name="Тренировки"
+        >
+          Настройки тренировок
+        </a>
+      </li>
       {% ifhasperm 'location' user %}
         <li class="nav-item">
           <a

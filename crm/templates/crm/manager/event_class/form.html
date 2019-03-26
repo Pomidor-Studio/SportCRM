@@ -78,7 +78,7 @@
             {% bootstrap_field weekdays.4.checked %}
           </div>
           <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.4.start_time show_label=False %}
+            {% bootstrчap_field weekdays.4.start_time show_label=False %}
           </div>
           <div class="col mt-1 mb-1">
             {% bootstrap_field weekdays.4.end_time show_label=False %}
@@ -108,7 +108,7 @@
         </div>
 
         <div class="row">
-          <button class="btn btn-outline-info" href="{% url 'crm:manager:event-class:list' %}" type="submit">
+          <button class="btn btn-primary btn-outline-info" href="{% url 'crm:manager:event-class:list' %}" type="submit">
             {% if object.id %}Сохранить{% else %}Добавить{% endif %}
           </button>
           <a name="cancel" href="{% url 'crm:manager:event-class:list' %}" class="btn btn-outline-info">Назад</a>

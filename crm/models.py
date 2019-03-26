@@ -319,6 +319,9 @@ class EventClass(CompanyObjectModel):
 
     objects = EventClassManager()
 
+    def get_one_visit_costs(self):
+        return SubscriptionsType.objects.get(one_time=True, event_class=self)
+
     def days(self) -> List[int]:
         """
         Get list of all weekdays of current event
