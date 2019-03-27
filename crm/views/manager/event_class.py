@@ -37,7 +37,6 @@ class ObjList(PermissionRequiredMixin, ListView):
     model = EventClass
     template_name = 'crm/manager/event_class/list.html'
     permission_required = 'event_class'
-    context_object_name = 'object'
 
 
 class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
