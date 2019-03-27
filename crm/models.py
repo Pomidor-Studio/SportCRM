@@ -14,7 +14,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q
+from django.db.models import Q, Model
 from django.db.models.manager import BaseManager
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -318,6 +318,9 @@ class EventClass(CompanyObjectModel):
     date_to = models.DateField("Дата по", null=True, blank=True)
 
     objects = EventClassManager()
+
+    def get_one_time_visit_costs(self):
+        return self.subscriptionstype_set.filter(one_time=True).first()
 
     def days(self) -> List[int]:
         """

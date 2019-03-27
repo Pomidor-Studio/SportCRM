@@ -8,6 +8,7 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
 )
 from django_filters.views import FilterView
+from django_multitenant.utils import get_current_tenant
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.serializers import DateField, IntegerField
 from reversion.views import RevisionMixin
@@ -38,6 +39,7 @@ class List(PermissionRequiredMixin, FilterView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context['has_active_event_class'] = EventClass.objects.active().exists()
+        context['vk_group_id'] = get_current_tenant().vk_group_id
         return context
 
 

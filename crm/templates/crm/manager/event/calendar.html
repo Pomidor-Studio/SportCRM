@@ -29,7 +29,16 @@
 {% block content %}
 
   <div class="ml-4 mt-4 mr-4">
-    <h1 class="border-bottom mb-2">Календарь тренировок</h1>
+    <div class="row border-bottom mb-2">
+      <div class="col">
+        <legend>Тренировки</legend>
+      </div>
+      <div class="col d-flex justify-content-end">
+        <div>
+          <a class="btn btn-outline-info" href="{% url 'crm:manager:event-class:list' %}">Настройки</a>
+        </div>
+      </div>
+    </div>
     <div id="calendar"></div>
   </div>
 

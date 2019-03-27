@@ -4,6 +4,7 @@ from uuid import UUID
 
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import ProtectedError
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -43,6 +44,18 @@ class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     success_url = reverse_lazy('crm:manager:event-class:list')
     template_name = 'crm/manager/event_class/confirm_delete.html'
     permission_required = 'event_class.delete'
+
+    def delete(self, request, *args, **kwargs):
+        success_url = self.get_success_url()
+        try:
+            self.get_object().delete()
+            return HttpResponseRedirect(success_url)
+        except ProtectedError:
+            messages.info(request, 'Невозможно удалить данный тип тренировок, т.к. существуют активные тренировки')
+            return HttpResponseRedirect(success_url)
+
+    def get_success_url(self):
+        return reverse('crm:manager:event-class:list')
 
 
 class Calendar(PermissionRequiredMixin, DetailView):
@@ -427,7 +440,8 @@ class CreateEdit(
         context = super().get_context_data(**kwargs)
         context.update({
             'eventclass_form': self.form,
-            'weekdays': self.weekdays
+            'weekdays': self.weekdays,
+            'object': self.object
         })
         return context
 
