@@ -14,7 +14,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q
+from django.db.models import Q, Count, F
 from django.db.models.manager import BaseManager
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -743,6 +743,33 @@ class ClientSubscriptionQuerySet(TenantQuerySet):
             visits_left__gt=0
         )
 
+    def active_subscriptions_to_date(self, to_date: date):
+        """
+        Get all subscriptions, active at particular date
+
+        :param to_date: Date to test activity
+        :return:
+        """
+        return self.annotate(
+            counted_visits_left=F('visits_on_by_time') - Count(
+                'attendance',
+                filter=Q(attendance__event__date__lt=to_date) &
+                Q(attendance__subscription_id=F('id'))
+            )
+        ).filter(
+            start_date__lte=to_date,
+            end_date__gte=to_date,
+            counted_visits_left__gt=0
+        )
+
+    def active_subscriptions(self):
+        today = date.today()
+        return self.filter(
+            start_date__lte=today,
+            end_date__gte=today,
+            visits_left__gt=0
+        )
+
 
 class ClientSubscriptionsManager(
     ScrmTenantManagerMixin,
@@ -750,6 +777,12 @@ class ClientSubscriptionsManager(
 ):
     def active_subscriptions_to_event(self, event: Event):
         return self.get_queryset().active_subscriptions_to_event(event)
+
+    def active_subscriptions_to_date(self, to_date: date):
+        return self.get_queryset().active_subscriptions_to_date(to_date)
+
+    def active_subscriptions(self):
+        return self.get_queryset().active_subscriptions()
 
     def extend_by_cancellation(self, cancelled_event: Event):
         for subscription in self.active_subscriptions_to_event(cancelled_event):
