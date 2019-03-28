@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rules.apps.AutodiscoverRulesConfig',
     'reversion',
     'reversion_compare',
+    'contrib.apps.ContribConfig',
     'crm.apps.CrmConfig',
     'django_filters',
     'bot.apps.BotConfig',
