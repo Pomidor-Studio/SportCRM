@@ -1,10 +1,8 @@
 {% extends "crm/base.html" %}
-
 {% load html_helper qr_code %}
-
+{% load humanize %}
 {% block nav %}
 {% endblock nav %}
-
 {% block extrahead %}
 <script
   src="https://vk.com/js/api/openapi.js?160"
@@ -82,7 +80,7 @@
         <div>{{object.phone_number}}</div>
         <div>{{object.birthday}}</div>
         <div>{{object.email_address}}</div>
-        <div>{{object.balance}}₽</div>
+        <div>{{object.balance|floatformat:"2"|intcomma }}₽</div>
         <div class="mb-2 mt-2">
           <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить
             баланс</a>
