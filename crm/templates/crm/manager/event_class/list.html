@@ -38,7 +38,7 @@
             <td>{{ eventclass.location }}</td>
             <td>{{ eventclass.coach }}</td>
             <td>{{ eventclass.date_from }}</td>
-            <td>{{ eventclass.date_to }}</td>
+            <td>{{ eventclass.date_to|default_if_none:"" }}</td>
             <td>
             {% if eventclass.get_one_time_visit_costs.price %}
               {{ eventclass.get_one_time_visit_costs.price|floatformat:"-2"|intcomma }} ₽
