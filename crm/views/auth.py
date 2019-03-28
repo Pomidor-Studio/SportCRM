@@ -1,10 +1,8 @@
-from django.contrib import messages
 from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import PasswordChangeView
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
-from django.utils.safestring import mark_safe
 from django.views.generic import (
     RedirectView, TemplateView, UpdateView,
 )
@@ -12,26 +10,7 @@ from django.views.generic import (
 from crm.forms import ProfileCoachForm, ProfileManagerForm
 
 
-class CheckPasswordMixin:
-    def notify_empty_password(self):
-        if not self.request.user.is_anonymous and \
-                not self.request.user.has_usable_password():
-            reset_url = reverse('crm:accounts:password-reset-confirm')
-            messages.info(
-                self.request,
-                mark_safe(
-                    f'У вас не установлен пароль. На этой страницу можно '
-                    f'<a href="{reset_url}">сбросить пароль</a>'
-                )
-            )
-
-
-class SportCrmLoginRedirectView(CheckPasswordMixin, RedirectView):
-
-    def get(self, request, *args, **kwargs):
-        self.notify_empty_password()
-
-        return super().get(request, *args, **kwargs)
+class SportCrmLoginRedirectView(RedirectView):
 
     def get_redirect_url(self, *args, **kwargs):
         if self.request.user.is_anonymous:
@@ -82,7 +61,7 @@ class ResetPasswordView(LoginRequiredMixin, TemplateView):
         return ret
 
 
-class ProfileView(LoginRequiredMixin, CheckPasswordMixin, UpdateView):
+class ProfileView(LoginRequiredMixin, UpdateView):
     template_name = 'crm/auth/profile.html'
     success_url = reverse_lazy('crm:accounts:profile')
 
@@ -107,7 +86,6 @@ class ProfileView(LoginRequiredMixin, CheckPasswordMixin, UpdateView):
         return kwargs
 
     def get(self, request, *args, **kwargs):
-        self.notify_empty_password()
         request.session['confirm-reset'] = False
 
         return super().get(request, *args, **kwargs)
