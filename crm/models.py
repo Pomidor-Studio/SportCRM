@@ -22,7 +22,7 @@ from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
 from django_multitenant.mixins import TenantManagerMixin, TenantQuerySet
 from django_multitenant.models import TenantModel
-from django_multitenant.utils import get_current_tenant
+from django_multitenant.utils import get_current_tenant, set_current_tenant
 from phonenumber_field.modelfields import PhoneNumberField
 from psycopg2 import Error as Psycopg2Error
 from safedelete.managers import (
@@ -144,12 +144,21 @@ class Company(models.Model):
 
 class CustomUserManager(TenantManagerMixin, UserManager):
     def generate_uniq_username(self, first_name, last_name, prefix='user'):
+        # Disable current tenant for avoiding username collation between
+        # companies
+        current_tenant = get_current_tenant()
+        set_current_tenant(None)
+        name = 'nevenr_used_name'
         for idx in count():
             trans_f = translit(first_name, language_code='ru', reversed=True)
             trans_l = translit(last_name, language_code='ru', reversed=True)
             name = f'{prefix}_{idx}_{trans_f}_{trans_l}'.lower()[:150]
+
             if not self.filter(username=name).exists():
-                return name
+                break
+
+        set_current_tenant(current_tenant)
+        return name
 
     def create_coach(self, first_name, last_name):
         return self.create_user(
