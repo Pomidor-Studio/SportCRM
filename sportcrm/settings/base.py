@@ -76,6 +76,7 @@ MIDDLEWARE = [
     'sesame.middleware.AuthenticationMiddleware',
     'crm.middleware.SetTenantMiddleware',
     'crm.middleware.TimedAccessMiddleware',
+    'crm.middleware.CoachInfoMiddleware',
 ]
 
 ROOT_URLCONF = 'sportcrm.urls'
