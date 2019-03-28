@@ -80,7 +80,7 @@
         <div>{{object.phone_number}}</div>
         <div>{{object.birthday}}</div>
         <div>{{object.email_address}}</div>
-        <div>{{object.balance|floatformat:"2"|intcomma }}₽</div>
+        <div>{{object.balance|floatformat:"2"|intcomma }} ₽</div>
         <div class="mb-2 mt-2">
           <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить
             баланс</a>
@@ -228,7 +228,7 @@
         {% for bal in object.clientbalancechangehistory_set.all|dictsortreversed:"entry_date" %}
         <tr>
           <td>{{ bal.entry_date }}</td>
-          <td>{{ bal.change_value }}₽</td>
+          <td>{{ bal.change_value }} ₽</td>
           <td>
             {{ bal.reason }}
             {{ bal.subscription.subscription.name }}
