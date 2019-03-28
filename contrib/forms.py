@@ -1,5 +1,8 @@
 from django import forms
-from django_multitenant.utils import get_current_tenant
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
+from django_multitenant.utils import get_current_tenant, set_current_tenant
 
 
 class TenantFormMixin:
@@ -82,3 +85,23 @@ class TenantForm(TenantFormMixin, ArchivedFormMixin, forms.Form):
         # Check form ChoiceFields
         self.filter_choice_queryset()
         self.filter_archived_queryset()
+
+
+class NonTenantUsernameMixin:
+    """
+    Validate username field with tenant ignorance, as username must be uniq
+    across all tenants
+    """
+    def clean_username(self):
+        username = self.cleaned_data['username']
+        current_tenant = get_current_tenant()
+        set_current_tenant(None)
+        if get_user_model().objects.filter(username=username).exists():
+            set_current_tenant(current_tenant)
+            raise ValidationError(
+                _('User with name %(username)s exists'),
+                code='invalid',
+                params={'username': username}
+            )
+
+        return username
