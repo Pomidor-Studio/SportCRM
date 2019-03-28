@@ -72,7 +72,7 @@
               {{ subscription.visit_limit }}
             </td>
             <td>
-              {{ subscription.price|floatformat:"0"|intcomma }}₽
+              {{ subscription.price|floatformat:"0"|intcomma }} ₽
             </td>
 
             {% ifhasperm 'subscription.edit' user subscription %}
