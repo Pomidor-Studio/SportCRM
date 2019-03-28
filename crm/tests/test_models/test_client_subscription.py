@@ -331,7 +331,7 @@ def test_extend_by_cancellation_with_future_date(
     )
 
 
-def test_qs_active_subscriptions(
+def test_qs_active_subscriptions_to_event(
     subscriptions_type_factory,
     client_subscription_factory,
     event_factory
@@ -382,10 +382,170 @@ def test_qs_active_subscriptions(
         models.ClientSubscriptions
         .objects
         .get_queryset()
-        .active_subscriptions(event),
+        .active_subscriptions_to_event(event),
 
         contains_inanyorder(*active_subs)
     )
+
+
+def test_qs_active_subscriptions_to_date(
+    company_factory,
+    subscriptions_type_factory,
+    client_subscription_factory,
+    event_factory,
+    client_factory
+):
+    company = company_factory()
+    events = event_factory.create_batch(
+        3,
+        company=company,
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1)
+    )
+    subs = []
+    for event in events:
+        subs.append(subscriptions_type_factory(
+            company=company,
+            duration=1,
+            duration_type=GRANULARITY.MONTH,
+            rounding=False,
+            event_class__events=event.event_class,
+            visit_limit=1
+        ))
+
+    client = client_factory(
+        company=company
+    )
+    cs1 = client_subscription_factory(
+        client=client,
+        company=company,
+        subscription=subs[0],
+        start_date=date(2019, 2, 1),
+        visits_left=subs[0].visit_limit
+    )
+    cs2 = client_subscription_factory(
+        client=client,
+        company=company,
+        subscription=subs[1],
+        start_date=date(2019, 2, 10),
+        visits_left=subs[1].visit_limit
+    )
+    cs3 = client_subscription_factory(
+        client=client,
+        company=company,
+        subscription=subs[2],
+        start_date=date(2019, 3, 1),
+        visits_left=subs[2].visit_limit
+    )
+    client.mark_visit(events[0], cs1)
+
+    assert_that(
+        models.ClientSubscriptions
+            .objects
+            .get_queryset()
+            .active_subscriptions_to_date(date(2019, 2, 25)),
+
+        contains_inanyorder(cs1, cs2)
+    )
+
+    assert_that(
+        models.ClientSubscriptions
+        .objects
+        .get_queryset()
+        .active_subscriptions_to_date(date(2019, 2, 27)),
+
+        # cs1 don't appear in result, as at 27.02.2019 it is completely used
+        contains_inanyorder(cs2)
+    )
+
+    assert_that(
+        models.ClientSubscriptions
+            .objects
+            .get_queryset()
+            .active_subscriptions_to_date(date(2019, 3, 2)),
+
+        contains_inanyorder(cs2, cs3)
+    )
+
+
+def test_qs_active_subscriptions(
+    subscriptions_type_factory,
+    client_subscription_factory,
+    event_factory,
+):
+    event = event_factory(
+        date=date(2019, 2, 25),
+        event_class__date_from=date(2019, 1, 1)
+    )
+    subs = subscriptions_type_factory(
+        company=event.company,
+        duration=1,
+        duration_type=GRANULARITY.MONTH,
+        rounding=False,
+        event_class__events=event.event_class
+    )
+
+    active_subs = client_subscription_factory.create_batch(
+        3,
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 25),
+        start_date=date(2019, 2, 25)
+    )
+    # outdated_sub
+    client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 1, 1),
+        start_date=date(2019, 1, 1)
+    )
+    # future_sub
+    client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 3, 1),
+        start_date=date(2019, 3, 1)
+    )
+    # empty_sub
+    client_subscription_factory(
+        company=event.company,
+        subscription=subs,
+        purchase_date=date(2019, 2, 25),
+        start_date=date(2019, 2, 25),
+        visits_left=0
+    )
+
+    with freeze_time(date(2019, 2, 26)):
+        assert_that(
+            models.ClientSubscriptions
+            .objects
+            .get_queryset()
+            .active_subscriptions(),
+
+            contains_inanyorder(*active_subs)
+        )
+
+
+def test_manager_active_subscriptions_to_event(
+    mocker: MockFixture
+):
+    mock = mocker.patch(
+        'crm.models.ClientSubscriptionQuerySet.active_subscriptions_to_event')
+
+    models.ClientSubscriptions.objects.active_subscriptions_to_event(mocker.ANY)
+
+    mock.assert_called_once_with(mocker.ANY)
+
+
+def test_manager_active_subscriptions_to_date(
+    mocker: MockFixture
+):
+    mock = mocker.patch(
+        'crm.models.ClientSubscriptionQuerySet.active_subscriptions_to_date')
+
+    models.ClientSubscriptions.objects.active_subscriptions_to_date(mocker.ANY)
+
+    mock.assert_called_once_with(mocker.ANY)
 
 
 def test_manager_active_subscriptions(
@@ -394,9 +554,9 @@ def test_manager_active_subscriptions(
     mock = mocker.patch(
         'crm.models.ClientSubscriptionQuerySet.active_subscriptions')
 
-    models.ClientSubscriptions.objects.active_subscriptions(mocker.ANY)
+    models.ClientSubscriptions.objects.active_subscriptions()
 
-    mock.assert_called_once_with(mocker.ANY)
+    mock.assert_called_once()
 
 
 def test_manager_extend_by_cancellation(
