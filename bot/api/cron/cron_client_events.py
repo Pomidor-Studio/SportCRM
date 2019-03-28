@@ -6,9 +6,9 @@ from datetime import date
 def receivables():
 
     client = Client.objects.filter(balance__lt=0)
-    message = []
 
     for cl in client:
+        message = []
         name = cl.name
         balance = cl.balance
         message.extend([name, '!\nУ вас есть задолженность!\nСостояние вашего счета: ', str(balance)])
