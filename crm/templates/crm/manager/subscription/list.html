@@ -1,6 +1,7 @@
 {% extends "crm/base.html" %}
 
 {% load html_helper %}
+{% load humanize %}
 
 {% block content %}
   <script type="text/javascript"></script>
@@ -34,7 +35,7 @@
       <table class="table table-sm table-bordered">
         <thead>
         <tr>
-          <th scope="col">Название</th>
+          <th scope="col">Наименование</th>
           <th scope="col">Цена</th>
           <th scope="col">Продолжительность</th>
           <th scope="col">Лимит посещений</th>
@@ -58,7 +59,7 @@
               {% endif %}
             </td>
             <td>
-              {{ subscription.price }}
+              {{ subscription.price|floatformat:"-2"|intcomma }} ₽
             </td>
             <td>
               {{ subscription.duration }} {{ subscription.duration_postfix }}
@@ -73,7 +74,7 @@
                   <a
                     name="edit"
                     href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                    class="btn btn-sm btn-outline-info"
+                    class="btn btn-primary btn-outline-info"
                   >
                     Редактировать
                   </a>
