@@ -31,13 +31,14 @@
         {% endifhasperm %}
       </div>
 
-      <table class="table table-sm table-bordered">
+      <table class="able table-striped table-borderless">
         <thead>
         <tr>
-          <th scope="col">Название</th>
-          <th scope="col">Цена</th>
+          <th scope="col">Наименование</th>
+          <th scope="col">Тренировки</th>
           <th scope="col">Продолжительность</th>
           <th scope="col">Лимит посещений</th>
+          <th scope="col">Цена</th>
           {% ifhasperm 'subscription.edit' user %}
             <th scope="col" style="width:5%"></th>
           {% endifhasperm %}
@@ -58,13 +59,20 @@
               {% endif %}
             </td>
             <td>
-              {{ subscription.price }}
+              {% for eventclass in subscription.event_class.all %}
+              <div>
+                <a href="{% url 'crm:manager:event-class:calendar' eventclass.pk %}" >{{ eventclass }}</a>
+              </div>
+              {% endfor %}
             </td>
             <td>
               {{ subscription.duration }} {{ subscription.duration_postfix }}
             </td>
             <td>
               {{ subscription.visit_limit }}
+            </td>
+            <td>
+              {{ subscription.price|floatformat:"0" }}₽
             </td>
 
             {% ifhasperm 'subscription.edit' user subscription %}
