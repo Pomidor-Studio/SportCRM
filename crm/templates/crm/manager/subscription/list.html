@@ -1,6 +1,6 @@
 {% extends "crm/base.html" %}
 
-{% load html_helper %}
+{% load html_helper humanize %}
 
 {% block content %}
   <script type="text/javascript"></script>
@@ -31,7 +31,7 @@
         {% endifhasperm %}
       </div>
 
-      <table class="able table-striped table-borderless">
+      <table class="table table-striped table-borderless">
         <thead>
         <tr>
           <th scope="col">Наименование</th>
@@ -72,7 +72,7 @@
               {{ subscription.visit_limit }}
             </td>
             <td>
-              {{ subscription.price|floatformat:"0" }}₽
+              {{ subscription.price|floatformat:"0"|intcomma }}₽
             </td>
 
             {% ifhasperm 'subscription.edit' user subscription %}
@@ -93,14 +93,14 @@
                 {% if subscription.deleted %}
                   <a
                     href="{% url "crm:manager:subscription:undelete" subscription.id %}"
-                    class="btn btn-secondary"
+                    class="btn btn-sm btn-secondary"
                   >
                     Вернуть
                   </a>
                 {% else %}
                   <a
                     href="{% url "crm:manager:subscription:delete" subscription.id %}"
-                    class="btn btn-danger"
+                    class="btn btn-sm btn-danger"
                   >
                     Удалить
                   </a>
