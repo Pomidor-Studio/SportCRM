@@ -10,7 +10,7 @@
 
 <form action="/eventclass" id="eventForm" method="POST" style="width: 100%;">
   <div class="ml-4 mt-4 mr-4">
-    <legend class="border-bottom mb-2">Места проведения</legend>
+    <legend class="border-bottom mb-2">Места проведения тренировок</legend>
     <div style="background-color: #FFFFFF;" class="sticky-top">
       {% ifhasperm 'location.add' user %}
       <a name="add-new" href="{% url 'crm:manager:locations:new' %}" class="btn btn-sm btn-info">Новое место</a>
