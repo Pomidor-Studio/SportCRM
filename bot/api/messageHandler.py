@@ -5,7 +5,7 @@ from bot.api.vkapi import send_message
 
 
 def get_answer(body, user_id):
-    message = "Прости, не понимаю тебя. Напиши 'помощь', чтобы узнать мои команды"
+    message = ""
     attachment = ''
     for command in allowed_commands:
         try:

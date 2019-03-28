@@ -19,8 +19,12 @@ messages_urls = ([
     ),
 ], 'messages')
 
+bot_urls = ([
+    url('tasks', views.tasks, name='tasks'),
+    url('', views.gl, name='gl'),
+], 'bot')
+
 urlpatterns = [
-    url('bot/', views.gl, name='gl'),
+    path('bot/', include(bot_urls)),
     path('messages/', include(messages_urls)),
 ]
-

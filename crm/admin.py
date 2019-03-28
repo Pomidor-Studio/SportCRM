@@ -119,7 +119,7 @@ class ClientAdmin(CompareVersionAdmin):
 
 @admin.register(models.ClientSubscriptions)
 class ClientSubscriptionsAdmin(CompareVersionAdmin):
-    pass
+    readonly_fields = ('visits_on_by_time', 'subscription', 'client',)
 
 
 @admin.register(models.ExtensionHistory)

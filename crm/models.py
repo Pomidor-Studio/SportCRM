@@ -14,7 +14,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q
+from django.db.models import Q, Model
 from django.db.models.manager import BaseManager
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -318,6 +318,9 @@ class EventClass(CompanyObjectModel):
     date_to = models.DateField("Дата по", null=True, blank=True)
 
     objects = EventClassManager()
+
+    def get_one_time_visit_costs(self):
+        return self.subscriptionstype_set.filter(one_time=True).first()
 
     def days(self) -> List[int]:
         """
@@ -663,9 +666,13 @@ class Client(CompanyObjectModel):
     def get_absolute_url(self):
         return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
 
-    @property
-    def last_sub(self):
-        return self.clientsubscriptions_set.order_by('purchase_date').first()
+    def last_sub(self, with_deleted=False):
+        qs = self.clientsubscriptions_set
+
+        if not with_deleted:
+            qs = qs.filter(subscription__deleted__isnull=True)
+
+        return qs.order_by('-purchase_date').first()
 
     def __str__(self):
         return self.name
@@ -685,16 +692,14 @@ class Client(CompanyObjectModel):
             enqueue('notify_client_balance', self.id)
 
     def add_balance_in_history(self, top_up_amount, reason, skip_notification: bool = False):
-        '''
+        """
         :param skip_notification: Prevent double notification send if buy sub
-        '''
+        """
         with transaction.atomic():
-            ClientBalanceChangeHistory.objects.get_or_create(
+            ClientBalanceChangeHistory.objects.create(
                 change_value=top_up_amount,
                 client=self,
-                reason=reason,
-                entry_date=datetime.now(),
-                actual_entry_date=datetime.now()
+                reason=reason
             )
             self.update_balance(top_up_amount, skip_notification)
 
@@ -778,6 +783,9 @@ class ClientSubscriptions(CompanyObjectModel):
     start_date = models.DateField("Дата начала", default=date.today)
     end_date = models.DateField(null=True)
     price = models.FloatField("Стоимость")
+    visits_on_by_time = models.PositiveSmallIntegerField(
+        "Количество визитов на момент покупки"
+    )
     visits_left = models.PositiveIntegerField("Остаток посещений")
 
     objects = ClientSubscriptionsManager()
@@ -787,6 +795,8 @@ class ClientSubscriptions(CompanyObjectModel):
         if not self.id:
             self.start_date = self.subscription.start_date(self.start_date)
             self.end_date = self.subscription.end_date(self.start_date)
+            # Save original provided client visits limit
+            self.visits_on_by_time = self.visits_left
 
         super().save(*args, **kwargs)
 
@@ -1072,10 +1082,6 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
     )
     entry_date = models.DateTimeField(
         "Дата зачисления",
-        default=timezone.now
-    )
-    actual_entry_date = models.DateTimeField(
-        "Фактическая дата зачисления",
         default=timezone.now
     )
 

@@ -3,6 +3,20 @@ from bot.api.vkapi import send_message
 from datetime import date
 
 
+def receivables():
+
+    client = Client.objects.filter(balance__lt=0)
+
+    for cl in client:
+        message = []
+        name = cl.name
+        balance = cl.balance
+        message.extend([name, '!\nУ вас есть задолженность!\nСостояние вашего счета: ', str(balance)])
+        send_message(cl.vk_user_id, cl.vk_message_token, ''.join(message), '')
+
+    return
+
+
 def birthday():
     current_date = date.today()
     month = current_date.month
