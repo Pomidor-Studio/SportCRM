@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from reversion.views import RevisionMixin
@@ -26,6 +26,13 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
     fields = ('name', 'address')
     template_name = 'crm/manager/location/form.html'
     permission_required = 'location.add'
+
+    def post(self, request, *args, **kwargs):
+        saved = super(Create, self).post(request, *args, **kwargs)
+        if "another" in request.POST:
+            return HttpResponseRedirect(reverse('crm:manager:locations:new'))
+        else:
+            return saved
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):

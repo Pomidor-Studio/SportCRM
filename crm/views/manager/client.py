@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.contrib import messages
 from django.db import transaction
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -49,6 +50,12 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.add'
 
+    def post(self, request, *args, **kwargs):
+        saved = super(Create, self).post(request, *args, **kwargs)
+        if "another" in request.POST:
+            return HttpResponseRedirect(reverse('crm:manager:client:new'))
+        else:
+            return saved
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = Client

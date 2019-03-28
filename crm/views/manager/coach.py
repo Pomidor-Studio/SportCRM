@@ -102,6 +102,13 @@ class Create(PermissionRequiredMixin, RevisionMixin, SocialAuthMixin, CreateView
     form_class = CoachMultiForm
     permission_required = 'coach.add'
 
+    def post(self, request, *args, **kwargs):
+        saved = super(Create, self).post(request, *args, **kwargs)
+        if "another" in request.POST:
+            return HttpResponseRedirect(reverse('crm:manager:coach:new'))
+        else:
+            return saved
+
     def form_valid(self, form):
         # User is generated manually as we need create
         # dynamic username for coach
