@@ -82,6 +82,20 @@ def vk_small_avatar(vk_user_id):
     return photo
 
 
+def vk_user_id(vk_ref):
+    session = vk.Session()
+    api = vk.API(session, v=5.90)
+
+    try:
+        id = api.users.get(
+            access_token=settings.VK_GROUP_TOKEN,
+            user_ids=str(vk_ref),
+        )[0]['id']
+    except (IndexError, KeyError):
+        id = None
+    return id
+
+
 @register.simple_tag
 def bootstrap_alert_message(message: Message, dismissable=True):
     return render_alert(

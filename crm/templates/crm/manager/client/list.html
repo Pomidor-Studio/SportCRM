@@ -30,6 +30,13 @@
             >
               Добавить ученика
             </a>
+            <a
+              name="add-new"
+              href="{% url 'crm:manager:client:excel' %}"
+              class="btn btn-sm btn-info"
+            >
+              Загрузить из Excel
+            </a>
           {% endifhasperm %}
         </div>
         <div class="col-md-4">
