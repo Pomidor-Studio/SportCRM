@@ -29,7 +29,30 @@ class TenantFormMixin:
                     field.queryset = field.queryset.filter(**kwargs)
 
 
-class TenantModelForm(TenantFormMixin, forms.ModelForm):
+class ArchivedFormMixin:
+    def filter_archived_queryset(self):
+        """
+        Class initialized ChoiceFields don't handle models that are
+        *safe deleted*, so we must manually apply filter on such fields
+
+        This function must be applied in __init__ and
+        **after** super().__init__
+        """
+
+        for field in self.fields.values():
+            # Avoid circular import
+            # TODO: move SafeDeleteModel and mixins to contrib app
+            from safedelete.models import SafeDeleteModel
+            if isinstance(
+                field,
+                (forms.ModelChoiceField, forms.ModelMultipleChoiceField)
+            ) and issubclass(field.queryset.model, SafeDeleteModel):
+                # Avoid archived data in queryset
+                kwargs = {'deleted__isnull': True}
+                field.queryset = field.queryset.filter(**kwargs)
+
+
+class TenantModelForm(TenantFormMixin, ArchivedFormMixin, forms.ModelForm):
     """
     Base from for multitenant
     """
@@ -45,9 +68,10 @@ class TenantModelForm(TenantFormMixin, forms.ModelForm):
 
         # Check form ChoiceFields
         self.filter_choice_queryset()
+        self.filter_archived_queryset()
 
 
-class TenantForm(TenantFormMixin, forms.Form):
+class TenantForm(TenantFormMixin, ArchivedFormMixin, forms.Form):
     """
     Base class for non-model forms with multi-tenant support
     """
@@ -57,3 +81,4 @@ class TenantForm(TenantFormMixin, forms.Form):
 
         # Check form ChoiceFields
         self.filter_choice_queryset()
+        self.filter_archived_queryset()

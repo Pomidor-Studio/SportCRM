@@ -17,6 +17,7 @@ from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, Manager, SubscriptionsType,
+    Location,
 )
 
 
@@ -319,6 +320,20 @@ class EventClassForm(TenantModelForm):
         initial='',
         min_value=0,
         required=False
+    )
+    location = forms.ModelChoiceField(
+        empty_label='',
+        queryset=Location.objects.all(),
+        label='Место проведения',
+        widget=Select2WidgetAttributed(
+            attr_getter=subcription_type_attrs)
+    )
+    coach = forms.ModelChoiceField(
+        empty_label='',
+        queryset=Coach.objects.all(),
+        label='Тренер',
+        widget=Select2WidgetAttributed(
+            attr_getter=subcription_type_attrs)
     )
 
     class Meta:
