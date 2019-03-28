@@ -7,16 +7,17 @@ from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
-from django_multitenant.utils import get_current_tenant
 from django_select2.forms import (
     Select2Mixin, Select2MultipleWidget, Select2Widget,
 )
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
+from contrib.forms import TenantForm, TenantModelForm
 from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, Manager, SubscriptionsType,
+    Location,
 )
 
 
@@ -39,30 +40,6 @@ class Select2SingleTagWidget(
     forms.Select
 ):
     pass
-
-
-class TenantModelForm(forms.ModelForm):
-    """Base from for multitenant"""
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # никакой универсальности, просто удаляем поле company если оно есть.
-        if "company" in self.fields:
-            del self.fields["company"]
-        tenant = get_current_tenant()
-        if tenant:
-            for field in self.fields.values():
-
-                if isinstance(
-                    field,
-                    (forms.ModelChoiceField, forms.ModelMultipleChoiceField)
-                ):
-                    # Check if the model being used for the ModelChoiceField
-                    # has a tenant model field
-                    if hasattr(field.queryset.model, 'tenant_id'):
-                        # Add filter restricting queryset to values to this
-                        # tenant only.
-                        kwargs = {field.queryset.model.tenant_id: tenant}
-                        field.queryset = field.queryset.filter(**kwargs)
 
 
 class ClientForm(TenantModelForm):
@@ -152,34 +129,15 @@ class SubscriptionsTypeForm(TenantModelForm):
         fields = '__all__'
 
 
-class SignUpClientWithoutSubscriptionForm(forms.Form):
+class SignUpClientWithoutSubscriptionForm(TenantForm):
     client = forms.ModelMultipleChoiceField(
         queryset=Client.objects.all(),
         label='Ученик',
         widget=Select2MultipleWidget
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
 
-        tenant = get_current_tenant()
-        if tenant:
-            for field in self.fields.values():
-
-                if isinstance(
-                    field,
-                    (forms.ModelChoiceField, forms.ModelMultipleChoiceField)
-                ):
-                    # Check if the model being used for the ModelChoiceField
-                    # has a tenant model field
-                    if hasattr(field.queryset.model, 'tenant_id'):
-                        # Add filter restricting queryset to values to this
-                        # tenant only.
-                        kwargs = {field.queryset.model.tenant_id: tenant}
-                        field.queryset = field.queryset.filter(**kwargs)
-
-
-class ExtendClientSubscriptionForm(forms.Form):
+class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
     reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
 
@@ -362,6 +320,20 @@ class EventClassForm(TenantModelForm):
         initial='',
         min_value=0,
         required=False
+    )
+    location = forms.ModelChoiceField(
+        empty_label='',
+        queryset=Location.objects.all(),
+        label='Место проведения',
+        widget=Select2WidgetAttributed(
+            attr_getter=subcription_type_attrs)
+    )
+    coach = forms.ModelChoiceField(
+        empty_label='',
+        queryset=Coach.objects.all(),
+        label='Тренер',
+        widget=Select2WidgetAttributed(
+            attr_getter=subcription_type_attrs)
     )
 
     class Meta:

@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 
 from bot.api.messages.base import Message
 from bot.models import MessageMeta
-from crm.forms import TenantModelForm
+from contrib.forms import TenantModelForm
 
 
 class MessageTemplateEditForm(TenantModelForm):
