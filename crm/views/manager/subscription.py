@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
@@ -29,7 +30,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     permission_required = 'subscription.edit'
     model = SubscriptionsType
-    form_class = SubscriptionsTypeForm
+    # form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
 
 

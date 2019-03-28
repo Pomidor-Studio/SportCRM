@@ -507,13 +507,13 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     name = models.CharField("Наимеование", max_length=100)
     price = models.FloatField("Цена, ₽")
+    duration = models.PositiveIntegerField("Продолжительность")
     duration_type = models.CharField(
         "Временные рамки абонемента",
         max_length=20,
         choices=GRANULARITY,
         default=GRANULARITY.DAY
     )
-    duration = models.PositiveIntegerField("Продолжительность")
     rounding = models.BooleanField(
         "Округление начала действия абонемента",
         default=False
