@@ -1,10 +1,20 @@
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
-from django.views.generic import RedirectView
+from django.urls import reverse
+from django.views.generic import RedirectView, CreateView
 from django.views.generic.detail import (
     BaseDetailView,
     SingleObjectTemplateResponseMixin,
 )
+
+
+class CreateAndAddMixin(CreateView):
+    def post(self, request, *args, **kwargs):
+        saved = super(CreateAndAddMixin, self).post(request, *args, **kwargs)
+        if "another" in request.POST:
+            return HttpResponseRedirect(reverse(self.add_another_url))
+        else:
+            return saved
 
 
 class UnDeletionMixin:
