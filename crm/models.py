@@ -14,7 +14,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q, Model
+from django.db.models import Q, Model, Count, F
 from django.db.models.manager import BaseManager
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -626,7 +626,7 @@ class ClientManager(TenantManagerMixin, models.Manager):
     def with_active_subscription_to_event(self, event: Event):
         cs = (
             ClientSubscriptions.objects
-            .active_subscriptions(event)
+            .active_subscriptions_to_event(event)
             .order_by('client_id')
             .distinct('client_id')
             .values_list('client_id', flat=True)
@@ -682,17 +682,25 @@ class Client(CompanyObjectModel):
         return self.company.vk_access_token
 
     def update_balance(self, top_up_amount, skip_notification: bool = False):
-        '''
+        """
+        :param top_up_amount: Amount of added or removed from balance
         :param skip_notification: Prevent double notification send if buy sub
-        '''
+        """
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
         if not skip_notification:
             from google_tasks.tasks import enqueue
             enqueue('notify_client_balance', self.id)
 
-    def add_balance_in_history(self, top_up_amount, reason, skip_notification: bool = False):
+    def add_balance_in_history(
+        self,
+        top_up_amount: int,
+        reason: str,
+        skip_notification: bool = False
+    ):
         """
+        :param top_up_amount: Amount of added or removed from balance
+        :param reason: Reason of client balance modification
         :param skip_notification: Prevent double notification send if buy sub
         """
         with transaction.atomic():
@@ -729,7 +737,7 @@ class Client(CompanyObjectModel):
 
 
 class ClientSubscriptionQuerySet(TenantQuerySet):
-    def active_subscriptions(self, event: Event):
+    def active_subscriptions_to_event(self, event: Event):
         """Get all active subscriptions for selected event"""
         return self.filter(
             subscription__event_class=event.event_class,
@@ -738,16 +746,49 @@ class ClientSubscriptionQuerySet(TenantQuerySet):
             visits_left__gt=0
         )
 
+    def active_subscriptions_to_date(self, to_date: date):
+        """
+        Get all subscriptions, active at particular date
+
+        :param to_date: Date to test activity
+        :return:
+        """
+        return self.annotate(
+            counted_visits_left=F('visits_on_by_time') - Count(
+                'attendance',
+                filter=Q(attendance__event__date__lt=to_date) &
+                Q(attendance__subscription_id=F('id'))
+            )
+        ).filter(
+            start_date__lte=to_date,
+            end_date__gte=to_date,
+            counted_visits_left__gt=0
+        )
+
+    def active_subscriptions(self):
+        today = date.today()
+        return self.filter(
+            start_date__lte=today,
+            end_date__gte=today,
+            visits_left__gt=0
+        )
+
 
 class ClientSubscriptionsManager(
     ScrmTenantManagerMixin,
     BaseManager.from_queryset(ClientSubscriptionQuerySet)
 ):
-    def active_subscriptions(self, event: Event):
-        return self.get_queryset().active_subscriptions(event)
+    def active_subscriptions_to_event(self, event: Event):
+        return self.get_queryset().active_subscriptions_to_event(event)
+
+    def active_subscriptions_to_date(self, to_date: date):
+        return self.get_queryset().active_subscriptions_to_date(to_date)
+
+    def active_subscriptions(self):
+        return self.get_queryset().active_subscriptions()
 
     def extend_by_cancellation(self, cancelled_event: Event):
-        for subscription in self.active_subscriptions(cancelled_event):
+        for subscription in self.active_subscriptions_to_event(cancelled_event):
             subscription.extend_by_cancellation(cancelled_event)
 
     def revoke_extending(self, activated_event: Event):

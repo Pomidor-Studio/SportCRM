@@ -68,13 +68,7 @@
 {% block content %}
   <div class="content-section ml-4 mt-4 w-50">
     <legend class="border-bottom mb-2">Настройка профиля</legend>
-    {% if not user.has_vk_auth %}
-      <div class="alert alert-primary" role="alert">
-        {{ user.get_full_name|default_if_none:"Тренер" }} вы еще не привязали ваш аккаунт
-        в
-        VK. Для этого просто нажмите кнопку "Привязать ВК".
-      </div>
-    {% else %}
+    {% if user.has_vk_auth %}
       <div class="row mb-3">
         <div class="col-3">
           <a href="{{ user.vk_link|safe }}" target="_blank">
