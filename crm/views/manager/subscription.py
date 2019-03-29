@@ -8,7 +8,7 @@ from rules.contrib.views import PermissionRequiredMixin
 from crm.filters import SubscriptionsTypeFilterSet
 from crm.forms import SubscriptionsTypeForm
 from crm.models import SubscriptionsType
-from crm.views.mixin import UnDeleteView
+from crm.views.mixin import UnDeleteView, CreateAndAddMixin
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -20,18 +20,12 @@ class List(PermissionRequiredMixin, FilterView):
     permission_required = 'subscription'
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
     permission_required = 'subscription.add'
-
-    def post(self, request, *args, **kwargs):
-        saved = super(Create, self).post(request, *args, **kwargs)
-        if "another" in request.POST:
-            return HttpResponseRedirect(reverse('crm:manager:subscription:new'))
-        else:
-            return saved
+    add_another_url = 'crm:manager:subscription:new'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):

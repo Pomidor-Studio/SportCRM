@@ -25,6 +25,7 @@ from crm.models import (
     EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
+from crm.views.mixin import CreateAndAddMixin
 
 from google_tasks.tasks import enqueue
 
@@ -44,18 +45,12 @@ class List(PermissionRequiredMixin, FilterView):
         return context
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.add'
-
-    def post(self, request, *args, **kwargs):
-        saved = super(Create, self).post(request, *args, **kwargs)
-        if "another" in request.POST:
-            return HttpResponseRedirect(reverse('crm:manager:client:new'))
-        else:
-            return saved
+    add_another_url = 'crm:manager:client:new'
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = Client

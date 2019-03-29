@@ -8,7 +8,7 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from crm.filters import LocationFilter
 from crm.models import Location
-from crm.views.mixin import UnDeleteView
+from crm.views.mixin import UnDeleteView, CreateAndAddMixin
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -21,18 +21,12 @@ class List(PermissionRequiredMixin, FilterView):
     filterset_class = LocationFilter
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     model = Location
     fields = ('name', 'address')
     template_name = 'crm/manager/location/form.html'
     permission_required = 'location.add'
-
-    def post(self, request, *args, **kwargs):
-        saved = super(Create, self).post(request, *args, **kwargs)
-        if "another" in request.POST:
-            return HttpResponseRedirect(reverse('crm:manager:locations:new'))
-        else:
-            return saved
+    add_another_url = 'crm:manager:locations:new'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):

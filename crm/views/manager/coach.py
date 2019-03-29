@@ -18,7 +18,7 @@ from crm.filters import CoachFilter
 from crm.forms import CoachMultiForm
 from crm.models import Coach
 from crm.utils import VK_PAGE_REGEXP
-from crm.views.mixin import UnDeleteView
+from crm.views.mixin import UnDeleteView, CreateAndAddMixin
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -96,18 +96,12 @@ class SocialAuthMixin:
         self.create_with_replace(user, vk_user)
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, SocialAuthMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, SocialAuthMixin, CreateAndAddMixin):
     template_name = 'crm/manager/coach/form.html'
     model = Coach
     form_class = CoachMultiForm
     permission_required = 'coach.add'
-
-    def post(self, request, *args, **kwargs):
-        saved = super(Create, self).post(request, *args, **kwargs)
-        if "another" in request.POST:
-            return HttpResponseRedirect(reverse('crm:manager:coach:new'))
-        else:
-            return saved
+    add_another_url = 'crm:manager:coach:new'
 
     def form_valid(self, form):
         # User is generated manually as we need create
