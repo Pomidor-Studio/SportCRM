@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-29 00:06+0500\n"
+"POT-Creation-Date: 2019-03-29 01:41+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -22,11 +22,20 @@ msgstr ""
 
 #: crm/auth/password_validation.py:25
 msgid "Password must have symbols from any two groups"
-msgstr "Символы пароля должны быть как минимум из двух групп (прописные, заглавные буквы, цифры и спец. символы)"
+msgstr ""
+"Символы пароля должны быть как минимум из двух групп (прописные, заглавные "
+"буквы, цифры и спец. символы)"
 
 #: crm/auth/password_validation.py:30
 msgid "Your password can't be entirely from one type of symbols."
-msgstr "Ваш пароль не может быть только из одного типа символов (прописные, заглавные буквы, цифры и спец. символы)"
+msgstr ""
+"Ваш пароль не может быть только из одного типа символов (прописные, "
+"заглавные буквы, цифры и спец. символы)"
+
+#: crm/forms.py:466
+#, python-format
+msgid "User with name %(username)s exists"
+msgstr "Пользователь с логином %(username)s сушествует"
 
 #: crm/templates/crm/auth/password-change.html:13
 msgid "Change my password"
