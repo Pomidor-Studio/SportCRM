@@ -1,7 +1,7 @@
 cron:
     - description: "daily birthday job"
       url: /bot/tasks?param=birthday
-      schedule: every day 10:00
+      schedule: every day 7:00
       target: background
 #      retry_parameters:
 #          min_backoff_seconds: 30
