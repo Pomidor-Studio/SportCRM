@@ -394,7 +394,7 @@ class EventClass(CompanyObjectModel):
         :param end_date: Конечная дата календаря
         :return: Словарь из даты и возможной тренировки
         """
-        # If event_c
+        # If event_class don't have starting date - we can't be sure from what
         # day render calendar events, so in this case return empty event dict
         if self.date_from is None:
             return {}
