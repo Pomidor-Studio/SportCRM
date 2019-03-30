@@ -57,7 +57,7 @@ INSTALLED_APPS = [
     'django_select2',
     'django_tables2',
     'qr_code',
-    'google_tasks.apps.GoogleTasksConfig',
+    'gcp.apps.GcpConfig',
     'analytical',
 ]
 
@@ -213,6 +213,8 @@ YANDEX_METRICA_COUNTER_ID = '52839823' # devtest metrika
 YANDEX_METRICA_WEBVISOR = True
 
 GOOGLE_ANALYTICS_JS_PROPERTY_ID = 'UA-136374884-1'
+GOOGLE_ANALYTICS_SITE_SPEED_SAMPLE_RATE = 100
+
 
 BACKGROUND_MODE: bool = False # True for run as background tasks worker
 USE_GOOGLE_TASKS: bool = False

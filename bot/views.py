@@ -20,7 +20,7 @@ from bot.serializers import MessageIgnoranceSerializer
 from crm.models import Company
 from crm.views.mixin import RedirectWithActionView
 
-from google_tasks.tasks import enqueue
+from gcp.tasks import enqueue
 import bot.api.cron.cron_client_events
 
 """
