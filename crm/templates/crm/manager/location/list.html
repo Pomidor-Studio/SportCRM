@@ -32,31 +32,34 @@
       <tr>
         <th>Название</th>
         <th>Адрес</th>
-        {% ifhasperm 'location.delete' user %}
-        <th scope="col">Управление</th>
-        {% endifhasperm %}
       </tr>
       </thead>
       <tbody>
       {% for location in locations %}
       <tr>
-        <td>{{ location.name }}</td>
+        <td>
+          <a href="{% url 'crm:manager:locations:update' location.pk %}">
+            {{ location.name }}
+          </a>
+        </td>
         <td>{{ location.address }}</td>
 
         {% ifhasperm 'location.delete' user %}
         <td>
           {% if location.deleted %}
-          <a
-            href="{% url 'crm:manager:locations:undelete' location.id %}"
-            class="btn btn-secondary btn-sm"
-          >Вернуть</a>
+            <div class="row justify-content-end">
+              <a
+                href="{% url 'crm:manager:locations:undelete' location.id %}"
+                class="btn btn-secondary btn-sm"
+              >Вернуть</a>
+            </div>
           {% else %}
-          <a class="btn mbtn-sm btn-sm btn-outline-info"
-             href="{% url 'crm:manager:locations:update' location.pk %}">Изменить</a>
-          <a
-            href="{% url 'crm:manager:locations:delete' location.id %}"
-            class="btn btn-danger btn-sm"
-          >Удалить</a>
+            <div class="row justify-content-end mr-1">
+              <a
+                href="{% url 'crm:manager:locations:delete' location.id %}"
+                class="btn btn-danger btn-sm"
+              >Удалить</a>
+            </div>
           {% endif %}
         </td>
         {% endifhasperm %}
