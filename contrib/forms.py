@@ -104,4 +104,5 @@ class NonTenantUsernameMixin:
                 params={'username': username}
             )
 
+        set_current_tenant(current_tenant)
         return username
