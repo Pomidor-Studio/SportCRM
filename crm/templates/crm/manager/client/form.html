@@ -37,22 +37,30 @@
             var idRe = new RegExp("vk.com\/(?<user_id>([A-Za-z0-9_])+)");
             var matchString = $("#vk_user_ref").val();
 
-            var matchObj = idRe.exec(matchString);
-            try {
-                var id = matchObj.groups.user_id;
-                getUserData(id);
-            } catch (err) {
-                showError("Ошибка! Неверный формат ссылки вк!");
+            if (matchString === '' || matchString === null) {
+              clearFields()
+            } else {
+              var matchObj = idRe.exec(matchString);
+              try {
+                  var id = matchObj.groups.user_id;
+                  getUserData(id);
+              } catch (err) {
+                 showError("Ошибка! Неверный формат ссылки вк!");
+              }
             }
         });
 
     });
 
-    function showError(errorText) {
+    function clearFields() {
         $("#id_name").val("");
         $("#id_vk_user_id").val("");
         $("#profile_pic").attr("src", "");
         $("#profile_pic_container").hide();
+    }
+
+    function showError(errorText) {
+        clearFields()
         $("#alert")
           .text(errorText)
           .show();
