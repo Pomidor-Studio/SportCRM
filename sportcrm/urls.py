@@ -42,4 +42,5 @@ if not settings.BACKGROUND_MODE:
 else:
     urlpatterns = [
         path('', include('gcp.background_urls')),
+        path('', include('bot.background_urls')),
     ]
