@@ -16,7 +16,7 @@
           {% bootstrap_form form %}
         </fieldset>
         <div class="form-group">
-          <button class="btn btn-primary btn-outline-info" type="submit">{% if object.id %}Сохранить{% else %}Добавить{% endif %}</button>
+          <button class="btn btn-primary" type="submit">{% if object.id %}Сохранить{% else %}Добавить{% endif %}</button>
           <a name="cancel" href="{% url 'crm:manager:subscription:list' %}"
              class="btn btn-outline-info">Назад</a>
         </div>
