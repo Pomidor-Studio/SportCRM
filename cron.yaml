@@ -1,7 +1,7 @@
 cron:
     - description: "daily birthday job"
       url: /bot/tasks?param=birthday
-      schedule: every day 7:00
+      schedule: every day 8:00   #GMT
       target: background
 #      retry_parameters:
 #          min_backoff_seconds: 30
@@ -9,7 +9,7 @@ cron:
 
     - description: "daily debtors job"
           url: /bot/tasks?param=receivables
-          schedule: every day 13:00
+          schedule: every day 13:00 #GMT
           target: background
 #          retry_parameters:
 #              min_backoff_seconds: 30
