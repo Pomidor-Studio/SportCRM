@@ -2,7 +2,7 @@ steps:
     # deploy background on app engine
     - id: 'background deploy'
       name: 'gcr.io/cloud-builders/gcloud'
-      args: ['app', 'deploy', 'dispatch.yaml', 'app-background.yaml', '--version=production1']
+      args: ['app', 'deploy', 'dispatch.yaml', 'cron.yaml', 'app-background.yaml', '--version=production1']
       waitFor: ['-']
 
     # Install pip dependencies

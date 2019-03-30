@@ -1,0 +1,16 @@
+cron:
+    - description: "daily birthday job"
+      url: /bot/tasks?param=birthday
+      schedule: every day 10:00
+      target: background
+#      retry_parameters:
+#          min_backoff_seconds: 30
+#          max_doublings: 3
+
+    - description: "daily debtors job"
+          url: /bot/tasks?param=receivables
+          schedule: every day 13:00
+          target: background
+#          retry_parameters:
+#              min_backoff_seconds: 30
+#              max_doublings: 3
