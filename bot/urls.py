@@ -1,4 +1,3 @@
-from django.conf.urls import url
 from django.urls import path, include
 
 from . import views
@@ -19,12 +18,7 @@ messages_urls = ([
     ),
 ], 'messages')
 
-bot_urls = ([
-    url('tasks', views.tasks, name='tasks'),
-    url('', views.gl, name='gl'),
-], 'bot')
-
 urlpatterns = [
-    path('bot/', include(bot_urls)),
+    path('bot/gl', views.gl),
     path('messages/', include(messages_urls)),
 ]
