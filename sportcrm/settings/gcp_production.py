@@ -35,6 +35,8 @@ CACHES = {
     }
 }
 
+QR_CODE_CACHE_ALIAS = 'default'
+
 USE_GOOGLE_TASKS: bool = True
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = '6910281'

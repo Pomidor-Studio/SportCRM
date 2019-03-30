@@ -15,3 +15,5 @@ def google_task_handler(request):
         return HttpResponse('Only POST alloyed', content_type="text/plain", status=405)
 
 
+def warm_up(request):
+    return HttpResponse('warm up', content_type="text/plain", status=200)
