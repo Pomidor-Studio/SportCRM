@@ -82,18 +82,27 @@ def vk_small_avatar(vk_user_id):
     return photo
 
 
-def vk_user_id(vk_ref):
+def get_vk_user_ids(vk_user_domains):
     session = vk.Session()
     api = vk.API(session, v=5.90)
+    vk_user_ids = [None] * len(vk_user_domains)
+    domains = ",".join(vk_user_domains)
 
-    try:
-        id = api.users.get(
-            access_token=settings.VK_GROUP_TOKEN,
-            user_ids=str(vk_ref),
-        )[0]['id']
-    except (IndexError, KeyError):
-        id = None
-    return id
+    results = api.users.get(
+        access_token=settings.VK_GROUP_TOKEN,
+        user_ids=domains,
+        fields='domain, screen_name'
+    )
+
+    for result in results:
+        id = 'id' + str(result['id'])
+        screen_name = result['screen_name']
+        if screen_name in vk_user_domains:
+            vk_user_ids[vk_user_domains.index(screen_name)] = result['id']
+        elif id in vk_user_domains:
+            vk_user_ids[vk_user_domains.index(id)] = result['id']
+
+    return vk_user_ids
 
 
 @register.simple_tag
