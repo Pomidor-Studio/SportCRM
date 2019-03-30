@@ -698,7 +698,7 @@ class Client(CompanyObjectModel):
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
         if not skip_notification:
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_balance', self.id)
 
     def add_balance_in_history(
@@ -871,7 +871,7 @@ class ClientSubscriptions(CompanyObjectModel):
             self.visits_left += added_visits
             self.end_date = new_end_date
             self.save()
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_subscription_extend', self.id)
 
     def extend_by_cancellation(self, cancelled_event: Event):
@@ -1086,7 +1086,7 @@ class ClientSubscriptions(CompanyObjectModel):
                 created.mark_visit(self)
                 self.visits_left = self.visits_left - 1
                 self.save()
-                from google_tasks.tasks import enqueue
+                from gcp.tasks import enqueue
                 enqueue('notify_client_subscription_visit', self.id)
             else:
                 raise ClientAttendanceExists(
@@ -1096,7 +1096,7 @@ class ClientSubscriptions(CompanyObjectModel):
         with transaction.atomic():
             self.visits_left = self.visits_left + 1
             self.save()
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_subscription_visit', self.id)
 
     class Meta:
@@ -1342,7 +1342,7 @@ class Event(CompanyObjectModel):
                 ClientSubscriptions.objects.extend_by_cancellation(self)
 
             try:
-                from google_tasks.tasks import enqueue
+                from gcp.tasks import enqueue
                 enqueue('notify_event_cancellation', self.id)
             except ImportError:
                 pass
@@ -1373,7 +1373,7 @@ class Event(CompanyObjectModel):
 
         self.is_closed = True
         self.save()
-        from google_tasks.tasks import enqueue
+        from gcp.tasks import enqueue
         enqueue('notify_manager_event_closed', self.id)
 
     def open_event(self):
@@ -1383,7 +1383,7 @@ class Event(CompanyObjectModel):
 
         self.is_closed = False
         self.save()
-        from google_tasks.tasks import enqueue
+        from gcp.tasks import enqueue
         enqueue('notify_manager_event_opened', self.id)
 
 

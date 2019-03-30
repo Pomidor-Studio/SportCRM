@@ -30,7 +30,7 @@ from crm.models import (
 )
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import RedirectWithActionView
-from google_tasks.tasks import enqueue
+from gcp.tasks import enqueue
 
 
 class ObjList(PermissionRequiredMixin, ListView):

@@ -37,8 +37,9 @@ if not settings.BACKGROUND_MODE:
             'qr_code/',
             include(('qr_code.urls', 'qr_code'), namespace="qr_code")
         ),
+        path('', include('gcp.urls')),
     ]
 else:
     urlpatterns = [
-        path('', include('google_tasks.urls')),
+        path('', include('gcp.background_urls')),
     ]
