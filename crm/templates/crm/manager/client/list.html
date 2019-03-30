@@ -98,23 +98,23 @@
                   class="btn btn-sm btn-outline-info"
                   href="tel:{{ client.phone_number }}"
                 >
-                  <i class="fas fa-phone fa-2x"></i>
+                  <i class="fas fa-phone"></i>
                 </a>
               {% endif %}
               {% if client.vk_user_id %}
                 {% if vk_group_id %}
                   <a
                     class="btn btn-sm btn-outline-info" target="_blank"
-                    href="https://vk.com/{{ vk_group_id }}?sel={{ client.vk_user_id }}"
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
                   >
-                    <i class="fab fa-vk fa-2x"></i>
+                    <i class="fab fa-vk"></i>
                   </a>
                   {% else %}
                   <a
                     class="btn btn-sm btn-outline-info" target="_blank"
                     href="https://vk.com/im?sel={{ client.vk_user_id }}"
                   >
-                    <i class="fab fa-vk fa-2x"></i>
+                    <i class="fab fa-vk"></i>
                   </a>
                 {% endif %}
               {% endif %}
@@ -123,7 +123,7 @@
                   class="btn btn-sm btn-outline-info" target="_blank"
                   href="mailto:{{ client.email_address }}"
                 >
-                  <i class="fas fa-envelope fa-2x"></i>
+                  <i class="fas fa-envelope"></i>
                 </a>
               {% endif %}
             </div>
