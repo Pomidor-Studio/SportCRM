@@ -2,7 +2,7 @@ steps:
     # deploy background on app engine
     - id: 'background deploy'
       name: 'gcr.io/cloud-builders/gcloud'
-      args: ['app', 'deploy', 'dispatch.yaml', 'cron.yaml', 'app-background.yaml', '--version=production1']
+      args: ['app', 'deploy', 'dispatch.yaml', 'cron.yaml', 'app-${_ENV}-background.yaml', '--version=production1']
       waitFor: ['-']
 
     # Install pip dependencies
@@ -35,9 +35,10 @@ steps:
       entrypoint: sh
       args:
           - '-c'
-          - 'python3 ./manage.py migrate --noinput --settings=sportcrm.settings.gcp_production && touch /cloudsql/stop'
+          - 'python3 ./manage.py migrate --noinput && touch /cloudsql/stop'
       env:
           - 'PYTHONPATH=./venv'
+          - 'DJANGO_SETTINGS_MODULE=sportcrm.settings.gcp_${_ENV}'
       volumes:
           - name: db
             path: /cloudsql
@@ -47,16 +48,17 @@ steps:
     - id: 'collect-static'
       name: 'python:3.7'
       entrypoint: python3
-      args: ['./manage.py', 'collectstatic', '--noinput', '--settings=sportcrm.settings.gcp_production']
+      args: ['./manage.py', 'collectstatic', '--noinput']
       env:
           - 'PYTHONPATH=./venv'
+          - 'DJANGO_SETTINGS_MODULE=sportcrm.settings.gcp_${_ENV}'
       waitFor: ['pip-install', 'background deploy']
 
 
     # deploy on app engine
     - id: 'deploy'
       name: 'gcr.io/cloud-builders/gcloud'
-      args: ['app', 'deploy', 'app.yaml', '--version=production1']
+      args: ['app', 'deploy', 'app-${_ENV}.yaml', '--version=production1']
       waitFor: ['collect-static']
 
 timeout: "1600s"

@@ -1,21 +1,14 @@
 """Create a task for a given queue with an arbitrary payload."""
 import json
 
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django_multitenant.utils import set_current_tenant, get_current_tenant
-
 from google.cloud import tasks_v2beta3
-from django.conf import settings
 
-
-from crm.models import Company
-import bot.tasks
 import bot.api.messageHandler
-
-# TODO: переместить в конфиги
-project = 'sport-srm-test'
-queue = 'sport-crm-test-queue'
-location = 'us-east1'
+import bot.tasks
+from crm.models import Company
 
 
 def enqueue(method: str, *args, **kwargs):
@@ -32,6 +25,11 @@ def enqueue(method: str, *args, **kwargs):
     converted_payload = json_payload.encode()
 
     if settings.USE_GOOGLE_TASKS:
+
+        project = settings.GCP_TASK_PROJECT
+        queue = settings.GCP_TASK_QUEUE
+        location = settings.GCP_TASK_LOCATION
+
         client = tasks_v2beta3.CloudTasksClient()
 
         # Construct the fully qualified queue name.
@@ -70,12 +68,16 @@ def do(body_payload: bytes) -> str:
         company = get_object_or_404(Company, pk=company_id)
         set_current_tenant(company)
 
+    method_to_call = None
+
     for module in modules:
         if hasattr(module, method):
             method_to_call = getattr(module, method)
 
-    try:
+    if method_to_call:
         method_to_call(*args, **kwargs)
-    except UnboundLocalError:
+        return 'OK'
+    else:
         return f'ERROR: no method "{method}" in modules'
-    return 'OK'
+
+
