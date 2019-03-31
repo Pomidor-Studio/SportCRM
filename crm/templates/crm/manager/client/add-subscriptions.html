@@ -83,6 +83,13 @@
         $('button.add-subscription').click(function () {
           $('#add-form').attr('action', $(this).data('action'));
         });
+        {% comment %}
+        Perform forced check, as form may have some attendance selected on
+        init
+        {% endcomment %}
+        if (canCheckOverlapping()) {
+            checkOverlapping();
+          }
       {% endif %}
     });
   </script>
@@ -102,7 +109,7 @@
             <div
               class="alert alert-info overlapping"
               id="is-overlapping"
-              style="display: none;"
+              style="{% if object and object.is_overlapping and not object.is_overlapping_with_cancelled %}{% else %}display: none;{% endif %}"
             >
               В тренировочной сетке есть отменённые занятия, из-за которых
               нельзя будет потратить все посещения.
@@ -110,16 +117,17 @@
             <div
               class="alert alert-info overlapping"
               id="is-overlapping-with-canceled"
-              style="display: none;"
+              style="{% if object and object.is_overlapping and object.is_overlapping_with_cancelled and object.canceled_events_count != 0 %}{% else %}display: none;{% endif %};"
             >
               В тренировочной сетке есть отменённые занятия, но даже вместе с
               ними,
               нельзя будет потратить все посещения.
             </div>
             <div
+
               class="alert alert-info overlapping"
               id="is-overlapping-total"
-              style="display: none;"
+              style="{% if object and object.is_overlapping and object.is_overlapping_with_cancelled and object.canceled_events_count == 0  %}{% else %}display: none;{% endif %};"
             >
               Количество тренировок в сетке не позволяет потратить все
               посещения.

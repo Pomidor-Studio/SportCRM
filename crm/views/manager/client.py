@@ -2,6 +2,7 @@ from typing import Optional
 
 from django.contrib import messages
 from django.db import transaction
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -24,8 +25,9 @@ from crm.models import (
     EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
+from crm.views.mixin import CreateAndAddMixin
 
-from google_tasks.tasks import enqueue
+from gcp.tasks import enqueue
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -43,12 +45,12 @@ class List(PermissionRequiredMixin, FilterView):
         return context
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.add'
-
+    add_another_url = 'crm:manager:client:new'
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = Client

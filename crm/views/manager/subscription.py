@@ -1,4 +1,5 @@
-from django.urls import reverse_lazy
+from django.http import HttpResponseRedirect
+from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from reversion.views import RevisionMixin
@@ -7,7 +8,7 @@ from rules.contrib.views import PermissionRequiredMixin
 from crm.filters import SubscriptionsTypeFilterSet
 from crm.forms import SubscriptionsTypeForm
 from crm.models import SubscriptionsType
-from crm.views.mixin import UnDeleteView
+from crm.views.mixin import UnDeleteView, CreateAndAddMixin
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -19,11 +20,12 @@ class List(PermissionRequiredMixin, FilterView):
     permission_required = 'subscription'
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
     permission_required = 'subscription.add'
+    add_another_url = 'crm:manager:subscription:new'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):

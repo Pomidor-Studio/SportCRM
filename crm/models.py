@@ -14,7 +14,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q, Model
+from django.db.models import Q, Model, Count, F
 from django.db.models.manager import BaseManager
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -22,7 +22,7 @@ from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
 from django_multitenant.mixins import TenantManagerMixin, TenantQuerySet
 from django_multitenant.models import TenantModel
-from django_multitenant.utils import get_current_tenant
+from django_multitenant.utils import get_current_tenant, set_current_tenant
 from phonenumber_field.modelfields import PhoneNumberField
 from psycopg2 import Error as Psycopg2Error
 from safedelete.managers import (
@@ -144,12 +144,21 @@ class Company(models.Model):
 
 class CustomUserManager(TenantManagerMixin, UserManager):
     def generate_uniq_username(self, first_name, last_name, prefix='user'):
+        # Disable current tenant for avoiding username collation between
+        # companies
+        current_tenant = get_current_tenant()
+        set_current_tenant(None)
+        name = 'nevenr_used_name'
         for idx in count():
             trans_f = translit(first_name, language_code='ru', reversed=True)
             trans_l = translit(last_name, language_code='ru', reversed=True)
             name = f'{prefix}_{idx}_{trans_f}_{trans_l}'.lower()[:150]
+
             if not self.filter(username=name).exists():
-                return name
+                break
+
+        set_current_tenant(current_tenant)
+        return name
 
     def create_coach(self, first_name, last_name):
         return self.create_user(
@@ -626,7 +635,7 @@ class ClientManager(TenantManagerMixin, models.Manager):
     def with_active_subscription_to_event(self, event: Event):
         cs = (
             ClientSubscriptions.objects
-            .active_subscriptions(event)
+            .active_subscriptions_to_event(event)
             .order_by('client_id')
             .distinct('client_id')
             .values_list('client_id', flat=True)
@@ -682,17 +691,25 @@ class Client(CompanyObjectModel):
         return self.company.vk_access_token
 
     def update_balance(self, top_up_amount, skip_notification: bool = False):
-        '''
+        """
+        :param top_up_amount: Amount of added or removed from balance
         :param skip_notification: Prevent double notification send if buy sub
-        '''
+        """
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
         if not skip_notification:
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_balance', self.id)
 
-    def add_balance_in_history(self, top_up_amount, reason, skip_notification: bool = False):
+    def add_balance_in_history(
+        self,
+        top_up_amount: int,
+        reason: str,
+        skip_notification: bool = False
+    ):
         """
+        :param top_up_amount: Amount of added or removed from balance
+        :param reason: Reason of client balance modification
         :param skip_notification: Prevent double notification send if buy sub
         """
         with transaction.atomic():
@@ -729,7 +746,7 @@ class Client(CompanyObjectModel):
 
 
 class ClientSubscriptionQuerySet(TenantQuerySet):
-    def active_subscriptions(self, event: Event):
+    def active_subscriptions_to_event(self, event: Event):
         """Get all active subscriptions for selected event"""
         return self.filter(
             subscription__event_class=event.event_class,
@@ -738,16 +755,49 @@ class ClientSubscriptionQuerySet(TenantQuerySet):
             visits_left__gt=0
         )
 
+    def active_subscriptions_to_date(self, to_date: date):
+        """
+        Get all subscriptions, active at particular date
+
+        :param to_date: Date to test activity
+        :return:
+        """
+        return self.annotate(
+            counted_visits_left=F('visits_on_by_time') - Count(
+                'attendance',
+                filter=Q(attendance__event__date__lt=to_date) &
+                Q(attendance__subscription_id=F('id'))
+            )
+        ).filter(
+            start_date__lte=to_date,
+            end_date__gte=to_date,
+            counted_visits_left__gt=0
+        )
+
+    def active_subscriptions(self):
+        today = date.today()
+        return self.filter(
+            start_date__lte=today,
+            end_date__gte=today,
+            visits_left__gt=0
+        )
+
 
 class ClientSubscriptionsManager(
     ScrmTenantManagerMixin,
     BaseManager.from_queryset(ClientSubscriptionQuerySet)
 ):
-    def active_subscriptions(self, event: Event):
-        return self.get_queryset().active_subscriptions(event)
+    def active_subscriptions_to_event(self, event: Event):
+        return self.get_queryset().active_subscriptions_to_event(event)
+
+    def active_subscriptions_to_date(self, to_date: date):
+        return self.get_queryset().active_subscriptions_to_date(to_date)
+
+    def active_subscriptions(self):
+        return self.get_queryset().active_subscriptions()
 
     def extend_by_cancellation(self, cancelled_event: Event):
-        for subscription in self.active_subscriptions(cancelled_event):
+        for subscription in self.active_subscriptions_to_event(cancelled_event):
             subscription.extend_by_cancellation(cancelled_event)
 
     def revoke_extending(self, activated_event: Event):
@@ -821,7 +871,7 @@ class ClientSubscriptions(CompanyObjectModel):
             self.visits_left += added_visits
             self.end_date = new_end_date
             self.save()
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_subscription_extend', self.id)
 
     def extend_by_cancellation(self, cancelled_event: Event):
@@ -1036,7 +1086,7 @@ class ClientSubscriptions(CompanyObjectModel):
                 created.mark_visit(self)
                 self.visits_left = self.visits_left - 1
                 self.save()
-                from google_tasks.tasks import enqueue
+                from gcp.tasks import enqueue
                 enqueue('notify_client_subscription_visit', self.id)
             else:
                 raise ClientAttendanceExists(
@@ -1046,7 +1096,7 @@ class ClientSubscriptions(CompanyObjectModel):
         with transaction.atomic():
             self.visits_left = self.visits_left + 1
             self.save()
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_subscription_visit', self.id)
 
     class Meta:
@@ -1292,7 +1342,7 @@ class Event(CompanyObjectModel):
                 ClientSubscriptions.objects.extend_by_cancellation(self)
 
             try:
-                from google_tasks.tasks import enqueue
+                from gcp.tasks import enqueue
                 enqueue('notify_event_cancellation', self.id)
             except ImportError:
                 pass
@@ -1323,7 +1373,7 @@ class Event(CompanyObjectModel):
 
         self.is_closed = True
         self.save()
-        from google_tasks.tasks import enqueue
+        from gcp.tasks import enqueue
         enqueue('notify_manager_event_closed', self.id)
 
     def open_event(self):
@@ -1333,7 +1383,7 @@ class Event(CompanyObjectModel):
 
         self.is_closed = False
         self.save()
-        from google_tasks.tasks import enqueue
+        from gcp.tasks import enqueue
         enqueue('notify_manager_event_opened', self.id)
 
 

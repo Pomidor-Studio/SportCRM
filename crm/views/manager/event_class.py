@@ -30,7 +30,7 @@ from crm.models import (
 )
 from crm.serializers import CalendarEventSerializer
 from crm.views.mixin import RedirectWithActionView
-from google_tasks.tasks import enqueue
+from gcp.tasks import enqueue
 
 
 class ObjList(PermissionRequiredMixin, ListView):
@@ -107,7 +107,7 @@ class EventByDate(
         result = {}
         for client in clients_qs:
             client_subscriptions = result.setdefault(client, [])
-            subs = client.clientsubscriptions_set.active_subscriptions(
+            subs = client.clientsubscriptions_set.active_subscriptions_to_event(
                 self.object
             )
             for sub in subs:
@@ -587,7 +587,7 @@ class DoScan(
         event = self.get_object()
         subscription = (
             ClientSubscriptions.objects
-            .active_subscriptions(event)
+            .active_subscriptions_to_event(event)
             .filter(client=client)
             .order_by('purchase_date')
             .first()

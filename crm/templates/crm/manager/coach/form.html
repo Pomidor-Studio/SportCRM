@@ -50,9 +50,12 @@
       {% bootstrap_form form.user %}
       {% bootstrap_form form.coach %}
       <div class="form-group">
-        <button class="btn btn-outline-info" type="submit">
-          {% if object.id %}Сохранить{% else %}Добавить{% endif %}
-        </button>
+        {% if object.id %}
+          <button class="btn btn-primary" type="submit">Сохранить</button>
+        {% else %}
+          <button class="btn btn-primary" type="submit">Добавить</button>
+          <button type="submit" name="another" class="btn btn-primary">Сохранить и добавить ещё</button>
+        {% endif %}
         <a name="cancel"
            href="{% if object.id %}{% url 'crm:manager:coach:detail' object.id %}{% else %}{% url 'crm:manager:coach:list' %}{% endif %}"
            class="btn btn-outline-info">
