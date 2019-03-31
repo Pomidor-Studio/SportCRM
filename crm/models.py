@@ -514,15 +514,15 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     Описывает продолжительность действия, количество посещений,
     какие тренировки позволяет посещать
     """
-    name = models.CharField("Название", max_length=100)
-    price = models.FloatField("Стоимость")
+    name = models.CharField("Наимеование", max_length=100)
+    price = models.FloatField("Цена, ₽")
+    duration = models.PositiveIntegerField("Продолжительность")
     duration_type = models.CharField(
         "Временные рамки абонемента",
         max_length=20,
         choices=GRANULARITY,
         default=GRANULARITY.DAY
     )
-    duration = models.PositiveIntegerField("Продолжительность")
     rounding = models.BooleanField(
         "Округление начала действия абонемента",
         default=False
