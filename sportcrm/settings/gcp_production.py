@@ -16,7 +16,7 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '/cloudsql/sportadmin:europe-north1:sa-prod1',
+        'HOST': '/cloudsql/sportadmin:europe-west1:sa-prod1',
         'USER': 'sport-prod',
         'PASSWORD': 'Y88c5ZwJ6a8qZge',
         'NAME': 'sport-prod',
