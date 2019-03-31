@@ -21,7 +21,7 @@ steps:
       entrypoint: sh
       args:
           - '-c'
-          - '/cloud_sql_proxy -dir=/cloudsql -instances=sport-srm-test:us-east1:sport-crm-test & while [ ! -f /cloudsql/stop ]; do sleep 2; done'
+          - '/cloud_sql_proxy -dir=/cloudsql -instances=${_INSTANCE} & while [ ! -f /cloudsql/stop ]; do sleep 2; done'
       waitFor: ['-']
       timeout: '1200s'
       volumes:
