@@ -22,7 +22,7 @@ from django.utils import timezone
 from django_multitenant.fields import TenantForeignKey
 from django_multitenant.mixins import TenantManagerMixin, TenantQuerySet
 from django_multitenant.models import TenantModel
-from django_multitenant.utils import get_current_tenant
+from django_multitenant.utils import get_current_tenant, set_current_tenant
 from phonenumber_field.modelfields import PhoneNumberField
 from psycopg2 import Error as Psycopg2Error
 from safedelete.managers import (
@@ -144,12 +144,21 @@ class Company(models.Model):
 
 class CustomUserManager(TenantManagerMixin, UserManager):
     def generate_uniq_username(self, first_name, last_name, prefix='user'):
+        # Disable current tenant for avoiding username collation between
+        # companies
+        current_tenant = get_current_tenant()
+        set_current_tenant(None)
+        name = 'nevenr_used_name'
         for idx in count():
             trans_f = translit(first_name, language_code='ru', reversed=True)
             trans_l = translit(last_name, language_code='ru', reversed=True)
             name = f'{prefix}_{idx}_{trans_f}_{trans_l}'.lower()[:150]
+
             if not self.filter(username=name).exists():
-                return name
+                break
+
+        set_current_tenant(current_tenant)
+        return name
 
     def create_coach(self, first_name, last_name):
         return self.create_user(
@@ -510,15 +519,15 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     Описывает продолжительность действия, количество посещений,
     какие тренировки позволяет посещать
     """
-    name = models.CharField("Название", max_length=100)
-    price = models.FloatField("Стоимость")
+    name = models.CharField("Наимеование", max_length=100)
+    price = models.FloatField("Цена, ₽")
+    duration = models.PositiveIntegerField("Продолжительность")
     duration_type = models.CharField(
         "Временные рамки абонемента",
         max_length=20,
         choices=GRANULARITY,
         default=GRANULARITY.DAY
     )
-    duration = models.PositiveIntegerField("Продолжительность")
     rounding = models.BooleanField(
         "Округление начала действия абонемента",
         default=False
@@ -694,7 +703,7 @@ class Client(CompanyObjectModel):
         self.balance = self.balance + decimal.Decimal(top_up_amount)
         self.save()
         if not skip_notification:
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_balance', self.id)
 
     def add_balance_in_history(
@@ -867,7 +876,7 @@ class ClientSubscriptions(CompanyObjectModel):
             self.visits_left += added_visits
             self.end_date = new_end_date
             self.save()
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_subscription_extend', self.id)
 
     def extend_by_cancellation(self, cancelled_event: Event):
@@ -1082,7 +1091,7 @@ class ClientSubscriptions(CompanyObjectModel):
                 created.mark_visit(self)
                 self.visits_left = self.visits_left - 1
                 self.save()
-                from google_tasks.tasks import enqueue
+                from gcp.tasks import enqueue
                 enqueue('notify_client_subscription_visit', self.id)
             else:
                 raise ClientAttendanceExists(
@@ -1092,7 +1101,7 @@ class ClientSubscriptions(CompanyObjectModel):
         with transaction.atomic():
             self.visits_left = self.visits_left + 1
             self.save()
-            from google_tasks.tasks import enqueue
+            from gcp.tasks import enqueue
             enqueue('notify_client_subscription_visit', self.id)
 
     class Meta:
@@ -1338,7 +1347,7 @@ class Event(CompanyObjectModel):
                 ClientSubscriptions.objects.extend_by_cancellation(self)
 
             try:
-                from google_tasks.tasks import enqueue
+                from gcp.tasks import enqueue
                 enqueue('notify_event_cancellation', self.id)
             except ImportError:
                 pass
@@ -1369,7 +1378,7 @@ class Event(CompanyObjectModel):
 
         self.is_closed = True
         self.save()
-        from google_tasks.tasks import enqueue
+        from gcp.tasks import enqueue
         enqueue('notify_manager_event_closed', self.id)
 
     def open_event(self):
@@ -1379,7 +1388,7 @@ class Event(CompanyObjectModel):
 
         self.is_closed = False
         self.save()
-        from google_tasks.tasks import enqueue
+        from gcp.tasks import enqueue
         enqueue('notify_manager_event_opened', self.id)
 
 

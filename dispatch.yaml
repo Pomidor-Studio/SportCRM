@@ -2,6 +2,8 @@ dispatch:
   # Send all background work to the background backend.
   - url: "*/google_task_handler*"
     service: background
+  - url: "*/bot/tasks*"
+    service: background
 
   # Default service serves the typical web resources and all static resources.
   - url: "*/*"

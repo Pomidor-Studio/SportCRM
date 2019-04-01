@@ -28,12 +28,15 @@ CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': 'redis://:B8UBQa36iTJ9ys1NOcJYZnDEd4VLRh6q@redis-17157.c1.us-east1-2.gce.cloud.redislabs.com:17157/django-cache',
+        "TIMEOUT": 600,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "IGNORE_EXCEPTIONS": True,
         }
     }
 }
+
+QR_CODE_CACHE_ALIAS = 'default'
 
 USE_GOOGLE_TASKS: bool = True
 

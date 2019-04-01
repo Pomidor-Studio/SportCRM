@@ -12,12 +12,11 @@ from django_select2.forms import (
 )
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
-from contrib.forms import TenantForm, TenantModelForm
+from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
 from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
-    DayOfTheWeekClass, EventClass, Manager, SubscriptionsType,
-    Location,
+    DayOfTheWeekClass, EventClass, Location, Manager, SubscriptionsType,
 )
 
 
@@ -400,7 +399,7 @@ class FakeNameValidator:
         )
 
 
-class ProfileUserForm(TenantModelForm):
+class ProfileUserForm(NonTenantUsernameMixin, TenantModelForm):
     fullname = forms.CharField(
         label='ФИО',
         widget=forms.TextInput(attrs={'data-name-edit': True})
@@ -429,7 +428,7 @@ class ProfileUserForm(TenantModelForm):
         super(ProfileUserForm, self).__init__(*args, initial=initial, **kwargs)
 
 
-class UserForm(TenantModelForm):
+class UserForm(NonTenantUsernameMixin, TenantModelForm):
     fullname = forms.CharField(
         label='ФИО',
         required=True,
