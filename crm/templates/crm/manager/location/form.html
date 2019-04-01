@@ -16,7 +16,12 @@
           {% bootstrap_form form %}
         </fieldset>
         <div class="form-group">
-          <button class="btn btn-primary btn-outline-info" type="submit">{% if object.id %}Сохранить{% else %}Добавить{% endif %}</button>
+          {% if object.id %}
+            <button class="btn btn-primary" type="submit">Сохранить</button>
+          {% else %}
+            <button class="btn btn-primary" type="submit">Добавить</button>
+            <button type="submit" name="another" class="btn btn-primary">Сохранить и добавить ещё</button>
+          {% endif %}
           <a name="cancel" href="{% url 'crm:manager:locations:list' %}"
              class="btn btn-outline-info">Назад</a>
         </div>

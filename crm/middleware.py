@@ -4,7 +4,8 @@ from typing import Optional
 from django.contrib import messages
 from django.contrib.auth.models import AnonymousUser
 from django.template.response import SimpleTemplateResponse
-from django.urls import resolve
+from django.urls import resolve, reverse
+from django.utils.safestring import mark_safe
 from django_multitenant.utils import set_current_tenant
 
 from crm.models import Company
@@ -38,6 +39,35 @@ class SetTenantMiddleware:
         # the view is called.
 
         return response
+
+
+class CoachInfoMiddleware:
+    def __init__(self, get_response) -> None:
+        self.get_response = get_response
+
+    def __call__(self, request):
+        user = request.user
+
+        if user.is_anonymous:
+            # Don't early save response to variable, as may be added message
+            return self.get_response(request)
+
+        if user.is_coach:
+            if not user.has_usable_password() or not user.vk_id:
+                reset_url = reverse('crm:accounts:password-reset-confirm')
+                vk_attach_url = reverse('crm:accounts:profile')
+                messages.info(
+                    request,
+                    mark_safe(
+                        f'У вас не установлен пароль или не сделана привязка '
+                        f'аккаунта к Вконтакте. На этой странице можно '
+                        f'<a href="{reset_url}">сбросить пароль</a>, а на '
+                        f'странице <a href="{vk_attach_url}">профиля</a> можно '
+                        f'привязать аккаунт к Вконтакте, и входить без пароля.'
+                    )
+                )
+
+        return self.get_response(request)
 
 
 class TimedAccessMiddleware:
