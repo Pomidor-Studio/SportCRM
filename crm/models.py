@@ -403,13 +403,17 @@ class EventClass(CompanyObjectModel):
         :param end_date: Конечная дата календаря
         :return: Словарь из даты и возможной тренировки
         """
+        if start_date is None or end_date is None:
+            raise ValueError(
+                'Calendar can be calculated only for fixed date range')
+
         events = {
             event.date: event
             for event in
             self.event_set.filter(date__range=(start_date, end_date))
         }
 
-        if start_date < self.date_from:
+        if self.date_from and start_date < self.date_from:
             start_date = self.date_from
 
         if self.date_to and self.date_to < end_date:
