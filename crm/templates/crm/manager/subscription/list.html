@@ -72,7 +72,7 @@
               {{ subscription.visit_limit }}
             </td>
             <td>
-              {{ subscription.price|floatformat:"0"|intcomma }} ₽
+              {{ subscription.price|floatformat:"-2"|intcomma }} ₽
             </td>
 
             {% ifhasperm 'subscription.edit' user subscription %}
@@ -81,7 +81,7 @@
                   <a
                     name="edit"
                     href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                    class="btn btn-sm btn-outline-info"
+                    class="btn btn-primary btn-outline-info"
                   >
                     Редактировать
                   </a>

@@ -323,8 +323,8 @@ class EventClass(CompanyObjectModel):
         Coach,
         on_delete=models.PROTECT,
         verbose_name="Тренер")
-    date_from = models.DateField("Дата с", null=True, blank=True)
-    date_to = models.DateField("Дата по", null=True, blank=True)
+    date_from = models.DateField("Начало тренировок", null=True, blank=True)
+    date_to = models.DateField("Окончание тренировок", null=True, blank=True)
 
     objects = EventClassManager()
 
@@ -403,13 +403,17 @@ class EventClass(CompanyObjectModel):
         :param end_date: Конечная дата календаря
         :return: Словарь из даты и возможной тренировки
         """
+        if start_date is None or end_date is None:
+            raise ValueError(
+                'Calendar can be calculated only for fixed date range')
+
         events = {
             event.date: event
             for event in
             self.event_set.filter(date__range=(start_date, end_date))
         }
 
-        if start_date < self.date_from:
+        if self.date_from and start_date < self.date_from:
             start_date = self.date_from
 
         if self.date_to and self.date_to < end_date:
@@ -514,15 +518,15 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     Описывает продолжительность действия, количество посещений,
     какие тренировки позволяет посещать
     """
-    name = models.CharField("Название", max_length=100)
-    price = models.FloatField("Стоимость")
+    name = models.CharField("Наимеование", max_length=100)
+    price = models.FloatField("Цена, ₽")
+    duration = models.PositiveIntegerField("Продолжительность")
     duration_type = models.CharField(
         "Временные рамки абонемента",
         max_length=20,
         choices=GRANULARITY,
         default=GRANULARITY.DAY
     )
-    duration = models.PositiveIntegerField("Продолжительность")
     rounding = models.BooleanField(
         "Округление начала действия абонемента",
         default=False
