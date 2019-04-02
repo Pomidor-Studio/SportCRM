@@ -26,6 +26,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     template_name = 'crm/manager/subscription/form.html'
     permission_required = 'subscription.add'
     add_another_url = 'crm:manager:subscription:new'
+    message_info = 'Абонемент успешно создан'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):

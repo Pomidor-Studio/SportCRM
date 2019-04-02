@@ -102,6 +102,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, SocialAuthMixin, CreateAndA
     form_class = CoachMultiForm
     permission_required = 'coach.add'
     add_another_url = 'crm:manager:coach:new'
+    message_info = 'Тренер успешно создан'
 
     def form_valid(self, form):
         # User is generated manually as we need create

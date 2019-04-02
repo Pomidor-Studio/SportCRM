@@ -51,6 +51,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.add'
     add_another_url = 'crm:manager:client:new'
+    message_info = 'Ученик успешно создан'
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = Client
