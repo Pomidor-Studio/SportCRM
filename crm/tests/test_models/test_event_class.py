@@ -23,11 +23,29 @@ def test_nearest_infinite_no_days(event_class_factory):
 
 def test_get_calendar(event_class_factory):
     start = date(2019, 1, 1)
+    ec = event_class_factory(date_from=start, date_to=date(2019, 1, 31))
+
+    assert_that(
+        ec.get_calendar(start, date(2019, 1, 31)).values(),
+        has_length(31)
+    )
+
+
+def test_get_calendar_to_is_none(event_class_factory):
+    start = date(2019, 1, 1)
     ec = event_class_factory(date_from=start)
 
     assert_that(
         ec.get_calendar(start, date(2019, 1, 31)).values(),
         has_length(31)
+    )
+
+
+def test_get_calendar_from_is_none(event_class_factory):
+    ec = event_class_factory(date_from=None, date_to=date(2019, 1, 10))
+    assert_that(
+        ec.get_calendar(date(2019, 1, 1), date(2019, 1, 10)).values(),
+        has_length(10)
     )
 
 

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rules.apps.AutodiscoverRulesConfig',
     'reversion',
     'reversion_compare',
+    'contrib.apps.ContribConfig',
     'crm.apps.CrmConfig',
     'django_filters',
     'bot.apps.BotConfig',
@@ -56,7 +57,7 @@ INSTALLED_APPS = [
     'django_select2',
     'django_tables2',
     'qr_code',
-    'google_tasks.apps.GoogleTasksConfig',
+    'gcp.apps.GcpConfig',
     'analytical',
 ]
 
@@ -73,9 +74,11 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'sesame.middleware.AuthenticationMiddleware',
     'crm.middleware.SetTenantMiddleware',
     'crm.middleware.TimedAccessMiddleware',
+    'crm.middleware.CoachInfoMiddleware',
 ]
 
 ROOT_URLCONF = 'sportcrm.urls'
@@ -113,36 +116,31 @@ DATABASES = {
 # Password validation
 # https://docs.djangoproject.com/en/2.1/ref/settings/#auth-password-validators
 
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+AUTH_PASSWORD_VALIDATORS = [{
+    'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    'OPTIONS': {
+        'min_length': 6
+    }
+}, {
+    'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+}, {
+    'NAME': 'crm.auth.password_validation.MinCharSetPresent'
+}]
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 
 LANGUAGE_CODE = 'ru-RU'
-
 TIME_ZONE = 'Asia/Yekaterinburg'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
-
 DATE_INPUT_FORMATS = ['%d.%m.%Y']
+
+LOCALE_PATHS = (
+    os.path.join(BASE_DIR, 'locale'),
+)
 
 
 LOGGING = {
@@ -215,6 +213,8 @@ YANDEX_METRICA_COUNTER_ID = '52839823' # devtest metrika
 YANDEX_METRICA_WEBVISOR = True
 
 GOOGLE_ANALYTICS_JS_PROPERTY_ID = 'UA-136374884-1'
+GOOGLE_ANALYTICS_SITE_SPEED_SAMPLE_RATE = 100
+
 
 BACKGROUND_MODE: bool = False # True for run as background tasks worker
 USE_GOOGLE_TASKS: bool = False

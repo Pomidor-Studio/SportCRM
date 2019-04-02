@@ -23,7 +23,7 @@
   <a
     class="btn btn-sm btn-outline-info"
     href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
-  >Отметить без абонемента</a>
+  >Записать без абонемента</a>
   {% if not event.is_closed %}
     <a
       class="btn btn-sm btn-outline-info"

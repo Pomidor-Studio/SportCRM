@@ -37,22 +37,29 @@
             var idRe = new RegExp("vk.com\/(?<user_id>([A-Za-z0-9_])+)");
             var matchString = $("#vk_user_ref").val();
 
-            var matchObj = idRe.exec(matchString);
-            try {
-                var id = matchObj.groups.user_id;
-                getUserData(id);
-            } catch (err) {
-                showError("Ошибка! Неверный формат ссылки вк!");
+            if (matchString === '' || matchString === null) {
+              clearFields()
+            } else {
+              var matchObj = idRe.exec(matchString);
+              try {
+                  var id = matchObj.groups.user_id;
+                  getUserData(id);
+              } catch (err) {
+                 showError("Ошибка! Неверный формат ссылки вк!");
+              }
             }
         });
 
     });
 
-    function showError(errorText) {
-        $("#id_name").val("");
+    function clearFields() {
         $("#id_vk_user_id").val("");
         $("#profile_pic").attr("src", "");
         $("#profile_pic_container").hide();
+    }
+
+    function showError(errorText) {
+        clearFields()
         $("#alert")
           .text(errorText)
           .show();
@@ -126,7 +133,12 @@
             {% csrf_token %}
             {% bootstrap_form form %}
             <div class="form-group">
-                <button class="btn btn-primary" type="submit">{% if object.id %}Сохранить{% else %}Добавить{% endif %}</button>
+              {% if object.id %}
+                <button class="btn btn-primary" type="submit">Сохранить</button>
+              {% else %}
+                <button class="btn btn-primary" type="submit">Добавить</button>
+                <button type="submit" name="another" class="btn btn-primary">Сохранить и добавить ещё</button>
+              {% endif %}
                 <a
                   name="cancel"
                   href="{% if object.id %}{% url 'crm:manager:client:detail' object.id %}{% else %}{% url 'crm:manager:client:list' %}{% endif %}"

@@ -15,7 +15,7 @@ def test_cancel_with_extending(
     event = event_factory()
     mock = mocker.patch(
         'crm.models.ClientSubscriptionsManager.extend_by_cancellation')
-    mock_google_tasks = mocker.patch('google_tasks.tasks.enqueue')
+    mock_google_tasks = mocker.patch('gcp.tasks.enqueue')
     with freeze_time('2019-02-25'):
         event.cancel_event(extend_subscriptions=True)
 
@@ -36,7 +36,7 @@ def test_cancel_without_extending(
     event = event_factory()
     mock = mocker.patch(
         'crm.models.ClientSubscriptionsManager.extend_by_cancellation')
-    mock_google_tasks = mocker.patch('google_tasks.tasks.enqueue')
+    mock_google_tasks = mocker.patch('gcp.tasks.enqueue')
     with freeze_time('2019-02-25'):
         event.cancel_event(extend_subscriptions=False)
 
