@@ -194,7 +194,8 @@ def subcription_type_attrs(sub_id):
         return None
     return {
         'data-price': subs.price,
-        'data-visits': subs.visit_limit
+        'data-visits': subs.visit_limit,
+        'data-onetime': str(subs.one_time),
     }
 
 
@@ -226,9 +227,6 @@ class InplaceSellSubscriptionForm(TenantModelForm):
             ),
             'price': forms.TextInput(
                 attrs={"placeholder": "Стоимость в рублях"}
-            ),
-            'visits_left': forms.TextInput(
-                attrs={"placeholder": "Кол-во посещений"}
             ),
             'client': forms.HiddenInput(),
 
