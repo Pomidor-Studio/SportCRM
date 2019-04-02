@@ -27,7 +27,7 @@ from crm.models import (
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 from crm.views.mixin import CreateAndAddMixin
 
-from google_tasks.tasks import enqueue
+from gcp.tasks import enqueue
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -52,6 +52,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     permission_required = 'client.add'
     add_another_url = 'crm:manager:client:new'
     message_info = 'Ученик успешно создан'
+
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
     model = Client

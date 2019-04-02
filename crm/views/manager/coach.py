@@ -104,6 +104,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, SocialAuthMixin, CreateAndA
     add_another_url = 'crm:manager:coach:new'
     message_info = 'Тренер успешно создан'
 
+
     def form_valid(self, form):
         # User is generated manually as we need create
         # dynamic username for coach

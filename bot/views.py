@@ -12,16 +12,13 @@ from django_multitenant.utils import set_current_tenant
 from rest_framework.generics import UpdateAPIView
 from rules.contrib.views import PermissionRequiredMixin
 
-from bot.api.messageHandler import create_answer
 from bot.api.messages.base import Message
 from bot.forms import MessageTemplateEditForm
 from bot.models import MessageMeta
 from bot.serializers import MessageIgnoranceSerializer
 from crm.models import Company
 from crm.views.mixin import RedirectWithActionView
-
-from google_tasks.tasks import enqueue
-import bot.api.cron.cron_client_events
+from gcp.tasks import enqueue
 
 """
 Using VK Callback API version 5.90
@@ -196,23 +193,3 @@ class ResetMessageTemplate(
         obj.save()
 
 
-def tasks(request):
-    modules = {bot.api.cron.cron_client_events}
-    method_to_call = None
-
-    try:
-        param = request.GET['param']
-    except MultiValueDictKeyError:
-        return HttpResponse(status=400)
-
-    for module in modules:
-        if hasattr(module, param):
-            method_to_call = getattr(module, param)
-            break
-
-    if method_to_call is None:
-        return HttpResponse(status=400)
-
-    method_to_call()
-
-    return HttpResponse(status=200)

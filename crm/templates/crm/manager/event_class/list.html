@@ -21,8 +21,7 @@
             <th scope="col">Наименование</th>
             <th scope="col">Место проведения</th>
             <th scope="col">Тренер</th>
-            <th scope="col">Дата с</th>
-            <th scope="col">Дата до</th>
+            <th scope="col">Даты</th>
             <th scope="col">Стоимость разового посещения</th>
             <th scope="col"></th>
           </tr>
@@ -37,16 +36,26 @@
             </td>
             <td>{{ eventclass.location }}</td>
             <td>{{ eventclass.coach }}</td>
-            <td>{{ eventclass.date_from }}</td>
-            <td>{{ eventclass.date_to }}</td>
             <td>
-            {% if eventclass.get_one_visit_costs.price %}
-              {{ eventclass.get_one_visit_costs.price|floatformat:"-2"|intcomma }} ₽
+              {% if eventclass.date_from %}
+                c {{ eventclass.date_from|date:"d.m.Y" }}
+              {% endif %}
+              {% if eventclass.date_to %}
+                до {{ eventclass.date_to|date:"d.m.Y" }}
+              {% endif %}
+            </td>
+            <td>
+            {% if eventclass.get_one_time_visit_costs.price %}
+              {{ eventclass.get_one_time_visit_costs.price|floatformat:"-2"|intcomma }} ₽
             {% endif %}
             </td>
             <td>
-              <a href="{% url 'crm:manager:event-class:delete' eventclass.pk %}" ><i class="fas fa-minus-circle text-danger"></i></a>
-              <a href="{% url 'crm:manager:event-class:calendar' eventclass.pk %}" ><i class="far fa-calendar-alt"></i></a>
+              <a
+                href="{% url 'crm:manager:event-class:delete' eventclass.pk %}"
+                class="btn btn-sm btn-danger"
+              >
+                Удалить
+              </a>
             </td>
           </tr>
         {% endfor %}

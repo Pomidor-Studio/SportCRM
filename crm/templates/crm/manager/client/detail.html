@@ -1,21 +1,19 @@
 {% extends "crm/base.html" %}
-
 {% load html_helper qr_code %}
-
+{% load humanize %}
 {% block nav %}
 {% endblock nav %}
-
 {% block extrahead %}
-  <script
-    src="https://vk.com/js/api/openapi.js?160"
-    type="text/javascript"
-  >
-  </script>
+<script
+  src="https://vk.com/js/api/openapi.js?160"
+  type="text/javascript"
+>
+</script>
 {% endblock extrahead %}
 
 {% block content %}
 
-  <script>
+<script>
     $(function () {
       getUserPicture($("#id_vk_user_id").text());
     });
@@ -26,7 +24,7 @@
         url: 'https://api.vk.com/method/users.get',
         data: {
           user_ids: id,
-          fields: "photo_200,domain",
+          fields: "photo_100,domain",
           access_token: access_token,
           v: 5.63
         },
@@ -35,7 +33,7 @@
         crossDomain: true,
         async: false,
         success: function (data) {
-          $("#profile_pic").attr("src", data.response[0].photo_200);
+          $("#profile_pic").attr("src", data.response[0].photo_100);
 
           $("#id_vk_url")
             .text("vk.com/" + data.response[0].domain)
@@ -43,199 +41,204 @@
         }
       });
     }
-  </script>
+
+
+
+
+</script>
 
 
 <div class="container-fluid mt-4 ml-2">
-    <legend class="mb-2">{{ object.name }}</legend>
-    <div class="row border-top mb-2">
-      <div class="container-fluid mt-1">
-        {% ifhasperm 'client.edit' user %}
+
+  <div class="row mb-2">
+    <div class="container-fluid mt-1">
+      {% ifhasperm 'client.edit' user %}
+      <a
+        class="btn btn-sm btn-outline-info"
+        href="{% url 'crm:manager:client:update' object.id %}"
+      >Изменить</a>
+      {% endifhasperm %}
+      <a
+        name="cancel" href="{% url 'crm:manager:client:list' %}"
+        class="btn btn-sm btn-outline-info"
+      >Назад</a>
+      {% ifhasperm 'client.delete' user %}
+      <a
+        class="btn btn-sm btn-outline-danger"
+        href="{% url 'crm:manager:client:delete' object.id %}"
+      >Удалить</a>
+      {% endifhasperm %}
+    </div>
+  </div>
+  <div class="row">
+    <label id="id_vk_user_id" hidden="true">{{ object.vk_user_id }}</label>
+    <div class="col col-md-auto">
+      <img id="profile_pic" class="rounded-circle"/>
+    </div>
+    <div class="col-3">
+      <legend class="mb-2 font-weight-bold">{{ object.name }}</legend>
+        <div>{{object.phone_number}}</div>
+        <div>{{object.birthday}}</div>
+        <div>{{object.email_address}}</div>
+        <div>{{object.balance|floatformat:"2"|intcomma }} ₽</div>
+        <div class="mb-2 mt-2">
+          <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить
+            баланс</a>
+        </div>
+      </div>
+  </div>
+  <div>
+    <ul class="nav nav-tabs">
+      <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#subscriptions">Абонементы</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#attendances">Посещения</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#qrcode">QR код</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#balancehistory">История баланса</a>
+      </li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="subscriptions">
+        {% ifhasperm 'client_subscription.sale' user %}
+        <div class="mb-2 mt-2">
           <a
             class="btn btn-sm btn-outline-info"
-            href="{% url 'crm:manager:client:update' object.id %}"
-          >Изменить</a>
-        {% endifhasperm %}
-        <a
-          name="cancel" href="{% url 'crm:manager:client:list' %}"
-          class="btn btn-sm btn-outline-info"
-        >Назад</a>
-        {% ifhasperm 'client.delete' user %}
-          <a
-            class="btn btn-sm btn-outline-danger"
-            href="{% url 'crm:manager:client:delete' object.id %}"
-          >Удалить</a>
-        {% endifhasperm %}
-      </div>
-    </div>
-    <div class="row">
-        <label id="id_vk_user_id" hidden="true">{{ object.vk_user_id }}</label>
-        <div class="col-3 border-right">
-            {% if object.address %}
-                <div class="font-weight-bold">Адрес:</div>
-            {% endif %}
-            {% if object.birthday %}
-                <div class="font-weight-bold">Дата рождения:</div>
-            {% endif %}
-            {% if object.phone_number %}
-                <div class="font-weight-bold">Номер телефона:</div>
-            {% endif %}
-            {% if object.email_address %}
-                <div class="font-weight-bold">Электронная почта:</div>
-            {% endif %}
-            {% if object.vk_user_id %}
-                <div class="font-weight-bold">Ссылка вк:</div>
-            {% endif %}
-            {% if object.balance %}
-                <div class="font-weight-bold">Баланс:</div>
-            {% endif %}
-            {% if object.qr_code %}
-                <div class="font-weight-bold">QR код:</div>
-            {% endif %}
+            href="{% url 'crm:manager:client:new-subscription' object.id %}"
+          >Продать
+            абонемент</a>
         </div>
-        <div class="col">
-            <div>{{ object.address }} </div>
-            <div>{{ object.birthday|date }} </div>
-            <div>{{ object.phone_number }} </div>
-            <div>{{ object.email_address }} </div>
-            <div><a id="id_vk_url"></a></div>
-            {% if object.balance %}
-              <div>{{ object.balance }} ₽</div>
-            {% endif %}
-            {% if object.qr_code %}
-                <img src="{% qr_url_from_text object.qr_code.hex error_correction="H" size=8 %}" alt="object.qr_code">
-            {% endif %}
-        </div>
-        <div class="col-2 border-right">
-            <img id="profile_pic" class="rounded"/>
-        </div>
-    </div>
-    <div class="row border-top border-bottom">
-      <div class="col">
-        <span class="font-weight-bold "><h5>Абонементы: </h5></span>
-        {% ifhasperm 'client_subscription.sale' user %}
-          <div class="mb-2 mt-2">
-            <a
-              class="btn btn-sm btn-outline-info"
-              href="{% url 'crm:manager:client:new-subscription' object.id %}"
-            >Продать
-              абонемент</a>
-          </div>
         {% endifhasperm %}
         <table class="table table-sm">
           <thead>
           <tr>
-            <th scope="col">Название</th>
-            <th scope="col">Дата покупки</th>
-            <th scope="col">Дата начала</th>
-            <th scope="col">Дата окончания</th>
+            <th scope="col">Наименование</th>
+            <th scope="col">Дата приобретения</th>
+            <th scope="col">Стоимость</th>
+            <th scope="col">Начало действия</th>
+            <th scope="col">Окончание</th>
             <th scope="col">Осталось посещений</th>
             {% ifhasperm 'client_subscription.extend' user %}
-              <th style="width:5%" scope="col"></th>
-            {% endifhasperm %}
-            {% ifhasperm 'client_subscription.edit' user %}
-              <th style="width:5%" scope="col"></th>
+            <th style="width:5%" scope="col"></th>
             {% endifhasperm %}
             {% ifhasperm 'client_subscription.delete' user %}
-              <th style="width:5%" scope="col"></th>
+            <th style="width:5%" scope="col"></th>
             {% endifhasperm %}
           </tr>
           </thead>
           <tbody>
-          {% for sub in object.clientsubscriptions_set.all %}
-            <tr>
-              <td>{% if sub.is_expiring %}
-                <i
-                  title="Абонемент скоро заканчивается"
-                  class="fas fa-exclamation-circle"
-                ></i>
+          {% for sub in object.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
+          <tr>
+            <td>{% if sub.is_expiring %}
+              <i
+                title="Абонемент скоро заканчивается"
+                class="fas fa-exclamation-circle"
+              ></i>
               {% endif %}
-                {{ sub.subscription.name }}</td>
-              <td>{{ sub.purchase_date|date:'d N Y' }}</td>
-              <td>{{ sub.start_date|date:'d N Y' }}</td>
-              <td>{{ sub.end_date|date:'d N Y' }}</td>
-              <td>{{ sub.visits_left }}</td>
-              {% ifhasperm 'client_subscription.extend' user %}
-                <td>
-                  <a
-                    class="btn btn-sm btn-outline-info"
-                    href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
-                  >Продлить</a>
-                </td>
-              {% endifhasperm %}
               {% ifhasperm 'client_subscription.edit' user %}
-                <td>
-                  <a
-                    class="btn btn-sm btn-outline-info"
-                    href="{% url 'crm:manager:client:subscription:update' sub.id %}"
-                  >Изменить</a>
-                </td>
+              <a href="{% url 'crm:manager:client:subscription:update' sub.id %}">{{ sub.subscription.name }}</a>
+              {% else %}
+              {{ sub.subscription.name }}
               {% endifhasperm %}
-              {% ifhasperm 'client_subscription.delete' user %}
-                <td><a
-                  class="btn btn-sm btn-outline-danger"
-                  href="{% url 'crm:manager:client:subscription:delete' sub.id %}"
-                >Удалить</a></td>
-              {% endifhasperm %}
-            </tr>
+            </td>
+            <td>{{ sub.purchase_date|date:'d N Y' }}</td>
+            <td>{{ sub.price }}</td>
+            <td>{{ sub.start_date|date:'d N Y' }}</td>
+            <td>{{ sub.end_date|date:'d N Y' }}</td>
+            <td>{{ sub.visits_left }}</td>
+            {% ifhasperm 'client_subscription.extend' user %}
+            <td>
+              <a
+                class="btn btn-sm btn-outline-info"
+                href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
+              >Продлить</a>
+            </td>
+            {% endifhasperm %}
+
+
+            {% ifhasperm 'client_subscription.delete' user %}
+            <td>
+              {% if sub.visits_on_by_time == sub.visits_left %}
+              <a
+              class="btn btn-sm btn-outline-danger"
+              href="{% url 'crm:manager:client:subscription:delete' sub.id %}"
+            >Удалить</a>
+              {% endif %}
+            </td>
+            {% endifhasperm %}
+          </tr>
           {% endfor %}
           </tbody>
         </table>
       </div>
-    </div>
-    <div class="row border-bottom mt-1">
-        <div class="col">
-            <span class="font-weight-bold "><h5>Посещения: </h5></span>
-            <table class="table table-sm">
-                <thead>
-                <tr>
-                    <th scope="col">Дата</th>
-                    <th scope="col">Тренировка</th>
-                    <th scope="col">Абонемент</th>
-                    <th style="width:5%" scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for sub in object.attendance_set.all  %}
-                <tr>
-                    <td>{{ sub.event.date|date }}</td>
-                    <td>{{ sub.event.event_class }}</td>
-                    <td>{{ sub.subscription }}</td>
-                    <td><a class="btn btn-sm btn-outline-danger" href="{% url 'crm:manager:attendance:delete' sub.id %}">Удалить</a></td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="row border-bottom mt-1">
-        <div class="col">
-            <span class="font-weight-bold "><h5>История пополнения баланса: </h5></span>
-            <div class="mb-2 mt-2">
-                <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить баланс</a>
-            </div>
-            <table class="table table-sm">
-                <thead>
-                <tr>
-                    <th scope="col">Дата</th>
-                    <th scope="col">Сумма изменения баланса</th>
-                    <th scope="col">Причина изменения баланса</th>
-                    <th scope="col">Абонемент</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for bal in object.clientbalancechangehistory_set.all  %} {# тут стояло |dictsortreversed:"event.date", но почему-то перестало работать :(#}
-                <tr>
-                    <td>{{ bal.entry_date }}</td>
-                    <td>{{ bal.change_value }}</td>
-                    <td>{{ bal.reason }}</td>
-                    <td>{{ bal.subscription.subscription.name }}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
+      <div class="tab-pane" id="attendances">
+        <div>
+        <table class="table table-sm">
+          <thead>
+          <tr>
+            <th scope="col">Тренировка</th>
+            <th scope="col">Абонемент</th>
+            <th style="width:5%" scope="col"></th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for sub in object.attendance_set.all|dictsortreversed:"event.date" %}
+          <tr>
+            <td>
+              <div class="col">
+                <div>
+                  <a class="font-weight-bold" href="{% url 'crm:manager:event-class:event:event-by-date' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day %}">
+                    {{ sub.event.event_class }}
+                  </a>
+                </div>
+                <div>
+                  <a href="{% url 'crm:manager:event-class:event:event-by-date' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day %}">
+                    {{ sub.event.date|date }}
+                  </a>
+                </div>
+              </div>
+            </td>
+            <td>{{ sub.subscription }}</td>
+            <td><a class="btn btn-sm btn-outline-danger"
+                   href="{% url 'crm:manager:attendance:delete' sub.id %}">Удалить отметку о посещении</a></td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+          </div>
+      </div>
+      <div class="tab-pane" id="qrcode">
+         <img src="{% qr_url_from_text object.qr_code.hex error_correction=" H" size=8 %}" alt="object.qr_code">
+      </div>
+      <div class="tab-pane" id="balancehistory">
+      <table class="table table-sm">
+        <thead>
+        <tr>
+          <th scope="col">Дата</th>
+          <th scope="col">Сумма</th>
+          <th scope="col">Причина</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for bal in object.clientbalancechangehistory_set.all|dictsortreversed:"entry_date" %}
+        <tr>
+          <td>{{ bal.entry_date }}</td>
+          <td>{{ bal.change_value|floatformat:"-2"|intcomma }}₽</td>
+          <td>
+            {{ bal.reason }}
+            {{ bal.subscription.subscription.name }}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      </div>
     </div>
   </div>
+</div>
 
 {% endblock content %}
