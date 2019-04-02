@@ -108,7 +108,7 @@
         </div>
 
         <div class="row">
-          <button class="btn btn-primary btn-outline-info" href="{% url 'crm:manager:event-class:list' %}" type="submit">
+          <button class="btn btn-primary mr-1" href="{% url 'crm:manager:event-class:list' %}" type="submit">
             {% if object.id %}Сохранить{% else %}Добавить{% endif %}
           </button>
           <a name="cancel" href="{% url 'crm:manager:event-class:list' %}" class="btn btn-outline-info">Назад</a>
