@@ -134,7 +134,7 @@
           </tr>
           </thead>
           <tbody>
-          {% for sub in object.clientsubscriptions_set.all|dictsortreversed:"purchase_date" %}
+          {% for sub in object.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
           <tr>
             <td>{% if sub.is_expiring %}
               <i
