@@ -39,9 +39,6 @@
           <th scope="col">Продолжительность</th>
           <th scope="col">Лимит посещений</th>
           <th scope="col">Цена</th>
-          {% ifhasperm 'subscription.edit' user %}
-            <th scope="col" style="width:5%"></th>
-          {% endifhasperm %}
           {% ifhasperm 'subscription.delete' user %}
             <th scope="col" style="width:5%"></th>
           {% endifhasperm %}
@@ -51,7 +48,20 @@
         {% for subscription in subscriptions %}
           <tr>
             <td>
+              {% ifhasperm 'subscription.edit' user subscription %}
+                {% if not subscription.deleted %}
+                  <a
+                    name="edit"
+                    href="{% url 'crm:manager:subscription:update' subscription.id %}"
+                  >
+                    {{ subscription.name }}
+                  </a>
+                {% else %}
+                  {{ subscription.name }}
+                {% endif %}
+              {% else %}
               {{ subscription.name }}
+            {% endifhasperm %}
               {% if subscription.deleted %}
                 <span class="badge badge-secondary">
                   <i class="fas fa-archive"></i>в ахриве
@@ -74,20 +84,6 @@
             <td>
               {{ subscription.price|floatformat:"-2"|intcomma }} ₽
             </td>
-
-            {% ifhasperm 'subscription.edit' user subscription %}
-              <td>
-                {% if not subscription.deleted %}
-                  <a
-                    name="edit"
-                    href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                    class="btn btn-primary btn-outline-info"
-                  >
-                    Редактировать
-                  </a>
-                {% endif %}
-              </td>
-            {% endifhasperm %}
             {% ifhasperm 'subscription.delete' user %}
               <td>
                 {% if subscription.deleted %}
