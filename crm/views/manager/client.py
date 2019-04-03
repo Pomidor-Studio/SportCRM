@@ -270,6 +270,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
         phone_col = form.cleaned_data['phone_col']
         birthday_col = form.cleaned_data['birthday_col']
         vk_col = form.cleaned_data['vk_col']
+        balance_col = form.cleaned_data['balance_col']
 
         try:
             wb = openpyxl.load_workbook(file)
@@ -294,6 +295,10 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             phone_raw = row[cell.column_index_from_string(phone_col) - 1].value
             phone = re.sub("\D", "", str(phone_raw))
             birthday = row[cell.column_index_from_string(birthday_col) - 1].value
+            try:
+                balance = row[cell.column_index_from_string(balance_col) - 1].value
+            except IndexError:
+                balance = None
             m = re.search("vk.com\/(?P<id>([A-Za-z0-9_])+)", row[cell.column_index_from_string(vk_col) - 1].value)
             vk_domain = m.group('id')
 
@@ -304,7 +309,10 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             ).exists()
 
             if not exists:
-                clients_to_add.append(Client(name = name, phone_number = phone, birthday = birthday))
+                client = Client(name = name, phone_number = phone, birthday = birthday)
+                if balance:
+                    client.balance = balance
+                clients_to_add.append(client)
                 vk_domains.append(vk_domain)
                 added += 1
             else:

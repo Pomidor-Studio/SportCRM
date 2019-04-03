@@ -521,3 +521,4 @@ class UploadExcelForm(forms.Form):
     phone_col = forms.CharField(label='Столбец с номером телефона', initial='B')
     birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C')
     vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D')
+    balance_col = forms.CharField(label='Столбец с балансом', initial='E')
