@@ -4,8 +4,8 @@
     <form method="post">
       {% csrf_token %}
       <fieldset class="form-group">
-        <legend class="border-bottom mb-2">Место проведения: {{ location }}</legend>
-        <h2>Вы действительно хотите вернуть место проведения "{{ location }}"?</h2>
+        <legend class="border-bottom mb-2">Место проведения тренировок: {{ location }}</legend>
+        <h2>Вы действительно хотите вернуть место проведения тренировок "{{ location }}"?</h2>
       </fieldset>
       <div class="form-group">
         <button class="btn btn-outline-success" type="submit">Вернуть</button>

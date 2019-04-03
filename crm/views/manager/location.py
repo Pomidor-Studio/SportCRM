@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DeleteView, UpdateView
 from django_filters.views import FilterView
 from reversion.views import RevisionMixin
@@ -8,7 +8,7 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from crm.filters import LocationFilter
 from crm.models import Location
-from crm.views.mixin import UnDeleteView
+from crm.views.mixin import UnDeleteView, CreateAndAddMixin
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -21,11 +21,13 @@ class List(PermissionRequiredMixin, FilterView):
     filterset_class = LocationFilter
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     model = Location
     fields = ('name', 'address')
     template_name = 'crm/manager/location/form.html'
     permission_required = 'location.add'
+    add_another_url = 'crm:manager:locations:new'
+    message_info = 'Место успешно создано'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):

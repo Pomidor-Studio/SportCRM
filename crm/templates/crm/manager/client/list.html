@@ -73,8 +73,8 @@
     <table class="table table-sm table-striped table-borderless">
       <thead>
       <tr class="d-flex">
-        <th scope="col" class="col-2">Общение</th>
         <th scope="col" class="col-4">Имя</th>
+        <th scope="col" class="col-2">Общение</th>
         <th scope="col" class="col-4">Абонемент</th>
         <th scope="col" class="col-2">Баланс</th>
       </tr>
@@ -82,50 +82,9 @@
       <tbody>
       {% for client in clients %}
         <tr class="d-flex">
-          <td class="col-2">
-            <div>
-              {% if client.phone_number %}
-                <a
-                  class="btn btn-sm btn-outline-info"
-                  href="tel:{{ client.phone_number }}"
-                >
-                  Позвонить
-                </a>
-              {% endif %}
-            </div>
-            <div>
-              {% if client.vk_user_id %}
-                {% if vk_group_id %}
-                  <a
-                    class="btn btn-sm btn-outline-info" target="_blank"
-                    href="https://vk.com/{{ vk_group_id }}?sel={{ client.vk_user_id }}"
-                  >
-                    Написать в VK
-                  </a>
-                  {% else %}
-                  <a
-                    class="btn btn-sm btn-outline-info" target="_blank"
-                    href="https://vk.com/im?sel={{ client.vk_user_id }}"
-                  >
-                    Написать в VK
-                  </a>
-                {% endif %}
-              {% endif %}
-            </div>
-            <div>
-              {% if client.email_address %}
-                <a
-                  class="btn btn-sm btn-outline-info" target="_blank"
-                  href="mailto:{{ client.email_address }}"
-                >
-                  Написать на почту
-                </a>
-              {% endif %}
-            </div>
-          </td>
           <td class="col-4">
             {% ifhasperm 'client' user %}
-              <div class="row">
+              <div class="row ml-1">
               {% if client.vk_user_id %}
                 <div class="float-left">
                   <img src="{% vk_small_avatar client.vk_user_id %}">
@@ -137,6 +96,43 @@
                 <div>{{ client.email_address }}</div>
               </a>
             {% endifhasperm %}
+            </div>
+          </td>
+          <td class="col-2">
+            <div class="row">
+              {% if client.phone_number %}
+                <a
+                  class="btn btn-sm btn-outline-info"
+                  href="tel:{{ client.phone_number }}"
+                >
+                  <i class="fas fa-phone"></i>
+                </a>
+              {% endif %}
+              {% if client.vk_user_id %}
+                {% if vk_group_id %}
+                  <a
+                    class="btn btn-sm btn-outline-info" target="_blank"
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
+                  >
+                    <i class="fab fa-vk"></i>
+                  </a>
+                  {% else %}
+                  <a
+                    class="btn btn-sm btn-outline-info" target="_blank"
+                    href="https://vk.com/im?sel={{ client.vk_user_id }}"
+                  >
+                    <i class="fab fa-vk"></i>
+                  </a>
+                {% endif %}
+              {% endif %}
+              {% if client.email_address %}
+                <a
+                  class="btn btn-sm btn-outline-info" target="_blank"
+                  href="mailto:{{ client.email_address }}"
+                >
+                  <i class="fas fa-envelope"></i>
+                </a>
+              {% endif %}
             </div>
           </td>
           <td class="col-4">

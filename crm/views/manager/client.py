@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.forms import forms
 from django.forms.utils import ErrorList
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -31,7 +32,8 @@ from crm.models import (
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 from crm.templatetags.html_helper import get_vk_user_ids
-from google_tasks.tasks import enqueue
+from crm.views.mixin import CreateAndAddMixin
+from gcp.tasks import enqueue
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -49,11 +51,13 @@ class List(PermissionRequiredMixin, FilterView):
         return context
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.add'
+    add_another_url = 'crm:manager:client:new'
+    message_info = 'Ученик успешно создан'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):

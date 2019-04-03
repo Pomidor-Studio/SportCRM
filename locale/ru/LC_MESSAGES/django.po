@@ -1,0 +1,46 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-03-29 01:41+0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: crm/auth/password_validation.py:25
+msgid "Password must have symbols from any two groups"
+msgstr ""
+"Символы пароля должны быть как минимум из двух групп (прописные, заглавные "
+"буквы, цифры и спец. символы)"
+
+#: crm/auth/password_validation.py:30
+msgid "Your password can't be entirely from one type of symbols."
+msgstr ""
+"Ваш пароль не может быть только из одного типа символов (прописные, "
+"заглавные буквы, цифры и спец. символы)"
+
+#: crm/forms.py:466
+#, python-format
+msgid "User with name %(username)s exists"
+msgstr "Пользователь с логином %(username)s сушествует"
+
+#: crm/templates/crm/auth/password-change.html:13
+msgid "Change my password"
+msgstr "Сменить мой пароль"
+
+#: crm/templatetags/html_helper.py:185
+msgid "close"
+msgstr "закрыть"
