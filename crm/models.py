@@ -1114,8 +1114,7 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
     change_value = models.DecimalField(
         "Сумма изменения баланса",
         max_digits=9,
-        decimal_places=2,
-        default=0
+        decimal_places=2
     )
     client = TenantForeignKey(
         Client,
