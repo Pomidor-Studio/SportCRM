@@ -1,7 +1,12 @@
-from typing import Optional
+import csv
+import io
+import re
 
+import openpyxl as openpyxl
 from django.contrib import messages
 from django.db import transaction
+from django.forms import forms
+from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
@@ -10,6 +15,7 @@ from django.views.generic import (
 )
 from django_filters.views import FilterView
 from django_multitenant.utils import get_current_tenant
+from openpyxl.utils import cell
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.serializers import DateField, IntegerField
 from reversion.views import RevisionMixin
@@ -19,14 +25,14 @@ from crm.enums import BALANCE_REASON
 from crm.filters import ClientFilter
 from crm.forms import (
     ClientForm, ClientSubscriptionForm, ExtendClientSubscriptionForm,
-)
+    UploadExcelForm)
 from crm.models import (
     Client, ClientSubscriptions, ExtensionHistory, SubscriptionsType,
     EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
+from crm.templatetags.html_helper import get_vk_user_ids
 from crm.views.mixin import CreateAndAddMixin
-
 from gcp.tasks import enqueue
 
 
@@ -176,7 +182,6 @@ class SubscriptionUpdate(
 
 
 class AddSubscriptionWithExtending(AddSubscription):
-
     object: ClientSubscriptions = ...
 
     def form_valid(self, form):
@@ -254,3 +259,82 @@ class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     def get_success_url(self):
         return reverse(
             'crm:manager:client:detail', args=[self.object.client.id])
+
+
+class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
+    form_class = UploadExcelForm
+    template_name = 'crm/manager/client/upload_excel.html'
+    permission_required = 'client.add'
+    success_url = reverse_lazy('crm:manager:client:list')
+
+    def form_valid(self, form):
+        file = form.cleaned_data['file']
+        ignore_first_row = form.cleaned_data['ignore_first_row']
+        name_col = form.cleaned_data['name_col']
+        phone_col = form.cleaned_data['phone_col']
+        birthday_col = form.cleaned_data['birthday_col']
+        vk_col = form.cleaned_data['vk_col']
+        balance_col = form.cleaned_data['balance_col']
+
+        try:
+            wb = openpyxl.load_workbook(file)
+            ws = wb.worksheets[0]
+        except Exception:
+            form._errors[forms.NON_FIELD_ERRORS] = ErrorList([
+                u'Неподдерживаемый формат файла!'
+            ])
+            return self.form_invalid(form)
+
+        iter_rows = iter(ws.rows)
+        if ignore_first_row:
+            next(iter_rows)
+
+        skipped = 0
+        added = 0
+        clients_to_add = []
+        vk_domains = []
+
+        for row in iter_rows:
+            name = row[cell.column_index_from_string(name_col) - 1].value
+            phone_raw = row[cell.column_index_from_string(phone_col) - 1].value
+            phone = re.sub("\D", "", str(phone_raw))
+            birthday = row[cell.column_index_from_string(birthday_col) - 1].value
+            try:
+                balance = row[cell.column_index_from_string(balance_col) - 1].value
+            except IndexError:
+                balance = None
+            m = re.search("vk.com\/(?P<id>([A-Za-z0-9_])+)", row[cell.column_index_from_string(vk_col) - 1].value)
+            vk_domain = m.group('id')
+
+            exists = Client.objects.filter(
+                name=name,
+                phone_number=phone,
+                birthday=birthday
+            ).exists()
+
+            if not exists:
+                client = Client(name = name, phone_number = phone, birthday = birthday)
+                if balance:
+                    client.balance = balance
+                clients_to_add.append(client)
+                vk_domains.append(vk_domain)
+                added += 1
+            else:
+                skipped+=1
+
+            if len(clients_to_add) >= 1000:
+                vk_user_ids = get_vk_user_ids(vk_domains)
+                for vk_user_id in vk_user_ids:
+                    clients_to_add[vk_user_ids.index(vk_user_id)].vk_user_id = vk_user_id
+                Client.objects.bulk_create(clients_to_add)
+                clients_to_add = []
+                vk_domains = []
+
+        vk_user_ids = get_vk_user_ids(vk_domains)
+        for vk_user_id in vk_user_ids:
+            clients_to_add[vk_user_ids.index(vk_user_id)].vk_user_id = vk_user_id
+        Client.objects.bulk_create(clients_to_add)
+
+        messages.info(self.request, 'Создано записей: {}. Пропущено записей: {}'.format(added, skipped) )
+
+        return super(UploadExcel, self).form_valid(form)

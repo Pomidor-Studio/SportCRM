@@ -500,3 +500,13 @@ class ProfileCoachForm(MultiModelForm):
         'user': ProfileUserForm,
         'detail': CoachForm
     }
+
+
+class UploadExcelForm(forms.Form):
+    file = forms.FileField(label='Файл Excel')
+    ignore_first_row = forms.BooleanField(label='Не учитывать первую строку', initial=False, required=False)
+    name_col = forms.CharField(label='Столбец с ФИО', initial='A')
+    phone_col = forms.CharField(label='Столбец с номером телефона', initial='B')
+    birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C')
+    vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D')
+    balance_col = forms.CharField(label='Столбец с балансом', initial='E')
