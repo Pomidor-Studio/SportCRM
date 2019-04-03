@@ -95,12 +95,12 @@ def get_vk_user_ids(vk_user_domains):
     )
 
     for result in results:
-        id = 'id' + str(result['id'])
+        user_id = 'id' + str(result['id'])
         screen_name = result['screen_name']
         if screen_name in vk_user_domains:
             vk_user_ids[vk_user_domains.index(screen_name)] = result['id']
-        elif id in vk_user_domains:
-            vk_user_ids[vk_user_domains.index(id)] = result['id']
+        elif user_id in vk_user_domains:
+            vk_user_ids[vk_user_domains.index(user_id)] = result['id']
 
     return vk_user_ids
 
