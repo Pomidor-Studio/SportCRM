@@ -227,7 +227,7 @@
         {% for bal in object.clientbalancechangehistory_set.all|dictsortreversed:"entry_date" %}
         <tr>
           <td>{{ bal.entry_date }}</td>
-          <td>{{ bal.change_value|floatformat:"-2"|intcomma }}₽</td>
+          <td>{{ bal.change_value|floatformat:"-2"|intcomma }} ₽</td>
           <td>
             {{ bal.reason }}
             {{ bal.subscription.subscription.name }}
