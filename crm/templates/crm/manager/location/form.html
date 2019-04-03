@@ -8,8 +8,7 @@
 
 {% block content %}
   <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Место проведения тренировок</legend>
-    <div class="w-25">
+    <legend class="border-bottom mb-2">Место проведения</legend>
       <form method="POST">
         {% csrf_token %}
         <fieldset class="form-group">
@@ -26,6 +25,5 @@
              class="btn btn-outline-info">Назад</a>
         </div>
       </form>
-    </div>
   </div>
 {% endblock content %}

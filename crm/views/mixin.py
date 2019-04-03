@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -9,9 +10,13 @@ from django.views.generic.detail import (
 
 
 class CreateAndAddMixin(CreateView):
+    message_info = 'Объект создан'
+    add_another_url = 'crm:manager:home'
+
     def post(self, request, *args, **kwargs):
         saved = super(CreateAndAddMixin, self).post(request, *args, **kwargs)
         if "another" in request.POST:
+            messages.info(request, self.message_info)
             return HttpResponseRedirect(reverse(self.add_another_url))
         else:
             return saved

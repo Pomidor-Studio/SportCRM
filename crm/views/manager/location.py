@@ -27,6 +27,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
     template_name = 'crm/manager/location/form.html'
     permission_required = 'location.add'
     add_another_url = 'crm:manager:locations:new'
+    message_info = 'Место успешно создано'
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
