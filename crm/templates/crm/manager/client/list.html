@@ -136,35 +136,37 @@
               </div>
             </td>
             <td class="col-4">
-              {% if client.last_sub %}
-                <div class="font-weight-bold">
-                  {% if client.last_sub.is_expiring %}
-                    <i
-                      title="Абонемент скоро заканчивается"
-                      class="fas fa-exclamation-circle"
-                    ></i>
+              {% with last_sub=client.last_sub %}
+                {% if last_sub %}
+                  <div class="font-weight-bold">
+                    {% if last_sub.is_expiring %}
+                      <i
+                        title="Абонемент скоро заканчивается"
+                        class="fas fa-exclamation-circle"
+                      ></i>
+                    {% endif %}
+                    {{ last_sub.subscription.name }}
+                  </div>
+                  <div>Действует
+                    до {{ last_sub.end_date|date:'d N Y' }}</div>
+                  <div>Осталось {{ last_sub.visits_left }} посещений</div>
+                  {% ifhasperm 'is_manager' user %}
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:client:subscription:extend' last_sub.id %}"
+                    >Продлить</a>
+                  {% endifhasperm %}
+                {% else %}
+                  {% if has_active_event_class %}
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:client:new-subscription' client.id %}"
+                    >
+                      Продать абонемент
+                    </a>
                   {% endif %}
-                  {{ client.last_sub.subscription.name }}
-                </div>
-                <div>Действует
-                  до {{ client.last_sub.end_date|date:'d N Y' }}</div>
-                <div>Осталось {{ client.last_sub.visits_left }} посещений</div>
-                {% ifhasperm 'is_manager' user %}
-                  <a
-                    class="btn btn-sm btn-outline-info"
-                    href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}"
-                  >Продлить</a>
-                {% endifhasperm %}
-              {% else %}
-                {% if has_active_event_class %}
-                  <a
-                    class="btn btn-sm btn-outline-info"
-                    href="{% url 'crm:manager:client:new-subscription' client.id %}"
-                  >
-                    Продать абонемент
-                  </a>
                 {% endif %}
-              {% endif %}
+            {% endwith %}
             </td>
             <td class="col-2">
               <div class="row">
