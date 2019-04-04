@@ -220,4 +220,6 @@ GOOGLE_ANALYTICS_SITE_SPEED_SAMPLE_RATE = 100
 BACKGROUND_MODE: bool = False # True for run as background tasks worker
 USE_GOOGLE_TASKS: bool = False
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

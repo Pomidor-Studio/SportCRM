@@ -31,86 +31,86 @@
         {% endifhasperm %}
       </div>
 
-      <table class="table table-striped table-borderless">
-        <thead>
-        <tr>
-          <th scope="col">Наименование</th>
-          <th scope="col">Тренировки</th>
-          <th scope="col">Продолжительность</th>
-          <th scope="col">Лимит посещений</th>
-          <th scope="col">Цена</th>
-          {% ifhasperm 'subscription.edit' user %}
-            <th scope="col" style="width:5%"></th>
-          {% endifhasperm %}
-          {% ifhasperm 'subscription.delete' user %}
-            <th scope="col" style="width:5%"></th>
-          {% endifhasperm %}
-        </tr>
-        </thead>
-        <tbody>
-        {% for subscription in subscriptions %}
+      {% if subscriptions %}
+        <table class="table table-striped table-borderless">
+          <thead>
           <tr>
-            <td>
-              {{ subscription.name }}
-              {% if subscription.deleted %}
-                <span class="badge badge-secondary">
-                  <i class="fas fa-archive"></i>в ахриве
-                </span>
-              {% endif %}
-            </td>
-            <td>
-              {% for eventclass in subscription.event_class.all %}
-              <div>
-                <a href="{% url 'crm:manager:event-class:calendar' eventclass.pk %}" >{{ eventclass }}</a>
-              </div>
-              {% endfor %}
-            </td>
-            <td>
-              {{ subscription.duration }} {{ subscription.duration_postfix }}
-            </td>
-            <td>
-              {{ subscription.visit_limit }}
-            </td>
-            <td>
-              {{ subscription.price|floatformat:"-2"|intcomma }} ₽
-            </td>
-
-            {% ifhasperm 'subscription.edit' user subscription %}
-              <td>
-                {% if not subscription.deleted %}
-                  <a
-                    name="edit"
-                    href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                    class="btn btn-primary btn-outline-info"
-                  >
-                    Редактировать
-                  </a>
-                {% endif %}
-              </td>
-            {% endifhasperm %}
+            <th scope="col">Наименование</th>
+            <th scope="col">Тренировки</th>
+            <th scope="col">Продолжительность</th>
+            <th scope="col">Лимит посещений</th>
+            <th scope="col">Цена</th>
             {% ifhasperm 'subscription.delete' user %}
-              <td>
-                {% if subscription.deleted %}
-                  <a
-                    href="{% url "crm:manager:subscription:undelete" subscription.id %}"
-                    class="btn btn-sm btn-secondary"
-                  >
-                    Вернуть
-                  </a>
-                {% else %}
-                  <a
-                    href="{% url "crm:manager:subscription:delete" subscription.id %}"
-                    class="btn btn-sm btn-danger"
-                  >
-                    Удалить
-                  </a>
-                {% endif %}
-              </td>
+              <th scope="col" style="width:5%"></th>
             {% endifhasperm %}
           </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+          {% for subscription in subscriptions %}
+            <tr>
+              <td>
+                {% ifhasperm 'subscription.edit' user subscription %}
+                  {% if not subscription.deleted %}
+                    <a
+                      name="edit"
+                      href="{% url 'crm:manager:subscription:update' subscription.id %}"
+                    >
+                      {{ subscription.name }}
+                    </a>
+                  {% else %}
+                    {{ subscription.name }}
+                  {% endif %}
+                {% else %}
+                {{ subscription.name }}
+              {% endifhasperm %}
+                {% if subscription.deleted %}
+                  <span class="badge badge-secondary">
+                    <i class="fas fa-archive"></i>в ахриве
+                  </span>
+                {% endif %}
+              </td>
+              <td>
+                {% for eventclass in subscription.event_class.all %}
+                <div>
+                  <a href="{% url 'crm:manager:event-class:calendar' eventclass.pk %}" >{{ eventclass }}</a>
+                </div>
+                {% endfor %}
+              </td>
+              <td>
+                {{ subscription.duration }} {{ subscription.duration_postfix }}
+              </td>
+              <td>
+                {{ subscription.visit_limit }}
+              </td>
+              <td>
+                {{ subscription.price|floatformat:"-2"|intcomma }} ₽
+              </td>
+              {% ifhasperm 'subscription.delete' user %}
+                <td>
+                  {% if subscription.deleted %}
+                    <a
+                      href="{% url "crm:manager:subscription:undelete" subscription.id %}"
+                      class="btn btn-sm btn-secondary"
+                    >
+                      Вернуть
+                    </a>
+                  {% else %}
+                    <a
+                      href="{% url "crm:manager:subscription:delete" subscription.id %}"
+                      class="btn btn-sm btn-danger"
+                    >
+                      Удалить
+                    </a>
+                  {% endif %}
+                </td>
+              {% endifhasperm %}
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p>Абонементов нет.</p>
+      {% endif %}
     </div>
   </form>
 {% endblock content %}

@@ -339,8 +339,8 @@ class EventClass(CompanyObjectModel):
         Coach,
         on_delete=models.PROTECT,
         verbose_name="Тренер")
-    date_from = models.DateField("Дата с", null=True, blank=True)
-    date_to = models.DateField("Дата по", null=True, blank=True)
+    date_from = models.DateField("Начало тренировок", null=True, blank=True)
+    date_to = models.DateField("Окончание тренировок", null=True, blank=True)
 
     objects = EventClassManager()
 
@@ -1139,8 +1139,7 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
     change_value = models.DecimalField(
         "Сумма изменения баланса",
         max_digits=9,
-        decimal_places=2,
-        default=0
+        decimal_places=2
     )
     client = TenantForeignKey(
         Client,

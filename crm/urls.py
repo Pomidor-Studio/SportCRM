@@ -99,6 +99,7 @@ manager_clients_urlpatterns = ([
     path('<int:pk>/', manager_client_views.Detail.as_view(), name='detail'),
     path('<int:pk>/balance/', include(manager_client_balance_urlpatterns)),
     path('new/', manager_client_views.Create.as_view(), name='new'),
+    path('upload-excel/', manager_client_views.UploadExcel.as_view(), name='excel'),
     path(
         '<int:pk>/update/',
         manager_client_views.Update.as_view(),

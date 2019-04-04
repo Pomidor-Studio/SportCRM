@@ -80,7 +80,7 @@
         <div>{{object.phone_number}}</div>
         <div>{{object.birthday}}</div>
         <div>{{object.email_address}}</div>
-        <div>{{object.balance|floatformat:"2"|intcomma }} ₽</div>
+        <div>{{object.balance | floatformat:"-2" | intcomma }} ₽</div>
         <div class="mb-2 mt-2">
           <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить
             баланс</a>
@@ -125,16 +125,13 @@
             {% ifhasperm 'client_subscription.extend' user %}
             <th style="width:5%" scope="col"></th>
             {% endifhasperm %}
-            {% ifhasperm 'client_subscription.edit' user %}
-            <th style="width:5%" scope="col"></th>
-            {% endifhasperm %}
             {% ifhasperm 'client_subscription.delete' user %}
             <th style="width:5%" scope="col"></th>
             {% endifhasperm %}
           </tr>
           </thead>
           <tbody>
-          {% for sub in object.clientsubscriptions_set.all|dictsort:"end_date" %}
+          {% for sub in object.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
           <tr>
             <td>{% if sub.is_expiring %}
               <i
@@ -142,7 +139,11 @@
                 class="fas fa-exclamation-circle"
               ></i>
               {% endif %}
+              {% ifhasperm 'client_subscription.edit' user %}
+              <a href="{% url 'crm:manager:client:subscription:update' sub.id %}">{{ sub.subscription.name }}</a>
+              {% else %}
               {{ sub.subscription.name }}
+              {% endifhasperm %}
             </td>
             <td>{{ sub.purchase_date|date:'d N Y' }}</td>
             <td>{{ sub.price }}</td>
@@ -157,19 +158,17 @@
               >Продлить</a>
             </td>
             {% endifhasperm %}
-            {% ifhasperm 'client_subscription.edit' user %}
-            <td>
-              <a
-                class="btn btn-sm btn-outline-info"
-                href="{% url 'crm:manager:client:subscription:update' sub.id %}"
-              >Изменить</a>
-            </td>
-            {% endifhasperm %}
+
+
             {% ifhasperm 'client_subscription.delete' user %}
-            <td><a
+            <td>
+              {% if sub.visits_on_by_time == sub.visits_left %}
+              <a
               class="btn btn-sm btn-outline-danger"
               href="{% url 'crm:manager:client:subscription:delete' sub.id %}"
-            >Удалить</a></td>
+            >Удалить</a>
+              {% endif %}
+            </td>
             {% endifhasperm %}
           </tr>
           {% endfor %}
@@ -228,7 +227,7 @@
         {% for bal in object.clientbalancechangehistory_set.all|dictsortreversed:"entry_date" %}
         <tr>
           <td>{{ bal.entry_date }}</td>
-          <td>{{ bal.change_value }} ₽</td>
+          <td>{{ bal.change_value|floatformat:"-2"|intcomma }} ₽</td>
           <td>
             {{ bal.reason }}
             {{ bal.subscription.subscription.name }}
