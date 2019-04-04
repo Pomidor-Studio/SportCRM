@@ -202,7 +202,15 @@
                 </div>
               </div>
             </td>
-            <td>{{ sub.subscription }}</td>
+            <td>
+              {% if sub.subscription %}
+                {{ sub.subscription }}
+              {% else %}
+                <div style="color: red">
+                  Записался, но не пришел
+                </div>
+              {% endif %}
+            </td>
             <td><a class="btn btn-sm btn-outline-danger"
                    href="{% url 'crm:manager:attendance:delete' sub.id %}">Удалить отметку о посещении</a></td>
           </tr>
