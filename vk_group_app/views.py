@@ -5,11 +5,14 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
 from django_multitenant.utils import set_current_tenant
-from rest_framework.generics import CreateAPIView
+from rest_framework import status
+from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.response import Response
 
 from contrib.vk_utils import get_vk_user_info
 from crm.models import Attendance, Client, Company, Event, EventClass
 from vk_group_app.serializers import VkActionSerializer
+from vk_group_app.utils import signed_clients_display
 
 
 @method_decorator(xframe_options_exempt, name='dispatch')
@@ -145,8 +148,12 @@ class ClientMixin:
         client = Client.objects.create(vk_user_id=vk_id)
         info = get_vk_user_info(vk_id)[vk_id]
         client.name = f'{info["first_name"]} {info["last_name"]}'
-        if info['bdate']:
-            client.birthday = info.bdate
+        bdate = info.get('bdate')
+        if bdate:
+            try:
+                client.birthday = datetime.strptime(bdate, '%d.%m.%Y')
+            except ValueError:
+                pass
         client.save()
         return client
 
@@ -159,22 +166,48 @@ class ClientMixin:
         set_current_tenant(company)
 
 
-class MarkClient(ClientMixin, EventMixin, CreateAPIView):
+class MarkClient(ClientMixin, EventMixin, GenericAPIView):
 
     serializer_class = VkActionSerializer
 
-    def perform_create(self, serializer):
-        self.set_tenant(serializer)
-        client = self.get_client(serializer)
-        event = self.get_event(serializer)
-        client.signup_for_event(event)
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.set_tenant(serializer)
+            client = self.get_client(serializer)
+            event: Event = self.get_event(serializer)
+            client.signup_for_event(event)
+        except Exception as exc:
+            return Response(
+                {'success': False, 'error': str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'success': True,
+            'signedCount': signed_clients_display(event.signed_up_clients)
+        }, status=status.HTTP_201_CREATED)
 
 
 class UnMarkClient(ClientMixin, EventMixin, CreateAPIView):
     serializer_class = VkActionSerializer
 
-    def perform_create(self, serializer):
-        self.set_tenant(serializer)
-        client = self.get_client(serializer)
-        event = self.get_event(serializer)
-        client.cancel_signup_for_event(event)
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            self.set_tenant(serializer)
+            client = self.get_client(serializer)
+            event: Event = self.get_event(serializer)
+            client.cancel_signup_for_event(event)
+        except Exception as exc:
+            return Response(
+                {'success': False, 'error': str(exc)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'success': True,
+            'signedCount': signed_clients_display(event.signed_up_clients)
+        }, status=status.HTTP_201_CREATED)

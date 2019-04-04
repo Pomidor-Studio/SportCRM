@@ -38,9 +38,12 @@
       $.post({
         url: "{% url "vk_group_app:mark-client" %}",
         data: params,
-        success: function () {
-          $('button.mark-to' + eventParamsToSelector(eventParams)).hide();
-          $('button.unmark' + eventParamsToSelector(eventParams)).show();
+        success: function (data) {
+          let selectorArgs = eventParamsToSelector(eventParams);
+          let selectorPrefix = `div.container ${selectorArgs}`;
+          $(`${selectorPrefix} button.mark-to`).hide();
+          $(`${selectorPrefix} button.unmark`).show();
+          $(`${selectorPrefix} span.signed-count`).text(data.signedCount);
         }
       });
     }
@@ -53,10 +56,12 @@
       $.post({
         url: "{% url "vk_group_app:unmark-client" %}",
         data: params,
-        success: function () {
-          console.log('button.unmark' + eventParamsToSelector(eventParams));
-          $('button.unmark' + eventParamsToSelector(eventParams)).hide();
-          $('button.mark-to' + eventParamsToSelector(eventParams)).show();
+        success: function (data) {
+          let selectorArgs = eventParamsToSelector(eventParams);
+          let selectorPrefix = `div.container ${selectorArgs}`;
+          $(`${selectorPrefix} button.unmark`).hide();
+          $(`${selectorPrefix} button.mark-to`).show();
+          $(`${selectorPrefix} span.signed-count`).text(data.signedCount);
         }
       });
     }
@@ -78,10 +83,10 @@
       VK.init(function () {
         setInterval(iframeResize(), 500);
         $('button.mark-to').click(function () {
-          markToEvent(eventDataToDict($(this)));
+          markToEvent(eventDataToDict($(this).parents('div.container')));
         });
         $('button.unmark').click(function () {
-          unmarkToEvent(eventDataToDict($(this)));
+          unmarkToEvent(eventDataToDict($(this).parents('div.container')));
         });
       }, function () {
       }, '5.92');
@@ -96,7 +101,12 @@
       <div class="page_block_sub_header">
         {{ event.date|date:"l" }} / {{ event.event_class.name }}
       </div>
-      <div class="page_block_content container">
+      <div class="page_block_content container"
+           data-event-year="{{ event.date|date:"Y" }}"
+           data-event-month="{{ event.date|date:"n" }}"
+           data-event-day="{{ event.date|date:"j" }}"
+           data-event-class="{{ event.event_class_id }}"
+      >
         <div class="row">
           <div class="col-9 container">
             <div class="row">
@@ -128,31 +138,25 @@
             <div class="row">
               <div class="col-6 info">
                 <i class="fas fa-users"></i>
+                <span class="signed-count">
                 {% with count=event_signed_count|get_value:event.id|default:0 %}
                   {% pluralize count 'Записалcя' 'Записалось' 'Записалось' %}
                   {{ count }}
                   {% pluralize count 'человек' 'человека' 'человек' %}
                 {% endwith %}
+                </span>
               </div>
             </div>
           </div>
           <div class="col-3">
             <button
               class="flat_button secondary unmark"
-              data-event-year="{{ event.date|date:"Y" }}"
-              data-event-month="{{ event.date|date:"n" }}"
-              data-event-day="{{ event.date|date:"j" }}"
-              data-event-class="{{ event.event_class_id }}"
               style="{% if event.id not in my_events %}display: none;{% endif %}"
             >
               Отменить запись
             </button>
             <button
               class="flat_button mark-to"
-              data-event-year="{{ event.date|date:"Y" }}"
-              data-event-month="{{ event.date|date:"n" }}"
-              data-event-day="{{ event.date|date:"j" }}"
-              data-event-class="{{ event.event_class_id }}"
               style="{% if event.id in my_events %}display: none;{% endif %}"
             >
               Записаться

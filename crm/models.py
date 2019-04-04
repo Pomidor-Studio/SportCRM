@@ -33,7 +33,7 @@ from transliterate import translit
 
 from crm.enums import GRANULARITY
 from crm.events import get_nearest_to, next_day, Weekdays
-from crm.utils import pluralize
+from contrib.text_utils import pluralize
 
 INTERNAL_COMPANY = 'INTERNAL'
 
@@ -1234,6 +1234,17 @@ class Event(CompanyObjectModel):
         # TODO: Refactor dump Event.is_event_day
         if not self.event_class.is_event_day(self.date):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
+
+    @property
+    def signed_up_clients(self):
+        """
+        Return amount of clients signed for one event. Use only in case when
+        we work only with one event. For grouped operations better use optimized
+        queries with annotate and values
+
+        :return: Amount of clients signed up for event
+        """
+        return self.attendance_set.filter(signed_up=True).count()
 
     def get_present_clients_count(self):
         # Получаем количество посетивших данную тренировку клиентов

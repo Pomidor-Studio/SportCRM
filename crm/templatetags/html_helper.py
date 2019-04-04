@@ -12,7 +12,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from transliterate.utils import _
 
-from crm import utils
+from contrib import text_utils
 
 register = template.Library()
 
@@ -225,4 +225,4 @@ def get_value(dictionary, key):
 
 @register.simple_tag
 def pluralize(amount, singular, plural1, plural2):
-    return utils.pluralize(singular, plural1, plural2, amount)
+    return text_utils.pluralize(singular, plural1, plural2, amount)
