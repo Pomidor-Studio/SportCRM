@@ -7,6 +7,7 @@ from django.views.generic import TemplateView
 from django_multitenant.utils import set_current_tenant
 from rest_framework.generics import CreateAPIView
 
+from contrib.vk_utils import get_vk_user_info
 from crm.models import Attendance, Client, Company, Event, EventClass
 from vk_group_app.serializers import VkActionSerializer
 
@@ -123,17 +124,31 @@ class EventMixin:
             serializer.validated_data['month'],
             serializer.validated_data['day']
         )
-        return Event.objects.get_or_virtual(
+        event = Event.objects.get_or_virtual(
             serializer.validated_data['eventClassId'], event_date)
+        if not event.id:
+            event.save()
+
+        return event
 
 
 class ClientMixin:
-    def get_client(self, serializer):
-        return Client.objects.filter(
+    def get_client(self, serializer) -> Client:
+        client = Client.objects.filter(
             vk_user_id=serializer.validated_data['vkId']).first()
+        if not client:
+            client = self.create_client(serializer)
+        return client
 
-    def create_client(self):
-        client = Client.objects.create()
+    def create_client(self, serializer):
+        vk_id = serializer.validated_data['vkId']
+        client = Client.objects.create(vk_user_id=vk_id)
+        info = get_vk_user_info(vk_id)[vk_id]
+        client.name = f'{info["first_name"]} {info["last_name"]}'
+        if info['bdate']:
+            client.birthday = info.bdate
+        client.save()
+        return client
 
     def set_tenant(self, serializer):
         company = Company.objects.get(
@@ -144,14 +159,22 @@ class ClientMixin:
         set_current_tenant(company)
 
 
-class MarkClient(EventMixin, CreateAPIView):
+class MarkClient(ClientMixin, EventMixin, CreateAPIView):
 
     serializer_class = VkActionSerializer
 
     def perform_create(self, serializer):
-
-
+        self.set_tenant(serializer)
+        client = self.get_client(serializer)
         event = self.get_event(serializer)
-        event.save()
         client.signup_for_event(event)
-        serializer.data['success'] = True
+
+
+class UnMarkClient(ClientMixin, EventMixin, CreateAPIView):
+    serializer_class = VkActionSerializer
+
+    def perform_create(self, serializer):
+        self.set_tenant(serializer)
+        client = self.get_client(serializer)
+        event = self.get_event(serializer)
+        client.cancel_signup_for_event(event)

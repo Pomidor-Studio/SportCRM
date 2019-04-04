@@ -33,12 +33,30 @@
         url: "{% url "vk_group_app:mark-client" %}",
         data: params,
         success: function () {
-          window.reload();
+          $('button.mark-to'+ eventParamsToSelector(eventParams)).hide();
+          $('button.unmark'+ eventParamsToSelector(eventParams)).show();
         }
       });
     }
 
-    function unmarkToEvent(event) {
+    function unmarkToEvent(eventParams) {
+      let params = {
+        ...defaultParams,
+        ...eventParams
+      };
+      $.post({
+        url: "{% url "vk_group_app:unmark-client" %}",
+        data: params,
+        success: function () {
+          console.log('button.unmark'+ eventParamsToSelector(eventParams));
+          $('button.unmark'+ eventParamsToSelector(eventParams)).hide();
+          $('button.mark-to'+ eventParamsToSelector(eventParams)).show();
+        }
+      });
+    }
+
+    function eventParamsToSelector(eventParams) {
+      return `[data-event-year="${eventParams.year}"][data-event-month="${eventParams.month}"][data-event-day="${eventParams.day}"][data-event-class="${eventParams.eventClassId}"]`;
     }
 
     function eventDataToDict($event) {
@@ -55,6 +73,9 @@
         setInterval(iframeResize(), 500);
         $('button.mark-to').click(function () {
           markToEvent(eventDataToDict($(this)));
+        });
+        $('button.unmark').click(function () {
+          unmarkToEvent(eventDataToDict($(this)));
         });
       }, function () {
       }, '5.92');
@@ -76,27 +97,26 @@
           </div>
           <div class="col-4">{{ event.event_class.location }}</div>
           <div class="col-4">
-            {% if event.id in my_events %}
-              <button
-                class="flat_button secondary unmark"
-                data-event-year="{{ event.date|date:"Y" }}"
-                data-event-month="{{ event.date|date:"m" }}"
-                data-event-day="{{ event.date|date:"d" }}"
-                data-event-class="{{ event.event_class_id }}"
-              >
-                Отменить запись
-              </button>
-            {% else %}
-              <button
-                class="flat_button mark-to"
-                data-event-year="{{ event.date|date:"Y" }}"
-                data-event-month="{{ event.date|date:"m" }}"
-                data-event-day="{{ event.date|date:"d" }}"
-                data-event-class="{{ event.event_class_id }}"
-              >
-                Записаться
-              </button>
-            {% endif %}
+            <button
+              class="flat_button secondary unmark"
+              data-event-year="{{ event.date|date:"Y" }}"
+              data-event-month="{{ event.date|date:"n" }}"
+              data-event-day="{{ event.date|date:"j" }}"
+              data-event-class="{{ event.event_class_id }}"
+              style="{% if event.id not in my_events %}display: none;{% endif %}"
+            >
+              Отменить запись
+            </button>
+            <button
+              class="flat_button mark-to"
+              data-event-year="{{ event.date|date:"Y" }}"
+              data-event-month="{{ event.date|date:"n" }}"
+              data-event-day="{{ event.date|date:"j" }}"
+              data-event-class="{{ event.event_class_id }}"
+              style="{% if event.id in my_events %}display: none;{% endif %}"
+            >
+              Записаться
+            </button>
           </div>
         </div>
         <div class="row">

@@ -11,6 +11,7 @@ from django.template import Node, NodeList, TemplateSyntaxError
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from transliterate.utils import _
+
 from crm import utils
 
 register = template.Library()
