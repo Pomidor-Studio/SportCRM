@@ -307,6 +307,22 @@ class EventClassManager(TenantManagerMixin, models.Manager):
             Q(date_to__isnull=True) | Q(date_to__gte=date.today())
         )
 
+    def in_range(self, day_start, day_end):
+        return self.get_queryset().filter(
+            (
+                Q(date_from__isnull=False) & Q(date_to__isnull=False) &
+                Q(date_from__lte=day_end) & Q(date_to__gte=day_start)
+            ) | (
+                Q(date_from__isnull=False) & Q(date_to__isnull=True) &
+                Q(date_from__lte=day_end)
+            ) | (
+                Q(date_from__isnull=True) & Q(date_to__isnull=False) &
+                Q(date_to__gte=day_start)
+            ) | (
+                Q(date_from__isnull=True) & Q(date_to__isnull=True)
+            )
+        )
+
 
 @reversion.register()
 class EventClass(CompanyObjectModel):
@@ -330,6 +346,15 @@ class EventClass(CompanyObjectModel):
 
     def get_one_time_visit_costs(self):
         return self.subscriptionstype_set.filter(one_time=True).first()
+
+    @property
+    def otv_price(self) -> Optional[float]:
+        """
+        Get one time visit (otv) price.
+        :return: price of visit or None if no otv assigned to event class
+        """
+        otv = self.get_one_time_visit_costs()
+        return otv.price if otv else None
 
     def days(self) -> List[int]:
         """

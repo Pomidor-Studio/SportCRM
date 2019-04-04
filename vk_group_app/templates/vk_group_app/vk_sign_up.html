@@ -1,6 +1,128 @@
-</br>
-{{ result }}
-</br>
-{% for event in events %}
-  {{ event }} <button>Записаться</button> </br>
-{% endfor %}
+{% load bootstrap4 html_helper humanize %}
+<html lang="ru">
+<head>
+  {% css 'css/vkui.css' %}
+  {% css 'css/simple-grid.min.css' %}
+  {% bootstrap_jquery %}
+  <script
+    type="text/javascript" src="https://vk.com/js/api/xd_connection.js?2"
+  ></script>
+  <script type="text/javascript">
+    let defaultParams = {
+      vkId: {{ vk_id }},
+      vkGroup: {{ vk_group }}
+    };
+
+    function iframeResize() {
+      let currentSize = 0;
+      return function () {
+        let newSize = $('#main-data').height();
+        if (newSize !== currentSize) {
+          VK.callMethod('resizeWindow', 0, newSize + 30);
+          currentSize = newSize;
+        }
+      }
+    }
+
+    function markToEvent(eventParams) {
+      let params = {
+        ...defaultParams,
+        ...eventParams
+      };
+      $.post({
+        url: "{% url "vk_group_app:mark-client" %}",
+        data: params,
+        success: function () {
+          window.reload();
+        }
+      });
+    }
+
+    function unmarkToEvent(event) {
+    }
+
+    function eventDataToDict($event) {
+      return {
+        year: parseInt($event.data('event-year')),
+        month: parseInt($event.data('event-month')),
+        day: parseInt($event.data('event-day')),
+        eventClassId: parseInt($event.data('event-class'))
+      }
+    }
+
+    $(function () {
+      VK.init(function () {
+        setInterval(iframeResize(), 500);
+        $('button.mark-to').click(function () {
+          markToEvent(eventDataToDict($(this)));
+        });
+      }, function () {
+      }, '5.92');
+    });
+  </script>
+</head>
+
+<body>
+<div class="container" id="main-data">
+  {% for event in events %}
+    <div class="page_block row">
+      <div class="page_actions_header">
+        {{ event.date|date:"D" }} {{ event.event_class.name }}
+      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-4">{{ event.date|date:"d b" }}
+            ({{ event.start_time|date:"H:i" }} - {{ event.end_time|date:"H:i" }})
+          </div>
+          <div class="col-4">{{ event.event_class.location }}</div>
+          <div class="col-4">
+            {% if event.id in my_events %}
+              <button
+                class="flat_button secondary unmark"
+                data-event-year="{{ event.date|date:"Y" }}"
+                data-event-month="{{ event.date|date:"m" }}"
+                data-event-day="{{ event.date|date:"d" }}"
+                data-event-class="{{ event.event_class_id }}"
+              >
+                Отменить запись
+              </button>
+            {% else %}
+              <button
+                class="flat_button mark-to"
+                data-event-year="{{ event.date|date:"Y" }}"
+                data-event-month="{{ event.date|date:"m" }}"
+                data-event-day="{{ event.date|date:"d" }}"
+                data-event-class="{{ event.event_class_id }}"
+              >
+                Записаться
+              </button>
+            {% endif %}
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            {% with ec_id=event.event_class_id %}
+              {% with price=ec_otv_price|get_value:ec_id %}
+                {% if price %}
+                  {{ price|floatformat:"-2"|intcomma }} ₽
+                {% endif %}
+              {% endwith %}
+            {% endwith %}
+          </div>
+          <div class="col-4">{{ event.event_class.coach }}</div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            {% with count=event_signed_count|get_value:event.id|default:0 %}
+              {% pluralize count 'Записалcя' 'Записалось' 'Записалось' %}
+              {{ count }}
+              {% pluralize count 'человек' 'человека' 'человек' %}
+            {% endwith %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+</body>
+</html>

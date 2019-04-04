@@ -1,0 +1,18 @@
+{% load html_helper %}
+<html lang="ru">
+<head>
+  {% css 'css/vkui.min.css' %}
+</head>
+
+<body>
+<div class="page_block">
+  Приложение для интеграции с <a href="https://sportadmin.ru">sportadmin.ru</a>
+</div>
+<div class="page_block">
+  <a
+    href="https://vk.com/add_community_app.php?aid={{ app_id }}"
+    class="flat_button" target="_blank"
+  >Установить приложение</a>
+</div>
+</body>
+</html>
