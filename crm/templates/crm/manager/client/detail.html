@@ -146,7 +146,11 @@
               {% endifhasperm %}
             </td>
             <td>{{ sub.purchase_date|date:'d N Y' }}</td>
-            <td>{{ sub.price }}</td>
+            <td>
+              {% if sub.price %}
+                {{ sub.price | floatformat:"-2" | intcomma }} ₽
+              {% endif %}
+            </td>
             <td>{{ sub.start_date|date:'d N Y' }}</td>
             <td>{{ sub.end_date|date:'d N Y' }}</td>
             <td>{{ sub.visits_left }}</td>
