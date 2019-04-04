@@ -83,6 +83,14 @@ h2.page_block_h2 {
  outline:none;
  color:#000
 }
+.page_block_content {
+  font-size: 14px;
+}
+.page_block .info i {
+  color: #a6b6c3;
+  width: 20px;
+  text-align: center;
+}
 .page_block_sub_header.unshown {
  display:none
 }

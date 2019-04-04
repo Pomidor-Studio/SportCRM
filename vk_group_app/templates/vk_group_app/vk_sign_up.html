@@ -3,6 +3,12 @@
 <head>
   {% css 'css/vkui.css' %}
   {% css 'css/simple-grid.min.css' %}
+  <link
+    rel="stylesheet"
+    href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+    integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+    crossorigin="anonymous"
+  >
   {% bootstrap_jquery %}
   <script
     type="text/javascript" src="https://vk.com/js/api/xd_connection.js?2"
@@ -33,8 +39,8 @@
         url: "{% url "vk_group_app:mark-client" %}",
         data: params,
         success: function () {
-          $('button.mark-to'+ eventParamsToSelector(eventParams)).hide();
-          $('button.unmark'+ eventParamsToSelector(eventParams)).show();
+          $('button.mark-to' + eventParamsToSelector(eventParams)).hide();
+          $('button.unmark' + eventParamsToSelector(eventParams)).show();
         }
       });
     }
@@ -48,9 +54,9 @@
         url: "{% url "vk_group_app:unmark-client" %}",
         data: params,
         success: function () {
-          console.log('button.unmark'+ eventParamsToSelector(eventParams));
-          $('button.unmark'+ eventParamsToSelector(eventParams)).hide();
-          $('button.mark-to'+ eventParamsToSelector(eventParams)).show();
+          console.log('button.unmark' + eventParamsToSelector(eventParams));
+          $('button.unmark' + eventParamsToSelector(eventParams)).hide();
+          $('button.mark-to' + eventParamsToSelector(eventParams)).show();
         }
       });
     }
@@ -87,16 +93,50 @@
 <div class="container" id="main-data">
   {% for event in events %}
     <div class="page_block row">
-      <div class="page_actions_header">
-        {{ event.date|date:"D" }} {{ event.event_class.name }}
+      <div class="page_block_sub_header">
+        {{ event.date|date:"l" }} / {{ event.event_class.name }}
       </div>
-      <div class="container">
+      <div class="page_block_content container">
         <div class="row">
-          <div class="col-4">{{ event.date|date:"d b" }}
-            ({{ event.start_time|date:"H:i" }} - {{ event.end_time|date:"H:i" }})
+          <div class="col-9 container">
+            <div class="row">
+              <div class="col-6 info" title="Дата и время тренировки"><i
+                class="far fa-clock"
+              ></i>{{ event.date|date:"d b" }}
+                ({{ event.start_time|date:"H:i" }}
+                - {{ event.end_time|date:"H:i" }})
+              </div>
+              <div class="col-6 info" title="Место проведения тренировки"><i
+                class="fas fa-map-marker-alt"
+              ></i>{{ event.event_class.location }}</div>
+            </div>
+            <div class="row">
+              <div class="col-6 info" title="Стоимость разового посещения">
+                {% with ec_id=event.event_class_id %}
+                  {% with price=ec_otv_price|get_value:ec_id %}
+                    {% if price %}
+                      <i class="fas fa-coins"></i>
+                      {{ price|floatformat:"-2"|intcomma }} ₽
+                    {% endif %}
+                  {% endwith %}
+                {% endwith %}
+              </div>
+              <div class="col-6 info" title="Тренер"><i
+                class="fas fa-stopwatch"
+              ></i>{{ event.event_class.coach }}</div>
+            </div>
+            <div class="row">
+              <div class="col-6 info">
+                <i class="fas fa-users"></i>
+                {% with count=event_signed_count|get_value:event.id|default:0 %}
+                  {% pluralize count 'Записалcя' 'Записалось' 'Записалось' %}
+                  {{ count }}
+                  {% pluralize count 'человек' 'человека' 'человек' %}
+                {% endwith %}
+              </div>
+            </div>
           </div>
-          <div class="col-4">{{ event.event_class.location }}</div>
-          <div class="col-4">
+          <div class="col-3">
             <button
               class="flat_button secondary unmark"
               data-event-year="{{ event.date|date:"Y" }}"
@@ -117,27 +157,6 @@
             >
               Записаться
             </button>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-4">
-            {% with ec_id=event.event_class_id %}
-              {% with price=ec_otv_price|get_value:ec_id %}
-                {% if price %}
-                  {{ price|floatformat:"-2"|intcomma }} ₽
-                {% endif %}
-              {% endwith %}
-            {% endwith %}
-          </div>
-          <div class="col-4">{{ event.event_class.coach }}</div>
-        </div>
-        <div class="row">
-          <div class="col-4">
-            {% with count=event_signed_count|get_value:event.id|default:0 %}
-              {% pluralize count 'Записалcя' 'Записалось' 'Записалось' %}
-              {{ count }}
-              {% pluralize count 'человек' 'человека' 'человек' %}
-            {% endwith %}
           </div>
         </div>
       </div>
