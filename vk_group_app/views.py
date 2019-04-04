@@ -31,19 +31,29 @@ class VkPageView(TemplateView):
         # viewer_id is always present
         self.vk_user_id = int(request.GET['viewer_id'])
         self.app_id = int(request.GET['api_id'])
+        self.vk_user_type = int(request.GET['viewer_type'])
 
         return super().get(request, *args, **kwargs)
 
     def get_template_names(self):
+        # Application is run from group
         if self.vk_group_id != 0:
-            return 'vk_group_app/vk_sign_up.html'
+            # User is not in group
+            if self.vk_user_type == 0:
+                return 'vk_group_app/vk_enter_in_group.html'
+            else:
+                return 'vk_group_app/vk_sign_up.html'
         else:
             return 'vk_group_app/vk_app_promo.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.vk_group_id != 0:
-            context.update(self.get_user_page_context())
+            # User is not in group
+            if self.vk_user_type == 0:
+                context.update(self.get_enter_page_context())
+            else:
+                context.update(self.get_user_page_context())
         else:
             context.update(self.get_app_page_context())
 
@@ -52,6 +62,11 @@ class VkPageView(TemplateView):
     def get_app_page_context(self):
         return {
             'app_id': self.app_id
+        }
+
+    def get_enter_page_context(self):
+        return {
+            'vk_group': self.vk_group_id
         }
 
     def get_user_page_context(self):
