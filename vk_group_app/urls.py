@@ -10,4 +10,9 @@ urlpatterns = [
         views.UnMarkClient.as_view(),
         name='unmark-client'
     ),
+    path(
+        'vk_group_app/bot-params/',
+        views.CompanyBotParams.as_view(),
+        name='bot-params'
+    ),
 ]

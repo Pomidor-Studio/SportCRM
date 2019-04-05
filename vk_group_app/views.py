@@ -4,14 +4,18 @@ from django.db.models import Count
 from django.utils.decorators import method_decorator
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic import TemplateView
-from django_multitenant.utils import set_current_tenant
+from django_multitenant.utils import set_current_tenant, get_current_tenant
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
 
 from contrib.vk_utils import get_vk_user_info
 from crm.models import Attendance, Client, Company, Event, EventClass
-from vk_group_app.serializers import VkActionSerializer
+from vk_group_app.const import VK_USER_GUEST, VK_USER_ADMIN
+from vk_group_app.serializers import (
+    VkActionSerializer,
+    VkAdminOptionsSerializer,
+)
 from vk_group_app.utils import signed_clients_display
 
 
@@ -33,13 +37,20 @@ class VkPageView(TemplateView):
         self.app_id = int(request.GET['api_id'])
         self.vk_user_type = int(request.GET['viewer_type'])
 
+        try:
+            self.setup_tenant()
+        except ValueError:
+            # Request may not have tenant, if it was called from app page or
+            # admin launch application for the first time
+            pass
+
         return super().get(request, *args, **kwargs)
 
     def get_template_names(self):
         # Application is run from group
         if self.vk_group_id != 0:
             # User is not in group
-            if self.vk_user_type == 0:
+            if self.vk_user_type == VK_USER_GUEST:
                 return 'vk_group_app/vk_enter_in_group.html'
             else:
                 return 'vk_group_app/vk_sign_up.html'
@@ -50,10 +61,12 @@ class VkPageView(TemplateView):
         context = super().get_context_data(**kwargs)
         if self.vk_group_id != 0:
             # User is not in group
-            if self.vk_user_type == 0:
+            if self.vk_user_type == VK_USER_GUEST:
                 context.update(self.get_enter_page_context())
             else:
                 context.update(self.get_user_page_context())
+                if self.vk_user_type == VK_USER_ADMIN:
+                    context.update(self.get_admin_page_context())
         else:
             context.update(self.get_app_page_context())
 
@@ -69,10 +82,30 @@ class VkPageView(TemplateView):
             'vk_group': self.vk_group_id
         }
 
+    def get_admin_page_context(self):
+        context_data = {
+            'app_id': self.app_id,
+            'is_admin': True,
+            'has_company': True,
+            'has_access_token': False,
+            'vk_group': self.vk_group_id
+        }
+        company = get_current_tenant()
+        if company is None:
+            context_data['has_company'] = False
+        else:
+            context_data['has_access_token'] = (
+                company.vk_access_token is not None
+            )
+            context_data['vk_access_token'] = company.vk_access_token
+            context_data['vk_confirmation_token'] = \
+                company.vk_confirmation_token
+
+        return context_data
+
     def get_user_page_context(self):
-        try:
-            company = self.setup_tenant()
-        except ValueError:
+        company = get_current_tenant()
+        if company is None:
             return {}
 
         client = Client.objects.filter(vk_user_id=self.vk_user_id).first()
@@ -116,6 +149,7 @@ class VkPageView(TemplateView):
             ).values_list('event_id', flat=True)
 
         return {
+            'is_admin': False,
             'vk_id': self.vk_user_id,
             'vk_group': self.vk_group_id,
             'client': client,
@@ -132,7 +166,6 @@ class VkPageView(TemplateView):
             raise ValueError()
 
         set_current_tenant(company)
-        return company
 
 
 class EventMixin:
@@ -148,6 +181,22 @@ class EventMixin:
             event.save()
 
         return event
+
+
+class CompanyMixin:
+    def get_company(self, serializer):
+        try:
+            return Company.objects.get(
+                vk_group_id=serializer.validated_data['vkGroup'])
+        except Company.DoesNotExist:
+            return None
+
+    def set_tenant(self, serializer):
+        company = self.get_company(serializer)
+        if not company:
+            raise ValueError('No company found for vk group')
+
+        set_current_tenant(company)
 
 
 class ClientMixin:
@@ -172,16 +221,8 @@ class ClientMixin:
         client.save()
         return client
 
-    def set_tenant(self, serializer):
-        company = Company.objects.get(
-            vk_group_id=serializer.validated_data['vkGroup'])
-        if not company:
-            raise ValueError('No company found for vk group')
 
-        set_current_tenant(company)
-
-
-class MarkClient(ClientMixin, EventMixin, GenericAPIView):
+class MarkClient(ClientMixin, CompanyMixin, EventMixin, GenericAPIView):
 
     serializer_class = VkActionSerializer
 
@@ -196,7 +237,7 @@ class MarkClient(ClientMixin, EventMixin, GenericAPIView):
         except Exception as exc:
             return Response(
                 {'success': False, 'error': str(exc)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_200_OK
             )
 
         return Response({
@@ -205,7 +246,7 @@ class MarkClient(ClientMixin, EventMixin, GenericAPIView):
         }, status=status.HTTP_201_CREATED)
 
 
-class UnMarkClient(ClientMixin, EventMixin, CreateAPIView):
+class UnMarkClient(ClientMixin, CompanyMixin, EventMixin, CreateAPIView):
     serializer_class = VkActionSerializer
 
     def post(self, request, *args, **kwargs):
@@ -219,10 +260,33 @@ class UnMarkClient(ClientMixin, EventMixin, CreateAPIView):
         except Exception as exc:
             return Response(
                 {'success': False, 'error': str(exc)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_200_OK
             )
 
         return Response({
             'success': True,
             'signedCount': signed_clients_display(event.signed_up_clients)
         }, status=status.HTTP_201_CREATED)
+
+
+class CompanyBotParams(CompanyMixin, CreateAPIView):
+    serializer_class = VkAdminOptionsSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        company = self.get_company(serializer)
+        if not company:
+            return Response(
+                {
+                    'success': False,
+                    'error': 'Нет компании привязанной к сообществу'
+                },
+                status=status.HTTP_200_OK
+            )
+
+        company.vk_access_token = serializer.validated_data['accessToken']
+        company.vk_confirmation_token = serializer.validated_data['botConfirm']
+        company.save()
+
+        return Response({'success': True}, status=status.HTTP_200_OK)
