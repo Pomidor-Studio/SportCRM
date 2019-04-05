@@ -195,7 +195,7 @@ def subcription_type_attrs(sub_id):
     return {
         'data-price': subs.price,
         'data-visits': subs.visit_limit,
-        'data-onetime': str(subs.one_time),
+        'data-onetime': int(subs.one_time),
     }
 
 

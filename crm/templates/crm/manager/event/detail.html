@@ -328,6 +328,8 @@
         .on('select2:select', function (e) {
           let $visits = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
           let $price = $('#{{ sell_subscription_form.price.id_for_label }}');
+          let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
+
           if (e.params.data.id === '') {
             $visits.val('');
             $price.val('');
@@ -336,13 +338,16 @@
             let $elem = $(e.params.data.element);
             $visits.val($elem.data('visits'));
             $price.val($elem.data('price'));
-            if ($elem.data('onetime')==='True') {
+            
+            if ($elem.data('onetime')===1) {
               $visits.attr({
                     'disabled': 'disabled'
                 });
+              $start_date.val('{{ event.date | date:"d.m.Y" }}');
             }
             else {
               $visits.removeAttr('disabled');
+              $start_date.val('{% now "d.m.Y" %}');
             }
           }
         });
