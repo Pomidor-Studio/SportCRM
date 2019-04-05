@@ -30,12 +30,19 @@
             >
               Добавить ученика
             </a>
+            <a
+              name="add-new"
+              href="{% url 'crm:manager:client:excel' %}"
+              class="btn btn-sm btn-info"
+            >
+              Загрузить из Excel
+            </a>
           {% endifhasperm %}
         </div>
         <div class="col-md-4">
           <div class="float-right">
           <form
-            class="form-inline mb-2"
+            class="form-inline"
             action="{% url 'crm:manager:client:list' %}" method="GET"
           >
             <div class="input-group">
@@ -62,116 +69,125 @@
       </div>
     </div>
 
-
-    <table class="table table-sm table-striped table-borderless">
-      <thead>
-      <tr class="d-flex">
-        <th scope="col" class="col-4">Имя</th>
-        <th scope="col" class="col-2">Общение</th>
-        <th scope="col" class="col-4">Абонемент</th>
-        <th scope="col" class="col-2">Баланс</th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for client in clients %}
+    {% if clients %}
+      <table class="table table-sm table-striped table-borderless">
+        <thead>
         <tr class="d-flex">
-          <td class="col-4">
-            {% ifhasperm 'client' user %}
-              <div class="row ml-1">
-              {% if client.vk_user_id %}
-                <div class="float-left">
-                  <img src="{% vk_small_avatar client.vk_user_id %}">
-                </div>
-              {% endif %}
-              <a href="{% url 'crm:manager:client:detail' client.id %}">
-                <div class="font-weight-bold">{{ client.name }}</div>
-                <div>{{ client.phone_number }}</div>
-                <div>{{ client.email_address }}</div>
-              </a>
-            {% endifhasperm %}
-            </div>
-          </td>
-          <td class="col-2">
-            <div class="row">
-              {% if client.phone_number %}
-                <a
-                  class="btn btn-sm btn-outline-info"
-                  href="tel:{{ client.phone_number }}"
-                >
-                  <i class="fas fa-phone"></i>
-                </a>
-              {% endif %}
-              {% if client.vk_user_id %}
-                {% if vk_group_id %}
-                  <a
-                    class="btn btn-sm btn-outline-info" target="_blank"
-                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
-                  >
-                    <i class="fab fa-vk"></i>
-                  </a>
-                  {% else %}
-                  <a
-                    class="btn btn-sm btn-outline-info" target="_blank"
-                    href="https://vk.com/im?sel={{ client.vk_user_id }}"
-                  >
-                    <i class="fab fa-vk"></i>
-                  </a>
-                {% endif %}
-              {% endif %}
-              {% if client.email_address %}
-                <a
-                  class="btn btn-sm btn-outline-info" target="_blank"
-                  href="mailto:{{ client.email_address }}"
-                >
-                  <i class="fas fa-envelope"></i>
-                </a>
-              {% endif %}
-            </div>
-          </td>
-          <td class="col-4">
-            {% if client.last_sub %}
-              <div class="font-weight-bold">
-                {% if client.last_sub.is_expiring %}
-                  <i
-                    title="Абонемент скоро заканчивается"
-                    class="fas fa-exclamation-circle"
-                  ></i>
-                {% endif %}
-                {{ client.last_sub.subscription.name }}
-              </div>
-              <div>Действует
-                до {{ client.last_sub.end_date|date:'d N Y' }}</div>
-              <div>Осталось {{ client.last_sub.visits_left }} посещений</div>
-              {% ifhasperm 'is_manager' user %}
-                <a
-                  class="btn btn-sm btn-outline-info"
-                  href="{% url 'crm:manager:client:subscription:extend' client.last_sub.id %}"
-                >Продлить</a>
-              {% endifhasperm %}
-            {% else %}
-              {% if has_active_event_class %}
-                <a
-                  class="btn btn-sm btn-outline-info"
-                  href="{% url 'crm:manager:client:new-subscription' client.id %}"
-                >
-                  Продать абонемент
-                </a>
-              {% endif %}
-            {% endif %}
-          </td>
-          <td class="col-2">
-            {{ client.balance|floatformat:"-2"|intcomma }} ₽
-            <a
-              href="{% url 'crm:manager:client:balance:new' client.id %}"
-              class="btn btn-sm btn-outline-info"
-            >Пополнить</a>
-          </td>
+          <th scope="col" class="col-4">Имя</th>
+          <th scope="col" class="col-2">Общение</th>
+          <th scope="col" class="col-4">Абонемент</th>
+          <th scope="col" class="col-2">Баланс</th>
         </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+        {% for client in clients %}
+          <tr class="d-flex">
+            <td class="col-4">
+              {% ifhasperm 'client' user %}
+                <div class="row ml-1">
+                {% if client.vk_user_id %}
+                  <div class="float-left">
+                    <img src="{% vk_small_avatar client.vk_user_id %}">
+                  </div>
+                {% endif %}
+                <a href="{% url 'crm:manager:client:detail' client.id %}">
+                  <div class="font-weight-bold">{{ client.name }}</div>
+                  <div>{{ client.phone_number }}</div>
+                  <div>{{ client.email_address }}</div>
+                </a>
+              {% endifhasperm %}
+              </div>
+            </td>
+            <td class="col-2">
+              <div class="row">
+                {% if client.phone_number %}
+                  <a
+                    class="btn btn-sm btn-outline-info"
+                    href="tel:{{ client.phone_number }}"
+                  >
+                    <i class="fas fa-phone"></i>
+                  </a>
+                {% endif %}
+                {% if client.vk_user_id %}
+                  {% if vk_group_id %}
+                    <a
+                      class="btn btn-sm btn-outline-info" target="_blank"
+                      href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
+                    >
+                      <i class="fab fa-vk"></i>
+                    </a>
+                    {% else %}
+                    <a
+                      class="btn btn-sm btn-outline-info" target="_blank"
+                      href="https://vk.com/im?sel={{ client.vk_user_id }}"
+                    >
+                      <i class="fab fa-vk"></i>
+                    </a>
+                  {% endif %}
+                {% endif %}
+                {% if client.email_address %}
+                  <a
+                    class="btn btn-sm btn-outline-info" target="_blank"
+                    href="mailto:{{ client.email_address }}"
+                  >
+                    <i class="fas fa-envelope"></i>
+                  </a>
+                {% endif %}
+              </div>
+            </td>
+            <td class="col-4">
+              {% with last_sub=client.last_sub %}
+                {% if last_sub %}
+                  <div class="font-weight-bold">
+                    {% if last_sub.is_expiring %}
+                      <i
+                        title="Абонемент скоро заканчивается"
+                        class="fas fa-exclamation-circle"
+                      ></i>
+                    {% endif %}
+                    {{ last_sub.subscription.name }}
+                  </div>
+                  <div>Действует
+                    до {{ last_sub.end_date|date:'d N Y' }}</div>
+                  <div>Осталось {{ last_sub.visits_left }} посещений</div>
+                  {% ifhasperm 'is_manager' user %}
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:client:subscription:extend' last_sub.id %}"
+                    >Продлить</a>
+                  {% endifhasperm %}
+                {% else %}
+                  {% if has_active_event_class %}
+                    <a
+                      class="btn btn-sm btn-outline-info"
+                      href="{% url 'crm:manager:client:new-subscription' client.id %}"
+                    >
+                      Продать абонемент
+                    </a>
+                  {% endif %}
+                {% endif %}
+            {% endwith %}
+            </td>
+            <td class="col-2">
+              <div class="row">
+                {{ client.balance|floatformat:"-2"|intcomma }} ₽
+              </div>
+              <div class="row">
+                <a
+                href="{% url 'crm:manager:client:balance:new' client.id %}"
+                class="btn btn-sm btn-outline-info"
+              >Пополнить</a>
+              </div>
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
 
-    {% bootstrap_pagination page_obj extra=filter.data.urlencode %}
+      {% bootstrap_pagination page_obj extra=filter.data.urlencode %}
+    {% else %}
+        <p>Ваш список Учеников пуст</p>
+    {% endif %}
   </div>
 
 {% endblock content %}

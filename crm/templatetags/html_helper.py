@@ -82,6 +82,29 @@ def vk_small_avatar(vk_user_id):
     return photo
 
 
+def get_vk_user_ids(vk_user_domains):
+    session = vk.Session()
+    api = vk.API(session, v=5.90)
+    vk_user_ids = [None] * len(vk_user_domains)
+    domains = ",".join(vk_user_domains)
+
+    results = api.users.get(
+        access_token=settings.VK_GROUP_TOKEN,
+        user_ids=domains,
+        fields='domain, screen_name'
+    )
+
+    for result in results:
+        user_id = 'id' + str(result['id'])
+        screen_name = result['screen_name']
+        if screen_name in vk_user_domains:
+            vk_user_ids[vk_user_domains.index(screen_name)] = result['id']
+        elif user_id in vk_user_domains:
+            vk_user_ids[vk_user_domains.index(user_id)] = result['id']
+
+    return vk_user_ids
+
+
 @register.simple_tag
 def bootstrap_alert_message(message: Message, dismissable=True):
     return render_alert(

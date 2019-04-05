@@ -23,66 +23,70 @@
         {% if filter.form.with_archive.data %}Cкрыть{% else %}Показать{% endif %} архив
       </a>
     {% endifhasperm %}
-    <table class="table table-striped table-borderless">
-      <thead>
-      <tr>
-        <th scope="col">ФИО</th>
-        <th scope="col">Телефон</th>
-        <th scope="col"><i class="fab fa-vk"></i></th>
-        {% ifhasperm 'coach.delete' user %}
-          <th scope="col">Управление</th>
-        {% endifhasperm %}
-      </tr>
-      </thead>
-      <tbody>
-      {% for coach in coachs %}
+    {% if coachs %}
+      <table class="table table-striped table-borderless">
+        <thead>
         <tr>
-          <td>
-
-            {% ifhasperm 'coach.view_detail' user %}
-              <a
-                href="{% url "crm:manager:coach:detail" coach.id %}"
-              >{{ coach }}</a>
-            {% else %}
-              {{ coach }}
-            {% endifhasperm %}
-
-            {% if coach.deleted %}
-              <span class="badge badge-secondary"><i class="fas fa-archive"></i>в ахриве</span>
-            {% endif %}
-
-          </td>
-          <td>{{ coach.phone_number.as_national }}</td>
-          <td>
-            {% if coach.user.vk_link %}
-              <a href="{{ coach.user.vk_link|safe }}" target="_blank">
-                {{ coach.user.vk_link|safe }}
-              </a>
-            {% endif %}
-          </td>
-
-            {% ifhasperm 'coach.delete' user %}
-              <td>
-                {% if coach.deleted %}
-                  <a
-                    href="{% url "crm:manager:coach:undelete" coach.id %}"
-                    class="btn btn-secondary"
-                  >Вернуть</a>
-                {% else %}
-                  <a
-                    href="{% url "crm:manager:coach:delete" coach.id %}"
-                    class="btn btn-danger"
-                  >Удалить</a>
-                {% endif %}
-              </td>
-            {% endifhasperm %}
-
+          <th scope="col">ФИО</th>
+          <th scope="col">Телефон</th>
+          <th scope="col"><i class="fab fa-vk"></i></th>
+          {% ifhasperm 'coach.delete' user %}
+            <th scope="col">Управление</th>
+          {% endifhasperm %}
         </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+        {% for coach in coachs %}
+          <tr>
+            <td>
 
-    {% bootstrap_pagination page_obj %}
+              {% ifhasperm 'coach.view_detail' user %}
+                <a
+                  href="{% url "crm:manager:coach:detail" coach.id %}"
+                >{{ coach }}</a>
+              {% else %}
+                {{ coach }}
+              {% endifhasperm %}
+
+              {% if coach.deleted %}
+                <span class="badge badge-secondary"><i class="fas fa-archive"></i>в ахриве</span>
+              {% endif %}
+
+            </td>
+            <td>{{ coach.phone_number.as_national }}</td>
+            <td>
+              {% if coach.user.vk_link %}
+                <a href="{{ coach.user.vk_link|safe }}" target="_blank">
+                  {{ coach.user.vk_link|safe }}
+                </a>
+              {% endif %}
+            </td>
+
+              {% ifhasperm 'coach.delete' user %}
+                <td>
+                  {% if coach.deleted %}
+                    <a
+                      href="{% url "crm:manager:coach:undelete" coach.id %}"
+                      class="btn btn-secondary"
+                    >Вернуть</a>
+                  {% else %}
+                    <a
+                      href="{% url "crm:manager:coach:delete" coach.id %}"
+                      class="btn btn-danger"
+                    >Удалить</a>
+                  {% endif %}
+                </td>
+              {% endifhasperm %}
+
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      {% bootstrap_pagination page_obj %}
+    {% else %}
+        <p>Ваш список Тренеров пуст</p>
+    {% endif %}
   </div>
 
 {% endblock %}

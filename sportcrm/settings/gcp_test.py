@@ -16,10 +16,10 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '/cloudsql/sportadmin:europe-west1:sa-prod1',
-        'USER': 'sport-prod',
-        'PASSWORD': 'Y88c5ZwJ6a8qZge',
-        'NAME': 'sport-prod',
+        'HOST': '/cloudsql/sport-srm-test:us-east1:sport-crm-test',
+        'USER': 'sport-test',
+        'PASSWORD': 'sport-test',
+        'NAME': 'sport-test-db',
     }
 }
 
@@ -31,7 +31,7 @@ CACHES = {
         "TIMEOUT": 600,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "IGNORE_EXCEPTIONS": False,
+            "IGNORE_EXCEPTIONS": True,
         }
     }
 }
@@ -39,18 +39,11 @@ CACHES = {
 QR_CODE_CACHE_ALIAS = 'default'
 
 USE_GOOGLE_TASKS: bool = True
-GCP_TASK_PROJECT = 'sportadmin'
-GCP_TASK_QUEUE = 'sa-prod-queue'
-GCP_TASK_LOCATION = 'europe-west1'
+GCP_TASK_PROJECT = 'sport-srm-test'
+GCP_TASK_QUEUE = 'sport-crm-test-queue'
+GCP_TASK_LOCATION = 'us-east1'
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = '6910281'
 SOCIAL_AUTH_VK_OAUTH2_SECRET = 'FlahTFK72JyNibzjWXhE'
 VK_GROUP_TOKEN = 'e8dd6e2ae8dd6e2ae8dd6e2ae8e8b41f63ee8dde8dd6e2ab4484ba9ce75ec7c412f4127'
 
-
-
-YANDEX_METRICA_COUNTER_ID = '53063764' # sportadmin.ru metrika
-YANDEX_METRICA_WEBVISOR = True
-
-GOOGLE_ANALYTICS_JS_PROPERTY_ID = 'UA-136374884-2'
-GOOGLE_ANALYTICS_SITE_SPEED_SAMPLE_RATE = 100
