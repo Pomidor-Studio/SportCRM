@@ -338,7 +338,7 @@
             let $elem = $(e.params.data.element);
             $visits.val($elem.data('visits'));
             $price.val($elem.data('price'));
-            if ($elem.data('onetime')==='True') {
+            if ($elem.data('onetime')===1) {
               $visits.attr({
                     'disabled': 'disabled'
                 });
