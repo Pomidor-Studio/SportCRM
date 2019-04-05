@@ -1154,7 +1154,7 @@ class ExtensionHistory(CompanyObjectModel):
         on_delete=models.PROTECT,
         null=True
     )
-    added_visits = models.PositiveIntegerField("Добавлено посещений")
+    added_visits = models.IntegerField("Добавлено посещений")
     extended_from = models.DateField(
         'Абонеметы был продлен с',
         blank=True,
