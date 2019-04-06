@@ -1,0 +1,41 @@
+{% load bootstrap4 html_helper %}
+<html lang="ru">
+<head>
+  {% css 'css/vkui.css' %}
+  {% css 'css/simple-grid.min.css' %}
+  {% bootstrap_jquery %}
+  <script
+    type="text/javascript" src="https://vk.com/js/api/xd_connection.js?2"
+  ></script>
+  <script type="text/javascript">
+    $(function () {
+      VK.init(
+        function () {
+        },
+        function () {
+        },
+        '5.92'
+      );
+    });
+  </script>
+</head>
+
+<body>
+<div class="page_block">
+  <div class="page_block_header">
+    Приложение sportcrm
+  </div>
+  <div class="msg info_msg">
+    <div class="msg_text">
+      Приложение доступно только пользователям группы. <a href="https://vk.com/club{{ vk_group }}" target="_parent">Вступайте в группу</a>, и
+      пользуйтесь этим приложением.
+    </div>
+  </div>
+  <div class="page_block_info">
+    <a class="flat_button" href="https://vk.com/club{{ vk_group }}" target="_parent">
+      Вступить в группу
+    </a>
+  </div>
+</div>
+</body>
+</html>

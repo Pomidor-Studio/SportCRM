@@ -12,6 +12,8 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from transliterate.utils import _
 
+from contrib import text_utils
+
 register = template.Library()
 
 # Port of https://github.com/noirbizarre/django.js/blob/master/djangojs/templatetags/js.py  # noqa
@@ -214,3 +216,13 @@ def render_alert(content, alert_type=None, dismissable=True):
             content=button_placeholder + text_value(content),
         ).replace(button_placeholder, button)
     )
+
+
+@register.filter
+def get_value(dictionary, key):
+    return dictionary.get(key)
+
+
+@register.simple_tag
+def pluralize(amount, singular, plural1, plural2):
+    return text_utils.pluralize(singular, plural1, plural2, amount)

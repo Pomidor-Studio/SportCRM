@@ -33,7 +33,7 @@ from transliterate import translit
 
 from crm.enums import GRANULARITY
 from crm.events import get_nearest_to, next_day, Weekdays
-from crm.utils import pluralize
+from contrib.text_utils import pluralize
 
 INTERNAL_COMPANY = 'INTERNAL'
 
@@ -307,6 +307,22 @@ class EventClassManager(TenantManagerMixin, models.Manager):
             Q(date_to__isnull=True) | Q(date_to__gte=date.today())
         )
 
+    def in_range(self, day_start, day_end):
+        return self.get_queryset().filter(
+            (
+                Q(date_from__isnull=False) & Q(date_to__isnull=False) &
+                Q(date_from__lte=day_end) & Q(date_to__gte=day_start)
+            ) | (
+                Q(date_from__isnull=False) & Q(date_to__isnull=True) &
+                Q(date_from__lte=day_end)
+            ) | (
+                Q(date_from__isnull=True) & Q(date_to__isnull=False) &
+                Q(date_to__gte=day_start)
+            ) | (
+                Q(date_from__isnull=True) & Q(date_to__isnull=True)
+            )
+        )
+
 
 @reversion.register()
 class EventClass(CompanyObjectModel):
@@ -330,6 +346,15 @@ class EventClass(CompanyObjectModel):
 
     def get_one_time_visit_costs(self):
         return self.subscriptionstype_set.filter(one_time=True).first()
+
+    @property
+    def otv_price(self) -> Optional[float]:
+        """
+        Get one time visit (otv) price.
+        :return: price of visit or None if no otv assigned to event class
+        """
+        otv = self.get_one_time_visit_costs()
+        return otv.price if otv else None
 
     def days(self) -> List[int]:
         """
@@ -1209,6 +1234,17 @@ class Event(CompanyObjectModel):
         # TODO: Refactor dump Event.is_event_day
         if not self.event_class.is_event_day(self.date):
             raise ValidationError({"date": "Дата не соответствует тренировке"})
+
+    @property
+    def signed_up_clients(self):
+        """
+        Return amount of clients signed for one event. Use only in case when
+        we work only with one event. For grouped operations better use optimized
+        queries with annotate and values
+
+        :return: Amount of clients signed up for event
+        """
+        return self.attendance_set.filter(signed_up=True).count()
 
     def get_present_clients_count(self):
         # Получаем количество посетивших данную тренировку клиентов

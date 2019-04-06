@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'qr_code',
     'gcp.apps.GcpConfig',
     'analytical',
+    'vk_group_app.apps.VkGroupAppConfig',
 ]
 
 BOOTSTRAP4 = {

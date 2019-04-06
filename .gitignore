@@ -109,4 +109,4 @@ venv.bak/
 sportcrm/settings/local*.py
 
 # static folder
-static/
+/static/

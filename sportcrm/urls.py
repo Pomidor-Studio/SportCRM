@@ -38,6 +38,13 @@ if not settings.BACKGROUND_MODE:
             include(('qr_code.urls', 'qr_code'), namespace="qr_code")
         ),
         path('', include('gcp.urls')),
+        path(
+            '',
+            include(
+                ('vk_group_app.urls', 'vk_group_app'),
+                namespace="vk_group_app"
+            )
+        ),
     ]
 else:
     urlpatterns = [

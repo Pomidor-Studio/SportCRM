@@ -1,0 +1,303 @@
+{% load bootstrap4 html_helper humanize %}
+<html lang="ru">
+<head>
+  {% css 'css/vkui.css' %}
+  {% css 'css/simple-grid.min.css' %}
+  <link
+    rel="stylesheet"
+    href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+    integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf"
+    crossorigin="anonymous"
+  >
+  {% bootstrap_jquery %}
+  <script
+    type="text/javascript" src="https://vk.com/js/api/xd_connection.js?2"
+  ></script>
+  <script type="text/javascript">
+    let defaultParams = {
+      vkId: {{ vk_id }},
+      vkGroup: {{ vk_group }}
+    };
+
+    function iframeResize() {
+      let currentSize = 0;
+      return function () {
+        let newSize = $('#main-data').height();
+        {% if is_admin %}
+          let $admin = $('#admin-data');
+          if ($admin) {
+            newSize += $admin.height();
+          }
+        {% endif %}
+        if (newSize !== currentSize) {
+          VK.callMethod('resizeWindow', 0, newSize + 30);
+          currentSize = newSize;
+        }
+      }
+    }
+
+    function markToEvent(eventParams) {
+      let params = {
+        ...defaultParams,
+        ...eventParams
+      };
+      $.post({
+        url: "{% url "vk_group_app:mark-client" %}",
+        data: params,
+        success: function (data) {
+          if (data.success) {
+            let selectorArgs = eventParamsToSelector(eventParams);
+            let selectorPrefix = `div.container ${selectorArgs}`;
+            $(`${selectorPrefix} button.mark-to`).hide();
+            $(`${selectorPrefix} button.unmark`).show();
+            $(`${selectorPrefix} span.signed-count`).text(data.signedCount);
+          }
+        }
+      });
+    }
+
+    function unmarkToEvent(eventParams) {
+      let params = {
+        ...defaultParams,
+        ...eventParams
+      };
+      $.post({
+        url: "{% url "vk_group_app:unmark-client" %}",
+        data: params,
+        success: function (data) {
+          if (data.success) {
+            let selectorArgs = eventParamsToSelector(eventParams);
+            let selectorPrefix = `div.container ${selectorArgs}`;
+            $(`${selectorPrefix} button.unmark`).hide();
+            $(`${selectorPrefix} button.mark-to`).show();
+            $(`${selectorPrefix} span.signed-count`).text(data.signedCount);
+          }
+        }
+      });
+    }
+
+    function eventParamsToSelector(eventParams) {
+      return `[data-event-year="${eventParams.year}"][data-event-month="${eventParams.month}"][data-event-day="${eventParams.day}"][data-event-class="${eventParams.eventClassId}"]`;
+    }
+
+    function eventDataToDict($event) {
+      return {
+        year: parseInt($event.data('event-year')),
+        month: parseInt($event.data('event-month')),
+        day: parseInt($event.data('event-day')),
+        eventClassId: parseInt($event.data('event-class'))
+      }
+    }
+
+    $(function () {
+      VK.init(function () {
+        setInterval(iframeResize(), 500);
+        $('button.mark-to').click(function () {
+          markToEvent(eventDataToDict($(this).parents('div.container')));
+        });
+        $('button.unmark').click(function () {
+          unmarkToEvent(eventDataToDict($(this).parents('div.container')));
+        });
+        $('#save-meta').click(function () {
+          let $formAdminError = $('#form-admin-error');
+          $formAdminError.hide();
+          let params = {
+            ...defaultParams
+          };
+          params.accessToken = $('#access-token').val();
+          params.botConfirm = $('#bot-confirm').val();
+          if (!params.accessToken || !params.botConfirm) {
+            $formAdminError.find('div.msg_text').text('Заполните все поля!');
+            $formAdminError.show();
+            return;
+          }
+
+          $.post({
+            url: "{% url "vk_group_app:bot-params" %}",
+            data: params,
+            success: function (data) {
+              if (data.success) {
+                $('#admin-params-save').show();
+              } else {
+                $formAdminError.find('div.msg_text').text(data.error || 'Ошибка связи');
+                $formAdminError.show();
+              }
+            }
+          });
+        });
+        $('#bot-options').click(function() {
+          $('#bot-options-panel').toggle();
+        });
+      }, function () {
+      }, '5.92');
+    });
+  </script>
+</head>
+
+<body>
+{% if is_admin %}
+  <div class="container" id="admin-data">
+    {% if not has_company %}
+      <div class="msg error">
+        <div class="msg_text">
+          Сообщество не привязано к компании в sportadmin.ru, по этому работа
+          приложения сейчас не возможна. Для того, чтобы приложение было
+          активировано передейте пожалуйста администратору sportadmin.ru
+          слудуюший параметр:
+          <br><br>
+          Код группы ВК: <strong>{{ vk_group }}</strong>
+        </div>
+      </div>
+    {% else %}
+      {% if not has_access_token %}
+        <div class="msg error">
+          <div class="msg_text">
+            Отлично, сообщество привязно к компании на sportadmin.ru и теперь
+            расписание занятий и запись работает, но осталась
+            одна проблема - мы не можем посылать сообщения клиентам от имени
+            сообщества. Для того, чтоб бот нашего сервиса мог писать сообщения
+            нужно сделать несколько действий:
+            <ul>
+              <li>Создать ключ доступа с правом на сообщение</li>
+              <li>На странице "Callback API" получить "Строку, которую должен
+                вернуть сервер"
+              </li>
+              <li>Сохранить эти два параметра в форме ниже.</li>
+              <li>Добавить в адрес сервера:
+                <strong>https://sportadmin.ru/bot/gl</strong> и нажать
+                подтвердить.
+              </li>
+            </ul>
+            <br><br>
+            <div style="text-align: center">
+              <a
+                class="flat_button"
+                href="https://vk.com/club{{ vk_group }}?act=tokens"
+                target="_blank"
+              >Создать ключ доступа и настроить бота</a>
+            </div>
+          </div>
+        </div>
+        <div class="msg ok_msg" id="admin-params-save" style="display: none;">
+          <div class="msg_text">
+            Отлично, важные данные для бота сохранены. Теперь осталось только
+            написать правильный адрес бота
+            <strong>https://sportadmin.ru/bot/gl</strong> нажать кнопку
+            "подтвердить". После этого бот сможет отвечать на сообщения
+            клиентов, и рассылать уведомления.
+          </div>
+        </div>
+      {% endif %}
+      <div class="row">
+      <div class="col-10"></div>
+      <div class="col-2" style="cursor: pointer; color: #2a5885; font-size: 13px; text-align: right;" id="bot-options">
+        Опции бота
+      </div>
+      </div>
+      <div
+        class="container page_block_content"
+        style="{% if has_access_token %}display: none;{% endif %}"
+        id="bot-options-panel"
+      >
+        <div class="msg error" id="form-admin-error" style="display: none;">
+          <div class="msg_text"></div>
+        </div>
+        <div class="row">
+          <div class="col-5">
+            <label for="access-token">Ключ доступа</label>
+          </div>
+          <div class="col-5">
+            <input type="text" id="access-token" style="width: 100%;" value="{{ vk_access_token|default_if_none:'' }}">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-5">
+            <label for="bot-confirm">Строка, которую должен вернуть сервер</label>
+          </div>
+          <div class="col-5">
+            <input type="text" id="bot-confirm" style="width: 100%;" value="{{ vk_confirmation_token|default_if_none:'' }}">
+          </div>
+        </div>
+        <div class="row" style="text-align: center">
+          <button class="flat_button" id="save-meta">Сохранить настройки бота
+          </button>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
+<div class="container" id="main-data">
+  {% for event in events %}
+    <div class="page_block row">
+      <div class="page_block_sub_header">
+        {{ event.date|date:"l" }} / {{ event.event_class.name }}
+      </div>
+      <div
+        class="page_block_content container"
+        data-event-year="{{ event.date|date:"Y" }}"
+        data-event-month="{{ event.date|date:"n" }}"
+        data-event-day="{{ event.date|date:"j" }}"
+        data-event-class="{{ event.event_class_id }}"
+      >
+        <div class="row">
+          <div class="col-9 container">
+            <div class="row">
+              <div class="col-6 info" title="Дата и время тренировки"><i
+                class="far fa-clock"
+              ></i>{{ event.date|date:"d b" }}
+                ({{ event.start_time|date:"H:i" }}
+                - {{ event.end_time|date:"H:i" }})
+              </div>
+              <div class="col-6 info" title="Место проведения тренировки"><i
+                class="fas fa-map-marker-alt"
+              ></i>{{ event.event_class.location }}</div>
+            </div>
+            <div class="row">
+              <div class="col-6 info" title="Стоимость разового посещения">
+                {% with ec_id=event.event_class_id %}
+                  {% with price=ec_otv_price|get_value:ec_id %}
+                    {% if price %}
+                      <i class="fas fa-coins"></i>
+                      {{ price|floatformat:"-2"|intcomma }} ₽
+                    {% endif %}
+                  {% endwith %}
+                {% endwith %}
+              </div>
+              <div class="col-6 info" title="Тренер"><i
+                class="fas fa-stopwatch"
+              ></i>{{ event.event_class.coach }}</div>
+            </div>
+            <div class="row">
+              <div class="col-6 info">
+                <i class="fas fa-users"></i>
+                <span class="signed-count">
+                {% with count=event_signed_count|get_value:event.id|default:0 %}
+                  {% pluralize count 'Записалcя' 'Записалось' 'Записалось' %}
+                  {{ count }}
+                  {% pluralize count 'человек' 'человека' 'человек' %}
+                {% endwith %}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="col-3">
+            <button
+              class="flat_button secondary unmark"
+              style="{% if event.id not in my_events %}display: none;{% endif %}"
+            >
+              Отменить запись
+            </button>
+            <button
+              class="flat_button mark-to"
+              style="{% if event.id in my_events %}display: none;{% endif %}"
+            >
+              Записаться
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+</body>
+</html>
