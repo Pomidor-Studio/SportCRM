@@ -8,16 +8,13 @@ from django.contrib import messages
 from django.db import transaction
 from django.forms import forms
 from django.forms.utils import ErrorList
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
-from django.views import View
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
     TemplateView)
 from django_filters.views import FilterView
 from django_multitenant.utils import get_current_tenant
-from httplib2 import Response
 from openpyxl.utils import cell
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.serializers import DateField, IntegerField
@@ -35,7 +32,7 @@ from crm.models import (
     EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
-from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date
+from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, get_duplicate_indeces
 from crm.views.mixin import CreateAndAddMixin
 from gcp.tasks import enqueue
 
@@ -343,7 +340,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
 
             try:
                 m = re.search(utils.VK_PAGE_REGEXP, row[cell.column_index_from_string(vk_col) - 1].value)
-                vk_domain = m.group('id')
+                vk_domain = m.group('user_id')
             except IndexError:
                 vk_domain = None
             except ValueError:
@@ -378,7 +375,8 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
 
         vk_user_ids = get_vk_user_ids(vk_domains)
         for vk_user_id in vk_user_ids:
-            clients_to_add[vk_user_ids.index(vk_user_id)].vk_user_id = vk_user_id
+            for index in get_duplicate_indeces(vk_user_ids, vk_user_id):
+                clients_to_add[index].vk_user_id = vk_user_id
         Client.objects.bulk_create(clients_to_add)
         self.request.session['import_errors'] = errors
 
