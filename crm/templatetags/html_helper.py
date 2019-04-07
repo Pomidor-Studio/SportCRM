@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import vk
 from bootstrap4.components import render_alert
 from bootstrap4.text import text_value
@@ -100,11 +102,35 @@ def get_vk_user_ids(vk_user_domains):
         user_id = 'id' + str(result['id'])
         screen_name = result['screen_name']
         if screen_name in vk_user_domains:
-            vk_user_ids[vk_user_domains.index(screen_name)] = result['id']
+            for index in get_duplicate_indeces(vk_user_domains, screen_name):
+                vk_user_ids[index] = result['id']
         elif user_id in vk_user_domains:
-            vk_user_ids[vk_user_domains.index(user_id)] = result['id']
+            for index in get_duplicate_indeces(vk_user_domains, user_id):
+                vk_user_ids[index] = result['id']
 
     return vk_user_ids
+
+def get_duplicate_indeces(seq,item):
+    start_at = -1
+    locs = []
+    while True:
+        try:
+            loc = seq.index(item,start_at+1)
+        except ValueError:
+            break
+        else:
+            locs.append(loc)
+            start_at = loc
+    return locs
+
+
+def try_parse_date(text):
+    for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%d-%m-%Y'):
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    raise ValueError('no valid date format found')
 
 
 @register.simple_tag

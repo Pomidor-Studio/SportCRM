@@ -1,4 +1,5 @@
 import csv
+import datetime
 import io
 import re
 
@@ -10,17 +11,20 @@ from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.views import View
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
-)
+    TemplateView)
 from django_filters.views import FilterView
 from django_multitenant.utils import get_current_tenant
+from httplib2 import Response
 from openpyxl.utils import cell
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.serializers import DateField, IntegerField
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
+from crm import utils
 from crm.enums import BALANCE_REASON
 from crm.filters import ClientFilter
 from crm.forms import (
@@ -31,7 +35,7 @@ from crm.models import (
     EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
-from crm.templatetags.html_helper import get_vk_user_ids
+from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date
 from crm.views.mixin import CreateAndAddMixin
 from gcp.tasks import enqueue
 
@@ -261,11 +265,16 @@ class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
             'crm:manager:client:detail', args=[self.object.client.id])
 
 
+class ImportReport(PermissionRequiredMixin, RevisionMixin, TemplateView):
+    template_name = 'crm/manager/client/import_report.html'
+    permission_required = 'client.add'
+
+
 class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
     form_class = UploadExcelForm
     template_name = 'crm/manager/client/upload_excel.html'
     permission_required = 'client.add'
-    success_url = reverse_lazy('crm:manager:client:list')
+    success_url = reverse_lazy('crm:manager:client:import-report')
 
     def form_valid(self, form):
         file = form.cleaned_data['file']
@@ -293,18 +302,54 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
         added = 0
         clients_to_add = []
         vk_domains = []
+        errors={}
 
-        for row in iter_rows:
-            name = row[cell.column_index_from_string(name_col) - 1].value
-            phone_raw = row[cell.column_index_from_string(phone_col) - 1].value
-            phone = re.sub("\D", "", str(phone_raw))
-            birthday = row[cell.column_index_from_string(birthday_col) - 1].value
+        for index, row in enumerate(iter_rows):
             try:
-                balance = row[cell.column_index_from_string(balance_col) - 1].value
+                name = row[cell.column_index_from_string(name_col) - 1].value
+            except (IndexError, ValueError):
+                errors["{}{}".format(name_col, index+1)] = "Имя пустое."
+                skipped += 1
+                continue
+
+            try:
+                phone_raw = row[cell.column_index_from_string(phone_col) - 1].value
+                phone = re.sub("\D", "", str(phone_raw))
+            except IndexError:
+                phone = None
+            except ValueError:
+                errors["{}{}".format(phone_col, index+1)] = "Неверный формат номера."
+                skipped += 1
+                continue
+
+            try:
+                birthday = try_parse_date(row[cell.column_index_from_string(birthday_col) - 1].value)
+            except IndexError:
+                birthday = None
+            except ValueError:
+                errors["{}{}".format(birthday_col, index+1)] = "Неверный формат даты. Допустимые форматы: ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ."
+                skipped += 1
+                continue
+
+
+            try:
+                balance = float(row[cell.column_index_from_string(balance_col) - 1].value.replace(',','.'))
             except IndexError:
                 balance = None
-            m = re.search("vk.com\/(?P<id>([A-Za-z0-9_])+)", row[cell.column_index_from_string(vk_col) - 1].value)
-            vk_domain = m.group('id')
+            except (ValueError, TypeError):
+                errors["{}{}".format(balance_col, index+1)] = "Неверный формат числа. Допустимые форматы: целые числа, дробные разделенные точкой или запятой."
+                skipped += 1
+                continue
+
+            try:
+                m = re.search(utils.VK_PAGE_REGEXP, row[cell.column_index_from_string(vk_col) - 1].value)
+                vk_domain = m.group('id')
+            except IndexError:
+                vk_domain = None
+            except ValueError:
+                errors["{}{}".format(vk_col, index+1)] = "Неверный формат ссылки. Допустимые форматы: vk.com/user_id или https://vk.com/user_id"
+                skipped += 1
+                continue
 
             exists = Client.objects.filter(
                 name=name,
@@ -317,7 +362,8 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
                 if balance:
                     client.balance = balance
                 clients_to_add.append(client)
-                vk_domains.append(vk_domain)
+                if vk_domain:
+                    vk_domains.append(vk_domain)
                 added += 1
             else:
                 skipped+=1
@@ -334,6 +380,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
         for vk_user_id in vk_user_ids:
             clients_to_add[vk_user_ids.index(vk_user_id)].vk_user_id = vk_user_id
         Client.objects.bulk_create(clients_to_add)
+        self.request.session['import_errors'] = errors
 
         messages.info(self.request, 'Создано записей: {}. Пропущено записей: {}'.format(added, skipped) )
 
