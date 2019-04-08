@@ -32,7 +32,7 @@ from crm.models import (
     EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
-from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, get_duplicate_indeces
+from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, get_duplicate_indexes
 from crm.views.mixin import CreateAndAddMixin
 from gcp.tasks import enqueue
 
@@ -375,7 +375,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
 
         vk_user_ids = get_vk_user_ids(vk_domains)
         for vk_user_id in vk_user_ids:
-            for index in get_duplicate_indeces(vk_user_ids, vk_user_id):
+            for index in get_duplicate_indexes(vk_user_ids, vk_user_id):
                 clients_to_add[index].vk_user_id = vk_user_id
         Client.objects.bulk_create(clients_to_add)
         self.request.session['import_errors'] = errors

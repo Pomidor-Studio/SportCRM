@@ -102,15 +102,16 @@ def get_vk_user_ids(vk_user_domains):
         user_id = 'id' + str(result['id'])
         screen_name = result['screen_name']
         if screen_name in vk_user_domains:
-            for index in get_duplicate_indeces(vk_user_domains, screen_name):
+            for index in get_duplicate_indexes(vk_user_domains, screen_name):
                 vk_user_ids[index] = result['id']
         elif user_id in vk_user_domains:
-            for index in get_duplicate_indeces(vk_user_domains, user_id):
+            for index in get_duplicate_indexes(vk_user_domains, user_id):
                 vk_user_ids[index] = result['id']
 
     return vk_user_ids
 
-def get_duplicate_indeces(seq,item):
+
+def get_duplicate_indexes(seq, item):
     start_at = -1
     locs = []
     while True:
@@ -130,7 +131,7 @@ def try_parse_date(text):
             return datetime.strptime(text, fmt)
         except ValueError:
             pass
-    raise ValueError('no valid date format found')
+    raise ValueError('Неверный формат даты')
 
 
 @register.simple_tag
