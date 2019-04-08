@@ -268,9 +268,7 @@ class ImportReport(PermissionRequiredMixin, RevisionMixin, TemplateView):
     permission_required = 'client.add'
 
     def get(self, *args, **kwargs):
-        try:
-            self.request.session['import_errors']
-        except KeyError:
+        if 'import_errors' not in self.request.session:
             raise Http404()
         resp = super().get(*args, **kwargs)
         del self.request.session['import_errors']
