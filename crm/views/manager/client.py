@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.forms import forms
 from django.forms.utils import ErrorList
-from django.http import HttpResponseNotFound
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -271,7 +271,7 @@ class ImportReport(PermissionRequiredMixin, RevisionMixin, TemplateView):
         try:
             self.request.session['import_errors']
         except KeyError:
-            return HttpResponseNotFound('<h1>404 Not found<h1>')
+            raise Http404()
         resp = super().get(*args, **kwargs)
         del self.request.session['import_errors']
         return resp
