@@ -215,8 +215,23 @@
                 </div>
               {% endif %}
             </td>
-            <td><a class="btn btn-sm btn-outline-danger"
-                   href="{% url 'crm:manager:attendance:delete' sub.id %}">Удалить отметку о посещении</a></td>
+            <td>
+              {% if sub.signed_up %}
+                <a
+                  class="btn btn-sm btn-outline-danger"
+                  href="{% url 'crm:manager:event-class:event:unmark-client' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                >
+                  Убрать отметку
+                </a>
+              {% else %}
+                <a
+                  class="btn btn-sm btn-outline-danger"
+                  href="{% url 'crm:manager:event-class:event:cancel-att' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                >
+                  Убрать отметку
+                </a>
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
           </tbody>
