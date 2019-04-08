@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.forms import forms
 from django.forms.utils import ErrorList
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -265,6 +266,20 @@ class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
 class ImportReport(PermissionRequiredMixin, RevisionMixin, TemplateView):
     template_name = 'crm/manager/client/import_report.html'
     permission_required = 'client.add'
+
+    def get(self, *args, **kwargs):
+        try:
+            self.request.session['import_errors']
+        except KeyError:
+            return HttpResponseNotFound('<h1>404 Not found<h1>')
+        resp = super().get(*args, **kwargs)
+        del self.request.session['import_errors']
+        return resp
+
+    def get_context_data(self, **kwargs):
+        context = super(ImportReport, self).get_context_data(**kwargs)
+        context['import_errors'] = self.request.session['import_errors']
+        return context
 
 
 class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
