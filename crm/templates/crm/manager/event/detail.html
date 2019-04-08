@@ -20,15 +20,19 @@
 
   {{ event.date }} - {{ event.event_class.name }} -
   {{ event.event_class.location }} - {{ event.event_class.coach }}
-  <a
-    class="btn btn-sm btn-outline-info"
-    href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
-  >Записать без абонемента</a>
   {% if not event.is_closed %}
     <a
       class="btn btn-sm btn-outline-info"
+      href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
+    >
+      Записать без абонемента
+    </a>
+    <a
+      class="btn btn-sm btn-outline-info"
       href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}"
-    >Сканнер</a>
+    >
+      Сканнер
+    </a>
   {% endif %}
   <div class="border-top mt-2"></div>
   <div class="row">
