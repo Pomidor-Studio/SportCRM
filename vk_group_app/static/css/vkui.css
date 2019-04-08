@@ -75,10 +75,10 @@ h2.page_block_h2 {
 }
 .page_block_sub_header {
  display:block;
- height:55px;
- line-height:54px;
+ height:35px;
+ line-height:35px;
  overflow:hidden;
- padding:0 20px;
+ padding:10px 20px 0;
  font-size:14px;
  outline:none;
  color:#000
