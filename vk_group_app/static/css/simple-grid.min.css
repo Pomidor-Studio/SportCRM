@@ -162,7 +162,7 @@ p {
   }
 }
 
-@media only screen and (min-width: 45em) {
+@media only screen and (min-width: 33.75em) {
   .col-1 {
     width: 4.33%
   }

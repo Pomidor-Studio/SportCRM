@@ -234,7 +234,7 @@ class SignUpClient(
     EventByDateMixin,
     RedirectView
 ):
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -349,7 +349,7 @@ class CancelAttendance(
     EventByDateMixin,
     RedirectView
 ):
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -372,7 +372,7 @@ class SignUpClientWithoutSubscription (
 ):
     form_class = SignUpClientWithoutSubscriptionForm
     template_name = 'crm/manager/event/mark_client_without_sub.html'
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -400,7 +400,7 @@ class MarkClient (
     EventByDateMixin,
     RedirectView
 ):
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -626,7 +626,7 @@ class DoCloseEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark-attendance'
+    permission_required = 'event.close'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):
@@ -640,7 +640,7 @@ class DoOpenEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark-attendance'
+    permission_required = 'event.open'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):

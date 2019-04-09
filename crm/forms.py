@@ -5,6 +5,7 @@ from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_select2.forms import (
@@ -256,16 +257,21 @@ class ClientSubscriptionForm(TenantModelForm):
         widget=Select2WidgetAttributed(
             attr_getter=subcription_type_attrs)
     )
+    start_date = forms.DateField(
+        label='Дата начала',
+        initial=timezone.localdate(),
+        input_formats=['%d.%m.%Y'],
+        widget=DatePickerInput(
+            format='%d.%m.%Y',
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+        )
+    )
 
     class Meta:
         model = ClientSubscriptions
 
         widgets = {
             'client': forms.HiddenInput(),
-            'start_date': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
-            ),
             'price': forms.TextInput(
                 attrs={
                     "class": "form-control",

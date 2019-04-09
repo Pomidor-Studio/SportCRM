@@ -52,12 +52,16 @@
             $price.val($elem.data('price'));
             if ($elem.data('onetime')===1) {
               $visits.attr({
-                    'disabled': 'disabled'
+                    'readonly': 'readonly'
+                });
+              $start_date.attr({
+                    'readonly': 'readonly'
                 });
               $start_date.val('{{ event.date | date:"d.m.Y" }}');
             }
             else {
-              $visits.removeAttr('disabled');
+              $visits.removeAttr('readonly');
+              $start_date.removeAttr('readonly');
               $start_date.val('{% now "d.m.Y" %}');
             }
           }
