@@ -136,7 +136,7 @@ class Company(models.Model):
             if not Company.objects.filter(name=inner_name).exists():
                 self.name = inner_name
                 break
-        if self.display_name == 'INTERNAL' and self.active_to != None:
+        if trans_name == INTERNAL_COMPANY and self.active_to != None:
             raise forms.ValidationError('Нельзя менять дату активности у компании INTERNAL!')
 
         super().save(force_insert, force_update, using, update_fields)
@@ -644,7 +644,6 @@ class ClientManager(TenantManagerMixin, models.Manager):
             ClientSubscriptions.objects
             .active_subscriptions_to_event(event)
             .order_by('client_id')
-            .distinct('client_id')
             .values_list('client_id', flat=True)
         )
         return self.get_queryset().filter(id__in=cs)
