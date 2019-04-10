@@ -16,6 +16,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
 from django.db.models import Q, Model, Count, F
 from django.db.models.manager import BaseManager
+from django.forms import forms
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -135,6 +136,8 @@ class Company(models.Model):
             if not Company.objects.filter(name=inner_name).exists():
                 self.name = inner_name
                 break
+        if trans_name == INTERNAL_COMPANY and self.active_to != None:
+            raise forms.ValidationError('Нельзя менять дату активности у компании INTERNAL!')
 
         super().save(force_insert, force_update, using, update_fields)
 
