@@ -120,6 +120,7 @@ class EventByDate(
         signed_up_clients_qs = Client.objects.filter(
             id__in=self.object.attendance_set
             .filter(marked=False, signed_up=True)
+            .order_by('name')
             .values_list('client', flat=True)
         )
         signed_up_clients = self.get_clients_subscriptions(signed_up_clients_qs)
@@ -131,6 +132,7 @@ class EventByDate(
                 .attendance_set
                 .values_list('client', flat=True)
             )
+            .order_by('name')
         )
         unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs)
         attendance_list_marked = (
