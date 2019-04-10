@@ -68,12 +68,12 @@
         }
       }
 
-      $select_elem = $('#{{ form.subscription.id_for_label }}').select2('data');
-      fillFields($select_elem[0])
+      let $selectElem = $('#{{ form.subscription.id_for_label }}').select2('data');
+      fillFields($selectElem[0]);
 
       $('#{{ form.subscription.id_for_label }}')
         .on('select2:select', function (e) {
-          fillFields(e.params.data)
+          fillFields(e.params.data);
       });
     });
   </script>

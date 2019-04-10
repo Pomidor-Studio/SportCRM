@@ -360,14 +360,14 @@
       }
 
       $('#sale-modal').on('show.bs.modal', function(){
-        $select_elem = $('#{{ sell_subscription_form.subscription.id_for_label }}').select2('data');
-        fillFields($select_elem[0])
+        let $selectElem = $('#{{ sell_subscription_form.subscription.id_for_label }}').select2('data');
+        fillFields($selectElem[0]);
       });
 
       $('#{{ sell_subscription_form.subscription.id_for_label }}')
         .select2({theme: 'bootstrap'})
         .on('select2:select', function (e) {
-          fillFields(e.params.data)
+          fillFields(e.params.data);
         });
 
       $('a.sell-and-mark').click(function () {
