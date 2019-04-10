@@ -327,22 +327,21 @@
   {{ sell_subscription_form.media.js }}
   <script type="text/javascript">
     $(function () {
-      $('#{{ sell_subscription_form.subscription.id_for_label }}')
-        .select2({theme: 'bootstrap'})
-        .on('select2:select', function (e) {
-          let $visits = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
-          let $price = $('#{{ sell_subscription_form.price.id_for_label }}');
-          let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
 
-          if (e.params.data.id === '') {
+      function fillFields(selectedElem) {
+        let $visits = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
+        let $price = $('#{{ sell_subscription_form.price.id_for_label }}');
+        let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
+
+        if (selectedElem.id === '') {
             $visits.val('');
             $price.val('');
             $visits.removeAttr('disabled');
           } else {
-            let $elem = $(e.params.data.element);
+            let $elem = $(selectedElem.element);
             $visits.val($elem.data('visits'));
             $price.val($elem.data('price'));
-            
+
             if ($elem.data('onetime')===1) {
               $visits.attr({
                     'readonly': 'readonly'
@@ -357,7 +356,18 @@
               $start_date.removeAttr('readonly');
               $start_date.val('{% now "d.m.Y" %}');
             }
-          }
+        }
+      }
+
+      $('#sale-modal').on('show.bs.modal', function(){
+        let $selectElem = $('#{{ sell_subscription_form.subscription.id_for_label }}').select2('data');
+        fillFields($selectElem[0]);
+      });
+
+      $('#{{ sell_subscription_form.subscription.id_for_label }}')
+        .select2({theme: 'bootstrap'})
+        .on('select2:select', function (e) {
+          fillFields(e.params.data);
         });
 
       $('a.sell-and-mark').click(function () {
