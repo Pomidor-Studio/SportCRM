@@ -597,22 +597,30 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
 
     def end_date(self, start_date: date) -> Optional[pendulum.Date]:
         """
-        Возвращает дату окончания действия абонемента.
-        :param start_date: дата начала действия абонемента
+        Generate last day of subscription.
+
+        Extra day is removed from end time, so end day will be *last* day of
+        subscription. For example if granularity is one month,
+        and is rounded at start of month, for january end day will be 31.
+        If granularity is one day, and duration is one day - end day
+        will be same as start day.
+
+        :param start_date: date of subscription beginning
         """
         rounded_start_date = self.start_date(start_date)
+        end = None
 
         if self.duration_type == GRANULARITY.DAY:
-            return rounded_start_date.add(days=self.duration)
-
+            end = rounded_start_date.add(days=self.duration)
         elif self.duration_type == GRANULARITY.WEEK:
-            return rounded_start_date.add(weeks=self.duration)
-
+            end = rounded_start_date.add(weeks=self.duration)
         elif self.duration_type == GRANULARITY.MONTH:
-            return rounded_start_date.add(months=self.duration)
-
+            end = rounded_start_date.add(months=self.duration)
         elif self.duration_type == GRANULARITY.YEAR:
-            return rounded_start_date.add(years=self.duration)
+            end = rounded_start_date.add(years=self.duration)
+
+        if end:
+            return end.add(days=-1)
 
         return None
 
