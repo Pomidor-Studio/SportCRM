@@ -101,28 +101,14 @@ def get_vk_user_ids(vk_user_domains):
     for result in results:
         user_id = 'id' + str(result['id'])
         screen_name = result['screen_name']
-        if screen_name in vk_user_domains:
-            for index in get_duplicate_indexes(vk_user_domains, screen_name):
-                vk_user_ids[index] = result['id']
-        elif user_id in vk_user_domains:
-            for index in get_duplicate_indexes(vk_user_domains, user_id):
-                vk_user_ids[index] = result['id']
+        for i, domain in enumerate(vk_user_domains):
+            if domain == user_id or domain == screen_name:
+                vk_user_ids[i] = result['id']
 
     return vk_user_ids
 
 
-def get_duplicate_indexes(seq, item):
-    start_at = -1
-    locs = []
-    while True:
-        try:
-            loc = seq.index(item,start_at+1)
-        except ValueError:
-            break
-        else:
-            locs.append(loc)
-            start_at = loc
-    return locs
+allowed_date_formats_ru = 'ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ'
 
 
 def try_parse_date(text):

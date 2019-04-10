@@ -33,7 +33,7 @@ from crm.models import (
     EventClass,
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
-from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, get_duplicate_indexes
+from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, allowed_date_formats_ru
 from crm.views.mixin import CreateAndAddMixin
 from gcp.tasks import enqueue
 
@@ -323,8 +323,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
                 continue
 
             try:
-                phone_raw = row[cell.column_index_from_string(phone_col) - 1].value
-                phone = re.sub("\D", "", str(phone_raw))
+                phone = self.try_parse_phone(row[cell.column_index_from_string(phone_col) - 1].value)
             except IndexError:
                 phone = None
             except ValueError:
@@ -334,16 +333,16 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
 
             try:
                 birthday = try_parse_date(row[cell.column_index_from_string(birthday_col) - 1].value)
-            except IndexError:
+            except (IndexError, TypeError):
                 birthday = None
             except ValueError:
-                errors["{}{}".format(birthday_col, index+1)] = "Неверный формат даты. Допустимые форматы: ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ."
+                errors["{}{}".format(birthday_col, index+1)] = "Неверный формат даты. Допустимые форматы: " + allowed_date_formats_ru;
                 skipped += 1
                 continue
 
 
             try:
-                balance = float(row[cell.column_index_from_string(balance_col) - 1].value.replace(',','.'))
+                balance = self.try_parse_balance(row[cell.column_index_from_string(balance_col) - 1].value)
             except IndexError:
                 balance = None
             except (ValueError, TypeError):
@@ -354,7 +353,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             try:
                 m = re.search(utils.VK_PAGE_REGEXP, row[cell.column_index_from_string(vk_col) - 1].value)
                 vk_domain = m.group('user_id')
-            except IndexError:
+            except (IndexError, TypeError):
                 vk_domain = None
             except ValueError:
                 errors["{}{}".format(vk_col, index+1)] = "Неверный формат ссылки. Допустимые форматы: vk.com/user_id или https://vk.com/user_id"
@@ -387,12 +386,20 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
                 vk_domains = []
 
         vk_user_ids = get_vk_user_ids(vk_domains)
-        for vk_user_id in vk_user_ids:
-            for index in get_duplicate_indexes(vk_user_ids, vk_user_id):
-                clients_to_add[index].vk_user_id = vk_user_id
+        for i, vk_user_id in enumerate(vk_user_ids):
+            clients_to_add[i].vk_user_id = vk_user_id
+
         Client.objects.bulk_create(clients_to_add)
         self.request.session['import_errors'] = errors
 
         messages.info(self.request, 'Создано записей: {}. Пропущено записей: {}'.format(added, skipped) )
 
         return super(UploadExcel, self).form_valid(form)
+
+    def try_parse_phone(self, raw_value):
+        phone = re.sub("\D", "", str(raw_value))[0:14]
+        return phone
+
+    def try_parse_balance(selfself, raw_value):
+        balance = float(raw_value.replace(',','.'))
+        return balance
