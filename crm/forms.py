@@ -4,6 +4,7 @@ from betterforms.multiform import MultiModelForm
 from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
 from django import forms
 from django.contrib.auth import get_user_model
+from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
@@ -43,6 +44,15 @@ class Select2SingleTagWidget(
 
 
 class ClientForm(TenantModelForm):
+    birthday = forms.DateField(
+        label='Дата рождения',
+        input_formats=DATE_INPUT_FORMATS,
+        widget=DatePickerInput(
+            format='%d.%m.%Y',
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+        )
+    )
+
     class Meta:
         model = Client
 
@@ -51,10 +61,7 @@ class ClientForm(TenantModelForm):
             'email_address', 'vk_user_id'
         ]
         widgets = {
-            'birthday': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
-            ),
+
             'address': forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -77,7 +84,6 @@ class ClientForm(TenantModelForm):
 
 
 class Balance(TenantModelForm):
-
     class Meta:
         model = ClientBalanceChangeHistory
         widgets = {
@@ -94,10 +100,6 @@ class Balance(TenantModelForm):
                     'class': 'form-control',
                     'placeholder': 'Укажите причину изменения баланса'
                 }
-            ),
-            'entry_date': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
             ),
             'client': forms.HiddenInput()
         }
@@ -164,7 +166,8 @@ class Select2ThemedMixin:
             super()._get_media() + forms.Media(
             css={
                 'screen': (
-                    'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',  # noqa
+                    'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',
+                # noqa
                 )
             })
         )
@@ -213,19 +216,19 @@ class InplaceSellSubscriptionForm(TenantModelForm):
         widget=Select2WidgetAttributed(
             attr_getter=subcription_type_attrs)
     )
+    start_date = forms.DateField(
+        label='Начало действия',
+        input_formats=DATE_INPUT_FORMATS,
+        widget=DatePickerInput(
+            format='%d.%m.%Y',
+            attrs={"placeholder": "ДД.MM.ГГГГ"}
+        )
+    )
 
     class Meta:
         model = ClientSubscriptions
 
         widgets = {
-            'purchase_date': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"placeholder": "ДД.MM.ГГГГ"}
-            ),
-            'start_date': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"placeholder": "ДД.MM.ГГГГ"}
-            ),
             'price': forms.TextInput(
                 attrs={"placeholder": "Стоимость в рублях"}
             ),
@@ -260,7 +263,7 @@ class ClientSubscriptionForm(TenantModelForm):
     start_date = forms.DateField(
         label='Дата начала',
         initial=timezone.localdate(),
-        input_formats=['%d.%m.%Y'],
+        input_formats=DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             format='%d.%m.%Y',
             attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
@@ -338,6 +341,24 @@ class EventClassForm(TenantModelForm):
         widget=Select2WidgetAttributed(
             attr_getter=subcription_type_attrs)
     )
+    date_from = forms.DateField(
+        label='Начало тренировок',
+        input_formats=DATE_INPUT_FORMATS,
+        widget=DatePickerInput(
+            format='%d.%m.%Y',
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+        ),
+        required=False
+    )
+    date_to = forms.DateField(
+        label='Окончание тренировок',
+        input_formats=DATE_INPUT_FORMATS,
+        widget=DatePickerInput(
+            format='%d.%m.%Y',
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+        ),
+        required=False
+    )
 
     class Meta:
         model = EventClass
@@ -345,21 +366,10 @@ class EventClassForm(TenantModelForm):
             'name', 'location', 'coach', 'date_from', 'date_to',
             'one_time_price'
         ]
-        widgets = {
-            'date_from': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
-            ),
-            'date_to': DatePickerInput(
-                format='%d.%m.%Y',
-                attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
-            ),
-        }
         exclude = ('client',)
 
 
 class DayOfTheWeekClassForm(TenantModelForm):
-
     checked = forms.BooleanField()
 
     class Meta:
@@ -510,9 +520,11 @@ class ProfileCoachForm(MultiModelForm):
 
 class UploadExcelForm(forms.Form):
     file = forms.FileField(label='Файл Excel')
-    ignore_first_row = forms.BooleanField(label='Не учитывать первую строку', initial=False, required=False)
+    ignore_first_row = forms.BooleanField(label='Не учитывать первую строку',
+                                          initial=False, required=False)
     name_col = forms.CharField(label='Столбец с ФИО', initial='A')
     phone_col = forms.CharField(label='Столбец с номером телефона', initial='B')
-    birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C')
+    birthday_col = forms.CharField(label='Столбец с датой рождения',
+                                   initial='C')
     vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D')
     balance_col = forms.CharField(label='Столбец с балансом', initial='E')
