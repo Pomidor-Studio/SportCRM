@@ -318,14 +318,18 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             try:
                 name = row[cell.column_index_from_string(name_col) - 1].value
             except (IndexError, ValueError):
-                errors["{}{}".format(name_col, index+1)] = "Имя пустое."
+                errors["{}{}".format(name_col, index+1)] = "Ошибка в имени или имя пустое."
+                skipped += 1
+                continue
+            if name == None:
+                errors["{}{}".format(name_col, index + 1)] = "Имя пустое."
                 skipped += 1
                 continue
 
             try:
                 phone = self.try_parse_phone(row[cell.column_index_from_string(phone_col) - 1].value)
             except IndexError:
-                phone = None
+                phone = Client._meta.get_field('phone_number').get_default()
             except ValueError:
                 errors["{}{}".format(phone_col, index+1)] = "Неверный формат номера."
                 skipped += 1
@@ -334,7 +338,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             try:
                 birthday = try_parse_date(row[cell.column_index_from_string(birthday_col) - 1].value)
             except (IndexError, TypeError):
-                birthday = None
+                birthday = Client._meta.get_field('birthday').get_default()
             except ValueError:
                 errors["{}{}".format(birthday_col, index+1)] = "Неверный формат даты. Допустимые форматы: " + allowed_date_formats_ru;
                 skipped += 1
@@ -343,8 +347,8 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
 
             try:
                 balance = self.try_parse_balance(row[cell.column_index_from_string(balance_col) - 1].value)
-            except IndexError:
-                balance = None
+            except (IndexError, AttributeError):
+                balance = Client._meta.get_field('balance').get_default()
             except (ValueError, TypeError):
                 errors["{}{}".format(balance_col, index+1)] = "Неверный формат числа. Допустимые форматы: целые числа, дробные разделенные точкой или запятой."
                 skipped += 1
@@ -353,8 +357,8 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             try:
                 m = re.search(utils.VK_PAGE_REGEXP, row[cell.column_index_from_string(vk_col) - 1].value)
                 vk_domain = m.group('user_id')
-            except (IndexError, TypeError):
-                vk_domain = None
+            except (IndexError, TypeError, AttributeError):
+                vk_domain = Client._meta.get_field('vk_user_id').get_default()
             except ValueError:
                 errors["{}{}".format(vk_col, index+1)] = "Неверный формат ссылки. Допустимые форматы: vk.com/user_id или https://vk.com/user_id"
                 skipped += 1
@@ -400,6 +404,8 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
         phone = re.sub("\D", "", str(raw_value))[0:14]
         return phone
 
-    def try_parse_balance(selfself, raw_value):
+    def try_parse_balance(self, raw_value):
+        if isinstance(raw_value, float):
+            return  raw_value;
         balance = float(raw_value.replace(',','.'))
         return balance
