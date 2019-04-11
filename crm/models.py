@@ -16,6 +16,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
 from django.db.models import Q, Model, Count, F
 from django.db.models.manager import BaseManager
+from django.forms import forms
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -135,6 +136,8 @@ class Company(models.Model):
             if not Company.objects.filter(name=inner_name).exists():
                 self.name = inner_name
                 break
+        if trans_name == INTERNAL_COMPANY and self.active_to != None:
+            raise forms.ValidationError('Нельзя менять дату активности у компании INTERNAL!')
 
         super().save(force_insert, force_update, using, update_fields)
 
@@ -597,22 +600,30 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
 
     def end_date(self, start_date: date) -> Optional[pendulum.Date]:
         """
-        Возвращает дату окончания действия абонемента.
-        :param start_date: дата начала действия абонемента
+        Generate last day of subscription.
+
+        Extra day is removed from end time, so end day will be *last* day of
+        subscription. For example if granularity is one month,
+        and is rounded at start of month, for january end day will be 31.
+        If granularity is one day, and duration is one day - end day
+        will be same as start day.
+
+        :param start_date: date of subscription beginning
         """
         rounded_start_date = self.start_date(start_date)
+        end = None
 
         if self.duration_type == GRANULARITY.DAY:
-            return rounded_start_date.add(days=self.duration)
-
+            end = rounded_start_date.add(days=self.duration)
         elif self.duration_type == GRANULARITY.WEEK:
-            return rounded_start_date.add(weeks=self.duration)
-
+            end = rounded_start_date.add(weeks=self.duration)
         elif self.duration_type == GRANULARITY.MONTH:
-            return rounded_start_date.add(months=self.duration)
-
+            end = rounded_start_date.add(months=self.duration)
         elif self.duration_type == GRANULARITY.YEAR:
-            return rounded_start_date.add(years=self.duration)
+            end = rounded_start_date.add(years=self.duration)
+
+        if end:
+            return end.add(days=-1)
 
         return None
 
