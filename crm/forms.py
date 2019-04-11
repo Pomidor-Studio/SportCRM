@@ -532,12 +532,11 @@ class ProfileCoachForm(MultiModelForm):
 
 
 class UploadExcelForm(forms.Form):
-    file = forms.FileField(label='Файл Excel')
-    ignore_first_row = forms.BooleanField(label='Не учитывать первую строку',
-                                          initial=False, required=False)
-    name_col = forms.CharField(label='Столбец с ФИО', initial='A')
-    phone_col = forms.CharField(label='Столбец с номером телефона', initial='B')
-    birthday_col = forms.CharField(label='Столбец с датой рождения',
-                                   initial='C')
-    vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D')
-    balance_col = forms.CharField(label='Столбец с балансом', initial='E')
+    file = forms.FileField(label='Файл Excel',  help_text="Файл в формате excel")
+    ignore_first_row = forms.BooleanField(label='Не учитывать первую строку', initial=False, required=False)
+    name_col = forms.CharField(label='Столбец с ФИО', initial='A', help_text="Буква столбца с ФИО")
+    phone_col = forms.CharField(label='Столбец с номером телефона', initial='B', help_text="Буква столбца с номером телефона. Номер телефона в русском формате")
+    birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C', help_text="Буква столбца с датой рождения. Допустимые форматы даты: ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ")
+    vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D', help_text="Буква столбца со ссылкой на vk. Формат ссылки: vk.com/user_id или https://vk.com/user_id")
+    balance_col = forms.CharField(label='Столбец с балансом', initial='E', help_text="Буква столбца с балансом")
+
