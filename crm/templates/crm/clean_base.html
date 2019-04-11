@@ -141,18 +141,22 @@
   </a>
 
   {% if user.is_authenticated %}
-    <span class="text-right w-100">
-    {{ user.get_full_name }} ({{ user.company }})
-    </span>
-    <ul class="navbar-nav px-3">
-      <li class="nav-item text-nowrap">
 
-        <a
-          class="nav-link"
-          href="{% url "crm:accounts:logout" %}"
-        >Выйти</a>
-      </li>
-    </ul>
+    <div class="d-flex justify-content-end">
+      <a class="nav-link pl-0" target="_blank"
+        href="https://vk.com/im?sel=-176552308"
+      >
+        Написать в поддержку
+      </a>
+
+      <a class="nav-link pl-0">
+        {{ user.get_full_name }} ({{ user.company }})
+      </a>
+      <a
+        class="nav-link pl-0"
+        href="{% url "crm:accounts:logout" %}"
+      >Выйти</a>
+    </div>
   {% endif %}
 
 </nav>
