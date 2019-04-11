@@ -117,6 +117,11 @@ class ClientAdmin(CompareVersionAdmin):
     list_display = ('name', 'vk_user_id', 'company')
 
 
+@admin.register(models.ClientBalanceChangeHistory)
+class ClientBalanceChangeHistoryAdmin(CompareVersionAdmin):
+    list_display = ('client', 'entry_date', 'reason', 'change_value')
+
+
 @admin.register(models.ClientSubscriptions)
 class ClientSubscriptionsAdmin(CompareVersionAdmin):
     readonly_fields = ('visits_on_by_time', 'subscription', 'client',)

@@ -230,7 +230,11 @@
   {% for event in events %}
     <div class="page_block row">
       <div class="page_block_sub_header">
-        {{ event.date|date:"l" }} / {{ event.event_class.name }}
+        {% if is_admin %}
+          <a href="{% url "crm:manager:event-class:event:event-by-date" event.event_class_id  event.date.year event.date.month event.date.day %}" target="_blank">{{ event.date|date:"l" }} / {{ event.event_class.name }}</a>
+        {% else %}
+          <span>{{ event.date|date:"l" }} / {{ event.event_class.name }}</span>
+        {% endif %}
       </div>
       <div
         class="page_block_content container"

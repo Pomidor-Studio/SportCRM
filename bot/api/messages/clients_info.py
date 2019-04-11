@@ -89,3 +89,25 @@ class ClientUpdateBalance(Message):
             'BALANCE': self.recipients[0].get_balance()
         })
         return context
+
+
+class ClientHaveNegativeBalance(Message):
+    """
+    Currently can't be used with list of clients. It can accept only
+    one client as recipient
+    """
+    detailed_description = 'Уведомление при отрицательном балансе клиента'
+    default_template = (
+        'У вас есть задолженность!\n'
+        'Ваш баланс составляет: {{BALANCE}} ₽'
+    )
+    template_args = {
+        'BALANCE': TemplateItem(text='Балас клиента', example=-1500)
+    }
+
+    def get_template_context(self):
+        context = super().get_template_context()
+        context.update({
+            'BALANCE': self.recipients[0].get_balance()
+        })
+        return context

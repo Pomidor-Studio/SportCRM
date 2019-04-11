@@ -49,10 +49,10 @@ def test_start_date_rounded(
 
 
 @pytest.mark.parametrize('granularity, start, expected', [
-    (GRANULARITY.DAY, date(2019, 2, 28), date(2019, 3, 1)),
-    (GRANULARITY.WEEK, date(2019, 2, 28), date(2019, 3, 7)),
-    (GRANULARITY.MONTH, date(2019, 2, 28), date(2019, 3, 28)),
-    (GRANULARITY.YEAR, date(2019, 2, 28), date(2020, 2, 28))
+    (GRANULARITY.DAY, date(2019, 2, 28), date(2019, 2, 28)),
+    (GRANULARITY.WEEK, date(2019, 2, 28), date(2019, 3, 6)),
+    (GRANULARITY.MONTH, date(2019, 2, 28), date(2019, 3, 27)),
+    (GRANULARITY.YEAR, date(2019, 2, 28), date(2020, 2, 27))
 ])
 def test_end_date_non_rounded(
     granularity,
@@ -69,10 +69,10 @@ def test_end_date_non_rounded(
 
 
 @pytest.mark.parametrize('granularity, start, expected', [
-    (GRANULARITY.DAY, date(2019, 2, 28), date(2019, 3, 1)),
-    (GRANULARITY.WEEK, date(2019, 2, 28), date(2019, 3, 4)),
-    (GRANULARITY.MONTH, date(2019, 2, 28), date(2019, 3, 1)),
-    (GRANULARITY.YEAR, date(2019, 2, 28), date(2020, 1, 1))
+    (GRANULARITY.DAY, date(2019, 2, 28), date(2019, 2, 28)),
+    (GRANULARITY.WEEK, date(2019, 2, 28), date(2019, 3, 3)),
+    (GRANULARITY.MONTH, date(2019, 2, 28), date(2019, 2, 28)),
+    (GRANULARITY.YEAR, date(2019, 2, 28), date(2019, 12, 31))
 ])
 def test_end_date_rounded(
     granularity,

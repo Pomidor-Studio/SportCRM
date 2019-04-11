@@ -20,15 +20,19 @@
 
   {{ event.date }} - {{ event.event_class.name }} -
   {{ event.event_class.location }} - {{ event.event_class.coach }}
-  <a
-    class="btn btn-sm btn-outline-info"
-    href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
-  >Записать без абонемента</a>
   {% if not event.is_closed %}
     <a
       class="btn btn-sm btn-outline-info"
+      href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day %}"
+    >
+      Записать без абонемента
+    </a>
+    <a
+      class="btn btn-sm btn-outline-info"
       href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}"
-    >Сканнер</a>
+    >
+      Сканнер
+    </a>
   {% endif %}
   <div class="border-top mt-2"></div>
   <div class="row">
@@ -39,7 +43,7 @@
           {% for attendance in attendance_list_marked %}
             <div class="row border-top ml-0 mr-0">
               <div class="col pl-0">
-                {{ attendance.client.name }}
+                <a href="{% url 'crm:manager:client:detail' attendance.client.id %}">{{ attendance.client.name }}</a>
               </div>
               <div class="col">
                 {% if attendance.signed_up %}
@@ -73,18 +77,19 @@
         </div>
       </div>
       <div class="border-top mt-2"></div>
-      {% if not event.is_closed %}
+
+      <div class="border-top">
+        <span class="font-weight-bold ">Записанные ученики: </span>
         <div class="border-top">
-          <span class="font-weight-bold ">Записанные ученики: </span>
-          <div class="border-top">
-            {% for client, subscriptions in signed_up_clients.items %}
-              <div class="row border-top ml-0 mr-0">
-                <div class="col pl-0">
-                  {{ client.name }}
-                </div>
-                <div class="col"></div>
-                <div class="col"></div>
-                <div class="col">
+          {% for client, subscriptions in signed_up_clients.items %}
+            <div class="row border-top ml-0 mr-0">
+              <div class="col pl-0">
+                <a href="{% url 'crm:manager:client:detail' client.id %}">{{ client.name }}</a>
+              </div>
+              <div class="col"></div>
+              <div class="col"></div>
+              <div class="col">
+                {% if not event.is_closed %}
                   {% for subscription in subscriptions %}
                     <a
                       class="btn btn-sm btn-outline-info"
@@ -107,12 +112,13 @@
                   >
                     Отменить запись
                   </a>
-                </div>
+                {% endif %}
               </div>
-            {% endfor %}
-          </div>
+            </div>
+          {% endfor %}
         </div>
-      {% endif %}
+      </div>
+
       <div class="border-top mt-2"></div>
       {% if not event.is_closed %}
         <div class="border-top">
@@ -121,7 +127,7 @@
             {% for client, subscriptions in unmarked_clients.items %}
               <div class="row border-top ml-0 mr-0">
                 <div class="col pl-0">
-                  {{ client.name }}
+                  <a href="{% url 'crm:manager:client:detail' client.id %}">{{ client.name }}</a>
                 </div>
                 <div class="col"></div>
                 <div class="col"></div>
@@ -323,33 +329,47 @@
   {{ sell_subscription_form.media.js }}
   <script type="text/javascript">
     $(function () {
-      $('#{{ sell_subscription_form.subscription.id_for_label }}')
-        .select2({theme: 'bootstrap'})
-        .on('select2:select', function (e) {
-          let $visits = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
-          let $price = $('#{{ sell_subscription_form.price.id_for_label }}');
-          let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
 
-          if (e.params.data.id === '') {
+      function fillFields(selectedElem) {
+        let $visits = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
+        let $price = $('#{{ sell_subscription_form.price.id_for_label }}');
+        let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
+
+        if (selectedElem.id === '') {
             $visits.val('');
             $price.val('');
             $visits.removeAttr('disabled');
           } else {
-            let $elem = $(e.params.data.element);
+            let $elem = $(selectedElem.element);
             $visits.val($elem.data('visits'));
             $price.val($elem.data('price'));
-            
+
             if ($elem.data('onetime')===1) {
               $visits.attr({
-                    'disabled': 'disabled'
+                    'readonly': 'readonly'
+                });
+              $start_date.attr({
+                    'readonly': 'readonly'
                 });
               $start_date.val('{{ event.date | date:"d.m.Y" }}');
             }
             else {
-              $visits.removeAttr('disabled');
+              $visits.removeAttr('readonly');
+              $start_date.removeAttr('readonly');
               $start_date.val('{% now "d.m.Y" %}');
             }
-          }
+        }
+      }
+
+      $('#sale-modal').on('show.bs.modal', function(){
+        let $selectElem = $('#{{ sell_subscription_form.subscription.id_for_label }}').select2('data');
+        fillFields($selectElem[0]);
+      });
+
+      $('#{{ sell_subscription_form.subscription.id_for_label }}')
+        .select2({theme: 'bootstrap'})
+        .on('select2:select', function (e) {
+          fillFields(e.params.data);
         });
 
       $('a.sell-and-mark').click(function () {

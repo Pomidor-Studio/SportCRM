@@ -120,6 +120,7 @@ class EventByDate(
         signed_up_clients_qs = Client.objects.filter(
             id__in=self.object.attendance_set
             .filter(marked=False, signed_up=True)
+            .order_by('name')
             .values_list('client', flat=True)
         )
         signed_up_clients = self.get_clients_subscriptions(signed_up_clients_qs)
@@ -131,6 +132,7 @@ class EventByDate(
                 .attendance_set
                 .values_list('client', flat=True)
             )
+            .order_by('name')
         )
         unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs)
         attendance_list_marked = (
@@ -234,7 +236,7 @@ class SignUpClient(
     EventByDateMixin,
     RedirectView
 ):
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -349,7 +351,7 @@ class CancelAttendance(
     EventByDateMixin,
     RedirectView
 ):
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -372,7 +374,7 @@ class SignUpClientWithoutSubscription (
 ):
     form_class = SignUpClientWithoutSubscriptionForm
     template_name = 'crm/manager/event/mark_client_without_sub.html'
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -400,7 +402,7 @@ class MarkClient (
     EventByDateMixin,
     RedirectView
 ):
-    permission_required = 'event'
+    permission_required = 'event.manipulate'
 
     def get(self, request, *args, **kwargs):
         event = self.get_object()
@@ -626,7 +628,7 @@ class DoCloseEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark-attendance'
+    permission_required = 'event.close'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):
@@ -640,7 +642,7 @@ class DoOpenEvent(
     EventByDateMixin,
     RedirectWithActionView
 ):
-    permission_required = 'event.mark-attendance'
+    permission_required = 'event.open'
     pattern_name = 'crm:manager:event-class:event:event-by-date'
 
     def run_action(self):

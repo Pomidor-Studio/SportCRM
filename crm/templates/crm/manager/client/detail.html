@@ -78,7 +78,9 @@
     <div class="col-3">
       <legend class="mb-2 font-weight-bold">{{ object.name }}</legend>
         <div>{{object.phone_number}}</div>
-        <div>{{object.birthday}}</div>
+        {% if object.birthday %}
+          <div>{{object.birthday}}</div>
+        {% endif %}
         <div>{{object.email_address}}</div>
         <div>{{object.balance | floatformat:"-2" | intcomma }} ₽</div>
         <div class="mb-2 mt-2">
@@ -215,8 +217,25 @@
                 </div>
               {% endif %}
             </td>
-            <td><a class="btn btn-sm btn-outline-danger"
-                   href="{% url 'crm:manager:attendance:delete' sub.id %}">Удалить отметку о посещении</a></td>
+            <td>
+              {% if not sub.event.is_closed %}
+                {% if sub.signed_up %}
+                  <a
+                    class="btn btn-sm btn-outline-danger"
+                    href="{% url 'crm:manager:event-class:event:unmark-client' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                  >
+                    Убрать отметку
+                  </a>
+                {% else %}
+                  <a
+                    class="btn btn-sm btn-outline-danger"
+                    href="{% url 'crm:manager:event-class:event:cancel-att' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                  >
+                    Убрать отметку
+                  </a>
+                {% endif %}
+              {% endif %}
+            </td>
           </tr>
           {% endfor %}
           </tbody>
