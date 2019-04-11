@@ -8,7 +8,7 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from crm.filters import LocationFilter
 from crm.models import Location
-from crm.views.mixin import UnDeleteView, CreateAndAddMixin
+from crm.views.mixin import UnDeleteView, CreateAndAddView
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -21,7 +21,7 @@ class List(PermissionRequiredMixin, FilterView):
     filterset_class = LocationFilter
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddView):
     model = Location
     fields = ('name', 'address')
     template_name = 'crm/manager/location/form.html'

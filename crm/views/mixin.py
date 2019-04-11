@@ -2,24 +2,68 @@ from django.contrib import messages
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpResponseRedirect
 from django.urls import reverse
-from django.views.generic import RedirectView, CreateView
+from django.views.generic import CreateView, RedirectView
 from django.views.generic.detail import (
     BaseDetailView,
     SingleObjectTemplateResponseMixin,
 )
+from social_django.utils import load_backend, load_strategy
+
+from contrib.vk_utils import get_one_vk_user_info, get_vk_id_from_link
 
 
-class CreateAndAddMixin(CreateView):
+class CreateAndAddView(CreateView):
     message_info = 'Объект создан'
     add_another_url = 'crm:manager:home'
 
     def post(self, request, *args, **kwargs):
-        saved = super(CreateAndAddMixin, self).post(request, *args, **kwargs)
+        saved = super().post(request, *args, **kwargs)
         if "another" in request.POST:
             messages.info(request, self.message_info)
             return HttpResponseRedirect(reverse(self.add_another_url))
         else:
             return saved
+
+
+class SocialAuthMixin:
+    provider = 'vk-oauth2'
+
+    def create_with_replace(self, user, vk_user):
+        strategy = load_strategy(self.request)
+        backend = load_backend(strategy, self.provider, '')
+
+        linked_social = (
+            backend.strategy.storage.user
+            .get_social_auth_for_user(user, self.provider)
+            .first()
+        )
+
+        if linked_social:
+            # There was no edit of vk link, don't replace it
+            if linked_social.uid == vk_user['id']:
+                return
+
+            linked_social.delete()
+
+        try:
+            backend.strategy.storage.user.create_social_auth(
+                user, vk_user['id'], backend.name
+            )
+        except Exception as err:
+            if not backend.strategy.storage.is_integrity_error(err):
+                raise
+
+    def set_social(self, user, user_vk_link):
+        vk_id = get_vk_id_from_link(user_vk_link)
+        if not vk_id:
+            return
+
+        vk_user = get_one_vk_user_info(vk_id)
+
+        if not vk_user:
+            return
+
+        self.create_with_replace(user, vk_user)
 
 
 class UnDeletionMixin:

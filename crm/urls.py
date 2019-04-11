@@ -11,6 +11,7 @@ from crm.views.manager import (
     event as manager_event_views,
     event_class as manager_event_class_views,
     location as manager_locations_views,
+    manager as manager_manager_views,
     report as manager_report_views,
     subscription as manager_subs_views,
 )
@@ -71,6 +72,22 @@ manager_coach_urlpatterns = ([
         name='undelete'
     )
 ], 'coach')
+
+manager_manager_urlpatterns = ([
+    path('', manager_manager_views.List.as_view(), name='list'),
+    path('<int:pk>/', manager_manager_views.Detail.as_view(), name='detail'),
+    path('new/', manager_manager_views.Create.as_view(), name='new'),
+    path(
+        '<int:pk>/update/',
+        manager_manager_views.Update.as_view(),
+        name='update'
+    ),
+    path(
+        '<int:pk>/delete/',
+        manager_manager_views.Delete.as_view(),
+        name='delete'
+    )
+], 'manager')
 
 manager_client_subs_urlpatterns = ([
     path(
@@ -304,6 +321,7 @@ manager_locations_urlpatterns = ([
 manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('coach/', include(manager_coach_urlpatterns)),
+    path('manager/', include(manager_manager_urlpatterns)),
     path('clients/', include(manager_clients_urlpatterns)),
     path('subscriptions/', include(manager_subscriptions_urlpatterns)),
     path('events/', include(manager_events_urlpatterns)),

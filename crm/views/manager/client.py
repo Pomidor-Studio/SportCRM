@@ -32,7 +32,7 @@ from crm.models import (
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 from crm.templatetags.html_helper import get_vk_user_ids
-from crm.views.mixin import CreateAndAddMixin
+from crm.views.mixin import CreateAndAddView
 from gcp.tasks import enqueue
 
 
@@ -51,7 +51,7 @@ class List(PermissionRequiredMixin, FilterView):
         return context
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddView):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'

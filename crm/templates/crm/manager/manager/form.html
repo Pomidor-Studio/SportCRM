@@ -1,0 +1,67 @@
+{% extends "crm/base.html" %}
+
+{% block extrahead %}
+  <script
+    src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
+  <script
+    src="https://unpkg.com/libphonenumber-js@1.7.10/bundle/libphonenumber-max.js"></script>
+
+  <script type="text/javascript">
+    $(function () {
+      const phoneAYT = new libphonenumber.AsYouType('RU');
+      let oldData = $('[data-phone]').val();
+
+      $('[data-phone]').on('input', function(e) {
+        const data = $(this).val().trim();
+        const phone = phoneAYT.input(data);
+        const number = phoneAYT.getNumber();
+
+        if (number === undefined || number.isValid()) {
+            e.currentTarget.setCustomValidity('');
+        } else {
+            e.currentTarget.setCustomValidity('Неправильный номер');
+        }
+        if (oldData !== phone) {
+          $(e.currentTarget).val(phone);
+          oldData = phone;
+        }
+        phoneAYT.reset();
+      });
+
+      $('[data-name-edit]').on('input', function () {
+        var data = $(this).val().trim();
+        var items = data.split(' ');
+        var result = items.splice(0, 1);
+        result.push(items.join(' '));
+        $('#' + '{{ form.user.first_name.id_for_label }}').val(result[0]);
+        $('#' + '{{ form.user.last_name.id_for_label }}').val(result[1]);
+      });
+    });
+  </script>
+{% endblock %}
+
+{% load bootstrap4 %}
+
+{% block content %}
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Менеджер</legend>
+    <form method="post">
+      {% csrf_token %}
+      {% bootstrap_form form.user %}
+      {% bootstrap_form form.manager %}
+      <div class="form-group">
+        {% if object.id %}
+          <button class="btn btn-primary" type="submit">Сохранить</button>
+        {% else %}
+          <button class="btn btn-primary" type="submit">Добавить</button>
+          <button type="submit" name="another" class="btn btn-primary">Сохранить и добавить ещё</button>
+        {% endif %}
+        <a name="cancel"
+           href="{% if object.id %}{% url 'crm:manager:manager:detail' object.id %}{% else %}{% url 'crm:manager:manager:list' %}{% endif %}"
+           class="btn btn-outline-info">
+          Назад
+        </a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

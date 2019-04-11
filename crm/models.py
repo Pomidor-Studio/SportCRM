@@ -278,7 +278,7 @@ class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
     phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return self.user.get_full_name() or 'Имя не указано'
 
     def get_absolute_url(self):
         return reverse('crm:manager:coach:detail', kwargs={'pk': self.pk})
@@ -301,7 +301,10 @@ class Manager(CompanyObjectModel):
     phone_number = PhoneNumberField("Телефон", blank=True)
 
     def __str__(self):
-        return self.user.get_full_name()
+        return self.user.get_full_name() or 'Имя не указано'
+
+    def get_absolute_url(self):
+        return reverse('crm:manager:manager:detail', kwargs={'pk': self.pk})
 
 
 class EventClassManager(TenantManagerMixin, models.Manager):
