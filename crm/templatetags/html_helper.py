@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import vk
 from bootstrap4.components import render_alert
 from bootstrap4.text import text_value
@@ -99,12 +101,23 @@ def get_vk_user_ids(vk_user_domains):
     for result in results:
         user_id = 'id' + str(result['id'])
         screen_name = result['screen_name']
-        if screen_name in vk_user_domains:
-            vk_user_ids[vk_user_domains.index(screen_name)] = result['id']
-        elif user_id in vk_user_domains:
-            vk_user_ids[vk_user_domains.index(user_id)] = result['id']
+        for i, domain in enumerate(vk_user_domains):
+            if domain == user_id or domain == screen_name:
+                vk_user_ids[i] = result['id']
 
     return vk_user_ids
+
+
+allowed_date_formats_ru = 'ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ'
+
+
+def try_parse_date(text):
+    for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%d-%m-%Y'):
+        try:
+            return datetime.strptime(text, fmt)
+        except ValueError:
+            pass
+    raise ValueError('Неверный формат даты')
 
 
 @register.simple_tag

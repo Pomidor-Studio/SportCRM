@@ -1,0 +1,47 @@
+{% extends "crm/base.html" %}
+{% load bootstrap4 %}
+{% block extrahead %}
+{{ form.media }}
+{% endblock %}
+{% block content %}
+
+<div class="container-fluid mt-4 ml-2">
+  <legend class="border-bottom mb-2">Отчет по импорту</legend>
+  <div>
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <fieldset class="form-group">
+        <table class="table table-sm table-striped table-borderless">
+          Ошибки:
+          <thead>
+            <tr>
+              <th scope="col">Код ячейки</th>
+              <th scope="col">Текст ошибки</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for k, v in import_errors.items %}
+          <tr>
+            <td>
+              {{ k }}
+            </td>
+            <td>
+              {{ v }}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+
+        </table>
+
+
+      </fieldset>
+      <div class="form-group">
+        <button class="btn btn-outline-info" type="submit">Загрузить</button>
+        <a name="cancel" href="{% url 'crm:manager:client:list' %}"
+           class="btn btn-outline-info">Назад</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}
