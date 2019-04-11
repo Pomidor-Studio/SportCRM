@@ -216,20 +216,22 @@
               {% endif %}
             </td>
             <td>
-              {% if sub.signed_up %}
-                <a
-                  class="btn btn-sm btn-outline-danger"
-                  href="{% url 'crm:manager:event-class:event:unmark-client' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
-                >
-                  Убрать отметку
-                </a>
-              {% else %}
-                <a
-                  class="btn btn-sm btn-outline-danger"
-                  href="{% url 'crm:manager:event-class:event:cancel-att' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
-                >
-                  Убрать отметку
-                </a>
+              {% if not sub.event.is_closed %}
+                {% if sub.signed_up %}
+                  <a
+                    class="btn btn-sm btn-outline-danger"
+                    href="{% url 'crm:manager:event-class:event:unmark-client' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                  >
+                    Убрать отметку
+                  </a>
+                {% else %}
+                  <a
+                    class="btn btn-sm btn-outline-danger"
+                    href="{% url 'crm:manager:event-class:event:cancel-att' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                  >
+                    Убрать отметку
+                  </a>
+                {% endif %}
               {% endif %}
             </td>
           </tr>
