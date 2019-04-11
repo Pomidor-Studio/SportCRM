@@ -1,20 +1,15 @@
-from crm.models import Client, Company, Manager
-from bot.api.vkapi import send_message
 from datetime import date
+
+from bot.api.messages import (
+    ClientHaveNegativeBalance, UsersToManagerBirthday, UserToUserBirthday
+)
+from crm.models import Client, Company, INTERNAL_COMPANY, Manager
 
 
 def receivables():
 
-    client = Client.objects.filter(balance__lt=0)
-
-    for cl in client:
-        message = []
-        name = cl.name
-        balance = cl.balance
-        message.extend([name, '!\nУ вас есть задолженность!\nСостояние вашего счета: ', str(balance)])
-        send_message(cl.vk_user_id, cl.vk_message_token, ''.join(message), '')
-
-    return
+    for client in Client.objects.filter(balance__lt=0):
+        ClientHaveNegativeBalance(client, personalized=False).send_message()
 
 
 def birthday():
@@ -22,26 +17,20 @@ def birthday():
     month = current_date.month
     day = current_date.day
 
-    companies = Company.objects.filter()
+    companies = Company.objects.exclude(display_name=INTERNAL_COMPANY)
 
     for company in companies:
-        message_managers = []
-        message_managers.append('Сегодня День рождение:\n')
+        clients = Client.objects.filter(
+            birthday__month=month, birthday__day=day, company_id=company.id)
 
-        clients = Client.objects.filter(birthday__month=month,
-                                        birthday__day=day,
-                                        company_id=company.id)
+        # skip, if there no any client with birthday
+        if not clients.count():
+            continue
 
-        for cl in clients:
-            message = []
-            message_managers.extend([cl.name, '(vk.com/id', str(cl.vk_user_id), ')\n'])
-            message.extend([cl.name, '!\n'])
-            message.append('Поздравляем вас с Днем рождения!')
-            send_message(cl.vk_user_id, company.vk_access_token, ''.join(message), '')
+        clients_list = list(clients)
+        UserToUserBirthday(clients_list, personalized=True).send_message()
 
-        managers = Manager.objects.filter(company_id=company.id)
-
-        for manager in managers:
-            send_message(manager.user.vk_id, company.vk_access_token, ''.join(message_managers), '')
-
-    return
+        managers = list(Manager.objects.filter(company_id=company.id))
+        UsersToManagerBirthday(
+            managers, personalized=True, clients=clients_list
+        ).send_bulk_message()
