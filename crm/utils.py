@@ -4,10 +4,10 @@ import re
 import django_filters
 from bootstrap_datepicker_plus import DatePickerInput
 from django import forms
+from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
 from django_filters.fields import RangeField
 from django_filters.utils import handle_timezone
 from django_filters.widgets import SuffixedMultiWidget
-
 
 VK_PAGE_REGEXP = re.compile('(https?://)?vk.com/(?P<user_id>([A-Za-z0-9_])+)')
 
@@ -17,7 +17,20 @@ class BootstrapRangeWidget(SuffixedMultiWidget):
     suffixes = ['min', 'max']
 
     def __init__(self, attrs=None):
-        widgets = (DatePickerInput(format='%d.%m.%Y'), DatePickerInput(format='%d.%m.%Y'))
+        widgets = (
+            DatePickerInput(
+                format='%d.%m.%Y',
+                options={
+                    'locale': 'ru',
+                }
+            ),
+            DatePickerInput(
+                format='%d.%m.%Y',
+                options={
+                    'locale': 'ru',
+                }
+            )
+        )
         super().__init__(widgets, attrs)
 
     def decompress(self, value):
@@ -35,8 +48,8 @@ class BootstrapDateRangeField(RangeField):
 
     def __init__(self, *args, **kwargs):
         fields = (
-            forms.DateField(),
-            forms.DateField())
+            forms.DateField(input_formats=DATE_INPUT_FORMATS,),
+            forms.DateField(input_formats=DATE_INPUT_FORMATS,))
         super().__init__(fields, *args, **kwargs)
 
     def compress(self, data_list):
