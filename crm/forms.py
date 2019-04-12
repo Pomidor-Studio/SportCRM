@@ -487,6 +487,12 @@ class CoachForm(TenantModelForm):
 
 
 class ManagerForm(TenantModelForm):
+    vk_page = forms.RegexField(
+        label='Страница VK',
+        regex=VK_PAGE_REGEXP,
+        required=False
+    )
+
     class Meta:
         model = Manager
         fields = ('phone_number',)
@@ -501,6 +507,13 @@ class CoachMultiForm(MultiModelForm):
     form_classes = {
         'user': UserForm,
         'coach': CoachForm
+    }
+
+
+class ManagerMultiForm(MultiModelForm):
+    form_classes = {
+        'user': UserForm,
+        'manager': ManagerForm
     }
 
 

@@ -1,24 +1,20 @@
 import sesame.utils
-import vk
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, UpdateView,
+    DeleteView, DetailView, UpdateView,
 )
 from django_filters.views import FilterView
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
-from social_django.utils import load_strategy, load_backend
 
 from crm.filters import CoachFilter
 from crm.forms import CoachMultiForm
 from crm.models import Coach
-from crm.utils import VK_PAGE_REGEXP
-from crm.views.mixin import UnDeleteView, CreateAndAddMixin
+from crm.views.mixin import CreateAndAddView, SocialAuthMixin, UnDeleteView
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -46,64 +42,18 @@ class Detail(PermissionRequiredMixin, DetailView):
         return context
 
 
-class SocialAuthMixin:
-    provider = 'vk-oauth2'
-
-    def get_vk_info(self, user_vk_link):
-        match = VK_PAGE_REGEXP.match(user_vk_link)
-        session = vk.Session()
-        api = vk.API(session, v=5.90)
-
-        try:
-            return api.users.get(
-                access_token=settings.VK_GROUP_TOKEN,
-                user_ids=match.group('user_id')
-            )[0]
-        except (IndexError, AttributeError):
-            return None
-
-    def create_with_replace(self, user, vk_user):
-        strategy = load_strategy(self.request)
-        backend = load_backend(strategy, self.provider, '')
-
-        linked_social = (
-            backend.strategy.storage.user
-            .get_social_auth_for_user(user, self.provider)
-            .first()
-        )
-
-        if linked_social:
-            # There was no edit of vk link, don't replace it
-            if linked_social.uid == vk_user['id']:
-                return
-
-            linked_social.delete()
-
-        try:
-            backend.strategy.storage.user.create_social_auth(
-                user, vk_user['id'], backend.name
-            )
-        except Exception as err:
-            if not backend.strategy.storage.is_integrity_error(err):
-                raise
-
-    def set_social(self, user, user_vk_link):
-
-        vk_user = self.get_vk_info(user_vk_link)
-        if not vk_user:
-            return
-
-        self.create_with_replace(user, vk_user)
-
-
-class Create(PermissionRequiredMixin, RevisionMixin, SocialAuthMixin, CreateAndAddMixin):
+class Create(
+    PermissionRequiredMixin,
+    RevisionMixin,
+    SocialAuthMixin,
+    CreateAndAddView
+):
     template_name = 'crm/manager/coach/form.html'
     model = Coach
     form_class = CoachMultiForm
     permission_required = 'coach.add'
     add_another_url = 'crm:manager:coach:new'
     message_info = 'Тренер успешно создан'
-
 
     def form_valid(self, form):
         # User is generated manually as we need create

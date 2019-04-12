@@ -8,7 +8,7 @@ from rules.contrib.views import PermissionRequiredMixin
 from crm.filters import SubscriptionsTypeFilterSet
 from crm.forms import SubscriptionsTypeForm
 from crm.models import SubscriptionsType
-from crm.views.mixin import UnDeleteView, CreateAndAddMixin
+from crm.views.mixin import UnDeleteView, CreateAndAddView
 
 
 class List(PermissionRequiredMixin, FilterView):
@@ -20,7 +20,7 @@ class List(PermissionRequiredMixin, FilterView):
     permission_required = 'subscription'
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddMixin):
+class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddView):
     model = SubscriptionsType
     form_class = SubscriptionsTypeForm
     template_name = 'crm/manager/subscription/form.html'
