@@ -1,13 +1,13 @@
-import sesame.utils
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse_lazy
 from django.views.generic import (DeleteView, DetailView, ListView, UpdateView)
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
+from crm.auth.one_time_login import get_one_time_login_link
 from crm.forms import ManagerMultiForm
 from crm.models import Manager
 from crm.views.mixin import CreateAndAddView, SocialAuthMixin
@@ -29,11 +29,8 @@ class Detail(PermissionRequiredMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['login_temp_link'] = '{host}{url}{qs}'.format(
-            host=self.request.get_host(),
-            url=reverse('crm:accounts:profile'),
-            qs=sesame.utils.get_query_string(self.object.user)
-        )
+        context['login_temp_link'] = get_one_time_login_link(
+            self.request.get_host(), self.object.user)
         return context
 
 class Create(
@@ -87,12 +84,8 @@ class Update(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        if not self.object.user.has_vk_auth:
-            context['login_temp_link'] = '{host}{url}{qs}'.format(
-                host=self.request.get_host(),
-                url=reverse('crm:coach:home'),
-                qs=sesame.utils.get_query_string(self.object.user)
-            )
+        context['login_temp_link'] = get_one_time_login_link(
+            self.request.get_host(), self.object.user)
 
         return context
 
