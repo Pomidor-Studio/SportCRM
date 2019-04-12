@@ -8,6 +8,7 @@ from django_multitenant.utils import set_current_tenant, get_current_tenant
 from rest_framework import status
 from rest_framework.generics import CreateAPIView, GenericAPIView
 from rest_framework.response import Response
+from gcp.tasks import enqueue
 
 from contrib.vk_utils import get_vk_user_info
 from crm.models import Attendance, Client, Company, Event, EventClass
@@ -234,6 +235,7 @@ class MarkClient(ClientMixin, CompanyMixin, EventMixin, GenericAPIView):
             client = self.get_client(serializer)
             event: Event = self.get_event(serializer)
             client.signup_for_event(event)
+            enqueue('notify_manager_about_signup', event.id, client.id)
         except Exception as exc:
             return Response(
                 {'success': False, 'error': str(exc)},
@@ -257,6 +259,7 @@ class UnMarkClient(ClientMixin, CompanyMixin, EventMixin, CreateAPIView):
             client = self.get_client(serializer)
             event: Event = self.get_event(serializer)
             client.cancel_signup_for_event(event)
+            enqueue('notify_manager_about_unsignup', event.id, client.id)
         except Exception as exc:
             return Response(
                 {'success': False, 'error': str(exc)},
