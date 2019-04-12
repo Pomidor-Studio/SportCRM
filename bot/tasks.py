@@ -79,3 +79,27 @@ def notify_manager_event_opened(event_id: int):
 
     managers = list(Manager.objects.all())
     messages.OpenedEvent(managers, event=event, personalized=True).send_message()
+
+
+def notify_manager_about_signup(event_id: int, client_id: int):
+    try:
+        event = Event.objects.get(id=event_id)
+        client = Client.objects.get(id=client_id)
+    except (Event.DoesNotExist, Client.DoesNotExist):
+        # Wrong params were passed
+        return
+
+    managers = list(Manager.objects.all())
+    messages.SignupClient(managers, event=event, client=client).send_message()
+
+
+def notify_manager_about_unsignup(event_id: int, client_id: int):
+    try:
+        event = Event.objects.get(id=event_id)
+        client = Client.objects.get(id=client_id)
+    except (Event.DoesNotExist, Client.DoesNotExist):
+        # Wrong params were passed
+        return
+
+    managers = list(Manager.objects.all())
+    messages.UnsignupClient(managers, event=event, client=client).send_message()
