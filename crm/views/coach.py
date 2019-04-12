@@ -56,11 +56,12 @@ class ApiCalendar(ListAPIView):
         ) or (first_day + timedelta(days=31))
 
         events = []
-        for ec in EventClass.objects.filter(
-            Q(coach=self.request.user.coach) &
-            Q(date_from__lte=end) &
-            (Q(date_to__gte=start) | Q(date_to__isnull=True))
-        ):
+        event_classes = (
+            EventClass.objects
+            .in_range(start, end)
+            .filter(coach=self.request.user.coach)
+        )
+        for ec in event_classes:
             events.extend(list(ec.get_calendar(start, end).values()))
 
         return events
