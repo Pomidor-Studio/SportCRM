@@ -20,7 +20,7 @@ class SportCrmLoginRedirectView(RedirectView):
         elif self.request.user.is_coach:
             return reverse('crm:coach:home')
         elif self.request.user.is_manager:
-            return reverse('crm:manager:home')
+            return reverse('crm:manager:event:calendar')
         else:
             return reverse('crm:accounts:login')
 
