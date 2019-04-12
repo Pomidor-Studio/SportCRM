@@ -193,50 +193,52 @@
           </thead>
           <tbody>
           {% for sub in object.attendance_set.all|dictsortreversed:"event.date" %}
-          <tr>
-            <td>
-              <div class="col">
-                <div>
-                  <a class="font-weight-bold" href="{% url 'crm:manager:event-class:event:event-by-date' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day %}">
-                    {{ sub.event.event_class }}
-                  </a>
-                </div>
-                <div>
-                  <a href="{% url 'crm:manager:event-class:event:event-by-date' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day %}">
-                    {{ sub.event.date|date }}
-                  </a>
-                </div>
-              </div>
-            </td>
-            <td>
-              {% if sub.subscription %}
-                {{ sub.subscription }}
-              {% else %}
-                <div style="color: red">
-                  Записался, но не пришел
-                </div>
-              {% endif %}
-            </td>
-            <td>
-              {% if not sub.event.is_closed %}
-                {% if sub.signed_up %}
-                  <a
-                    class="btn btn-sm btn-outline-danger"
-                    href="{% url 'crm:manager:event-class:event:unmark-client' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
-                  >
-                    Убрать отметку
-                  </a>
-                {% else %}
-                  <a
-                    class="btn btn-sm btn-outline-danger"
-                    href="{% url 'crm:manager:event-class:event:cancel-att' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
-                  >
-                    Убрать отметку
-                  </a>
-                {% endif %}
-              {% endif %}
-            </td>
-          </tr>
+            {% if not sub.signed_up or sub.marked %}
+              <tr>
+                <td>
+                  <div class="col">
+                    <div>
+                      <a class="font-weight-bold" href="{% url 'crm:manager:event-class:event:event-by-date' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day %}">
+                        {{ sub.event.event_class }}
+                      </a>
+                    </div>
+                    <div>
+                      <a href="{% url 'crm:manager:event-class:event:event-by-date' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day %}">
+                        {{ sub.event.date|date }}
+                      </a>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  {% if sub.subscription %}
+                    {{ sub.subscription }}
+                  {% else %}
+                    <div style="color: red">
+                      Записался, но не пришел
+                    </div>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if not sub.event.is_closed %}
+                    {% if sub.signed_up %}
+                      <a
+                        class="btn btn-sm btn-outline-danger"
+                        href="{% url 'crm:manager:client:unmark-client' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                      >
+                        Убрать отметку
+                      </a>
+                    {% else %}
+                      <a
+                        class="btn btn-sm btn-outline-danger"
+                        href="{% url 'crm:manager:client:cancel-att' sub.event.event_class.id sub.event.date.year sub.event.date.month sub.event.date.day sub.client.id %}"
+                      >
+                        Убрать отметку
+                      </a>
+                    {% endif %}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endif %}
           {% endfor %}
           </tbody>
         </table>

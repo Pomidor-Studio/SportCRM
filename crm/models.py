@@ -680,7 +680,7 @@ class ClientManager(TenantManagerMixin, models.Manager):
             ClientSubscriptions.objects
             .active_subscriptions_to_event(event)
             .order_by('client_id')
-            .distinct('client_id')
+            # .distinct('client_id')
             .values_list('client_id', flat=True)
         )
         return self.get_queryset().filter(id__in=cs)

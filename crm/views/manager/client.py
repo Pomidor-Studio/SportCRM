@@ -3,6 +3,7 @@ import datetime
 import io
 import re
 
+from django.contrib import messages
 import openpyxl as openpyxl
 from django.contrib import messages
 from django.db import transaction
@@ -13,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, UpdateView,
-    TemplateView)
+    TemplateView, RedirectView)
 from django_filters.views import FilterView
 from django_multitenant.utils import get_current_tenant
 from openpyxl.utils import cell
@@ -34,6 +35,7 @@ from crm.models import (
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, allowed_date_formats_ru
+from crm.views.manager.event_class import EventByDateMixin
 from crm.views.mixin import CreateAndAddView
 from gcp.tasks import enqueue
 
@@ -60,6 +62,60 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddView):
     permission_required = 'client.add'
     add_another_url = 'crm:manager:client:new'
     message_info = 'Ученик успешно создан'
+
+
+class UnMarkClient(
+    PermissionRequiredMixin,
+    RevisionMixin,
+    EventByDateMixin,
+    RedirectView
+):
+    permission_required = 'event.mark-attendance'
+
+    def get(self, request, *args, **kwargs):
+        event = self.get_object()
+        client_id = self.kwargs.pop('client_id')
+        self.kwargs.setdefault('pk', client_id)
+        client = Client.objects.get(id=client_id)
+        client.restore_visit(event)
+        self.kwargs.pop('event_class_id')
+        self.kwargs.pop('year')
+        self.kwargs.pop('month')
+        self.kwargs.pop('day')
+        self.url = self.get_success_url()
+        messages.info(self.request, f'Посещение удалено')
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse(
+            'crm:manager:client:detail', kwargs=self.kwargs)
+
+
+class CancelAttendance(
+    PermissionRequiredMixin,
+    RevisionMixin,
+    EventByDateMixin,
+    RedirectView
+):
+    permission_required = 'event.manipulate'
+
+    def get(self, request, *args, **kwargs):
+        event = self.get_object()
+        client_id = self.kwargs.pop('client_id')
+        self.kwargs.setdefault('pk', client_id)
+        client = Client.objects.get(id=client_id)
+        client.cancel_signup_for_event(event)
+        self.kwargs.pop('event_class_id')
+        self.kwargs.pop('year')
+        self.kwargs.pop('month')
+        self.kwargs.pop('day')
+        self.url = self.get_success_url()
+        messages.info(self.request, f'Посещение удалено')
+        return super().get(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse(
+            'crm:manager:client:detail', kwargs=self.kwargs)
 
 
 class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
