@@ -146,6 +146,16 @@ manager_clients_urlpatterns = ([
         'check-overlapping/',
         manager_client_views.CheckOverlapping.as_view(),
         name='check-overlapping'
+    ),
+    path(
+        'unmark/<int:event_class_id>/<int:year>/<int:month>/<int:day>/<int:client_id>',
+        manager_client_views.UnMarkClient.as_view(),
+        name='unmark-client'
+    ),
+    path(
+        'cancel-att/<int:event_class_id>/<int:year>/<int:month>/<int:day>/<int:client_id>',
+        manager_client_views.CancelAttendance.as_view(),
+        name='cancel-att'
     )
 ], 'client')
 
