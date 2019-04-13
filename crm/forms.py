@@ -49,7 +49,10 @@ class ClientForm(TenantModelForm):
         input_formats=DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
+            options={
+                'locale': 'ru'
+            }
         )
     )
 
@@ -221,7 +224,10 @@ class InplaceSellSubscriptionForm(TenantModelForm):
         input_formats=DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             format='%d.%m.%Y',
-            attrs={"placeholder": "ДД.MM.ГГГГ"}
+            attrs={"placeholder": "ДД.MM.ГГГГ"},
+            options={
+                'locale': 'ru'
+            }
         )
     )
 
@@ -266,7 +272,10 @@ class ClientSubscriptionForm(TenantModelForm):
         input_formats=DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
+            options={
+                'locale': 'ru'
+            }
         )
     )
 
@@ -346,7 +355,10 @@ class EventClassForm(TenantModelForm):
         input_formats=DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
+            options={
+                'locale': 'ru'
+            }
         ),
         required=False
     )
@@ -355,7 +367,10 @@ class EventClassForm(TenantModelForm):
         input_formats=DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"}
+            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
+            options={
+                'locale': 'ru'
+            }
         ),
         required=False
     )
@@ -487,6 +502,12 @@ class CoachForm(TenantModelForm):
 
 
 class ManagerForm(TenantModelForm):
+    vk_page = forms.RegexField(
+        label='Страница VK',
+        regex=VK_PAGE_REGEXP,
+        required=False
+    )
+
     class Meta:
         model = Manager
         fields = ('phone_number',)
@@ -501,6 +522,13 @@ class CoachMultiForm(MultiModelForm):
     form_classes = {
         'user': UserForm,
         'coach': CoachForm
+    }
+
+
+class ManagerMultiForm(MultiModelForm):
+    form_classes = {
+        'user': UserForm,
+        'manager': ManagerForm
     }
 
 

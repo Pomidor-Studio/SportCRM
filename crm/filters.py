@@ -23,9 +23,8 @@ class ClientFilter(django_filters.FilterSet):
 
 
 class EventReportFilter(django_filters.FilterSet):
-    date = BootstrapDateFromToRangeFilter(label='Диапазон дат:', field_name='date')
-
-    # date = django_filters.DateFromToRangeFilter(field_name='date')
+    date = BootstrapDateFromToRangeFilter(
+        label='Диапазон дат:', field_name='date')
     coach = django_filters.ModelMultipleChoiceFilter(
         label='Тренер:',
         field_name='event_class__coach',
@@ -40,12 +39,18 @@ class EventReportFilter(django_filters.FilterSet):
     )
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
-        with_defaults_data = data.copy() if data is not None else QueryDict(mutable=True)
+        with_defaults_data = (
+            data.copy() if data is not None else QueryDict(mutable=True)
+        )
         # Подставляем текущий месяц
         if data is None or not ('date_after' in data and 'date_before' in data):
             with_defaults_data['date_after'] = datetime.today().replace(day=1)
-            with_defaults_data['date_before'] = datetime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1)
-        super().__init__(with_defaults_data , queryset, request=request, prefix=prefix)
+            with_defaults_data['date_before'] = (
+                datetime.today().replace(day=1) +
+                relativedelta(months=1) - timedelta(days=1)
+            )
+        super().__init__(
+            with_defaults_data , queryset, request=request, prefix=prefix)
 
     class Meta:
         model = models.Event

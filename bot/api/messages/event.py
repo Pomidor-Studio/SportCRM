@@ -1,7 +1,7 @@
 from datetime import date
 
 from bot.api.messages.base import Message, TemplateItem
-from crm.models import Event
+from crm.models import Event, Client
 
 
 class EventMessage(Message, abstract=True):
@@ -61,4 +61,44 @@ class OpenedEvent(EventMessage):
     default_template = (
         'Была открыта тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}\n'
         'Тренером: {{COACH}}'
+    )
+
+
+class ManagerEventMessage(EventMessage, abstract=True):
+    template_args = {
+        **EventMessage.template_args,
+        'CLIENT': TemplateItem(
+            text='Клиент который записался на тренировку',
+            example='Иванов Иван'
+        )
+    }
+
+    def __init__(
+        self, recipient, personalized=False, *, event: Event, client: Client
+    ):
+        self.client = client
+
+        super().__init__(recipient, personalized, event=event)
+
+    def get_template_context(self):
+        context = super().get_template_context()
+        context.update({
+            'CLIENT': self.client.name
+        })
+        return context
+
+
+class SignupClient(ManagerEventMessage):
+    detailed_description = 'Уведомление менеджеру о записи на тренировку'
+    default_template = (
+        '{{CLIENT}} записался на {{NAME}} - {{DATE|date:"d.m.Y"}}'
+    )
+
+
+class UnsignupClient(ManagerEventMessage):
+    detailed_description = (
+        'Уведомление менеджеру об отмене записи на тренировку'
+    )
+    default_template = (
+        '{{CLIENT}} отмнил запись на {{NAME}} - {{DATE|date:"d.m.Y"}}'
     )

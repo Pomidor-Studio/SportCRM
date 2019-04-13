@@ -3,15 +3,15 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.forms import (
     UserChangeForm, UserCreationForm, UsernameField,
 )
+from django.utils.html import format_html
 from reversion_compare.admin import CompareVersionAdmin
 from social_django.admin import (
-    UserSocialAuthOption, NonceOption,
-    AssociationOption,
+    AssociationOption, NonceOption, UserSocialAuthOption,
 )
-from social_django.models import UserSocialAuth, Nonce, Association
+from social_django.models import Association, Nonce, UserSocialAuth
 
 from crm import models
-
+from crm.auth.one_time_login import get_one_time_login_link
 
 # Re-register social auth admin, for purposes of django-reversion integration
 admin.site.unregister(UserSocialAuth)
@@ -83,10 +83,23 @@ class LocationAdmin(CompareVersionAdmin):
 
 @admin.register(models.Manager)
 class ManagerAdmin(CompareVersionAdmin):
-    list_display = ('get_manager_full_name', 'user', 'company')
+    list_display = (
+        'get_manager_full_name', 'user', 'company', 'get_one_time_link'
+    )
+
+    def changelist_view(self, request, extra_context=None):
+        self.host = request.get_host()
+        return super().changelist_view(request, extra_context)
 
     def get_manager_full_name(self, obj: models.Manager):
         return obj.user.get_full_name()
+
+    def get_one_time_link(self, obj: models.Manager):
+        return format_html(
+            '<a href="{url}">{url}</a>'.format(
+                url=get_one_time_login_link(self.host, obj.user)
+            )
+        )
 
 
 @admin.register(models.Coach)

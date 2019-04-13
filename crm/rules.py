@@ -56,6 +56,12 @@ rules.add_perm('coach.edit', is_logged_manager)
 rules.add_perm('coach.delete', is_logged_manager)
 rules.add_perm('coach.undelete', is_logged_manager)
 
+rules.add_perm('manager', is_logged_personnel)
+rules.add_perm('manager.view_detail', is_logged_manager)
+rules.add_perm('manager.add', is_logged_manager)
+rules.add_perm('manager.edit', is_logged_manager)
+rules.add_perm('manager.delete', is_logged_manager)
+
 rules.add_perm('event_class', is_logged_manager)
 rules.add_perm('event_class.add', is_logged_manager)
 rules.add_perm('event_class.edit', is_logged_manager)

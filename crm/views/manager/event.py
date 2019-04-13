@@ -47,10 +47,7 @@ class ApiCalendar(ListAPIView):
         ) or (first_day + timedelta(days=31))
 
         events = []
-        for ec in EventClass.objects.filter(
-            Q(date_from__lte=end) &
-            (Q(date_to__gte=start) | Q(date_to__isnull=True))
-        ):
+        for ec in EventClass.objects.in_range(start, end):
             events.extend(list(ec.get_calendar(start, end).values()))
 
         return events

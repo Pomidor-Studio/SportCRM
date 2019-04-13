@@ -1,0 +1,99 @@
+{% extends "crm/base.html" %}
+
+{% block extrahead %}
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+{% endblock %}
+
+
+{% block content %}
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Менеджер: {{ manager }}</legend>
+    <div class="row mb-2">
+      <div class="container-fluid">
+        <a
+          class="btn btn-sm btn-outline-info"
+          href="{% url 'crm:manager:manager:update' manager.id %}"
+        >
+          Изменить
+        </a>
+        <a
+          name="cancel"
+          href="{% url 'crm:manager:manager:list' %}"
+          class="btn btn-sm btn-outline-info"
+        >
+          Назад
+        </a>
+        <a
+          class="btn btn-sm btn-outline-danger"
+          href="{% url 'crm:manager:manager:delete' manager.id %}"
+        >
+          Удалить
+        </a>
+      </div>
+    </div>
+    <table class="table table-sm">
+      <tbody>
+      <tr>
+        <td>Имя</td>
+        <td>{{ manager }}</td>
+      </tr>
+      <tr>
+        <td>VK</td>
+        <td>
+          {% if manager.user.has_vk_auth %}
+            <a href="{{ manager.user.vk_link|safe }}">Страница тренера VK</a>
+          {% else %}
+            Менеджер не привязал аккаунт в VK
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Номер телефона</td>
+        <td>
+          {% if manager.phone_number %}
+            {{ manager.phone_number }}
+          {% else %}
+            Менеджер не указал номер телефона
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <td>Ссылка для входа менеджера <br/>
+          <small>Передайте её вашему менеджеру, чтобы он смог войти в систему первый раз или если забудет пароль</small></td>
+        <td>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <button class="btnt" id="btnGroupAddon2" data-clipboard-target="#login_link" data-toggle="tooltip"
+                      title="Скопировано" type="button">Скопировать в буфер обмена
+              </button>
+            </div>
+            <input id="login_link" type="text" class="form-control" placeholder="Input group example"
+                   aria-label="Input group example"
+                   aria-describedby="btnGroupAddon2"
+                   value="{{ login_temp_link }}" readonly>
+          </div>
+        </td>
+
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script type="text/javascript">
+    $('[data-toggle="tooltip"]').tooltip({trigger: "click"}).on('show.bs.tooltip',
+        function(e){ let eventFired=e; setTimeout(function(){
+          $(eventFired.target).tooltip('hide');
+          }, 1000);}
+      );
+    var clipboardCopy = new ClipboardJS('[data-clipboard-target]');
+
+    clipboardCopy.on('success', function (e) {
+      e.clearSelection();
+      $(e.trigger).tooltip('show');
+    });
+    clipboardCopy.on('error', function (e) {
+      $(e.trigger).tooltip(e.action);
+
+    });
+  </script>
+{% endblock %}

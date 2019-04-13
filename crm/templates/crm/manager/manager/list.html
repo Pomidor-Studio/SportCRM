@@ -1,0 +1,71 @@
+{% extends "crm/base.html" %}
+
+{% load bootstrap4 html_helper %}
+
+{% block content %}
+  <div class="ml-4 mt-4 mr-4 container-fluid">
+    <legend class="border-bottom mb-2">Менеджеры</legend>
+    {% ifhasperm 'manager.add' user %}
+      <a
+        name="add-new" href="{% url 'crm:manager:manager:new' %}"
+        class="btn btn-sm btn-info"
+      >
+        Добавить
+      </a>
+    {% endifhasperm %}
+    {% if managers %}
+      <table class="table table-striped table-borderless">
+        <thead>
+        <tr>
+          <th scope="col">ФИО</th>
+          <th scope="col">Телефон</th>
+          <th scope="col"><i class="fab fa-vk"></i></th>
+          {% ifhasperm 'coach.delete' user %}
+            <th scope="col">Управление</th>
+          {% endifhasperm %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for manager in managers %}
+          <tr>
+            <td>
+
+              {% ifhasperm 'manager.view_detail' user %}
+                <a
+                  href="{% url "crm:manager:manager:detail" manager.id %}"
+                >{{ manager }}</a>
+              {% else %}
+                {{ manager }}
+              {% endifhasperm %}
+
+            </td>
+            <td>{{ manager.phone_number.as_national }}</td>
+            <td>
+              {% if manager.user.vk_link %}
+                <a href="{{ manager.user.vk_link|safe }}" target="_blank">
+                  {{ manager.user.vk_link|safe }}
+                </a>
+              {% endif %}
+            </td>
+
+              {% ifhasperm 'manager.delete' user %}
+                <td>
+                    <a
+                      href="{% url "crm:manager:manager:delete" manager.id %}"
+                      class="btn btn-danger"
+                    >Удалить</a>
+                </td>
+              {% endifhasperm %}
+
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+      {% bootstrap_pagination page_obj %}
+    {% else %}
+        <p>Ваш список менеджеров пуст</p>
+    {% endif %}
+  </div>
+
+{% endblock %}

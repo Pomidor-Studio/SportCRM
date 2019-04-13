@@ -4,5 +4,5 @@ from .clients_info import (
     ClientSubscriptionVisit, ClientUpdateBalance,
 )
 from .event import (
-    CancelledEvent, ClosedEvent, OpenedEvent,
+    CancelledEvent, ClosedEvent, OpenedEvent, SignupClient, UnsignupClient
 )

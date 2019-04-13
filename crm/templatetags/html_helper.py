@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 
 import vk
 from bootstrap4.components import render_alert
@@ -112,6 +112,11 @@ allowed_date_formats_ru = 'ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/Г�
 
 
 def try_parse_date(text):
+    if isinstance(text, date):
+        return text
+    if isinstance(text, datetime):
+        return text.date()
+
     for fmt in ('%Y-%m-%d', '%d.%m.%Y', '%d/%m/%Y', '%d-%m-%Y'):
         try:
             return datetime.strptime(text, fmt)
