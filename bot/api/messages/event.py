@@ -40,7 +40,7 @@ class EventMessage(Message, abstract=True):
 
 class CancelledEvent(EventMessage):
 
-    detailed_description = 'Уведомление при отмене тренировки'
+    detailed_description = 'Уведомление ученику при отмене тренировки'
     default_template = (
         'Была отменена тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}'
     )
@@ -48,7 +48,7 @@ class CancelledEvent(EventMessage):
 
 class ClosedEvent(EventMessage):
 
-    detailed_description = 'Уведомление при закрытии тренировки'
+    detailed_description = 'Уведомление менеджеру при закрытии тренировки'
     default_template = (
         'Была закрыта тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}\n'
         'Тренером: {{COACH}}\n'
@@ -57,7 +57,7 @@ class ClosedEvent(EventMessage):
 
 
 class OpenedEvent(EventMessage):
-    detailed_description = 'Уведомление при открытии тренировки'
+    detailed_description = 'Уведомление менеджеру при открытии тренировки'
     default_template = (
         'Была открыта тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}\n'
         'Тренером: {{COACH}}'
