@@ -48,7 +48,7 @@ class ClientSubscriptionMessage(Message, abstract=True):
 
 class ClientSubscriptionBuy(ClientSubscriptionMessage):
 
-    detailed_description = 'Уведомление клиенту при покупке абонемента'
+    detailed_description = 'Уведомление ученику при покупке абонемента'
     default_template = (
         'Вы приобрели абонемент:\n{{SUBSCRIPTION_NAME}}!\n'
         'Стоимостью: {{PRICE}} ₽\n'
@@ -58,7 +58,7 @@ class ClientSubscriptionBuy(ClientSubscriptionMessage):
 
 class ClientSubscriptionVisit(ClientSubscriptionMessage):
 
-    detailed_description = 'Уведомление клиенту при посещении занятия'
+    detailed_description = 'Уведомление ученику при посещении занятия'
     default_template = (
         'На вашем абонементе:\n{{SUBSCRIPTION_NAME}}\n'
         'остаток посещений: {{VISITS_LEFT}}'
@@ -67,7 +67,7 @@ class ClientSubscriptionVisit(ClientSubscriptionMessage):
 
 class ClientSubscriptionExtend(ClientSubscriptionMessage):
 
-    detailed_description = 'Уведомление клиенту при продление абонемента'
+    detailed_description = 'Уведомление ученику при продление абонемента'
 
     default_template = (
         'Вам продлили абонемент:\n{{SUBSCRIPTION_NAME}}\n'
@@ -77,7 +77,7 @@ class ClientSubscriptionExtend(ClientSubscriptionMessage):
 
 class ClientUpdateBalance(Message):
 
-    detailed_description = 'Уведомление клиенту при изменении баланса'
+    detailed_description = 'Уведомление ученику при изменении баланса'
     default_template = 'Ваш баланс составляет: {{BALANCE}} ₽'
     template_args = {
         'BALANCE': TemplateItem(text='Балас клиента', example=1500)
@@ -96,7 +96,7 @@ class ClientHaveNegativeBalance(Message):
     Currently can't be used with list of clients. It can accept only
     one client as recipient
     """
-    detailed_description = 'Уведомление клиенту при отрицательном балансе'
+    detailed_description = 'Уведомление ученику при отрицательном балансе'
     default_template = (
         'У вас есть задолженность!\n'
         'Ваш баланс составляет: {{BALANCE}} ₽'

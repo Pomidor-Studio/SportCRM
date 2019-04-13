@@ -40,7 +40,7 @@ class EventMessage(Message, abstract=True):
 
 class CancelledEvent(EventMessage):
 
-    detailed_description = 'Уведомление клиенту при отмене тренировки'
+    detailed_description = 'Уведомление ученику при отмене тренировки'
     default_template = (
         'Была отменена тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}'
     )
