@@ -32,7 +32,7 @@ from crm.forms import (
 from crm.models import (
     Client, ClientSubscriptions, ExtensionHistory, SubscriptionsType,
     EventClass,
-)
+    Attendance)
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, allowed_date_formats_ru
 from crm.views.manager.event_class import EventByDateMixin
@@ -83,7 +83,7 @@ class UnMarkClient(
         self.kwargs.pop('month')
         self.kwargs.pop('day')
         self.url = self.get_success_url()
-        messages.info(self.request, f'Посещение удалено')
+        messages.info(self.request, 'Посещение мероприятия удалено')
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
@@ -104,13 +104,17 @@ class CancelAttendance(
         client_id = self.kwargs.pop('client_id')
         self.kwargs.setdefault('pk', client_id)
         client = Client.objects.get(id=client_id)
+        attendance = Attendance.objects.get(client_id=client.id, event_id=event.id)
         client.cancel_signup_for_event(event)
         self.kwargs.pop('event_class_id')
         self.kwargs.pop('year')
         self.kwargs.pop('month')
         self.kwargs.pop('day')
         self.url = self.get_success_url()
-        messages.info(self.request, f'Посещение удалено')
+        if attendance.signed_up and not attendance.marked:
+            messages.info(self.request, 'Запись на мероприятие удалена')
+        else:
+            messages.info(self.request, 'Посещение мероприятия удалено')
         return super().get(request, *args, **kwargs)
 
     def get_success_url(self):
