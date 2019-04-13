@@ -221,14 +221,7 @@ class InplaceSellSubscriptionForm(TenantModelForm):
     )
     start_date = forms.DateField(
         label='Начало действия',
-        input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        )
+        widget=forms.TextInput(attrs={'readonly': 'readonly'})
     )
 
     class Meta:

@@ -40,7 +40,6 @@
       function fillFields(selectedElem) {
         let $visits = $('#{{ form.visits_left.id_for_label }}');
         let $price = $('#{{ form.price.id_for_label }}');
-        let $start_date = $('#{{ form.start_date.id_for_label }}');
 
         if (selectedElem.id === '') {
             $visits.val('');
@@ -55,19 +54,15 @@
               $visits.attr({
                     'readonly': 'readonly'
                 });
-              $start_date.attr({
-                    'readonly': 'readonly'
-                });
-              $start_date.val('{{ event.date | date:"d.m.Y" }}');
             }
             else {
               $visits.removeAttr('readonly');
-              $start_date.removeAttr('readonly');
-              $start_date.val('{% now "d.m.Y" %}');
             }
         }
       }
 
+      let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
+      $start_date.val('{{ event.date | date:"d.m.Y" }}');
       let $selectElem = $('#{{ form.subscription.id_for_label }}').select2('data');
       fillFields($selectElem[0]);
 
