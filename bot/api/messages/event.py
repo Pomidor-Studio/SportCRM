@@ -64,6 +64,16 @@ class OpenedEvent(EventMessage):
     )
 
 
+class FutureEvent(EventMessage):
+    detailed_description = (
+        'Уведомление клиенту о предстоящей тренировке'
+    )
+    default_template = (
+        '{{DATE|date:"d.m.Y"}} у Вас предстоит тренировка по {{NAME}}\n'
+        'Тренер: {{COACH}}'
+    )
+
+
 class ManagerEventMessage(EventMessage, abstract=True):
     template_args = {
         **EventMessage.template_args,

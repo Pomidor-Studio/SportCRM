@@ -1,9 +1,13 @@
-from datetime import date
+from datetime import (
+    date,
+    timedelta,
+)
 
 from bot.api.messages import (
-    ClientHaveNegativeBalance, UsersToManagerBirthday, UserToUserBirthday
+    ClientHaveNegativeBalance, UsersToManagerBirthday, UserToUserBirthday, FutureEvent,
 )
-from crm.models import Client, Company, INTERNAL_COMPANY, Manager
+from bot.tasks import notify_clients_about_future_event
+from crm.models import Client, Company, INTERNAL_COMPANY, Manager, Event
 
 
 def receivables():
@@ -34,3 +38,15 @@ def birthday():
         UsersToManagerBirthday(
             managers, personalized=True, clients=clients_list
         ).send_bulk_message()
+
+
+def future_event():
+    tomorrow = date.today() + timedelta(days=1)
+
+    tomorrow_event_ids = Event.objects.filter(
+        date=tomorrow,
+        canceled_at__isnull=True,
+    ).values_list('id', flat=True)
+
+    for event_id in tomorrow_event_ids:
+        notify_clients_about_future_event(event_id)
