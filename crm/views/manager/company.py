@@ -14,8 +14,3 @@ class Edit(UpdateView):
 
     def get_object(self, queryset=None):
         return get_current_tenant()
-
-
-
-
-
