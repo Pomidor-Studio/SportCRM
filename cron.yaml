@@ -14,3 +14,7 @@ cron:
 #          retry_parameters:
 #              min_backoff_seconds: 30
 #              max_doublings: 3
+    - description: "daily future event job"
+      url: /bot/tasks?param=future_event
+      schedule: every day 15:00 #GMT
+      target: background
