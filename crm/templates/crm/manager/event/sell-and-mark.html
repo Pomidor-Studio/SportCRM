@@ -10,7 +10,7 @@
     </legend>
     <div class="row">
       <form
-        action="{% url 'crm:manager:event-class:event:sell-and-mark' event.event_class.id event.date.year event.date.month event.date.day %}"
+        action="{% url 'crm:manager:event-class:event:sell-and-mark' event.event_class.id event.date.year event.date.month event.date.day %}{% if scanner %}?scanner=True{% endif %}"
         method="post"
       >
         <h5>Клиент: {{ client.name }}</h5>
@@ -61,7 +61,7 @@
         }
       }
 
-      let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
+      let $start_date = $('#{{ form.start_date.id_for_label }}');
       $start_date.val('{{ event.date | date:"d.m.Y" }}');
       let $selectElem = $('#{{ form.subscription.id_for_label }}').select2('data');
       fillFields($selectElem[0]);

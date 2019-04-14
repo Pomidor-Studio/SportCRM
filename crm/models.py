@@ -1121,13 +1121,12 @@ class ClientSubscriptions(CompanyObjectModel):
             raise ValueError('Subscription or event is incorrect')
 
         with transaction.atomic():
-            created, _ = Attendance.objects.get_or_create(
+            attendance, created = Attendance.objects.get_or_create(
                 event=event,
                 client=self.client,
-                marked=False,
-                defaults={'subscription': self})
+                defaults={'subscription': self, 'marked': False})
             if created:
-                created.mark_visit(self)
+                attendance.mark_visit(self)
                 self.visits_left = self.visits_left - 1
                 self.save()
                 from gcp.tasks import enqueue

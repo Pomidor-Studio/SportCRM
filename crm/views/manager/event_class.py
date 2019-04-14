@@ -314,6 +314,7 @@ class SellAndMark(
             else:
                 context['client'] = context['form'].cleaned_data['client']
 
+        context['scanner'] = 'scanner' in self.request.GET
         context['event'] = self.get_object()
         context['form_back'] = self.get_success_url()
         return context
