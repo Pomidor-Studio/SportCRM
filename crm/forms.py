@@ -46,6 +46,7 @@ class Select2SingleTagWidget(
 class ClientForm(TenantModelForm):
     birthday = forms.DateField(
         label='Дата рождения',
+        required=False,
         input_formats=DATE_INPUT_FORMATS,
         widget=DatePickerInput(
             format='%d.%m.%Y',
