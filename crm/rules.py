@@ -1,6 +1,9 @@
 import rules
 
 # Detail about rule system: https://github.com/dfunckt/django-rules
+from django.conf import settings
+from django_multitenant.utils import get_current_tenant
+
 from crm.models import Event, SubscriptionsType
 
 
@@ -27,6 +30,14 @@ def is_open_event(user, event: Event):
 @rules.predicate
 def is_not_one_time_sub(user, obj: SubscriptionsType):
     return not obj.one_time if obj else True
+
+
+@rules.predicate
+def is_not_hidden_managers_in_company(user) -> bool:
+    return (
+        get_current_tenant().id not in
+        settings.DISABLE_MANAGER_PERMISSION_FOR_COMPANIES
+    )
 
 
 is_logged_manager = rules.is_authenticated & is_manager
@@ -57,11 +68,18 @@ rules.add_perm('coach.edit', is_logged_manager)
 rules.add_perm('coach.delete', is_logged_manager)
 rules.add_perm('coach.undelete', is_logged_manager)
 
-rules.add_perm('manager', is_logged_personnel)
-rules.add_perm('manager.view_detail', is_logged_manager)
-rules.add_perm('manager.add', is_logged_manager)
-rules.add_perm('manager.edit', is_logged_manager)
-rules.add_perm('manager.delete', is_logged_manager)
+rules.add_perm(
+    'manager', is_logged_personnel & is_not_hidden_managers_in_company)
+rules.add_perm(
+    'manager.view_detail',
+    is_logged_manager & is_not_hidden_managers_in_company
+)
+rules.add_perm(
+    'manager.add', is_logged_manager & is_not_hidden_managers_in_company)
+rules.add_perm(
+    'manager.edit', is_logged_manager & is_not_hidden_managers_in_company)
+rules.add_perm(
+    'manager.delete', is_logged_manager & is_not_hidden_managers_in_company)
 
 rules.add_perm('event_class', is_logged_manager)
 rules.add_perm('event_class.add', is_logged_manager)

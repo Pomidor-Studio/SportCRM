@@ -223,3 +223,4 @@ USE_GOOGLE_TASKS: bool = False
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+DISABLE_MANAGER_PERMISSION_FOR_COMPANIES = ()
