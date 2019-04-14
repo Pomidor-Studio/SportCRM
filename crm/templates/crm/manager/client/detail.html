@@ -83,6 +83,7 @@
         {% endif %}
         <div>{{object.email_address}}</div>
         <div>{{object.balance | floatformat:"-2" | intcomma }} ₽</div>
+        <div>{{object.additional_info }}</div>
         <div class="mb-2 mt-2">
           <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить
             баланс</a>
