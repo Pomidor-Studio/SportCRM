@@ -1,0 +1,32 @@
+{% extends 'crm/base.html' %}
+
+{% load bootstrap4 html_helper %}
+
+{% block extrahead %}
+  {{ form.media }}
+{% endblock %}
+
+{% block content %}
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Моя компания</legend>
+    <form method="post">
+      {% csrf_token %}
+      {% bootstrap_form form %}
+      <div class="form-group">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        {% if form.vk_group_id.value and form.vk_access_token.value %}
+      {% ifhasperm 'message.ignorance' user %}
+          <a
+            class="btn btn-secondary"
+            href="{% url 'bot:messages:list' %}"
+          >
+            Шаблоны сообщений бота
+          </a>
+      {% endifhasperm %}
+    {% endif %}
+      </div>
+    </form>
+
+
+  </div>
+{% endblock %}

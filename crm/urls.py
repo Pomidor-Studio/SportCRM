@@ -14,6 +14,7 @@ from crm.views.manager import (
     manager as manager_manager_views,
     report as manager_report_views,
     subscription as manager_subs_views,
+    company as manager_company_views,
 )
 
 app_name = 'crm'
@@ -331,6 +332,7 @@ manager_locations_urlpatterns = ([
 
 manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
+    path('company/', manager_company_views.Edit.as_view(), name='company'),
     path('coach/', include(manager_coach_urlpatterns)),
     path('manager/', include(manager_manager_urlpatterns)),
     path('clients/', include(manager_clients_urlpatterns)),

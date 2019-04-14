@@ -107,9 +107,9 @@
     SportAdmin{% block title %}{% endblock %}
     {% if user.is_manager %}
       {% if company.active_to %}
-        (активен до {{ company.active_to|date:"d.m.Y" }})
+        (активна до {{ company.active_to|date:"d.m.Y" }})
       {% else %}
-        (активен без ограничений)
+        (активна без ограничений)
       {% endif %}
     {% endif %}
   </title>
@@ -133,9 +133,9 @@
     SportAdmin
     {% if user.is_manager %}
       {% if company.active_to %}
-        (активен до {{ company.active_to|date:"d.m.Y" }})
+        (активна до {{ company.active_to|date:"d.m.Y" }})
       {% else %}
-        (активен без ограничений)
+        (активна без ограничений)
       {% endif %}
     {% endif %}
   </a>

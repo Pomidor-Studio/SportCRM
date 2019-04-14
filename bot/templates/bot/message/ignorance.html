@@ -30,43 +30,46 @@
 {% endblock %}
 
 {% block content %}
-  <table>
-    <thead>
-    <tr>
-      <th>Тип сообщения</th>
-      <th>Статус</th>
-      <th></th>
-    </tr>
-    </thead>
-    {% for message in vk_messages %}
+  <div class="container-fluid mt-4 ml-2">
+    <legend class="border-bottom mb-2">Шаблоны сообщений бота</legend>
+    <table>
+      <thead>
       <tr>
-        <td>
-          {{ message.help_text }}
-        </td>
-        <td>
-          <input
-            class="status-toggle"
-            type="checkbox"
-            {% if message.is_enabled %}
-            checked
-            {% endif %}
-            data-toggle="toggle"
-            data-onstyle="outline-success"
-            data-offstyle="outline-danger"
-            data-on="Включено"
-            data-off="Выключено"
-            data-message-id="{{ message.uuid }}"
-          >
-        </td>
-        <td>
-          <a
-            class="btn btn-info"
-            href="{% url 'bot:messages:template-edit' message.uuid %}"
-          >
-            Редактировать шаблон сообщения
-          </a>
-        </td>
+        <th>Тип сообщения</th>
+        <th>Статус</th>
+        <th></th>
       </tr>
-    {% endfor %}
-  </table>
+      </thead>
+      {% for message in vk_messages %}
+        <tr>
+          <td>
+            {{ message.help_text }}
+          </td>
+          <td>
+            <input
+              class="status-toggle"
+              type="checkbox"
+              {% if message.is_enabled %}
+              checked
+              {% endif %}
+              data-toggle="toggle"
+              data-onstyle="outline-success"
+              data-offstyle="outline-danger"
+              data-on="Включено"
+              data-off="Выключено"
+              data-message-id="{{ message.uuid }}"
+            >
+          </td>
+          <td>
+            <a
+              class="btn btn-info"
+              href="{% url 'bot:messages:template-edit' message.uuid %}"
+            >
+              Редактировать шаблон сообщения
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </table>
+  </div>
 {% endblock %}

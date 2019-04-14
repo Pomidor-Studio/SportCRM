@@ -86,8 +86,8 @@ class ScrmSafeDeleteDeletedManager(
 class ScrmSafeDeleteModel(SafeDeleteModel):
     objects = ScrmSafeDeleteManager()
     all_objects = ScrmSafeDeleteAllManager()
-    deleted_objects = ScrmSafeDeleteDeletedManager()
 
+    deleted_objects = ScrmSafeDeleteDeletedManager()
     class Meta:
         abstract = True
 
@@ -126,18 +126,27 @@ class Company(models.Model):
     active_to = models.DateField('Компания активна до', null=True, blank=True)
     tenant_id = 'id'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._orig_display_name = self.display_name
+
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
-        for idx in count(start=1):
-            trans_name = translit(
-                self.display_name, language_code='ru', reversed=True)
-            name = trans_name.replace(' ', '_').lower()
-            inner_name = f'{idx}_{name}'[:100]
-            if not Company.objects.filter(name=inner_name).exists():
-                self.name = inner_name
-                break
-        if trans_name == INTERNAL_COMPANY and self.active_to != None:
-            raise forms.ValidationError('Нельзя менять дату активности у компании INTERNAL!')
+        # Generate translit name only if display name is changed by someone
+        if self._orig_display_name != self.display_name:
+            for idx in count(start=1):
+                trans_name = translit(
+                    self.display_name, language_code='ru', reversed=True)
+                name = trans_name.replace(' ', '_').lower()
+                inner_name = f'{idx}_{name}'[:100]
+                if not Company.objects.filter(name=inner_name).exists():
+                    self.name = inner_name
+                    break
+
+        # Disallow ability to change activity date for internal company
+        if self.display_name == INTERNAL_COMPANY and self.active_to is not None:
+            raise forms.ValidationError(
+                'Нельзя менять дату активности у компании INTERNAL!')
 
         super().save(force_insert, force_update, using, update_fields)
 

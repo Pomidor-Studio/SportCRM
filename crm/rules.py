@@ -40,6 +40,7 @@ is_editable_event = (is_logged_manager | is_editable_by_coach) & is_open_event
 rules.add_perm('is_manager', is_logged_manager)
 rules.add_perm('is_coach', is_logged_coach)
 
+rules.add_perm('company.edit', is_logged_manager)
 
 rules.add_perm('client-balance.add', is_logged_personnel)
 
