@@ -160,6 +160,7 @@ class ClientFactory(factory.DjangoModelFactory):
         'date_between', start_date='-30y', end_date='-20y')
     phone_number = factory.Faker('phone_number', locale='ru')
     email_address = factory.Faker('email')
+    additional_info = factory.Faker('pystr', min_chars=10, max_chars=30)
     vk_user_id = None
     balance = 0
 

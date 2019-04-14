@@ -61,10 +61,9 @@ class ClientForm(TenantModelForm):
 
         fields = [
             'name', 'address', 'birthday', 'phone_number',
-            'email_address', 'vk_user_id'
+            'email_address', 'vk_user_id', 'additional_info',
         ]
         widgets = {
-
             'address': forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -81,6 +80,11 @@ class ClientForm(TenantModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "example@email.com"}
+            ),
+            'additional_info': forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                }
             ),
             'vk_user_id': forms.HiddenInput(),
         }
