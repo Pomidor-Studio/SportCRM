@@ -83,12 +83,20 @@
         {% endif %}
         <div>{{object.email_address}}</div>
         <div>{{object.balance | floatformat:"-2" | intcomma }} ₽</div>
-        <div>{{object.additional_info }}</div>
         <div class="mb-2 mt-2">
           <a class="btn btn-sm btn-outline-info" href="{% url 'crm:manager:client:balance:new' object.id %}">Изменить
             баланс</a>
         </div>
+    </div>
+    {% if object.additional_info %}
+    <div class="col-6">
+      <div class="media-body">
+        <h5 class="mt-0">Дополнительный данные:</h5>
+        {{ object.additional_info|truncatechars:300|linebreaksbr }}
       </div>
+    </div>
+    {% endif %}
+
   </div>
   <div>
     <ul class="nav nav-tabs">
