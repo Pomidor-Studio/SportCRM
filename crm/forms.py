@@ -19,6 +19,7 @@ from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, Location, Manager, SubscriptionsType,
+    Company,
 )
 
 
@@ -554,3 +555,39 @@ class UploadExcelForm(forms.Form):
     vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D', help_text="Буква столбца со ссылкой на vk. Формат ссылки: vk.com/user_id или https://vk.com/user_id")
     balance_col = forms.CharField(label='Столбец с балансом', initial='E', help_text="Буква столбца с балансом")
 
+
+class CompanyForm(forms.ModelForm):
+    active_to_display = forms.CharField(
+        label='Компания активна до',
+        required=False,
+        disabled=True,
+        widget=forms.TextInput()
+    )
+
+    class Meta:
+        model = Company
+        exclude = ('name', 'active_to')
+        labels = {
+            'display_name': 'Название',
+            'vk_group_id': 'Идентификатор сообщества в Вконтакте',
+            'vk_access_token': 'Токен доступа к сообщениям',
+            'vk_confirmation_token': 'Код подтверждения бота'
+        }
+        help_texts = {
+            'vk_group_id': 'Нужен если вы используете эту возможноть.',
+            'vk_access_token': 'Токен доступа с правами отправки сообщений.'
+                               'Необходим для того чтобы бот мог отправлять '
+                               'сообщения от имени сообщества',
+            'vk_confirmation_token': 'Необходим для первичной привязки бота к '
+                                     'сообществу. Нужен только один раз.',
+            'active_to': 'Дата, до котрой актвина подписка компании'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance = kwargs.get('instance')
+
+        self.fields['active_to_display'].initial = (
+            f'{instance.active_to:%d.%m.%Y}' if instance and instance.active_to
+            else 'без ограничений'
+        )

@@ -87,14 +87,14 @@
           </a>
         </li>
       {% endifhasperm %}
-      {% ifhasperm 'message.ignorance' user %}
+      {% ifhasperm 'company.edit' user %}
         <li class="nav-item">
           <a
             class="nav-link"
-            href="{% url 'bot:messages:list' %}"
-            name="Управления VK сообщениями"
+            href="{% url 'crm:manager:company' %}"
+            name="Моя компания"
           >
-            Управления VK сообщениями
+            Моя компания
           </a>
         </li>
       {% endifhasperm %}
