@@ -5,7 +5,23 @@
 {% block extrahead %}
   {{ eventclass_form.media }}
   {{ weekdays.media }}
-
+  <script type="text/javascript">
+    $(function () {
+      $('#save-ec').click(function(e) {
+        if ($('input:checkbox.day-of-week:checked').length === 0) {
+          $('div.messages').append(
+            '<div class="alert alert-danger alert-dismissible fade show" role="alert">\n' +
+            '  Не выбрано ни одного дня проведения тренировки!\n' +
+            '  <button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
+            '    <span aria-hidden="true">&times;</span>\n' +
+            '  </button>\n' +
+            '</div>');
+          window.scroll(0, 0);
+          e.preventDefault();
+        }
+      });
+    });
+  </script>
 {% endblock extrahead %}
 
 {% block content %}
@@ -15,7 +31,7 @@
       <form action="" method="POST">
 
         {% csrf_token %}
-        <!-- You're dealing with forms. csrf_token must come -->
+
         {% bootstrap_form eventclass_form %}
 
         <div class="row">
@@ -108,10 +124,16 @@
         </div>
 
         <div class="row">
-          <button class="btn btn-primary mr-1" href="{% url 'crm:manager:event-class:list' %}" type="submit">
+          <button
+            id="save-ec" class="btn btn-primary mr-1"
+            href="{% url 'crm:manager:event-class:list' %}" type="submit"
+          >
             {% if object.id %}Сохранить{% else %}Добавить{% endif %}
           </button>
-          <a name="cancel" href="{% url 'crm:manager:event-class:list' %}" class="btn btn-outline-info">Назад</a>
+          <a
+            name="cancel" href="{% url 'crm:manager:event-class:list' %}"
+            class="btn btn-outline-info"
+          >Назад</a>
         </div>
       </form>
     </div>

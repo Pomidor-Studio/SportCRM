@@ -3,6 +3,7 @@ from typing import List, Optional
 from uuid import UUID
 
 from django.contrib import messages
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import ProtectedError
 from django.http import HttpResponseRedirect
@@ -10,8 +11,8 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
-    DeleteView, DetailView, FormView, ListView, RedirectView, TemplateView,
-    CreateView,
+    CreateView, DeleteView, DetailView, FormView, ListView, RedirectView,
+    TemplateView,
 )
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
@@ -21,8 +22,8 @@ from rules.contrib.views import PermissionRequiredMixin
 
 from crm.enums import GRANULARITY
 from crm.forms import (
-    DayOfTheWeekClassForm, EventClassForm, SignUpClientWithoutSubscriptionForm,
-    InplaceSellSubscriptionForm,
+    DayOfTheWeekClassForm, EventClassForm, InplaceSellSubscriptionForm,
+    SignUpClientWithoutSubscriptionForm,
 )
 from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
@@ -51,7 +52,11 @@ class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
             self.get_object().delete()
             return HttpResponseRedirect(success_url)
         except ProtectedError:
-            messages.info(request, 'Невозможно удалить данный тип тренировок, т.к. существуют активные тренировки')
+            messages.info(
+                request,
+                'Невозможно удалить данный тип тренировок, т.к. '
+                'существуют активные тренировки'
+            )
             return HttpResponseRedirect(success_url)
 
     def get_success_url(self):
@@ -483,6 +488,28 @@ class CreateEdit(
         self.get_object()
 
         self.form = EventClassForm(request.POST, instance=self.object)
+        # Validate that there is at least one selected day for event
+        has_some_day = False
+        for i in range(7):
+            weekday = DayOfTheWeekClass(day=i)
+            weekdayform = DayOfTheWeekClassForm(
+                request.POST, prefix=f'weekday{i}', instance=weekday)
+            # Set empty weekday, in case of errors
+            self.weekdays[i] = weekdayform
+            if weekdayform.is_valid():
+                if weekdayform.cleaned_data['checked']:
+                    has_some_day = True
+
+        if not has_some_day:
+            messages.error(
+                self.request,
+                'Не выбрано ни одного дня проведения тренировки!'
+            )
+            return self.render_to_response(self.get_context_data())
+        else:
+            # Reset weekdays
+            self.weekdays = [None] * 7
+
         with transaction.atomic():
             self.object = self.form.save()
             # Добавляем абонемент на разовое посещение, если цена указана
