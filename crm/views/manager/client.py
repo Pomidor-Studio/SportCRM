@@ -1,20 +1,18 @@
-import csv
-import datetime
-import io
 import re
 
-from django.contrib import messages
 import openpyxl as openpyxl
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import ProtectedError
 from django.forms import forms
 from django.forms.utils import ErrorList
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, FormView, UpdateView,
-    TemplateView, RedirectView)
+    CreateView, DeleteView, DetailView, FormView, RedirectView, TemplateView,
+    UpdateView,
+)
 from django_filters.views import FilterView
 from django_multitenant.utils import get_current_tenant
 from openpyxl.utils import cell
@@ -28,13 +26,17 @@ from crm.enums import BALANCE_REASON
 from crm.filters import ClientFilter
 from crm.forms import (
     ClientForm, ClientSubscriptionForm, ExtendClientSubscriptionForm,
-    UploadExcelForm)
+    UploadExcelForm,
+)
 from crm.models import (
-    Client, ClientSubscriptions, ExtensionHistory, SubscriptionsType,
-    EventClass,
-    Attendance)
+    Attendance, Client, ClientSubscriptions, EventClass, ExtensionHistory,
+    SubscriptionsType,
+)
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
-from crm.templatetags.html_helper import get_vk_user_ids, try_parse_date, allowed_date_formats_ru
+from crm.templatetags.html_helper import (
+    allowed_date_formats_ru,
+    get_vk_user_ids, try_parse_date,
+)
 from crm.views.manager.event_class import EventByDateMixin
 from crm.views.mixin import CreateAndAddView
 from gcp.tasks import enqueue
@@ -134,6 +136,29 @@ class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     template_name = 'crm/manager/client/confirm_delete.html'
     success_url = reverse_lazy('crm:manager:client:list')
     permission_required = 'client.delete'
+
+    def delete(self, request, *args, **kwargs):
+        try:
+            return super().delete(request, *args, **kwargs)
+        except ProtectedError as exc:
+            msg = (
+                f'Невозможно удалить клиента {self.object}, '
+                f'так как у него есть'
+            )
+            exc_str = str(exc)
+            possible_errors = []
+            if 'Attendance' in exc_str:
+                possible_errors.append('посещения занятий')
+            if 'ClientSubscriptions' in exc_str:
+                possible_errors.append('активные абонементы')
+            if 'ClientBalanceChangeHistory' in exc_str:
+                possible_errors.append('изменения личного баланса')
+            errors = 'и '.join(possible_errors)
+
+            messages.error(self.request, f'{msg} {errors}')
+            return HttpResponseRedirect(reverse(
+                'crm:manager:client:detail', kwargs={'pk': self.object.id}
+            ))
 
 
 class Detail(PermissionRequiredMixin, DetailView):
