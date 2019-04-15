@@ -65,8 +65,9 @@ def notify_clients_about_future_event(event_id: int):
     except Event.DoesNotExist:
         # Invalid event id passed
         return
-
-    clients = list(Client.objects.with_active_subscription_to_event(event))
+    clients = list(Client.objects.filter(
+        id__in=event.attendance_set.filter(marked=False, signed_up=True)
+    ))
     messages.FutureEvent(clients, event=event).send_message()
 
 
