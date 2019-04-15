@@ -1134,15 +1134,16 @@ class ClientSubscriptions(CompanyObjectModel):
                 event=event,
                 client=self.client,
                 defaults={'subscription': self, 'marked': False})
-            if created:
-                attendance.mark_visit(self)
-                self.visits_left = self.visits_left - 1
-                self.save()
-                from gcp.tasks import enqueue
-                enqueue('notify_client_subscription_visit', self.id)
-            else:
+
+            if not created and attendance.marked:
                 raise ClientAttendanceExists(
                     'Client attendance for this event already exists')
+
+            attendance.mark_visit(self)
+            self.visits_left = self.visits_left - 1
+            self.save()
+            from gcp.tasks import enqueue
+            enqueue('notify_client_subscription_visit', self.id)
 
     def restore_visit(self):
         with transaction.atomic():
@@ -1480,7 +1481,7 @@ class Attendance(CompanyObjectModel):
         default=False
     )
 
-    def mark_visit(self, subscription: ClientSubscriptions ):
+    def mark_visit(self, subscription: ClientSubscriptions):
         self.subscription = subscription
         self.marked = True
         self.save()
