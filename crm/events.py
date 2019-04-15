@@ -17,6 +17,9 @@ def get_nearest_to(
     if end_date is not None and required_day >= end_date:
         raise ValueError("Can't find next event for date in future")
 
+    if not len(allowed_days):
+        raise ValueError('No days to look forward')
+
     r_dayw = required_day.weekday()
     # Find all days that are after required date
     next_days = [x for x in allowed_days if x > r_dayw]
@@ -80,6 +83,9 @@ def next_day(
     """
     if start > stop:
         raise ValueError('Start of period is greater than end date')
+
+    if not len(days):
+        return
 
     delta_days = days_delta(days)
 
