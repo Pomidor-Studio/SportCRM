@@ -37,7 +37,9 @@
               {% else %}
                 {{ manager }}
               {% endifhasperm %}
-
+              {% if manager.user_id == user.id %}
+                <span class="badge badge-primary">Это вы</span>
+              {% endif %}
             </td>
             <td>{{ manager.phone_number.as_national }}</td>
             <td>
