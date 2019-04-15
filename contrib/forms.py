@@ -94,6 +94,11 @@ class NonTenantUsernameMixin:
     """
     def clean_username(self):
         username = self.cleaned_data['username']
+
+        # Don't check username uniqueness if it wasn't changed
+        if 'username' not in self.changed_data:
+            return username
+
         current_tenant = get_current_tenant()
         set_current_tenant(None)
         if get_user_model().objects.filter(username=username).exists():
