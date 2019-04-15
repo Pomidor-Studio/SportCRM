@@ -457,7 +457,7 @@ class ProfileUserForm(NonTenantUsernameMixin, TenantModelForm):
         super(ProfileUserForm, self).__init__(*args, initial=initial, **kwargs)
 
 
-class UserForm(NonTenantUsernameMixin, TenantModelForm):
+class UserForm(TenantModelForm):
     fullname = forms.CharField(
         label='ФИО',
         required=True,

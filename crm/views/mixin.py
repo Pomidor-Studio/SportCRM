@@ -63,6 +63,10 @@ class SocialAuthMixin:
         if not vk_user:
             return
 
+        if vk_user['id'] == user.vk_id:
+            # Don't replace social page if it is same
+            return
+
         self.create_with_replace(user, vk_user)
 
 

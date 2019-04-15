@@ -8,6 +8,7 @@ from django.views.generic import (
 )
 
 from crm.forms import ProfileCoachForm, ProfileManagerForm
+from crm.views.mixin import SocialAuthMixin
 
 
 class SportCrmLoginRedirectView(RedirectView):
@@ -61,12 +62,18 @@ class ResetPasswordView(LoginRequiredMixin, TemplateView):
         return ret
 
 
-class ProfileView(LoginRequiredMixin, UpdateView):
+class ProfileView(LoginRequiredMixin, SocialAuthMixin, UpdateView):
     template_name = 'crm/auth/profile.html'
     success_url = reverse_lazy('crm:accounts:profile')
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def get_initial(self):
+        initial = super().get_initial()
+        # Multiform waits initials in subdictionary
+        initial['detail'] = {'vk_page': self.object.vk_link}
+        return initial
 
     def get_form_class(self):
         if self.request.user.is_manager:
@@ -89,3 +96,12 @@ class ProfileView(LoginRequiredMixin, UpdateView):
         request.session['confirm-reset'] = False
 
         return super().get(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if form['detail'].cleaned_data['vk_page']:
+            self.set_social(
+                self.request.user, form['detail'].cleaned_data['vk_page'])
+        return response
+
+
