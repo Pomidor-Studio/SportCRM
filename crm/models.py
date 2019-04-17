@@ -679,7 +679,7 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
 
 class ClientManager(TenantManagerMixin, models.Manager):
 
-    def with_active_subscription_to_event(self, event: Event):
+    def with_active_subscription_to_event(self, event: Event) -> TenantQuerySet:
         cs = (
             ClientSubscriptions.objects
             .active_subscriptions_to_event(event)
