@@ -69,6 +69,18 @@ class SocialAuthMixin:
 
         self.create_with_replace(user, vk_user)
 
+    def delete_social(self, user):
+        strategy = load_strategy(self.request)
+        backend = load_backend(strategy, self.provider, '')
+
+        linked_social = (
+            backend.strategy.storage.user
+            .get_social_auth_for_user(user, self.provider)
+            .first()
+        )
+        if linked_social:
+            linked_social.delete()
+
 
 class UnDeletionMixin:
     """Provide the ability to undelete objects."""

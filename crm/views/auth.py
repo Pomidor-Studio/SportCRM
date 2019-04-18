@@ -102,6 +102,9 @@ class ProfileView(LoginRequiredMixin, SocialAuthMixin, UpdateView):
         if form['detail'].cleaned_data['vk_page']:
             self.set_social(
                 self.request.user, form['detail'].cleaned_data['vk_page'])
+        elif self.request.user.vk_id is not None:
+            self.delete_social(self.request.user)
+
         return response
 
 
