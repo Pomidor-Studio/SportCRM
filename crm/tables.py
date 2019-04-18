@@ -34,3 +34,4 @@ class EventReportTable(tables.Table):
         model = Event
         template_name = 'django_tables2/bootstrap.html'
         fields = ('date',)
+        order_by = ('-date',)

@@ -50,7 +50,7 @@ class EventReportFilter(django_filters.FilterSet):
                 relativedelta(months=1) - timedelta(days=1)
             )
         super().__init__(
-            with_defaults_data , queryset, request=request, prefix=prefix)
+            with_defaults_data, queryset, request=request, prefix=prefix)
 
     class Meta:
         model = models.Event
