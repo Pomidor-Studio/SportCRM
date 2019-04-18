@@ -1,5 +1,7 @@
+from django.db.models import Prefetch
+
 from bot.api import messages
-from crm.models import Client, ClientSubscriptions, Event, Manager
+from crm.models import Client, ClientSubscriptions, Event, Manager, EventClass
 
 
 def notify_event_cancellation(event_id: int):
@@ -59,22 +61,30 @@ def notify_client_balance(client_id: int):
     messages.ClientUpdateBalance(client, personalized=True).send_message()
 
 
-def notify_clients_about_future_event(event_id: int):
-    try:
-        event = Event.objects.get(id=event_id)
-    except Event.DoesNotExist:
-        # Invalid event id passed
-        return
-
-    subscription_clients = Client.objects.with_active_subscription_to_event(event)
-    attendance_clients = Client.objects.filter(
-        id__in=event.attendance_set.filter(
-            marked=False, signed_up=True
-        ).values_list('client', flat=True)
-    )
-    clients = subscription_clients.union(attendance_clients)
-
-    messages.FutureEvent(clients, event=event).send_message()
+def notify_clients_about_future_event(dt):
+    event_classes = EventClass.objects.in_range(
+        dt, dt
+    ).filter(
+        dayoftheweekclass__day=dt.weekday(),
+        subscriptionstype__one_time=False
+    ).prefetch_related(
+        Prefetch(
+            'event_set',
+            Event.objects.filter(date=dt, attendance__signed_up=True, attendance__marked=False)
+        )
+    ).all()
+    for event_class in event_classes:
+        client_ids = ClientSubscriptions.objects.active_subscriptions_to_date(dt).filter(
+            subscription__event_class=event_class
+        ).values_list('client', flat=True).all()
+        client_ids = set(client_ids)
+        for event in event_class.event_set.all():
+            clients = event.attendance_set.filter(
+                marked=False, signed_up=True
+            ).values_list('client', flat=True)
+            client_ids |= set(clients)
+        clients = Client.objects.filter(id__in=client_ids)
+        messages.FutureEvent(clients, date=dt, event_class=event_class).send_bulk_message()
 
 
 def notify_manager_event_closed(event_id: int):
