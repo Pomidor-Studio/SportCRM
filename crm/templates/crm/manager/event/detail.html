@@ -299,7 +299,22 @@
           </div>
           <div class="modal-body">
             {% csrf_token %}
-            {% bootstrap_form sell_subscription_form %}
+              {% bootstrap_field sell_subscription_form.subscription %}
+              <div class="row">
+                <div class="col">
+                  {% bootstrap_field sell_subscription_form.start_date %}
+                </div>
+                <div class="col">
+                  <div class="form-group">
+                    <label for="id_end_date">Дата окончания</label>
+                    <input type="text" name="end_date" class="form-control" placeholder="Дата окончания" title="" disabled="" id="id_end_date">
+                  </div>
+                </div>
+              </div>
+              {% bootstrap_field sell_subscription_form.price %}
+              {% bootstrap_field sell_subscription_form.visits_left %}
+              {% bootstrap_field sell_subscription_form.cash_earned %}
+              {% bootstrap_field sell_subscription_form.client %}
           </div>
           <div class="modal-footer">
             <button
@@ -329,42 +344,66 @@
   {{ sell_subscription_form.media.js }}
   <script type="text/javascript">
     $(function () {
+      let $fStartDate = $('#{{ sell_subscription_form.start_date.id_for_label }}');
+      let $fEndDate = $('#id_end_date');
+      let $fVisitsLeft = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
+      let $fPrice = $('#{{ sell_subscription_form.price.id_for_label }}');
+
+      function updateDateRange(st) {
+        if (st === '') {
+          $fStartDate.val('');
+          $fEndDate.val('');
+          return;
+        }
+
+        $.get(
+          '{% url "api-v1:manager:subscription:sell-range" 0 %}'.replace('0', st),
+          {
+            requested_date: $fStartDate.val()
+          },
+          function(data) {
+            $fStartDate.val(data.start_date);
+            $fEndDate.val(data.end_date);
+          }
+        );
+      }
+
+
       function fillFields(selectedElem) {
-        let $visits = $('#{{ sell_subscription_form.visits_left.id_for_label }}');
-        let $price = $('#{{ sell_subscription_form.price.id_for_label }}');
-
-
         if (selectedElem.id === '') {
-            $visits.val('');
-            $price.val('');
-            $visits.removeAttr('disabled');
+            $fVisitsLeft.val('');
+            $fPrice.val('');
+            $fVisitsLeft.removeAttr('disabled');
           } else {
             let $elem = $(selectedElem.element);
-            $visits.val($elem.data('visits'));
-            $price.val($elem.data('price'));
+            $fVisitsLeft.val($elem.data('visits'));
+            $fPrice.val($elem.data('price'));
 
             if ($elem.data('onetime')===1) {
-              $visits.attr({
+              $fVisitsLeft.attr({
                     'readonly': 'readonly'
                 });
             }
             else {
-              $visits.removeAttr('readonly');
+              $fVisitsLeft.removeAttr('readonly');
             }
         }
       }
 
       $('#sale-modal').on('show.bs.modal', function(){
-        let $start_date = $('#{{ sell_subscription_form.start_date.id_for_label }}');
-        $start_date.val('{{ event.date | date:"d.m.Y" }}');
+        $fStartDate.val('{{ event.date | date:"d.m.Y" }}');
         let $selectElem = $('#{{ sell_subscription_form.subscription.id_for_label }}').select2('data');
         fillFields($selectElem[0]);
+        updateDateRange($selectElem[0].id);
       });
 
       $('#{{ sell_subscription_form.subscription.id_for_label }}')
         .select2({theme: 'bootstrap'})
         .on('select2:select', function (e) {
           fillFields(e.params.data);
+          {# Reset current date, for correct start day calculating #}
+          $fStartDate.val('{{ event.date | date:"d.m.Y" }}');
+          updateDateRange(e.params.data.id);
         });
 
       $('a.sell-and-mark').click(function () {
