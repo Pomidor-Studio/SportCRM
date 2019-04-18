@@ -336,6 +336,7 @@ class SellAndMark(
                 client.add_balance_in_history(abon_price, default_reason)
             client.save()
             subscription = form.save()
+            subscription.event = self.get_object()
             try:
                 client.mark_visit(self.get_object(), subscription)
             except ValueError:

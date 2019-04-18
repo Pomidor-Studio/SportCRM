@@ -240,7 +240,7 @@ class InplaceSellSubscriptionForm(TenantModelForm):
             'client': forms.HiddenInput(),
 
         }
-        exclude = ('purchase_date', 'end_date', 'visits_on_by_time')
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event')
 
     def __init__(self, *args, **kwargs):
         st_qs = kwargs.pop(
@@ -300,7 +300,7 @@ class ClientSubscriptionForm(TenantModelForm):
             'start_date': 'Начало действия',
             'visits_left': 'Количество посещений'
         }
-        exclude = ('purchase_date', 'end_date', 'visits_on_by_time')
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event')
 
     def __init__(self, *args, **kwargs):
         disable_subscription_type = kwargs.pop(

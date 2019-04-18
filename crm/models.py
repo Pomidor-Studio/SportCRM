@@ -14,7 +14,7 @@ from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
-from django.db.models import Q, Model, Count, F
+from django.db.models import Q, Model, Count, F, Sum
 from django.db.models.manager import BaseManager
 from django.forms import forms
 from django.shortcuts import get_object_or_404
@@ -877,6 +877,13 @@ class ClientSubscriptions(CompanyObjectModel):
         SubscriptionsType,
         on_delete=models.PROTECT,
         verbose_name="Тип Абонемента")
+    event = TenantForeignKey(
+        'Event',
+        on_delete=models.PROTECT,
+        verbose_name="Продан на тренировке",
+        null=True,
+        blank=True,
+    )
     purchase_date = models.DateField("Дата покупки", default=date.today)
     start_date = models.DateField("Дата начала", default=date.today)
     end_date = models.DateField(null=True)
@@ -1302,20 +1309,11 @@ class Event(CompanyObjectModel):
 
     def get_profit(self):
         # Получаем прибыль
-        queryset = ClientSubscriptions.objects.filter(
-            subscription__in=SubscriptionsType.objects.filter(
-                event_class=self.event_class
-            ),
-            purchase_date=self.date,
-            start_date=self.date,
-            client__in=[
-                attendance.client
-                for attendance in self.attendance_set.all()
-            ]
-        )
-        queryset = queryset.values_list('price', flat=True)
+        price = ClientSubscriptions.objects.filter(
+            event=self
+        ).aggregate(Sum('price'))
 
-        return sum(list(queryset))
+        return price['price__sum'] or 0
 
     def __str__(self):
         return f'{self.date:"%Y-%m-%d"} {self.event_class}'
