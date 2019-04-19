@@ -83,7 +83,7 @@ def notify_clients_about_future_event(dt):
                 marked=False, signed_up=True
             ).values_list('client', flat=True)
             client_ids |= set(clients)
-        clients = Client.objects.filter(id__in=client_ids)
+        clients = list(Client.objects.filter(id__in=client_ids).all())
         messages.FutureEvent(clients, date=dt, event_class=event_class).send_bulk_message()
 
 
