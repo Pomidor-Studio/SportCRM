@@ -103,6 +103,8 @@ class Update(
         coach_form = form['coach']
         if coach_form.cleaned_data['vk_page']:
             self.set_social(user, coach_form.cleaned_data['vk_page'])
+        elif user.vk_id is not None:
+            self.delete_social(user)
 
         return redirect(self.get_success_url())
 
