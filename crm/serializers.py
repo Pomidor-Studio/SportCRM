@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
+from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
 
 from django.urls import reverse
 from rest_framework import serializers
 
-from crm.models import Event, ClientSubscriptions
+from crm.models import Event, ClientSubscriptions, SubscriptionsType
 
 
 class CalendarEventSerializer(serializers.Serializer):
@@ -74,3 +75,26 @@ class ClientSubscriptionCheckOverlappingSerializer(serializers.ModelSerializer):
             'is_overlapping_with_cancelled',
             'canceled_events_count'
         ]
+
+
+class SubscriptionRangeSerializer(serializers.Serializer):
+    requested_date = serializers.DateField(
+        write_only=True,
+        input_formats=DATE_INPUT_FORMATS
+    )
+    start_date = serializers.SerializerMethodField()
+    end_date = serializers.SerializerMethodField()
+
+    def get_start_date(self, instance: SubscriptionsType):
+        return (
+            instance
+            .start_date(self.context['requested_date'])
+            .strftime('%d.%m.%Y')
+        )
+
+    def get_end_date(self, instance: SubscriptionsType):
+        return (
+            instance
+            .end_date(self.context['requested_date'])
+            .strftime('%d.%m.%Y')
+        )

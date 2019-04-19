@@ -16,7 +16,22 @@
         <h5>Клиент: {{ client.name }}</h5>
 
         {% csrf_token %}
-        {% bootstrap_form form %}
+        {% bootstrap_field form.subscription %}
+        <div class="row">
+          <div class="col">
+            {% bootstrap_field form.start_date %}
+          </div>
+          <div class="col">
+            <div class="form-group">
+              <label for="id_end_date">Дата окончания</label>
+              <input type="text" name="end_date" class="form-control" placeholder="Дата окончания" title="" disabled="" id="id_end_date">
+            </div>
+          </div>
+        </div>
+        {% bootstrap_field form.price %}
+        {% bootstrap_field form.visits_left %}
+        {% bootstrap_field form.cash_earned %}
+        {% bootstrap_field form.client %}
 
         <button type="submit" class="btn btn-primary">Продать и отметить
         </button>
@@ -37,38 +52,62 @@
   <script type="text/javascript">
     $(function () {
 
-      function fillFields(selectedElem) {
-        let $visits = $('#{{ form.visits_left.id_for_label }}');
-        let $price = $('#{{ form.price.id_for_label }}');
+      let $fStartDate = $('#{{ form.start_date.id_for_label }}');
+      let $fEndDate = $('#id_end_date');
+      let $fVisitsLeft = $('#{{ form.visits_left.id_for_label }}');
+      let $fPrice = $('#{{ form.price.id_for_label }}');
 
+      function updateDateRange(st) {
+        if (st === '') {
+          $fStartDate.val('');
+          $fEndDate.val('');
+          return;
+        }
+
+        $.get(
+          '{% url "api-v1:manager:subscription:sell-range" 0 %}'.replace('0', st),
+          {
+            requested_date: $fStartDate.val()
+          },
+          function(data) {
+            $fStartDate.val(data.start_date);
+            $fEndDate.val(data.end_date);
+          }
+        );
+      }
+
+      function fillFields(selectedElem) {
         if (selectedElem.id === '') {
-            $visits.val('');
-            $price.val('');
-            $visits.removeAttr('disabled');
+            $fVisitsLeft.val('');
+            $fPrice.val('');
+            $fVisitsLeft.removeAttr('disabled');
           } else {
             let $elem = $(selectedElem.element);
-            $visits.val($elem.data('visits'));
-            $price.val($elem.data('price'));
+            $fVisitsLeft.val($elem.data('visits'));
+            $fPrice.val($elem.data('price'));
 
             if ($elem.data('onetime')===1) {
-              $visits.attr({
+              $fVisitsLeft.attr({
                     'readonly': 'readonly'
                 });
             }
             else {
-              $visits.removeAttr('readonly');
+              $fVisitsLeft.removeAttr('readonly');
             }
         }
       }
 
-      let $start_date = $('#{{ form.start_date.id_for_label }}');
-      $start_date.val('{{ event.date | date:"d.m.Y" }}');
+      $fStartDate.val('{{ event.date | date:"d.m.Y" }}');
       let $selectElem = $('#{{ form.subscription.id_for_label }}').select2('data');
       fillFields($selectElem[0]);
+      updateDateRange($selectElem[0].id);
 
       $('#{{ form.subscription.id_for_label }}')
         .on('select2:select', function (e) {
           fillFields(e.params.data);
+          {# Reset current date, for correct start day calculating #}
+          $fStartDate.val('{{ event.date | date:"d.m.Y" }}');
+          updateDateRange(e.params.data.id);
       });
     });
   </script>
