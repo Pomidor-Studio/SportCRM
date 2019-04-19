@@ -337,6 +337,7 @@ class SellAndMark(
             client.save()
             subscription = form.save()
             subscription.event = self.get_object()
+            subscription.save()
             try:
                 client.mark_visit(self.get_object(), subscription)
             except ValueError:
