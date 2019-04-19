@@ -479,8 +479,11 @@ class CreateEdit(
             one_time_sub = SubscriptionsType.objects.get(
                 one_time=True, event_class=self.object)
             self.form.fields['one_time_price'].initial = one_time_sub.price
-        except SubscriptionsType.DoesNotExist:
-            one_time_sub = None
+        except (
+            SubscriptionsType.DoesNotExist,
+            SubscriptionsType.MultipleObjectsReturned
+        ):
+            pass
 
         return super().get(request, *args, **kwargs)
 
@@ -489,6 +492,7 @@ class CreateEdit(
 
         self.form = EventClassForm(request.POST, instance=self.object)
         # Validate that there is at least one selected day for event
+        has_errors = False
         has_some_day = False
         for i in range(7):
             weekday = DayOfTheWeekClass(day=i)
@@ -499,12 +503,16 @@ class CreateEdit(
             if weekdayform.is_valid():
                 if weekdayform.cleaned_data['checked']:
                     has_some_day = True
+            else:
+                has_errors = True
+                has_some_day = True
 
-        if not has_some_day:
-            messages.error(
-                self.request,
-                'Не выбрано ни одного дня проведения тренировки!'
-            )
+        if has_errors:
+            if not has_some_day:
+                messages.error(
+                    self.request,
+                    'Не выбрано ни одного дня проведения тренировки!'
+                )
             return self.render_to_response(self.get_context_data())
         else:
             # Reset weekdays

@@ -396,6 +396,19 @@ class DayOfTheWeekClassForm(TenantModelForm):
             'end_time': TimePickerInput()
         }
 
+    def clean(self):
+        if self.cleaned_data['checked']:
+            if not self.cleaned_data['start_time']:
+                msg = forms.ValidationError(
+                    'Время начала тренировки должно быть заполнено')
+                self.add_error('start_time', msg)
+            if not self.cleaned_data['end_time']:
+                msg = forms.ValidationError(
+                    'Время завершения тренировки должно быть заполнено')
+                self.add_error('end_time', msg)
+
+        return super().clean()
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if 'instance' in kwargs:
@@ -405,8 +418,6 @@ class DayOfTheWeekClassForm(TenantModelForm):
         # Все поля делаем необязательными
         for key, field in self.fields.items():
             field.required = False
-        # TODO: необходимо сделать проверку что если checked=true то остальные
-        #  поля должны быть заполнены
 
 
 @deconstructible
