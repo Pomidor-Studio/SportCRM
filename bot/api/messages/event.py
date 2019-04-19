@@ -64,27 +64,6 @@ class OpenedEvent(EventMessage):
     )
 
 
-class FutureEvent(EventMessage):
-    template_args = {
-        'DATE': TemplateItem(
-            text='Дата тренировки, в формате ДД.ММ.ГГГГ',
-            example=date(2019, 2, 12)
-        ),
-        'NAME': TemplateItem(text='Название тренировки', example='Волейбол'),
-        'COACH': TemplateItem(
-            text='Тренер',
-            example='Крылов Михаил Дмитриевич'
-        ),
-    }
-
-    detailed_description = (
-        'Уведомление клиенту о предстоящей тренировке'
-    )
-    default_template = (
-        '{{DATE|date:"d.m.Y"}} у Вас предстоит тренировка по {{NAME}}\n'
-        'Тренер: {{COACH}}'
-    )
-
 
 class ManagerEventMessage(EventMessage, abstract=True):
     template_args = {
