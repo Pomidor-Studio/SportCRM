@@ -84,7 +84,8 @@ def notify_clients_about_future_event(dt):
             ).values_list('client', flat=True)
             client_ids |= set(clients)
         clients = list(Client.objects.filter(id__in=client_ids).all())
-        messages.FutureEvent(clients, date=dt, event_class=event_class).send_message()
+        if clients:
+            messages.FutureEvent(clients, date=dt, event_class=event_class).send_message()
 
 
 def notify_manager_event_closed(event_id: int):
