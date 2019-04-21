@@ -72,7 +72,7 @@ def notify_clients_about_future_event(dt):
             'event_set',
             Event.objects.filter(date=dt, attendance__signed_up=True, attendance__marked=False)
         )
-    ).all()
+    ).distinct().all()
     for event_class in event_classes:
         client_ids = ClientSubscriptions.objects.active_subscriptions_to_date(dt).filter(
             subscription__event_class=event_class
@@ -84,7 +84,8 @@ def notify_clients_about_future_event(dt):
             ).values_list('client', flat=True)
             client_ids |= set(clients)
         clients = list(Client.objects.filter(id__in=client_ids).all())
-        messages.FutureEvent(clients, date=dt, event_class=event_class).send_bulk_message()
+        if clients:
+            messages.FutureEvent(clients, date=dt, event_class=event_class).send_message()
 
 
 def notify_manager_event_closed(event_id: int):
