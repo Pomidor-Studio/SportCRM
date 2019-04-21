@@ -7,7 +7,7 @@ class EventReportTable(tables.Table):
     coach = tables.Column(accessor='event_class.coach')
     event_class = tables.Column(
         accessor='event_class.name',
-        verbose_name='Класс мероприятия'
+        verbose_name='Тренировка'
     )
     clients_count = tables.Column(
         accessor='get_present_clients_count',
