@@ -4,7 +4,7 @@
 {% load render_table from django_tables2 %}
 
 {% block extrahead %}
-{{ filter.form.media.css }}
+{{ form.media.css }}
 {% endblock extrahead %}
 
 {% block content %}
@@ -14,28 +14,26 @@
   <div class="sticky-top">
     <form class="form-inline mb-2"
           action="{% url 'crm:manager:event:report' %}" method="GET">
-      {% csrf_token %}
       <div>
-        {{ filter.form.date.label }}
-       {% bootstrap_field filter.form.date show_label=false %}
+        {{ form.date.label }}
+       {% bootstrap_field form.date show_label=false %}
       </div>
       <div class="ml-2">
-        {{ filter.form.coach.label }}
-       {% bootstrap_field filter.form.coach show_label=false %}
+        {{ form.employee.label }}
+       {% bootstrap_field form.employee show_label=false %}
       </div>
       <div class="ml-2">
-        {{ filter.form.event_class.label }}
-       {% bootstrap_field filter.form.event_class show_label=false %}
+        {{ form.event_class.label }}
+       {% bootstrap_field form.event_class show_label=false %}
       </div>
 
-      <input type="submit"
-                   value="Поиск" class="mt-4 ml-2 btn btn-success"/>
+      <input type="submit" value="Поиск" class="mt-4 ml-2 btn btn-success"/>
     </form>
   </div>
   {% render_table table %}
 </div>
 {% endblock content %}
 {% block extra %}
-{{ filter.form.media.js }}
+{{ form.media.js }}
 {% endblock extra %}
 

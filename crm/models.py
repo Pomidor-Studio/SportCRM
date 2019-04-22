@@ -244,6 +244,9 @@ class User(TenantModel, AbstractUser):
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
 
+    def __str__(self):
+        return self.get_full_name() or 'Имя не указано'
+
 
 class CompanyObjectModel(TenantModel):
     """Абстрактный класс для разделяемых по компаниям моделей"""
@@ -1298,8 +1301,7 @@ class Event(CompanyObjectModel):
             subscription__in=SubscriptionsType.objects.filter(
                 event_class=self.event_class, visit_limit=1
             ),
-            purchase_date=self.date,
-            start_date=self.date,
+            event=self,
             client__in=[
                 attendance.client
                 for attendance in self.attendance_set.all()
@@ -1310,15 +1312,7 @@ class Event(CompanyObjectModel):
     def get_subs_sales(self):
         # Получаем количество проданных абонементов
         queryset = ClientSubscriptions.objects.filter(
-            subscription__in=SubscriptionsType.objects.filter(
-                event_class=self.event_class
-            ),
-            purchase_date=self.date,
-            start_date=self.date,
-            client__in=[
-                attendance.client
-                for attendance in self.attendance_set.all()
-            ]
+            event=self
         )
         return queryset.count()
 
