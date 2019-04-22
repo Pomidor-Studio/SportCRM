@@ -110,7 +110,8 @@ class Balance(TenantModelForm):
                     'placeholder': 'Укажите причину изменения баланса'
                 }
             ),
-            'client': forms.HiddenInput()
+            'client': forms.HiddenInput(),
+            'changed_by': forms.HiddenInput(),
         }
         labels = {
             'change_value': 'Сумма пополнения, ₽'
@@ -238,9 +239,8 @@ class InplaceSellSubscriptionForm(TenantModelForm):
                 attrs={"placeholder": "Стоимость в рублях"}
             ),
             'client': forms.HiddenInput(),
-
         }
-        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event')
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event', 'sold_by')
 
     def __init__(self, *args, **kwargs):
         st_qs = kwargs.pop(
@@ -283,6 +283,7 @@ class ClientSubscriptionForm(TenantModelForm):
 
         widgets = {
             'client': forms.HiddenInput(),
+            'sold_by': forms.HiddenInput(),
             'price': forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -300,7 +301,7 @@ class ClientSubscriptionForm(TenantModelForm):
             'start_date': 'Начало действия',
             'visits_left': 'Количество посещений'
         }
-        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event')
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event',)
 
     def __init__(self, *args, **kwargs):
         disable_subscription_type = kwargs.pop(

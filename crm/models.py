@@ -751,20 +751,23 @@ class Client(CompanyObjectModel):
 
     def add_balance_in_history(
         self,
-        top_up_amount: int,
+        top_up_amount: float,
         reason: str,
-        skip_notification: bool = False
+        skip_notification: bool = False,
+        changed_by: User = None
     ):
         """
         :param top_up_amount: Amount of added or removed from balance
         :param reason: Reason of client balance modification
         :param skip_notification: Prevent double notification send if buy sub
+        :param changed_by: User changed balance
         """
         with transaction.atomic():
             ClientBalanceChangeHistory.objects.create(
                 change_value=top_up_amount,
                 client=self,
-                reason=reason
+                reason=reason,
+                changed_by=changed_by,
             )
             self.update_balance(top_up_amount, skip_notification)
 
@@ -883,6 +886,12 @@ class ClientSubscriptions(CompanyObjectModel):
         verbose_name="Продан на тренировке",
         null=True,
         blank=True,
+    )
+    sold_by = TenantForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        verbose_name="Кто продал",
+        null=True,
     )
     purchase_date = models.DateField("Дата покупки", default=date.today)
     start_date = models.DateField("Дата начала", default=date.today)
@@ -1175,6 +1184,12 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
     reason = models.TextField(
         "Причина изменения баланса",
         blank=True
+    )
+    changed_by = TenantForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        verbose_name="Кто изменил",
+        null=True
     )
     subscription = TenantForeignKey(
         ClientSubscriptions,

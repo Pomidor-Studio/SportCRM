@@ -329,14 +329,16 @@ class SellAndMark(
         abon_price = form.cleaned_data['price']
         client = form.cleaned_data['client']
         default_reason = 'Покупка абонемента'
+        current_user = self.request.user
         with transaction.atomic():
-            client.add_balance_in_history(-abon_price, default_reason)
+            client.add_balance_in_history(-abon_price, default_reason, changed_by=current_user)
             if cash_earned:
                 default_reason = 'Перечесление средств за абонемент'
-                client.add_balance_in_history(abon_price, default_reason)
+                client.add_balance_in_history(abon_price, default_reason, changed_by=current_user)
             client.save()
             subscription = form.save()
             subscription.event = self.get_object()
+            subscription.sold_by = current_user
             subscription.save()
             try:
                 client.mark_visit(self.get_object(), subscription)
