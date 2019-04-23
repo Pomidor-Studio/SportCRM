@@ -175,11 +175,11 @@ class Message:
             return
 
         if self.personalized:
-            self.send_personalized_message()
+            self._send_personalized_message()
         else:
-            self.send_bulk_message()
+            self._send_bulk_message()
 
-    def send_personalized_message(self):
+    def _send_personalized_message(self):
         for recipient in self.recipients:
             vk_id = recipient.get_vk_id()
             vk_message_token = recipient.get_vk_message_token()
@@ -191,7 +191,7 @@ class Message:
 
             send_message(vk_id, vk_message_token, personalized_message)
 
-    def send_bulk_message(self):
+    def _send_bulk_message(self):
         send_bulk_message(
             [x.get_vk_id() for x in self.recipients],
             # TODO: to dispute what to do if in recipients list accidentally
