@@ -135,6 +135,9 @@ class DataAttributesSelect(forms.Select):
 
 
 class SubscriptionsTypeForm(TenantModelForm):
+    duration = forms.IntegerField(label='Продолжительность', min_value=1)
+    visit_limit = forms.IntegerField(label='Количество посещений', min_value=1)
+
     class Meta:
         model = SubscriptionsType
         fields = '__all__'

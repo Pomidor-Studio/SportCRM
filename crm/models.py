@@ -553,7 +553,7 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
     Описывает продолжительность действия, количество посещений,
     какие тренировки позволяет посещать
     """
-    name = models.CharField("Наимеование", max_length=100)
+    name = models.CharField("Наименование", max_length=100)
     price = models.FloatField("Цена, ₽")
     duration = models.PositiveIntegerField("Продолжительность")
     duration_type = models.CharField(
