@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 import django_filters
 from dateutil.relativedelta import relativedelta
 from django import forms
+from django.forms.utils import ErrorList
 from django.http import QueryDict
 from django_select2.forms import Select2MultipleWidget
 from phonenumber_field import modelfields
 
 from crm import models
-from crm.utils import BootstrapDateFromToRangeFilter
+from crm.utils import BootstrapDateRangeField
 
 
 class ClientFilter(django_filters.FilterSet):
@@ -22,23 +23,26 @@ class ClientFilter(django_filters.FilterSet):
         fields = ('name',)
 
 
-class EventReportFilter(django_filters.FilterSet):
-    date = BootstrapDateFromToRangeFilter(
-        label='Диапазон дат:', field_name='date')
-    coach = django_filters.ModelMultipleChoiceFilter(
-        label='Тренер:',
-        field_name='event_class__coach',
-        queryset=models.Coach.objects.all(),
-        widget=Select2MultipleWidget
+class EventReportFilter(forms.Form):
+    date = BootstrapDateRangeField(
+        label='Диапазон дат:',
     )
-    event_class = django_filters.ModelMultipleChoiceFilter(
+    employee = forms.ModelMultipleChoiceField(
+        label='Сотрудник:',
+        queryset=models.User.objects.all(),
+        widget=Select2MultipleWidget,
+        required=False,
+    )
+    event_class = forms.ModelMultipleChoiceField(
         label='Тип тренировки:',
-        field_name='event_class',
         queryset=models.EventClass.objects.all(),
-        widget=Select2MultipleWidget
+        widget=Select2MultipleWidget,
+        required=False,
     )
 
-    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+    def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None, initial=None, error_class=ErrorList,
+                 label_suffix=None, empty_permitted=False, field_order=None, use_required_attribute=None,
+                 renderer=None):
         with_defaults_data = (
             data.copy() if data is not None else QueryDict(mutable=True)
         )
@@ -49,12 +53,9 @@ class EventReportFilter(django_filters.FilterSet):
                 datetime.today().replace(day=1) +
                 relativedelta(months=1) - timedelta(days=1)
             )
-        super().__init__(
-            with_defaults_data, queryset, request=request, prefix=prefix)
-
-    class Meta:
-        model = models.Event
-        fields = ('date',)
+        super().__init__(with_defaults_data, files, auto_id, prefix, initial, error_class, label_suffix,
+                         empty_permitted, field_order,
+                         use_required_attribute, renderer)
 
 
 class ArchivableFilterSet(django_filters.FilterSet):

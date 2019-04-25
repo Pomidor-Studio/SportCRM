@@ -190,6 +190,7 @@ class AddSubscription(
         initial = super().get_initial()
         client = self.get_client()
         initial['client'] = client
+        initial['sold_by'] = self.request.user
 
         # Add preselected subscription type from previous client subscriptions
         # history.
@@ -211,16 +212,19 @@ class AddSubscription(
         cash_earned = form.cleaned_data['cash_earned']
         abon_price = form.cleaned_data['price']
         client = self.get_client()
+        current_user = self.request.user
 
         with transaction.atomic():
             client.add_balance_in_history(
                 -abon_price, BALANCE_REASON.BY_SUBSCRIPTION,
-                skip_notification=True
+                skip_notification=True,
+                changed_by=current_user,
             )
             if cash_earned:
                 client.add_balance_in_history(
                     abon_price, BALANCE_REASON.UPDATE_BALANCE,
-                    skip_notification=True
+                    skip_notification=True,
+                    changed_by=current_user,
                 )
             client.save()
             response = super().form_valid(form)

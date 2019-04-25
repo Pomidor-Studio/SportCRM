@@ -18,6 +18,7 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
     def get_initial(self):
         initial = super().get_initial()
         initial['client'] = self.get_client()
+        initial['changed_by'] = self.request.user
         return initial
 
     def get_client(self) -> Client:

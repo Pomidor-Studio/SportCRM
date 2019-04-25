@@ -244,6 +244,9 @@ class User(TenantModel, AbstractUser):
     def vk_message_token(self) -> str:
         return self.company.vk_access_token
 
+    def __str__(self):
+        return self.get_full_name() or 'Имя не указано'
+
 
 class CompanyObjectModel(TenantModel):
     """Абстрактный класс для разделяемых по компаниям моделей"""
@@ -751,20 +754,23 @@ class Client(CompanyObjectModel):
 
     def add_balance_in_history(
         self,
-        top_up_amount: int,
+        top_up_amount: float,
         reason: str,
-        skip_notification: bool = False
+        skip_notification: bool = False,
+        changed_by: User = None
     ):
         """
         :param top_up_amount: Amount of added or removed from balance
         :param reason: Reason of client balance modification
         :param skip_notification: Prevent double notification send if buy sub
+        :param changed_by: User changed balance
         """
         with transaction.atomic():
             ClientBalanceChangeHistory.objects.create(
                 change_value=top_up_amount,
                 client=self,
-                reason=reason
+                reason=reason,
+                changed_by=changed_by,
             )
             self.update_balance(top_up_amount, skip_notification)
 
@@ -883,6 +889,12 @@ class ClientSubscriptions(CompanyObjectModel):
         verbose_name="Продан на тренировке",
         null=True,
         blank=True,
+    )
+    sold_by = TenantForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        verbose_name="Кто продал",
+        null=True,
     )
     purchase_date = models.DateField("Дата покупки", default=date.today)
     start_date = models.DateField("Дата начала", default=date.today)
@@ -1176,6 +1188,12 @@ class ClientBalanceChangeHistory(CompanyObjectModel):
         "Причина изменения баланса",
         blank=True
     )
+    changed_by = TenantForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        verbose_name="Кто изменил",
+        null=True
+    )
     subscription = TenantForeignKey(
         ClientSubscriptions,
         on_delete=models.PROTECT,
@@ -1283,8 +1301,7 @@ class Event(CompanyObjectModel):
             subscription__in=SubscriptionsType.objects.filter(
                 event_class=self.event_class, visit_limit=1
             ),
-            purchase_date=self.date,
-            start_date=self.date,
+            event=self,
             client__in=[
                 attendance.client
                 for attendance in self.attendance_set.all()
@@ -1295,15 +1312,7 @@ class Event(CompanyObjectModel):
     def get_subs_sales(self):
         # Получаем количество проданных абонементов
         queryset = ClientSubscriptions.objects.filter(
-            subscription__in=SubscriptionsType.objects.filter(
-                event_class=self.event_class
-            ),
-            purchase_date=self.date,
-            start_date=self.date,
-            client__in=[
-                attendance.client
-                for attendance in self.attendance_set.all()
-            ]
+            event=self
         )
         return queryset.count()
 
