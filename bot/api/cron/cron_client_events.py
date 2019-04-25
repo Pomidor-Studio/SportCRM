@@ -25,7 +25,8 @@ def birthday():
 
     for company in companies:
         clients = Client.objects.filter(
-            birthday__month=month, birthday__day=day, company_id=company.id)
+            birthday__month=month, birthday__day=day, company_id=company.id
+        )
 
         # skip, if there no any client with birthday
         if not clients.count():
@@ -37,7 +38,7 @@ def birthday():
         managers = list(Manager.objects.filter(company_id=company.id))
         UsersToManagerBirthday(
             managers, personalized=True, clients=clients_list
-        ).send_bulk_message()
+        ).send_message()
 
 
 def future_event():
