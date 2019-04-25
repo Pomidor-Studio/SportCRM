@@ -7,5 +7,5 @@ from .event import (
     CancelledEvent, ClosedEvent, OpenedEvent, SignupClient, UnsignupClient,
 )
 from .event_class import (
-    FutureEvent,
+    FutureEvent, LastFutureEvent
 )

@@ -43,3 +43,15 @@ class FutureEvent(EventClassMessage):
         '{{DATE|date:"d.m.Y"}} у Вас предстоит тренировка по {{NAME}}\n'
         'Тренер: {{COACH}}'
     )
+
+
+class LastFutureEvent(EventClassMessage):
+
+    detailed_description = (
+        'Уведомление клиенту о последней запланированной тренировке'
+    )
+    default_template = (
+        '{{DATE|date:"d.m.Y"}} у Вас предстоит тренировка по {{NAME}}.\n'
+        'Тренер: {{COACH}}\n\n'
+        'Напоминаем, что после этого занятия действие абонемента заканчивается.'
+    )

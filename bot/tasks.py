@@ -73,19 +73,35 @@ def notify_clients_about_future_event(dt):
             Event.objects.filter(date=dt, attendance__signed_up=True, attendance__marked=False)
         )
     ).distinct().all()
+    cs = ClientSubscriptions.objects.active_subscriptions_to_date(dt)
+
     for event_class in event_classes:
-        client_ids = ClientSubscriptions.objects.active_subscriptions_to_date(dt).filter(
-            subscription__event_class=event_class
+        client_ids = cs.filter(
+            subscription__event_class=event_class,
+            visits_left__gt=1
         ).values_list('client', flat=True).all()
         client_ids = set(client_ids)
+
+        last_visit_client_ids = cs.filter(
+            subscription__event_class=event_class,
+            visits_left=1
+        ).values_list('client', flat=True).all()
+        last_visit_client_ids = set(last_visit_client_ids)
+
         for event in event_class.event_set.all():
             clients = event.attendance_set.filter(
                 marked=False, signed_up=True
             ).values_list('client', flat=True)
             client_ids |= set(clients)
+        client_ids -= last_visit_client_ids
+
         clients = list(Client.objects.filter(id__in=client_ids).all())
+        last_visit_clients = list(Client.objects.filter(id__in=last_visit_client_ids).all())
+
         if clients:
             messages.FutureEvent(clients, date=dt, event_class=event_class).send_message()
+        if last_visit_clients:
+            messages.LastFutureEvent(last_visit_clients, date=dt, event_class=event_class).send_message()
 
 
 def notify_manager_event_closed(event_id: int):
