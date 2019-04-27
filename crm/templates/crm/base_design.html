@@ -1,0 +1,13 @@
+{% extends "crm/clean_base_design.html" %}
+
+{% block main %}
+  <div id="overlay"></div>
+		<div class="container-fluid">
+      <div class="row">
+        <!--Sidebar-->
+        {% include 'crm/bars/sidebar_design.html' %}
+        <!--Content-->
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+{% endblock %}

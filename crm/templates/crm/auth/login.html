@@ -1,25 +1,37 @@
-{% extends "crm/clean_base.html" %}
+{% extends "crm/clean_base_design.html" %}
 {% load bootstrap4 %}
 {% block main %}
-    <div class="container d-flex h-100">
-        <div class="row align-self-center w-100">
-            <form method="post" action="{% url 'crm:accounts:login' %}"
-                  class="w-100">
-                <div class="col-6 mx-auto">
-                    {% csrf_token %}
-                    {% bootstrap_form form show_label=False %}
-
-                    <input class="btn btn-success mb-3 w-100" type="submit" value="Войти">
-
-                    <a class="btn btn-primary mb-3 w-100"
-                       href="{% url "social:begin" "vk-oauth2" %}"
-                       role="button">Войти через ВК <i
-                            class="fab fa-vk"></i></a>
-
-
-                    <input type="hidden" name="next" value="{{ next }}">
-                </div>
-            </form>
+  <div class="wrapper-sing-in d-flex align-items-center">
+    <div class="container">
+      <div class="logo">
+        {% include 'crm/auth/_image_logo-148x122.html' %}
+      </div>
+      <form id="form_sing-in" class="form_sing-in mx-auto" method="post"
+            action="{% url 'crm:accounts:login' %}">
+        {% csrf_token %}
+        {% bootstrap_form form show_label=False %}
+        <div class="form-group">
+          <input class="btn btn-primary" type="submit" value="Войти">
         </div>
+        <br/>
+        <a class="btn vk" href="{% url "social:begin" "vk-oauth2" %}"
+           role="button">
+          Войти через
+          {% include 'crm/auth/_image_vk-21x18.html' %}
+        </a>
+        <input type="hidden" name="next" value="{{ next }}">
+      </form>
     </div>
+
+    <footer>
+      © {% now "Y" %} <a href="https://sportadmin.ru">Sportadmin.ru</a>
+      <a href="https://vk.com/sportadm" class="vk_link">
+        {% include 'crm/_image_vk-18x16.html' %}
+      </a>
+      <a class="email_link" href="mailto:info@pomidor-studio.ru">
+        Написать письмо
+      </a>
+    </footer>
+
+  </div>
 {% endblock %}

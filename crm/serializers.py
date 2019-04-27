@@ -20,9 +20,10 @@ class CalendarEventSerializer(serializers.Serializer):
 
     event_colors = [
         '#007bff',
-        '#6610f2',
-        '#6f42c1',
-        '#e83e8c',
+        '#76BD1B',
+        '#EAB701',
+        '#2B8CBB',
+        '#09A57F',
         '#dc3545',
         '#fd7e14',
         '#ffc107',
