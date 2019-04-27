@@ -1,0 +1,242 @@
+@charset "UTF-8";
+/* Цвета */
+/* Шрифты */
+body { font-family: 'Roboto', sans-serif; font-size: 12px; color: #000; height: 100vh; }
+
+a { color: #76818F; }
+
+a:hover { color: #76BD1B; text-decoration: underline; }
+
+#overlay { background: rgba(0, 0, 0, 0.4); position: absolute; z-index: 5; width: 100%; height: 100%; display: none; }
+
+/* Формы, общее */
+.form-control { font-size: 14px; color: #76818F; border: 1px solid #DEE2E6; border-radius: 4px; }
+
+.form-control:focus { outline: inherit; box-shadow: inherit; border: 1px solid #76BD1B; }
+
+.form-group { margin-bottom: 16px; }
+
+.form-group .btn { margin-right: 8px; }
+
+.save_buttons { margin-top: 24px; }
+
+.btn { font-size: 14px; background: #fff; color: #76818F; border: 1px solid #DEE2E6; padding: 10px 20px; }
+
+.btn:hover { background: #EEEEEE; color: #76818F; }
+
+.btn:focus, .btn:active { outline: inherit; box-shadow: inherit; border: 1px solid #76BD1B; }
+
+.btn-primary { background: #76BD1B; border: 1px solid #76BD1B; color: #fff; }
+
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active { background: #5F9914 !important; outline: inherit !important; box-shadow: inherit !important; border: 1px solid #76BD1B !important; color: #fff; }
+
+.btn-primary:active { background: #EAB701 !important; border: 1px solid #EAB701 !important; }
+
+.datepick .btn, .timepick .btn { margin-right: 0; }
+
+.datepick .btn svg, .timepick .btn svg { position: absolute; top: 12px; right: 15px; }
+
+.gj-picker-bootstrap table tr td.selected.gj-cursor-pointer div { background-color: #76BD1B !important; border-color: #76BD1B !important; }
+
+.timepick .form-control { text-align: center; }
+
+.timepick .input-group-append { display: none; }
+
+.gj-picker-bootstrap table tr td.today div { color: #76BD1B !important; }
+
+@media (max-width: 1024px) { .btn { padding: 5px 10px; } }
+
+/* Формы, общее */
+/* Страница */
+.page { position: relative; top: 20px; height: calc(100vh - 20px); overflow-y: scroll; }
+
+.page .bredcams { padding-bottom: 10px; }
+
+.page .bredcams ul, .page .bredcams li { list-style: none; margin: 0; padding: 0; }
+
+.page .bredcams li { float: left; font-size: 18px; padding-right: 15px; line-height: 35px; }
+
+.page .bredcams li a { margin-right: 15px; }
+
+.page .bredcams li svg { position: relative; top: -1px; }
+
+.greyline { width: 100%; height: 1px; background: #EEEEEE; border: none; margin: 10px 0; }
+
+.greylineV { width: 1px; height: 100%; background: #EEEEEE; border: none; margin: 0; }
+
+@media (max-width: 992px) { .page { height: 100vh; overflow-y: unset; } }
+
+/* Страница */
+/* Страница 404 и страница входа */
+.wrapper-404, .wrapper-sing-in { min-height: 100%; text-align: center; padding-bottom: 80px; position: relative; }
+
+.wrapper-404 .logo { margin-bottom: 50px; }
+
+.wrapper-404 .title { font-weight: 100; font-size: 200px; line-height: 1; display: block; }
+
+.wrapper-404 .text { font-weight: 300; font-size: 24px; }
+
+.wrapper-404 .link ul, .wrapper-404 .link li { list-style: none; }
+
+.wrapper-404 .link li:nth-child(2) { border-left: 1px solid #E5E5E5; border-right: 1px solid #E5E5E5; }
+
+@media (max-width: 992px) { .wrapper-404 .logo { margin-bottom: 30px; }
+  .wrapper-404 .title { font-size: 150px; }
+  .wrapper-404 .text { font-size: 20px; } }
+
+.wrapper-sing-in .logo { margin-bottom: 40px; }
+
+.wrapper-sing-in .form_sing-in { width: 268px; font-size: 14px; }
+
+.wrapper-sing-in .form_sing-in .form-group { margin-bottom: 8px; }
+
+.wrapper-sing-in .form_sing-in .form-control { text-align: center; }
+
+.wrapper-sing-in .form_sing-in .btn-primary { margin: 16px 0 8px; }
+
+.wrapper-sing-in .form_sing-in #recall_password { margin-bottom: 50px; display: inline-block; }
+
+.wrapper-sing-in #form_recall { display: none; }
+
+.wrapper-sing-in .vk { color: #6182AB; border: 1px solid #6182AB; }
+
+.wrapper-sing-in .vk svg { position: relative; top: 4px; }
+
+/* Страница 404 и страница входа */
+/* Ссылки - подвал */
+footer { position: absolute; bottom: 24px; width: 100%; text-align: center; }
+
+footer a, footer a:hover { color: #636363; }
+
+footer .vk_link { border-left: 1px solid #E5E5E5; border-right: 1px solid #E5E5E5; padding: 0 8px; margin: 0 8px; }
+
+footer .vk_link:hover { text-decoration: none; }
+
+footer .vk_link svg { position: relative; top: 4px; left: 2px; }
+
+footer .email_link svg { position: relative; top: 2px; }
+
+footer, .bottom { color: #636363; }
+
+/* Ссылки - подвал */
+/* Сайдбар */
+.sidebar { position: relative; padding-right: 0; z-index: 3; }
+
+.sidebar.open { z-index: 10; }
+
+.sidebar .logo { padding: 16px 0 8px; }
+
+.sidebar .sidebar-wrapper { padding-left: 9px; padding-right: 14px; border-right: 1px solid #EEEEEE; min-height: 100vh; width: 100%; }
+
+.sidebar .nav-link { font-size: 16px; padding: 8px 0; font-weight: 300; }
+
+.sidebar .nav-link.active, .sidebar .nav-link.active:hover { background: none; color: #76BD1B !important; font-weight: normal; cursor: pointer; }
+
+.sidebar .bottom { position: absolute; left: 24px; right: 15px; bottom: 24px; text-align: left; }
+
+.sidebar .bottom p { margin-bottom: 0; }
+
+.sidebar .bottom .nav-link { padding: 8px 0 0; }
+
+.sidebar .bottom footer { position: relative; bottom: 0; text-align: left; margin-top: 16px; }
+
+@media (max-width: 992px) { .sidebar { position: absolute; background: #fff; }
+  .sidebar .sidebar-wrapper { display: none; min-height: auto; padding-left: 0; position: relative; top: -10px; }
+  .sidebar .sidebar-wrapper .logo { display: none; }
+  .sidebar .sidebar-wrapper .bottom { position: relative; top: -30px; left: 0; right: 0; bottom: 0; }
+  .sidebar .sidebar-wrapper .nav-link { font-size: 16px; } }
+
+.mobile_sidebar { width: 100%; height: 70px; background: #fff; }
+
+.mobile_sidebar #mobile_logo { padding: 18px 18px 0 0; display: block; float: left; }
+
+.mobile_sidebar .logo_name { display: none; position: relative; top: 22px; }
+
+.mobile_sidebar .bredcams { font-size: 18px; line-height: 40px; padding: 15px 0; }
+
+.mobile_sidebar .bredcams ul, .mobile_sidebar .bredcams li { margin: 0; padding: 0; list-style: none; }
+
+.mobile_sidebar .bredcams li { float: left; border-left: 1px solid #EEEEEE; padding: 0 16px; }
+
+/* Сайдбар */
+/* Календарь занятий */
+.page_with_calendar { top: 16px; }
+
+#calendar { position: relative; height: calc(100vh - 35px); }
+
+#calendar .fc-toolbar { margin-bottom: 15px; }
+
+#calendar .fc-toolbar h2 { font-size: 18px; line-height: 35px; }
+
+#calendar .fc-toolbar h2:before { content: "Тренировки: "; }
+
+#calendar .fc-toolbar .fc-dayGridMonth-button, #calendar .fc-toolbar .fc-timeGridWeek-button, #calendar .fc-toolbar .fc-timeGridDay-button, #calendar .fc-toolbar .fc-today-button, #calendar .fc-toolbar .fc-prev-button, #calendar .fc-toolbar .fc-next-button { background: #fff !important; color: #76818F !important; border: 1px solid #DEE2E6 !important; }
+
+#calendar .fc-toolbar .fc-dayGridMonth-button.active, #calendar .fc-toolbar .fc-timeGridWeek-button.active, #calendar .fc-toolbar .fc-timeGridDay-button.active, #calendar .fc-toolbar .fc-today-button.active, #calendar .fc-toolbar .fc-prev-button.active, #calendar .fc-toolbar .fc-next-button.active { background: #EEEEEE !important; }
+
+#calendar .fc-toolbar .fc-dayGridMonth-button:hover, #calendar .fc-toolbar .fc-timeGridWeek-button:hover, #calendar .fc-toolbar .fc-timeGridDay-button:hover, #calendar .fc-toolbar .fc-today-button:hover, #calendar .fc-toolbar .fc-prev-button:hover, #calendar .fc-toolbar .fc-next-button:hover { cursor: pointer; }
+
+#calendar .fc-toolbar .fc-today-button { margin: 0 18px; }
+
+#calendar .fc-toolbar .fc-prev-button { margin-left: 0; }
+
+#calendar .fc-toolbar .fc-prev-button:before { content: "<"; }
+
+#calendar .fc-toolbar .fc-next-button span:before { content: ">"; }
+
+#calendar .table-bordered thead td { border-bottom-width: 1px; }
+
+#calendar .fc-day-header { font-size: 12px; color: #76818F; padding: 3px; }
+
+#calendar .fc-day-number { color: #76818F; padding: 8px 8px 2px 2px; }
+
+#calendar .fc-day-grid-event { margin: 4px 8px; border: none; }
+
+#calendar .fc-day-grid-event .fc-time { display: none; }
+
+#calendar .fc-time-grid-event { border: none; }
+
+#calendar .fc-content { padding: 2px; }
+
+#calendar .alert-info { background: #eff8e5; }
+
+#calendar .fc-more-cell { text-align: right; }
+
+@media (max-width: 992px) { #calendar { height: calc(100vh - 80px); top: 50px; }
+  #calendar .fc-day-grid-event { margin: 2px 2px; }
+  #calendar .fc-content { font-size: 10px; }
+  #calendar .fc-toolbar { padding-top: 8px; margin-bottom: 10px; }
+  #calendar .fc-toolbar .fc-today-button { margin: 0 0 0 8px; }
+  #calendar .fc-toolbar .fc-prev-button, #calendar .fc-toolbar .fc-next-button, #calendar .fc-toolbar .fc-newCustomButton-button { position: absolute; z-index: 4; top: -45px; }
+  #calendar .fc-toolbar .fc-prev-button { right: 106px; }
+  #calendar .fc-toolbar .fc-next-button { margin-right: 0; right: 70px; }
+  #calendar .fc-toolbar .fc-newCustomButton-button { right: 0; }
+  #calendar .fc-left { display: none; } }
+
+/* Календарь занятий */
+/* Новое занятие */
+.days { padding: 24px 0 0; text-align: center; border-top: 1px solid #EEEEEE; border-bottom: 1px solid #EEEEEE; position: relative; }
+
+.days .day { padding-bottom: 24px; position: relative; }
+
+.days .day .greylineV { position: absolute; top: 0; right: -1px; height: 145px; }
+
+.days .form-check { padding-left: 0; }
+
+.days .form-check .form-check-label { font-size: 14px; margin-bottom: 8px; }
+
+.days .form-check .form-check-input { position: absolute; z-index: 3; left: 50%; margin: 2px 0 0 -6px; opacity: 0; }
+
+.days .form-check .form-check-input-div { height: 16px; width: 16px; border-radius: 2px; background: #DEE2E6; border: 1px solid #DEE2E6; box-sizing: border-box; border-radius: 4px; margin: 0 auto 8px; }
+
+.days .form-check .form-check-input:hover ~ .form-check-input-div { background: #5F9914; border: 1px solid #76BD1B; }
+
+.days .form-check .form-check-input:checked ~ .form-check-input-div { background-color: #76BD1B; }
+
+.days .form-check .form-check-input-div:after { content: ""; position: absolute; display: none; }
+
+.days .form-check .form-check-input:checked ~ .form-check-input-div:after { display: block; }
+
+.days .form-check .form-check-input-div:after { position: absolute; z-index: 2; left: 50%; margin-top: 1px; margin-left: -2px; width: 5px; height: 10px; border: solid white; border-width: 0 2px 2px 0; -webkit-transform: rotate(45deg); -ms-transform: rotate(45deg); transform: rotate(45deg); }
+
+/* Новое занятие */

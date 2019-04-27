@@ -126,11 +126,11 @@ class ApiCalendar(ListAPIView):
     def get_queryset(self):
         first_day = timezone.now().replace(day=1).date()
         start = DateField().to_internal_value(
-            self.request.query_params.get('start')
+            self.request.query_params.get('start').split('T')[0]
         ) or first_day
 
         end = DateField().to_internal_value(
-            self.request.query_params.get('end')
+            self.request.query_params.get('end').split('T')[0]
         ) or (first_day + timedelta(days=31))
 
         events = []

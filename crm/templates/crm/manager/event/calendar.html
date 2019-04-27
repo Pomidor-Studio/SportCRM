@@ -1,45 +1,68 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
 {% load html_helper %}
 
 {% block extrahead %}
-  {% css 'css/fullcalendar.min.css' %}
-  {% js 'js/fullcalendar.min.js' %}
-  {% js 'js/fullcalendar-locale-ru.js' %}
-  <script type="text/javascript">
-    $(function() {
-      $('#calendar').fullCalendar({
+  <!-- Full Calendar -->
+  {% css 'js/fullcalendar/packages/core/main.css' %}
+  {% css 'js/fullcalendar/packages/daygrid/main.css' %}
+  {% css 'js/fullcalendar/packages/daygrid/main.css' %}
+  {% css 'js/fullcalendar/packages/timegrid/main.css' %}
+  {% css 'js/fullcalendar/packages/bootstrap/main.css' %}
+{% endblock %}
+
+{% block content %}
+  <div class="page page_with_calendar col-md-12 col-lg-9 col-xl-10">
+    <div id='calendar-container'>
+      <div id='calendar'></div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block extrajs %}
+  <!-- Full Calendar -->
+  {% js 'js/fullcalendar/packages/core/main.js' %}
+  {% js 'js/fullcalendar/packages/daygrid/main.js' %}
+  {% js 'js/fullcalendar/packages/timegrid/main.js' %}
+  {% js 'js/fullcalendar/packages/moment/main.js' %}
+  {% js 'js/fullcalendar/packages/bootstrap/main.js' %}
+  {% js 'js/fullcalendar/packages/core/locales/ru.js' %}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var calendarEl = document.getElementById('calendar');
+
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        plugins: ['dayGrid', 'timeGrid', 'moment', 'bootstrap'],
+        themeSystem: 'bootstrap',
         locale: 'ru',
-        height: 'auto',
-        aspectRatio: 3,
-        themeSystem: 'bootstrap4',
-        timeFormat: 'H:mm',
-        displayEventTime: true,
-        displayEventEnd: true,
+        height: 'parent',
+        customButtons: {
+          newCustomButton: {
+            text: 'Новое',
+            click: function () {
+              open("{% url 'crm:manager:event-class:new' %}", '_self')
+            }
+          }
+        },
+        header: {
+          left: 'title',
+          center: '',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay today prev next newCustomButton'
+        },
+        defaultView: 'dayGridMonth',
+        defaultDate: '2019-04-22',
+        navLinks: true, // can click day/week names to navigate views
+        editable: true,
+        eventLimit: true, // allow "more" link when too many events
         eventSources: [
           {
             url: '{% url 'api-v1:manager:event:calendar' %}',
           }
         ]
       });
+      calendar.render();
     });
   </script>
+  <!-- Full Calendar -->
 {% endblock %}
-
-{% block content %}
-
-  <div class="ml-4 mt-4 mr-4">
-    <div class="row border-bottom mb-2">
-      <div class="col">
-        <legend>Тренировки</legend>
-      </div>
-      <div class="col d-flex justify-content-end">
-        <div>
-          <a class="btn btn-outline-info" href="{% url 'crm:manager:event-class:list' %}">Настройки</a>
-        </div>
-      </div>
-    </div>
-    <div id="calendar"></div>
-  </div>
-
-{% endblock content %}

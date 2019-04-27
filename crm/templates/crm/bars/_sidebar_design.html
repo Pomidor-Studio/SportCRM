@@ -1,0 +1,112 @@
+{% load html_helper %}
+
+<div class="sidebar col-md-5 col-lg-3 col-xl-2">
+  <!- For mobile -!>
+  <div class="mobile_sidebar d-md-block d-lg-none">
+    <a id="mobile_logo" class="logo">
+      {% include 'crm/bars/_image_mobile_logo-33x34.html' %}
+    </a>
+    <span class="logo_name">
+    {% include 'crm/bars/_image_mobile_logo_name-97x28.html' %}
+  </span>
+    <div class="bredcams">
+      <ul>
+        <li>
+          <a href="/">
+            <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </li>
+        <li>
+          Новая тренировка
+        </li>
+      </ul>
+    </div>
+  </div>
+  <!- Sidebar -!>
+  <div class="sidebar-wrapper">
+    <div class="logo">
+      {% include 'crm/bars/_image_logo-37x37-110x31.html' %}
+    </div>
+    <div class="greyline"></div>
+    <div class="nav flex-column">
+      <div class="top">
+        <a class="nav-link active"
+           href="{% url 'crm:manager:event:calendar' %}">
+          Тренировки
+        </a>
+        <a class="nav-link"
+           href="{% url 'crm:manager:client:list' %}">
+          Ученики
+        </a>
+        <div class="greyline"></div>
+        <a class="nav-link"
+           href="{% url 'crm:manager:coach:list' %}">
+          Тренеры
+        </a>
+        {% ifhasperm 'manager' user %}
+          <a class="nav-link"
+             href="{% url 'crm:manager:manager:list' %}">
+            Менеджеры
+          </a>
+        {% endifhasperm %}
+        {% ifhasperm 'location' user %}
+          <a class="nav-link"
+             href="{% url 'crm:manager:locations:list' %}">
+            Места проведения
+          </a>
+        {% endifhasperm %}
+        {% ifhasperm 'subscription' user %}
+          <a class="nav-link"
+             href="{% url 'crm:manager:subscription:list' %}">
+            Абонементы
+          </a>
+        {% endifhasperm %}
+        <div class="greyline"></div>
+        {% ifhasperm 'report.list' user %}
+          <a class="nav-link"
+             href="{% url 'crm:manager:reports' %}">
+            Отчет по тренировкам
+          </a>
+        {% endifhasperm %}
+      </div>
+      <div class="bottom">
+        <hr class="line line-table">
+        <p>{{ user.get_full_name }} ({{ user.company }})</p>
+        {% if user.is_manager %}
+          {% if company.active_to %}
+            <p>Подписка до {{ company.active_to|date:"d.m.Y" }}</p>
+          {% else %}
+            (активна без ограничений)
+          {% endif %}
+        {% endif %}
+        {% ifhasperm 'company.edit' user %}
+          <a class="nav-link"
+             href="{% url 'crm:manager:company' %}">
+            Моя компания
+          </a>
+        {% endifhasperm %}
+        <a class="nav-link"
+           href="{% url 'crm:accounts:profile' %}">
+          Настройки профиля
+        </a>
+        <a class="nav-link"
+           href="{% url "crm:accounts:logout" %}">
+          Выход
+        </a>
+        <footer>
+          © {% now "Y" %} <a href="https://sportadmin.ru">Sportadmin.ru</a>
+          <a href="https://vk.com/sportadm" class="vk_link">
+            {% include 'crm/_image_vk-18x16.html' %}
+          </a>
+          <a class="email_link" href="mailto:info@pomidor-studio.ru">
+            {% include 'crm/bars/_image_email-14x12.html' %}
+          </a>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>
