@@ -778,7 +778,7 @@ class Client(CompanyObjectModel):
         with transaction.atomic():
             if not event.id:
                 event.save()
-            Attendance.objects.create(
+            Attendance.objects.update_or_create(
                 event=event,
                 client=self,
                 signed_up=True
