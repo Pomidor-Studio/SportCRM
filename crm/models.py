@@ -727,12 +727,18 @@ class Client(CompanyObjectModel):
         return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
 
     def last_sub(self, with_deleted=False):
-        qs = self.clientsubscriptions_set
+        qs = self.clientsubscriptions_set.exclude_onetime()
 
         if not with_deleted:
             qs = qs.filter(subscription__deleted__isnull=True)
 
         return qs.order_by('-purchase_date').first()
+
+    def last_attendance(self):
+        return self.attendance_set.filter(marked=True).order_by('-event__date').first()
+
+    def get_active_sub(self):
+        return self.clientsubscriptions_set.active_subscriptions()
 
     def __str__(self):
         return self.name
@@ -866,6 +872,10 @@ class ClientSubscriptionsManager(
 
         for subscription in self.get_queryset().filter(id__in=subs_ids):
             subscription.revoke_extending(activated_event)
+
+    def exclude_onetime(self):
+        return self.get_queryset().filter(subscription__one_time=False)
+
 
 
 class ClientAttendanceExists(Exception):

@@ -1,186 +1,203 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
-{% load bootstrap4 html_helper humanize %}
+{% load bootstrap4 html_helper humanize static %}
 
-{% block nav %}
-{% endblock nav %}
+{#{% block nav %}#}
+{#{% endblock nav %}#}
+
+{# <script language="javascript">#}
+{#    $(function () {#}
+{#      $("#clear-search").click(function (e) {#}
+{#        $('#' + $(this).data('search-id')).val('');#}
+{#        $(this).parents('form').submit();#}
+{#      });#}
+{#    });#}
+{#  </script>#}
 
 {% block content %}
+  <div class="page students_page col-md-12 col-lg-9 col-xl-10">
+    {% ifhasperm 'client.add' user %}
+      <a class="btn btn-primary btn-new" href="{% url 'crm:manager:client:new' %}">Новый</a>
+    {% endifhasperm %}
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          Ученики
+        </li>
+      </ul>
+    </div>
 
-  <script language="javascript">
-    $(function () {
-      $("#clear-search").click(function (e) {
-        $('#' + $(this).data('search-id')).val('');
-        $(this).parents('form').submit();
-      });
-    });
-  </script>
+    <div class="greyline"></div>
 
-
-  <div class="ml-4 mt-4 mr-4 container-fluid">
-    <legend class="border-bottom mb-2">Ученики</legend>
-    <div style="background-color: #FFFFFF;" class="sticky-top">
-      <div class="row justify-content-between">
-        <div class="col-md-6">
-          {% ifhasperm 'client.add' user %}
-            <a
-              name="add-new"
-              href="{% url 'crm:manager:client:new' %}"
-              class="btn btn-sm btn-info"
-            >
-              Добавить ученика
-            </a>
-          {% endifhasperm %}
-        </div>
-        <div class="col-md-4">
-          <div class="float-right">
-          <form
-            class="form-inline"
-            action="{% url 'crm:manager:client:list' %}" method="GET"
-          >
-            <div class="input-group">
-              <div class="input-group-prepend bg-white border-right-0">
-                <span class="input-group-text bg-white"><i class="fas fa-search"  aria-hidden="true"></i></span>
-              </div>
-              <input
-                id="{{ filter.form.name.id_for_label }}"
-                name="{{ filter.form.name.name }}"
-                placeholder="Найти"
-                value="{{ filter.form.name.data|default_if_none:'' }}"
-                type="search"
-                class="form-control border-left-0"
-              >
+    <div class="row">
+      <div class="col-12">
+        <div class="row">
+          <div class="col-12 col-md-8 d-none d-md-block">
+            <ul class="nav nav-pills row no-gutters" id="pills-tab" role="tablist">
+              <li class="nav-item col-auto text-center text-md-left">
+                <a class="nav-link {% if  not filter.form.debtor.data %}active{% endif %}" href="{% url 'crm:manager:client:list' %}"
+                   role="tab"
+                   aria-controls="pills-all" aria-selected="true">Все</a>
+              </li>
+              <li class="nav-item col-auto text-center text-md-left">
+                <a class="nav-link {% if filter.form.debtor.data %}active{% endif %}"
+                   href="{% url 'crm:manager:client:list' %}?debtor=True" role="tab"
+                   aria-controls="pills-debtor" aria-selected="false">Должники</a>
+              </li>
+              {#              <li class="nav-item col-auto text-center text-md-left">#}
+              {#                <a class="nav-link" id="pills-long-tab" data-toggle="pill" href="#pills-long" role="tab"#}
+              {#                   aria-controls="pills-long" aria-selected="false">Давно не ходили</a>#}
+              {#              </li>#}
+            </ul>
+          </div>
+          <div class="col-12 col-md-4">
+            <div class="form-group live_search">
+              <span class="icon"></span>
+              <form action="{% url 'crm:manager:client:list' %}" method="GET">
+                <input type="text"
+                       name={{ filter.form.name.name }} value="{{ filter.form.name.data|default_if_none:'' }}"
+                       class="form-control" placeholder="Найти">
+                <input type="hidden"
+                       name={{ filter.form.debtor.name }} value="{{ filter.form.debtor.data|default_if_none:'' }}">
+              </form>
             </div>
-
-            <input
-              type="submit"
-              value="Поиск" class=" ml-2 btn btn-outline-secondary"
-            />
-          </form>
-            </div>
+          </div>
         </div>
+
+        <div class="greyline"></div>
+
+        <div class="tab-content" id="pills-tabContent">
+          <div class="tab-pane fade show active" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab">
+            <table class="table table-hover">
+              <thead class="d-none d-md-block">
+              <tr>
+                <th></th>
+                <th>
+                  ФИО
+                </th>
+                <th>
+                  Абонемент
+                </th>
+                <th>
+                  Дейсвует до
+                </th>
+                <th>
+                  Посл. посещение
+                </th>
+                <th>
+                  Баланс
+                </th>
+                <th width="1"></th>
+                <th width="1"></th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for client in clients %}
+                <tr {% if client.balance < 0 %}class="minus_balance"{% endif %}>
+                  <td class="td_photo">
+                    {% if client.vk_user_id %}
+                      {% if vk_group_id %}
+                        <a href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}">
+                          <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+                        </a>
+                      {% else %}
+                        <a href="https://vk.com/?sel={{ client.vk_user_id }}">
+                          <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+                        </a>
+                      {% endif %}
+                    {% else %}
+                      <a href="#"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
+                    {% endif %}
+                  </td>
+                  <td>
+                    <a href="{% url 'crm:manager:client:detail' client.id %}" class="fio_name">{{ client.name }}</a>
+                    <div class="d-none d-md-block">
+                      <small>{{ client.phone_number }}</small>
+                    </div>
+                  </td>
+                  <td class="d-none d-md-block">
+                    {% if not client.last_sub %}
+                      Без абонемента</br>
+                      <a class="sell" href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+                    {% else %}
+                      {{ client.last_sub.subscription }}
+                    {% endif %}
+                  </td>
+                  <td class="d-none d-md-block">
+                    {{ client.last_sub.end_date|date:'d.m.Y' }}
+                  </td>
+                  <td class="d-none d-md-block">
+                    {% if client.last_attendance %}
+                      {{ client.last_attendance.event.date|date:'d.m.Y' }}
+                    {% endif %}
+                  </td>
+                  <td class="d-none d-md-block">
+                    <span
+                      class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">{{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽</span>
+                  </td>
+                  <td>
+                    <a class="btn btn-icon btn-pay"
+                       href="{% url 'crm:manager:client:balance:new' client.id %}"><span></span><abbr>Пополнить</abbr></a>
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <a class="btn btn-icon btn-more" data-toggle="dropdown" aria-haspopup="true"
+                         aria-expanded="false"><span></span></a>
+                      <div class="dropdown-menu dropdown-menu-right">
+                        {% if has_active_event_class %}
+                          <a class="dropdown-item" href="{% url 'crm:manager:client:new-subscription' client.id %}"
+                             data-client-id="92">Продать абонемент</a>
+                        {% endif %}
+                        <a class="dropdown-item" href="{% url 'crm:manager:client:balance:new' client.id %}"
+                           data-client-id="92">Пополнить баланс</a>
+                        <a class="dropdown-item" href="{% url 'crm:manager:client:detail' client.id %}"
+                           data-client-id="92">Перейти к карточке ученика</a>
+                        {% if client.vk_user_id or client.phone_number %}
+                          <div class="greyline"></div>
+                          {% if client.vk_user_id %}
+                            {% if vk_group_id %}
+                              <a class="dropdown-item"
+                                 href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
+                                 data-client-id="92">
+                                Написать в Вконтакте
+                              </a>
+                            {% else %}
+                              <a class="dropdown-item" href="https://vk.com/?sel={{ client.vk_user_id }}"
+                                 data-client-id="92">
+                                Написать в Вконтакте
+                              </a>
+                            {% endif %}
+                          {% endif %}
+                          {% if client.phone_number %}
+                            <a class="dropdown-item" href="tel:{{ client.phone_number }}"
+                               data-client-id="92">Позвонить</a>
+                          {% endif %}
+                        {% endif %}
+                        {#                      <div class="greyline"></div>#}
+                        {#                      <a class="dropdown-item" href="#" data-client-id="92">Переместить в архив</a>#}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+
+              </tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
-    {% if clients %}
-      <table class="table table-sm table-striped table-borderless">
-        <thead>
-        <tr class="d-flex">
-          <th scope="col" class="col-4">Имя</th>
-          <th scope="col" class="col-2">Общение</th>
-          <th scope="col" class="col-4">Абонемент</th>
-          <th scope="col" class="col-2">Баланс</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for client in clients %}
-          <tr class="d-flex">
-            <td class="col-4">
-              {% ifhasperm 'client' user %}
-                <div class="row ml-1">
-                {% if client.vk_user_id %}
-                  <div class="float-left">
-                    <img src="{% vk_small_avatar client.vk_user_id %}">
-                  </div>
-                {% endif %}
-                <a href="{% url 'crm:manager:client:detail' client.id %}">
-                  <div class="font-weight-bold">{{ client.name }}</div>
-                  <div>{{ client.phone_number }}</div>
-                  <div>{{ client.email_address }}</div>
-                </a>
-              {% endifhasperm %}
-              </div>
-            </td>
-            <td class="col-2">
-              <div class="row">
-                {% if client.phone_number %}
-                  <a
-                    class="btn btn-sm btn-outline-info"
-                    href="tel:{{ client.phone_number }}"
-                  >
-                    <i class="fas fa-phone"></i>
-                  </a>
-                {% endif %}
-                {% if client.vk_user_id %}
-                  {% if vk_group_id %}
-                    <a
-                      class="btn btn-sm btn-outline-info" target="_blank"
-                      href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
-                    >
-                      <i class="fab fa-vk"></i>
-                    </a>
-                    {% else %}
-                    <a
-                      class="btn btn-sm btn-outline-info" target="_blank"
-                      href="https://vk.com/im?sel={{ client.vk_user_id }}"
-                    >
-                      <i class="fab fa-vk"></i>
-                    </a>
-                  {% endif %}
-                {% endif %}
-                {% if client.email_address %}
-                  <a
-                    class="btn btn-sm btn-outline-info" target="_blank"
-                    href="mailto:{{ client.email_address }}"
-                  >
-                    <i class="fas fa-envelope"></i>
-                  </a>
-                {% endif %}
-              </div>
-            </td>
-            <td class="col-4">
-              {% with last_sub=client.last_sub %}
-                {% if last_sub %}
-                  <div class="font-weight-bold">
-                    {% if last_sub.is_expiring %}
-                      <i
-                        title="Абонемент скоро заканчивается"
-                        class="fas fa-exclamation-circle"
-                      ></i>
-                    {% endif %}
-                    {{ last_sub.subscription.name }}
-                  </div>
-                  <div>Действует
-                    до {{ last_sub.end_date|date:'d N Y' }}</div>
-                  <div>Осталось {{ last_sub.visits_left }} посещений</div>
-                  {% ifhasperm 'is_manager' user %}
-                    <a
-                      class="btn btn-sm btn-outline-info"
-                      href="{% url 'crm:manager:client:subscription:extend' last_sub.id %}"
-                    >Продлить</a>
-                  {% endifhasperm %}
-                {% else %}
-                  {% if has_active_event_class %}
-                    <a
-                      class="btn btn-sm btn-outline-info"
-                      href="{% url 'crm:manager:client:new-subscription' client.id %}"
-                    >
-                      Продать абонемент
-                    </a>
-                  {% endif %}
-                {% endif %}
-            {% endwith %}
-            </td>
-            <td class="col-2">
-              <div class="row">
-                {{ client.balance|floatformat:"-2"|intcomma }} ₽
-              </div>
-              <div class="row">
-                <a
-                href="{% url 'crm:manager:client:balance:new' client.id %}"
-                class="btn btn-sm btn-outline-info"
-              >Пополнить</a>
-              </div>
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+    {#    <div id="show_archive" class="form-check">#}
+    {#      <div>#}
+    {#        <label class="form-check-label" for="archive">#}
+    {#          <input id="archive" type="checkbox" class="form-check-input">#}
+    {#          <div class="form-check-input-div"></div>#}
+    {#          Показать архивные#}
+    {#        </label>#}
+    {#      </div>#}
+    {#    </div>#}
 
-      {% bootstrap_pagination page_obj extra=filter.data.urlencode %}
-    {% else %}
-        <p>Ваш список Учеников пуст</p>
-    {% endif %}
   </div>
-
 {% endblock content %}
