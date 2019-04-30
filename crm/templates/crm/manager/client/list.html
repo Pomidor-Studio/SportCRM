@@ -2,18 +2,6 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
-{#{% block nav %}#}
-{#{% endblock nav %}#}
-
-{# <script language="javascript">#}
-{#    $(function () {#}
-{#      $("#clear-search").click(function (e) {#}
-{#        $('#' + $(this).data('search-id')).val('');#}
-{#        $(this).parents('form').submit();#}
-{#      });#}
-{#    });#}
-{#  </script>#}
-
 {% block content %}
   <div class="page students_page col-md-12 col-lg-9 col-xl-10">
     {% ifhasperm 'client.add' user %}
@@ -44,10 +32,6 @@
                    href="{% url 'crm:manager:client:list' %}?debtor=True" role="tab"
                    aria-controls="pills-debtor" aria-selected="false">Должники</a>
               </li>
-              {#              <li class="nav-item col-auto text-center text-md-left">#}
-              {#                <a class="nav-link" id="pills-long-tab" data-toggle="pill" href="#pills-long" role="tab"#}
-              {#                   aria-controls="pills-long" aria-selected="false">Давно не ходили</a>#}
-              {#              </li>#}
             </ul>
           </div>
           <div class="col-12 col-md-4">
@@ -110,9 +94,20 @@
                     {% endif %}
                   </td>
                   <td>
+                    <div class="balance d-md-none">
+                      <span class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">{{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽</span>
+                    </div>
                     <a href="{% url 'crm:manager:client:detail' client.id %}" class="fio_name">{{ client.name }}</a>
                     <div class="d-none d-md-block">
                       <small>{{ client.phone_number }}</small>
+                    </div>
+                    <div class="d-md-none">
+                      {% if not client.last_sub %}
+                       <small>Без абонемента </small>
+                      {% else %}
+                          <small>{{ client.last_sub.subscription }}</small></br>
+                         <small>Осталось посещений: {{client.last_sub.visits_left }}</small>
+                      {% endif %}
                     </div>
                   </td>
                   <td class="d-none d-md-block">
@@ -173,8 +168,6 @@
                                data-client-id="92">Позвонить</a>
                           {% endif %}
                         {% endif %}
-                        {#                      <div class="greyline"></div>#}
-                        {#                      <a class="dropdown-item" href="#" data-client-id="92">Переместить в архив</a>#}
                       </div>
                     </div>
                   </td>
@@ -188,16 +181,5 @@
 
       </div>
     </div>
-
-    {#    <div id="show_archive" class="form-check">#}
-    {#      <div>#}
-    {#        <label class="form-check-label" for="archive">#}
-    {#          <input id="archive" type="checkbox" class="form-check-input">#}
-    {#          <div class="form-check-input-div"></div>#}
-    {#          Показать архивные#}
-    {#        </label>#}
-    {#      </div>#}
-    {#    </div>#}
-
   </div>
 {% endblock content %}
