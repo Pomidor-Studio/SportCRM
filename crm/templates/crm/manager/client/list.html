@@ -2,18 +2,6 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
-{#{% block nav %}#}
-{#{% endblock nav %}#}
-
-{# <script language="javascript">#}
-{#    $(function () {#}
-{#      $("#clear-search").click(function (e) {#}
-{#        $('#' + $(this).data('search-id')).val('');#}
-{#        $(this).parents('form').submit();#}
-{#      });#}
-{#    });#}
-{#  </script>#}
-
 {% block content %}
   <div class="page students_page col-md-12 col-lg-9 col-xl-10">
     {% ifhasperm 'client.add' user %}
@@ -44,10 +32,6 @@
                    href="{% url 'crm:manager:client:list' %}?debtor=True" role="tab"
                    aria-controls="pills-debtor" aria-selected="false">Должники</a>
               </li>
-              {#              <li class="nav-item col-auto text-center text-md-left">#}
-              {#                <a class="nav-link" id="pills-long-tab" data-toggle="pill" href="#pills-long" role="tab"#}
-              {#                   aria-controls="pills-long" aria-selected="false">Давно не ходили</a>#}
-              {#              </li>#}
             </ul>
           </div>
           <div class="col-12 col-md-4">
@@ -173,8 +157,6 @@
                                data-client-id="92">Позвонить</a>
                           {% endif %}
                         {% endif %}
-                        {#                      <div class="greyline"></div>#}
-                        {#                      <a class="dropdown-item" href="#" data-client-id="92">Переместить в архив</a>#}
                       </div>
                     </div>
                   </td>
@@ -188,16 +170,5 @@
 
       </div>
     </div>
-
-    {#    <div id="show_archive" class="form-check">#}
-    {#      <div>#}
-    {#        <label class="form-check-label" for="archive">#}
-    {#          <input id="archive" type="checkbox" class="form-check-input">#}
-    {#          <div class="form-check-input-div"></div>#}
-    {#          Показать архивные#}
-    {#        </label>#}
-    {#      </div>#}
-    {#    </div>#}
-
   </div>
 {% endblock content %}
