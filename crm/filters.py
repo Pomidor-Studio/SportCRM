@@ -17,10 +17,14 @@ class ClientFilter(django_filters.FilterSet):
         label='Искать по ФИО',
         lookup_expr='icontains'
     )
+    debtor = django_filters.BooleanFilter(field_name='debtor', method='filter_debtor')
+
+    def filter_debtor(self, queryset, name, value):
+        return queryset.filter(balance__lt=0)
 
     class Meta:
         model = models.Client
-        fields = ('name',)
+        fields = ('name', 'debtor',)
 
 
 class EventReportFilter(forms.Form):
