@@ -19,6 +19,10 @@
   </div>
 {% endblock content %}
 
+{% block sidbar %}
+        {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False%}
+{% endblock %}
+
 {% block extrajs %}
   <!-- Full Calendar -->
   {% js 'js/fullcalendar/packages/core/main.js' %}

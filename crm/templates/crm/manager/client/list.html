@@ -2,6 +2,10 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
+{% block sidbar %}
+        {% include 'crm/bars/_sidebar_design.html'  with name="Ученики" back_link=False%}
+{% endblock %}
+
 {% block content %}
   <div class="page students_page col-md-12 col-lg-9 col-xl-10">
     {% ifhasperm 'client.add' user %}

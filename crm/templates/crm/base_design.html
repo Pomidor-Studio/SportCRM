@@ -5,7 +5,9 @@
 		<div class="container-fluid">
       <div class="row">
         <!--Sidebar-->
-        {% include 'crm/bars/_sidebar_design.html' %}
+        {% block sidbar %}
+        {% include 'crm/bars/_sidebar_design.html' with name="Новая тренировка" back_link=True%}
+        {% endblock %}
         <!--Content-->
         {% block content %}{% endblock %}
       </div>
