@@ -6,8 +6,8 @@
   <!-- Full Calendar -->
   {% css 'js/fullcalendar/packages/core/main.css' %}
   {% css 'js/fullcalendar/packages/daygrid/main.css' %}
-  {% css 'js/fullcalendar/packages/daygrid/main.css' %}
   {% css 'js/fullcalendar/packages/timegrid/main.css' %}
+  {% css 'js/fullcalendar/packages/list/main.css' %}
   {% css 'js/fullcalendar/packages/bootstrap/main.css' %}
 {% endblock %}
 
@@ -20,45 +20,70 @@
 {% endblock content %}
 
 {% block sidbar %}
-        {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False%}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False %}
 {% endblock %}
 
 {% block extrajs %}
   <!-- Full Calendar -->
   {% js 'js/fullcalendar/packages/core/main.js' %}
   {% js 'js/fullcalendar/packages/daygrid/main.js' %}
-  {% js 'js/fullcalendar/packages/timegrid/main.js' %}
-  {% js 'js/fullcalendar/packages/moment/main.js' %}
+  {% js 'js/fullcalendar/packages/list/main.js' %}
   {% js 'js/fullcalendar/packages/bootstrap/main.js' %}
   {% js 'js/fullcalendar/packages/core/locales/ru.js' %}
+  {% js 'js/fullcalendar/packages/moment/main.min.js' %}
+
+  {% js 'js/enquire.min.js' %}
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var calendarEl = document.getElementById('calendar');
 
       var calendar = new FullCalendar.Calendar(calendarEl, {
-        plugins: ['dayGrid', 'timeGrid', 'moment', 'bootstrap'],
+        plugins: ['dayGrid', 'bootstrap', 'list'],
         themeSystem: 'bootstrap',
         locale: 'ru',
         height: 'parent',
         customButtons: {
-          newCustomButton: {
-            text: 'Новое',
+          new_workout: {
+            text: 'Новая',
             click: function () {
               open("{% url 'crm:manager:event-class:new' %}", '_self')
+            }
+          },
+          list_month: {
+            text: 'Месяц',
+            click: function () {
+              calendar.changeView('listMonth');
+              $('.fc-list_month-button').addClass('active')
+            }
+          },
+          list_week: {
+            text: 'Неделя',
+            click: function () {
+              calendar.changeView('listWeek');
+              $('.fc-list_week-button').addClass('active')
             }
           }
         },
         header: {
           left: 'title',
           center: '',
-          right: 'dayGridMonth,timeGridWeek,timeGridDay today prev next newCustomButton'
+          right: 'list_month,dayGridMonth,dayGridWeek,list_week,listDay prev next new_workout'
         },
+
         defaultView: 'dayGridMonth',
-        defaultDate: '2019-04-22',
-        navLinks: true, // can click day/week names to navigate views
+        eventLimit: 4,
+        views: {
+          dayGridWeek: {
+            eventLimit: false
+          }
+        },
+        showNonCurrentDates: true,
+        navLinks: true,
         editable: true,
-        eventLimit: true, // allow "more" link when too many events
+        displayEventTime: true,
+        displayEventEnd: true,
+        timeFormat: 'H:mm',
         eventSources: [
           {
             url: '{% url 'api-v1:manager:event:calendar' %}',
@@ -66,6 +91,19 @@
         ]
       });
       calendar.render();
+
+      enquire.register("screen and (max-width: 720px)", {
+
+        match: function () {
+          calendar.changeView('listMonth');
+          $('.fc-list_month-button').addClass('active')
+        },
+
+        unmatch: function () {
+          calendar.changeView('dayGridMonth');
+        }
+
+      });
     });
   </script>
   <!-- Full Calendar -->
