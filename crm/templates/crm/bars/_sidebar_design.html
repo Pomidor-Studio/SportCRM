@@ -9,8 +9,10 @@
     <span class="logo_name">
     {% include 'crm/bars/_image_mobile_logo_name-97x28.html' %}
   </span>
+
     <div class="bredcams">
       <ul>
+        {% if back_link %}
         <li>
           <a href="/">
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
@@ -20,8 +22,9 @@
             </svg>
           </a>
         </li>
+        {% endif %}
         <li>
-          Новая тренировка
+          {{ name|default_if_none:'Новая тренировка'}}
         </li>
       </ul>
     </div>
