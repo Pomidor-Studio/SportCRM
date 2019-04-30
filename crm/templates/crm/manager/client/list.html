@@ -94,9 +94,20 @@
                     {% endif %}
                   </td>
                   <td>
+                    <div class="balance d-md-none">
+                      <span class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">{{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽</span>
+                    </div>
                     <a href="{% url 'crm:manager:client:detail' client.id %}" class="fio_name">{{ client.name }}</a>
                     <div class="d-none d-md-block">
                       <small>{{ client.phone_number }}</small>
+                    </div>
+                    <div class="d-md-none">
+                      {% if not client.last_sub %}
+                       <small>Без абонемента </small>
+                      {% else %}
+                          <small>{{ client.last_sub.subscription }}</small></br>
+                         <small>Осталось посещений: {{client.last_sub.visits_left }}</small>
+                      {% endif %}
                     </div>
                   </td>
                   <td class="d-none d-md-block">
