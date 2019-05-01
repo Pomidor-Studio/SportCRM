@@ -22,6 +22,9 @@ class ClientFilter(django_filters.FilterSet):
     def filter_debtor(self, queryset, name, value):
         return queryset.filter(balance__lt=0)
 
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        super().__init__(data, queryset, request=request, prefix=prefix)
+
     class Meta:
         model = models.Client
         fields = ('name', 'debtor',)
@@ -120,18 +123,5 @@ class SubscriptionsTypeFilterSet(ArchivableFilterSet):
         fields = '__all__'
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
-        new_data = data.copy() if data is not None else QueryDict(mutable=True)
-
-        # filter param is either missing or empty
-        with_archive = forms.BooleanField().to_python(
-            new_data.get('with_archive')
-        )
-        new_data['with_archive'] = with_archive
-
-        super().__init__(new_data, queryset, request=request, prefix=prefix)
-
-        self.queryset = (
-            self._meta.model.all_objects.filter(one_time=False)
-            if with_archive else
-            self._meta.model.objects.filter(one_time=False)
-        )
+        super().__init__(data, queryset, request=request, prefix=prefix)
+        self.queryset = self.queryset.filter(one_time=False)

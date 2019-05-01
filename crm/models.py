@@ -88,6 +88,7 @@ class ScrmSafeDeleteModel(SafeDeleteModel):
     all_objects = ScrmSafeDeleteAllManager()
 
     deleted_objects = ScrmSafeDeleteDeletedManager()
+
     class Meta:
         abstract = True
 
@@ -680,7 +681,7 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         return reverse('crm:manager:subscription:list')
 
 
-class ClientManager(TenantManagerMixin, models.Manager):
+class ClientManager(ScrmSafeDeleteManager):
 
     def with_active_subscription_to_event(self, event: Event) -> TenantQuerySet:
         cs = (
@@ -694,7 +695,7 @@ class ClientManager(TenantManagerMixin, models.Manager):
 
 
 @reversion.register()
-class Client(CompanyObjectModel):
+class Client(ScrmSafeDeleteModel, CompanyObjectModel):
     """Клиент-Ученик. Контактные данные. Баланс"""
     name = models.CharField("Имя", max_length=100)
     address = models.CharField("Адрес", max_length=255, blank=True)
@@ -875,7 +876,6 @@ class ClientSubscriptionsManager(
 
     def exclude_onetime(self):
         return self.get_queryset().filter(subscription__one_time=False)
-
 
 
 class ClientAttendanceExists(Exception):

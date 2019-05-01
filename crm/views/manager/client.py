@@ -38,17 +38,18 @@ from crm.templatetags.html_helper import (
     get_vk_user_ids, try_parse_date,
 )
 from crm.views.manager.event_class import EventByDateMixin
-from crm.views.mixin import CreateAndAddView
+from crm.views.mixin import CreateAndAddView, UnDeleteView
 from gcp.tasks import enqueue
 
 
 class List(PermissionRequiredMixin, FilterView):
-    model = Client
+    queryset = Client.all_objects.all()
     filterset_class = ClientFilter
     template_name = 'crm/manager/client/list.html'
     context_object_name = 'clients'
-    paginate_by = 25
+    paginate_by = 1000
     permission_required = 'client'
+    ordering = ['-deleted', 'name']
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -137,28 +138,12 @@ class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     success_url = reverse_lazy('crm:manager:client:list')
     permission_required = 'client.delete'
 
-    def delete(self, request, *args, **kwargs):
-        try:
-            return super().delete(request, *args, **kwargs)
-        except ProtectedError as exc:
-            msg = (
-                f'Невозможно удалить клиента {self.object}, '
-                f'так как у него есть'
-            )
-            exc_str = str(exc)
-            possible_errors = []
-            if 'Attendance' in exc_str:
-                possible_errors.append('посещения занятий')
-            if 'ClientSubscriptions' in exc_str:
-                possible_errors.append('активные абонементы')
-            if 'ClientBalanceChangeHistory' in exc_str:
-                possible_errors.append('изменения личного баланса')
-            errors = 'и '.join(possible_errors)
 
-            messages.error(self.request, f'{msg} {errors}')
-            return HttpResponseRedirect(reverse(
-                'crm:manager:client:detail', kwargs={'pk': self.object.id}
-            ))
+class UnDelete(PermissionRequiredMixin, RevisionMixin, UnDeleteView):
+    model = Client
+    success_url = reverse_lazy('crm:manager:client:list')
+    template_name = 'crm/manager/client/confirm_undelete.html'
+    permission_required = 'client.undelete'
 
 
 class Detail(PermissionRequiredMixin, DetailView):
