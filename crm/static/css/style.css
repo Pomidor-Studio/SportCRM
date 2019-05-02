@@ -360,9 +360,6 @@ footer, .bottom { color: #636363; }
 
 .fc-list-table td { height: 20px; }
 
-@media (max-width: 374px) { .fc-prev-button, .fc-next-button { position: relative !important; top: 0 !important; right: 0 !important; margin-left: 8px !important; }
-  .fc-prev-button { margin-left: 13px !important; } }
-
 @media (max-width: 767px) { .fc-list_month-button, .fc-list_week-button { display: block !important; }
   .fc-dayGridMonth-button, .fc-dayGridWeek-button { display: none !important; } }
 

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import django_filters
 from dateutil.relativedelta import relativedelta
@@ -18,9 +18,22 @@ class ClientFilter(django_filters.FilterSet):
         lookup_expr='icontains'
     )
     debtor = django_filters.BooleanFilter(field_name='debtor', method='filter_debtor')
+    long_time_not_go = django_filters.BooleanFilter(field_name='long_time_not_go', method='filter_long_time_not_go')
 
     def filter_debtor(self, queryset, name, value):
         return queryset.filter(balance__lt=0)
+
+    def filter_long_time_not_go(self, queryset, name, value):
+        long_time_not_go_ids = []
+        month_ago = date.today() - relativedelta(months=1)
+
+        for client in queryset.filter(
+            clientsubscriptions__end_date__lt=month_ago
+        ):
+            if client.last_sub().end_date < month_ago:
+                long_time_not_go_ids.append(client.id)
+
+        return queryset.filter(id__in=long_time_not_go_ids)
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
         super().__init__(data, queryset, request=request, prefix=prefix)
