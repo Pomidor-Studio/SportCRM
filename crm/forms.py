@@ -579,6 +579,12 @@ class CompanyForm(forms.ModelForm):
         disabled=True,
         widget=forms.TextInput()
     )
+    display_name = forms.CharField(
+        label='Название',
+        required=False,
+        disabled=True,
+        widget=forms.TextInput()
+    )
 
     class Meta:
         model = Company

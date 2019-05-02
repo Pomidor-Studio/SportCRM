@@ -1,4 +1,4 @@
-{% extends 'crm/base.html' %}
+{% extends 'crm/base_design.html' %}
 
 {% load bootstrap4 html_helper %}
 
@@ -6,27 +6,35 @@
   {{ form.media }}
 {% endblock %}
 
+
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Моя компания" back_link=False %}
+{% endblock %}
+
 {% block content %}
-  <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Моя компания</legend>
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          Моя компания
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
+
     <form method="post">
       {% csrf_token %}
       {% bootstrap_form form %}
-      <div class="form-group">
-        <button class="btn btn-primary" type="submit">Сохранить</button>
+      <div class="form-group save_buttons">
+        <input class="btn btn-primary" type="submit" value="Сохранить"/>
         {% if form.vk_group_id.value and form.vk_access_token.value %}
-      {% ifhasperm 'message.ignorance' user %}
-          <a
-            class="btn btn-secondary"
-            href="{% url 'bot:messages:list' %}"
-          >
-            Шаблоны сообщений бота
-          </a>
-      {% endifhasperm %}
-    {% endif %}
+          {% ifhasperm 'message.ignorance' user %}
+            <a class="btn" href="{% url 'bot:messages:list' %}">Шаблоны сообщений</a>
+          {% endifhasperm %}
+        {% endif %}
       </div>
     </form>
-
-
+  </div>
+  </div>
   </div>
 {% endblock %}
