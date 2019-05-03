@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import json
+from itertools import groupby
 from operator import itemgetter
 
 from django.http import Http404, HttpResponse
@@ -36,6 +37,8 @@ Decorator <@csrf_exempt> marks a view as being exempt from the protection
 ensured by the Django middleware.
 For cross site request protection will be used secret key from VK
 """
+
+
 @csrf_exempt
 def gl(request):
     # url: https://mysite.ru/vkbot/
@@ -74,9 +77,15 @@ class IgnoranceList(PermissionRequiredMixin, ListView):
             items.append({
                 'uuid': message_type.uuid(),
                 'help_text': message_type.detailed_description,
-                'is_enabled': message_type.is_enabled_message()
+                'is_enabled': message_type.is_enabled_message(),
+                'recipient': message_type.recipient,
             })
-        return sorted(items, key=itemgetter('uuid'))
+
+        items = sorted(items, key=lambda i: (i['recipient'], i['uuid']))
+        objects = {}
+        for k, g in groupby(items, itemgetter('recipient')):
+            objects[k] = list(g)
+        return objects
 
 
 class ToggleIgnorance(UpdateAPIView):
@@ -89,7 +98,7 @@ class ToggleIgnorance(UpdateAPIView):
         msg_type = next(
             filter(
                 lambda msg:
-                    msg.uuid() == self.kwargs.get(self.lookup_url_kwarg),
+                msg.uuid() == self.kwargs.get(self.lookup_url_kwarg),
                 Message._registry
             ),
             None
@@ -191,5 +200,3 @@ class ResetMessageTemplate(
         obj = self.get_object()
         obj.template = self.msg_type.default_template
         obj.save()
-
-
