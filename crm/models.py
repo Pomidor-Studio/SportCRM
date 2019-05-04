@@ -738,7 +738,7 @@ class Client(ScrmSafeDeleteModel, CompanyObjectModel):
         return self.attendance_set.filter(marked=True).order_by('-event__date').first()
 
     def get_active_sub(self):
-        return self.clientsubscriptions_set.active_subscriptions()
+        return self.clientsubscriptions_set.select_related('subscription').active_subscriptions()
 
     def __str__(self):
         return self.name
