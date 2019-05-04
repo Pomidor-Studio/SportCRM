@@ -92,6 +92,11 @@ class ProfileView(LoginRequiredMixin, SocialAuthMixin, UpdateView):
         })
         return kwargs
 
+    def get_context_data(self, **kwargs):
+        context_date = super().get_context_data(**kwargs)
+        context_date['next'] = self.get_success_url()
+        return context_date
+
     def get(self, request, *args, **kwargs):
         request.session['confirm-reset'] = False
 

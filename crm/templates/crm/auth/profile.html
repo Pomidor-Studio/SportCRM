@@ -108,7 +108,7 @@
       {% if not user.has_vk_auth %}
       <a
         class="btn btn-primary"
-        href="{% url "social:begin" "vk-oauth2" %}"
+        href="{% url "social:begin" "vk-oauth2" %}{% if next %}?next={{ next }}{% endif %}"
         role="button"
       >
         Привязать ВК <i class="fab fa-vk"></i>
