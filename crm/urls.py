@@ -130,6 +130,11 @@ manager_clients_urlpatterns = ([
         name='delete'
     ),
     path(
+        '<int:pk>/undelete/',
+        manager_client_views.UnDelete.as_view(),
+        name='undelete'
+    ),
+    path(
         '<int:client_id>/add-subscription/',
         manager_client_views.AddSubscription.as_view(),
         name='new-subscription'

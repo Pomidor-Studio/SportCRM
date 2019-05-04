@@ -46,6 +46,13 @@ $('#table_search').on('keyup', function() {
 	});
 });
 
+/* Выбор абонемента на занятие */
+$('.subscription_select input').click(function() {
+	var data = $(this).attr('data-subscription')
+	$(this).parents('tr').find('input[data-subscription='+data+']').prop('checked', true)
+	$(this).parents('tr').find('.btn-mark, .btn-pay').attr('data-subscription',data)
+})
+
 /* Показать архив */
 $('#show_archive .form-check-input').click(function() {
 	$('.table .archive').fadeToggle();

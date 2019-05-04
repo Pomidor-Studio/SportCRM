@@ -3,7 +3,7 @@
 {% load bootstrap4 html_helper humanize static %}
 
 {% block sidbar %}
-        {% include 'crm/bars/_sidebar_design.html'  with name="Ученики" back_link=False%}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Ученики" back_link=False %}
 {% endblock %}
 
 {% block content %}
@@ -27,27 +27,31 @@
           <div class="col-12 col-md-8 d-none d-md-block">
             <ul class="nav nav-pills row no-gutters" id="pills-tab" role="tablist">
               <li class="nav-item col-auto text-center text-md-left">
-                <a class="nav-link {% if  not filter.form.debtor.data %}active{% endif %}" href="{% url 'crm:manager:client:list' %}"
+                <a class="nav-link {% if not filter.form.debtor.data and  not filter.form.long_time_not_go.data %}active{% endif %}"
+                   href="{% url 'crm:manager:client:list' %}"
                    role="tab"
-                   aria-controls="pills-all" aria-selected="true">Все</a>
+                   aria-controls="pills-all"
+                   aria-selected="{% if not filter.form.debtor.data %}true{% else %}false{% endif %}">Все</a>
               </li>
               <li class="nav-item col-auto text-center text-md-left">
                 <a class="nav-link {% if filter.form.debtor.data %}active{% endif %}"
                    href="{% url 'crm:manager:client:list' %}?debtor=True" role="tab"
-                   aria-controls="pills-debtor" aria-selected="false">Должники</a>
+                   aria-controls="pills-debtor"
+                   aria-selected="{% if filter.form.debtor.data %}true{% else %}false{% endif %}">Должники</a>
+              </li>
+              <li class="nav-item col-auto text-center text-md-left">
+                <a class="nav-link {% if filter.form.long_time_not_go.data %}active{% endif %}"
+                   href="{% url 'crm:manager:client:list' %}?long_time_not_go=True" role="tab"
+                   aria-controls="pills-long"
+                   aria-selected="{% if filter.form.long_time_not_go.data %}true{% else %}false{% endif %}">Давно не были</a>
+
               </li>
             </ul>
           </div>
           <div class="col-12 col-md-4">
             <div class="form-group live_search">
               <span class="icon"></span>
-              <form action="{% url 'crm:manager:client:list' %}" method="GET">
-                <input type="text"
-                       name={{ filter.form.name.name }} value="{{ filter.form.name.data|default_if_none:'' }}"
-                       class="form-control" placeholder="Найти">
-                <input type="hidden"
-                       name={{ filter.form.debtor.name }} value="{{ filter.form.debtor.data|default_if_none:'' }}">
-              </form>
+              <input type="text" id="table_search" class="form-control" placeholder="Найти"/>
             </div>
           </div>
         </div>
@@ -81,7 +85,8 @@
               </thead>
               <tbody>
               {% for client in clients %}
-                <tr {% if client.balance < 0 %}class="minus_balance"{% endif %}>
+                <tr
+                  class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
                   <td class="td_photo">
                     {% if client.vk_user_id %}
                       {% if vk_group_id %}
@@ -99,78 +104,182 @@
                   </td>
                   <td>
                     <div class="balance d-md-none">
-                      <span class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">{{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽</span>
+                      <span
+                        class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">{{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽</span>
                     </div>
-                    <a href="{% url 'crm:manager:client:detail' client.id %}" class="fio_name">{{ client.name }}</a>
+                    {% if client.deleted %}
+                      {{ client.name }}
+                    {% else %}
+                      {% ifhasperm 'client_subscription.edit' user %}
+                        <a href=" {% url 'crm:manager:client:detail' client.id %}"
+                           class="fio_name">{{ client.name }}</a>
+                      {% else %}
+                        {{ client.name }}
+                      {% endifhasperm %}
+                    {% endif %}
                     <div class="d-none d-md-block">
                       <small>{{ client.phone_number }}</small>
                     </div>
                     <div class="d-md-none">
-                      {% if not client.last_sub %}
-                       <small>Без абонемента </small>
+                      {% if client.get_active_sub|length == 1 %}
+                        {% with client.get_active_sub.first as sub %}
+                          {{ sub.subscription.name }}
+                          <br/>
+                          <small>Осталось посещений: {{ sub.visits_left }}</small>
+                        {% endwith %}
+                      {% elif client.get_active_sub|length > 1 %}
+                        <form class="subscription_select">
+                          {% for sub in client.get_active_sub %}
+                            <div class="form-check">
+                              <input class="form-check-input" type="radio" name="abonement"
+                                     id="abonement{{ sub.id }}" value="{{ sub.id }}"
+                                     checked="checked" data-subscription="{{ sub.id }}">
+                              <div class="form-check-input-div form-check-input-div-radio"></div>
+                              <label class="form-check-label" for="abonement{{ sub.id }}">
+                                <small>{{ sub.subscription.name }} ({{ sub.visits_left }}/{{ sub.visits_on_by_time }})
+                                </small>
+                              </label>
+                            </div>
+                            {% cycle '<div class="greyline"></div>' '' %}
+                          {% endfor %}
+                        </form>
+                      {% elif client.last_sub %}
+                        {{ client.last_sub.subscription.name }}
+                        <br/>
+                        <small>Абонемент закончился {{ client.last_sub.end_date|date:"SHORT_DATE_FORMAT" }} </small>
                       {% else %}
-                          <small>{{ client.last_sub.subscription }}</small></br>
-                         <small>Осталось посещений: {{client.last_sub.visits_left }}</small>
+                        Без абонемента
                       {% endif %}
                     </div>
                   </td>
                   <td class="d-none d-md-block">
-                    {% if not client.last_sub %}
-                      Без абонемента</br>
-                      <a class="sell" href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+                    {% if client.get_active_sub|length == 1 %}
+                      {% with client.get_active_sub.first as sub %}
+                        {{ sub.subscription.name }} ({{ sub.visits_left }}/{{ sub.visits_on_by_time }})
+                      {% endwith %}
+                    {% elif client.get_active_sub|length > 1 %}
+                      <form class="subscription_select">
+                        {% for sub in client.get_active_sub %}
+                          <div class="form-check">
+                            <input class="form-check-input" type="radio" name="abonement" id="abonement{{ sub.id }}"
+                                   value="{{ sub.id }}"
+                                   {% if forloop.counter0 == 0 %}checked="checked" {% endif %}
+                                   data-subscription="{{ sub.id }}"/>
+                            <div class="form-check-input-div form-check-input-div-radio"></div>
+                            <label class="form-check-label" for="abonement{{ sub.id }}">
+                              {{ sub.subscription.name }} ({{ sub.visits_left }}/{{ sub.visits_on_by_time }})
+                            </label>
+                          </div>
+                          {% cycle '<div class="greyline"></div>' '' %}
+                        {% endfor %}
+                      </form>
+                    {% elif client.last_sub %}
+                      {{ client.last_sub.subscription.name }}
+                      {% if not client.deleted %}
+                        {% ifhasperm 'client_subscription.sale' user %}
+                          <br/>
+                          <a class="sell" href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+                        {% endifhasperm %}
+                      {% endif %}
                     {% else %}
-                      {{ client.last_sub.subscription }}
+                      Без абонемента
+                      {% if not client.deleted %}
+                        {% ifhasperm 'client_subscription.sale' user %}
+                          <br/>
+                          <a class="sell" href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+                        {% endifhasperm %}
+                      {% endif %}
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {{ client.last_sub.end_date|date:'d.m.Y' }}
+                    {% for sub in client.get_active_sub %}
+                      {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
+                      {% if client.get_active_sub|length > 1 %}
+                        {% cycle '<div class="greyline"></div>' '' %}
+                      {% endif %}
+                    {% empty %}
+                      {% if client.last_sub %}
+                        {{ client.last_sub.end_date|date:"SHORT_DATE_FORMAT" }}
+                      {% endif %}
+                    {% endfor %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% if client.last_attendance %}
-                      {{ client.last_attendance.event.date|date:'d.m.Y' }}
-                    {% endif %}
+                    {% for sub in client.get_active_sub %}
+                      {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }} {{ sub.last_visited_event.start_time }}
+                      &nbsp;
+                      {% if client.get_active_sub|length > 1 %}
+                        {% cycle '<div class="greyline"></div>' '' %}
+                      {% endif %}
+                    {% empty %}
+                      {% if client.last_sub %}
+                        {{ client.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}
+                        {{ client.last_visited_event.start_time }}&nbsp;
+                      {% endif %}
+                    {% endfor %}
                   </td>
                   <td class="d-none d-md-block">
                     <span
                       class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">{{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽</span>
                   </td>
                   <td>
-                    <a class="btn btn-icon btn-pay"
-                       href="{% url 'crm:manager:client:balance:new' client.id %}"><span></span><abbr>Пополнить</abbr></a>
+                    {% if not client.deleted %}
+                      {% ifhasperm 'client-balance.add' user %}
+                        <a class="btn btn-icon btn-pay" data-subscription="{{ client.last_sub.id }}"
+                           href="{% url 'crm:manager:client:balance:new' client.id %}"><span></span><abbr>Пополнить</abbr></a>
+                      {% endifhasperm %}
+                    {% endif %}
                   </td>
                   <td>
                     <div class="btn-group">
                       <a class="btn btn-icon btn-more" data-toggle="dropdown" aria-haspopup="true"
                          aria-expanded="false"><span></span></a>
                       <div class="dropdown-menu dropdown-menu-right">
-                        {% if has_active_event_class %}
-                          <a class="dropdown-item" href="{% url 'crm:manager:client:new-subscription' client.id %}"
-                             data-client-id="92">Продать абонемент</a>
-                        {% endif %}
-                        <a class="dropdown-item" href="{% url 'crm:manager:client:balance:new' client.id %}"
-                           data-client-id="92">Пополнить баланс</a>
-                        <a class="dropdown-item" href="{% url 'crm:manager:client:detail' client.id %}"
-                           data-client-id="92">Перейти к карточке ученика</a>
-                        {% if client.vk_user_id or client.phone_number %}
-                          <div class="greyline"></div>
-                          {% if client.vk_user_id %}
-                            {% if vk_group_id %}
-                              <a class="dropdown-item"
-                                 href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
-                                 data-client-id="92">
-                                Написать в Вконтакте
-                              </a>
-                            {% else %}
-                              <a class="dropdown-item" href="https://vk.com/?sel={{ client.vk_user_id }}"
-                                 data-client-id="92">
-                                Написать в Вконтакте
-                              </a>
+                        {% if not client.deleted %}
+                          {% if has_active_event_class %}
+                            {% ifhasperm 'client_subscription.sale' user %}
+                              <a class="dropdown-item" href="{% url 'crm:manager:client:new-subscription' client.id %}"
+                                 data-client-id="{{ client.id }}">Продать абонемент</a>
+                            {% endifhasperm %}
+                          {% endif %}
+                          {% ifhasperm 'client-balance.add' user %}
+                            <a class="dropdown-item" href="{% url 'crm:manager:client:balance:new' client.id %}"
+                               data-client-id="{{ client.id }}">Пополнить баланс</a>
+                          {% endifhasperm %}
+                          {% ifhasperm 'client' user %}
+                            <a class="dropdown-item" href="{% url 'crm:manager:client:detail' client.id %}"
+                               data-client-id="{{ client.id }}">Перейти к карточке ученика</a>
+                          {% endifhasperm %}
+                          {% if client.vk_user_id or client.phone_number %}
+                            <div class="greyline"></div>
+                            {% if client.vk_user_id %}
+                              {% if vk_group_id %}
+                                <a class="dropdown-item"
+                                   href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
+                                   data-client-id="92">
+                                  Написать в Вконтакте
+                                </a>
+                              {% else %}
+                                <a class="dropdown-item" href="https://vk.com/?sel={{ client.vk_user_id }}"
+                                   data-client-id="92">
+                                  Написать в Вконтакте
+                                </a>
+                              {% endif %}
+                            {% endif %}
+                            {% if client.phone_number %}
+                              <a class="dropdown-item" href="tel:{{ client.phone_number }}"
+                                 data-client-id="92">Позвонить</a>
                             {% endif %}
                           {% endif %}
-                          {% if client.phone_number %}
-                            <a class="dropdown-item" href="tel:{{ client.phone_number }}"
-                               data-client-id="92">Позвонить</a>
-                          {% endif %}
+                          <div class="greyline"></div>
+                          {% ifhasperm 'client.delete' user %}
+                            <a class="dropdown-item" href="{% url 'crm:manager:client:delete' client.id %}"
+                               data-client-id="{{ client.id }}">Переместить в архив</a>
+                          {% endifhasperm %}
+                        {% else %}
+                          {% ifhasperm 'client.undelete' user %}
+                            <a class="dropdown-item" href="{% url 'crm:manager:client:undelete' client.id %}"
+                               data-client-id="{{ client.id }}">Вернуть из архива</a>
+                          {% endifhasperm %}
                         {% endif %}
                       </div>
                     </div>
@@ -180,6 +289,16 @@
 
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <div id="show_archive" class="form-check">
+          <div>
+            <label class="form-check-label" for="archive">
+              <input id="archive" type="checkbox" class="form-check-input">
+              <div class="form-check-input-div"></div>
+              Показать архивные
+            </label>
           </div>
         </div>
 

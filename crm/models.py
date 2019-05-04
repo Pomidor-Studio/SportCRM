@@ -38,7 +38,6 @@ from contrib.text_utils import pluralize
 
 INTERNAL_COMPANY = 'INTERNAL'
 
-
 logger = logging.getLogger('crm.models')
 
 
@@ -88,6 +87,7 @@ class ScrmSafeDeleteModel(SafeDeleteModel):
     all_objects = ScrmSafeDeleteAllManager()
 
     deleted_objects = ScrmSafeDeleteDeletedManager()
+
     class Meta:
         abstract = True
 
@@ -189,9 +189,9 @@ def get_user_current_tenant():
         try:
             return (
                 Company.objects
-                .only('id')
-                .filter(name=INTERNAL_COMPANY)
-                .first()
+                    .only('id')
+                    .filter(name=INTERNAL_COMPANY)
+                    .first()
             )
         except (Company.DoesNotExist, Psycopg2Error, utils.Error):
             return None
@@ -397,7 +397,7 @@ class EventClass(CompanyObjectModel):
 
         # Проверяем, входит ли проверяемый день в диапазон проводимых тренировок
         if (self.date_from and self.date_from > day) or \
-                (self.date_to and self.date_to < day):
+            (self.date_to and self.date_to < day):
             return False
 
         # Проверяем, проходят ли в этот день недели тренировки
@@ -642,7 +642,7 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         to_date: date,
         from_date: date = None,
         filter_runner: Callable[[Event], bool] =
-            SubscriptionsTypeEventFilter.ACTIVE
+        SubscriptionsTypeEventFilter.ACTIVE
     ) -> List[Event]:
         """
         Get list of all events that can be visited by this subscription type
@@ -680,21 +680,21 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         return reverse('crm:manager:subscription:list')
 
 
-class ClientManager(TenantManagerMixin, models.Manager):
+class ClientManager(ScrmSafeDeleteManager):
 
     def with_active_subscription_to_event(self, event: Event) -> TenantQuerySet:
         cs = (
             ClientSubscriptions.objects
-            .active_subscriptions_to_event(event)
-            .order_by('client_id')
-            .distinct('client_id')
-            .values_list('client_id', flat=True)
+                .active_subscriptions_to_event(event)
+                .order_by('client_id')
+                .distinct('client_id')
+                .values_list('client_id', flat=True)
         )
         return self.get_queryset().filter(id__in=cs)
 
 
 @reversion.register()
-class Client(CompanyObjectModel):
+class Client(ScrmSafeDeleteModel, CompanyObjectModel):
     """Клиент-Ученик. Контактные данные. Баланс"""
     name = models.CharField("Имя", max_length=100)
     address = models.CharField("Адрес", max_length=255, blank=True)
@@ -826,7 +826,7 @@ class ClientSubscriptionQuerySet(TenantQuerySet):
             counted_visits_left=F('visits_on_by_time') - Count(
                 'attendance',
                 filter=Q(attendance__event__date__lt=to_date) &
-                Q(attendance__subscription_id=F('id'))
+                       Q(attendance__subscription_id=F('id'))
             )
         ).filter(
             start_date__lte=to_date,
@@ -863,8 +863,8 @@ class ClientSubscriptionsManager(
     def revoke_extending(self, activated_event: Event):
         # Don't try revoke on non-active events or non-canceled evens
         if not activated_event.is_active or \
-                not activated_event.is_canceled or \
-                not activated_event.canceled_with_extending:
+            not activated_event.is_canceled or \
+            not activated_event.canceled_with_extending:
             return
 
         subs_ids = activated_event.extensionhistory_set.all().values_list(
@@ -875,7 +875,6 @@ class ClientSubscriptionsManager(
 
     def exclude_onetime(self):
         return self.get_queryset().filter(subscription__one_time=False)
-
 
 
 class ClientAttendanceExists(Exception):
@@ -976,9 +975,9 @@ class ClientSubscriptions(CompanyObjectModel):
     def revoke_extending(self, activated_event: Event):
         extension_to_delete = (
             activated_event.extensionhistory_set
-            .filter(client_subscription=self)
-            .order_by('date_extended')
-            .first()
+                .filter(client_subscription=self)
+                .order_by('date_extended')
+                .first()
         )
         if not extension_to_delete:
             # Nothing to delete
@@ -1096,6 +1095,15 @@ class ClientSubscriptions(CompanyObjectModel):
             to_date=to_date or self.end_date,
             filter_runner=SubscriptionsTypeEventFilter.CANCELED
         )
+
+    def last_visited_event(self):
+        last = self.attendance_set.select_related('event').filter(
+            marked=True,
+            event__is_closed=True,
+            event__canceled_at__isnull=True,
+        ).order_by('-event__date').first()
+        if last:
+            return last.event
 
     def canceled_events_count(self):
         return len(self.canceled_events())

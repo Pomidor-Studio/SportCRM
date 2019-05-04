@@ -59,6 +59,7 @@ rules.add_perm('client', is_logged_personnel)
 rules.add_perm('client.add', is_logged_personnel)
 rules.add_perm('client.edit', is_logged_personnel)
 rules.add_perm('client.delete', is_logged_personnel)
+rules.add_perm('client.undelete', is_logged_personnel)
 
 rules.add_perm('coach', is_logged_personnel)
 rules.add_perm('coach.view_detail', is_logged_manager)

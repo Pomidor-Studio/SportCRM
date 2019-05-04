@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 import django_filters
 from dateutil.relativedelta import relativedelta
@@ -18,9 +18,25 @@ class ClientFilter(django_filters.FilterSet):
         lookup_expr='icontains'
     )
     debtor = django_filters.BooleanFilter(field_name='debtor', method='filter_debtor')
+    long_time_not_go = django_filters.BooleanFilter(field_name='long_time_not_go', method='filter_long_time_not_go')
 
     def filter_debtor(self, queryset, name, value):
         return queryset.filter(balance__lt=0)
+
+    def filter_long_time_not_go(self, queryset, name, value):
+        long_time_not_go_ids = []
+        month_ago = date.today() - relativedelta(months=1)
+
+        for client in queryset.filter(
+            clientsubscriptions__end_date__lt=month_ago
+        ):
+            if client.last_sub().end_date < month_ago:
+                long_time_not_go_ids.append(client.id)
+
+        return queryset.filter(id__in=long_time_not_go_ids)
+
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
+        super().__init__(data, queryset, request=request, prefix=prefix)
 
     class Meta:
         model = models.Client
@@ -120,18 +136,5 @@ class SubscriptionsTypeFilterSet(ArchivableFilterSet):
         fields = '__all__'
 
     def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
-        new_data = data.copy() if data is not None else QueryDict(mutable=True)
-
-        # filter param is either missing or empty
-        with_archive = forms.BooleanField().to_python(
-            new_data.get('with_archive')
-        )
-        new_data['with_archive'] = with_archive
-
-        super().__init__(new_data, queryset, request=request, prefix=prefix)
-
-        self.queryset = (
-            self._meta.model.all_objects.filter(one_time=False)
-            if with_archive else
-            self._meta.model.objects.filter(one_time=False)
-        )
+        super().__init__(data, queryset, request=request, prefix=prefix)
+        self.queryset = self.queryset.filter(one_time=False)
