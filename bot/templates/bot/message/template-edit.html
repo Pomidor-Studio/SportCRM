@@ -1,19 +1,66 @@
-{% extends 'crm/base.html' %}
+{% extends 'crm/base_design.html' %}
 
 {% load bootstrap4 %}
 
+{% block sidbar %}
+  {% url 'bot:messages:list' as back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Изменить шаблон" back_link=back_link %}
+{% endblock %}
+
 {% block content %}
-  <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Шаблон
-      сообщения {{ message_caption }}</legend>
-    <div class="w-25">
-      <form method="POST">
-        {% csrf_token %}
-        <fieldset class="form-group">
-          {% bootstrap_form form %}
-        </fieldset>
-        <h5></h5>
-        <table>
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url 'crm:manager:company' %}">Моя компания</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"/>
+          </svg>
+        </li>
+        <li>
+          <a href="{% url 'bot:messages:list' %}">Шаблоны сообщений бота</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"/>
+          </svg>
+        </li>
+        <li>
+          Изменить шаблон
+        </li>
+      </ul>
+    </div>
+
+    <div class="greyline"></div>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-12">
+          <label for="id_template">{{ message_caption }}</label>
+        </div>
+        <div class="form-group col-12 col-md-5 col-xl-4">
+          <textarea class="form-control" id="id_template" name="template"
+                    rows="4"> {{ form.template.value }} </textarea>
+        </div>
+        <div class="col-12 col-md-5 col-xl-4">
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-title">Пример сообщения</h6>
+              <p class="card-text">{{ message_example }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group save_buttons">
+        <input class="btn btn-primary" type="submit" value="Сохранить"/>
+        <a class="btn" name="cancel" href="{% url 'bot:messages:template-reset' object.uuid %}">Сбросить</a>
+      </div>
+    </form>
+
+    <div class="row">
+      <div class="col-12 col-md-10 col-xl-8">
+        <table class="table table-hover">
+          <tbody>
           <tr>
             <th>Элемент шаблона</th>
             <th>Значение</th>
@@ -25,22 +72,8 @@
               <td>{{ template_item.text }}</td>
             </tr>
           {% endfor %}
+          <tbody>
         </table>
-        <div class="form-group">
-          <button class="btn btn-outline-info" type="submit">Сохранить шаблон
-          </button>
-          <a
-            name="cancel" href="{% url 'bot:messages:template-reset' object.uuid %}"
-            class="btn btn-outline-warning"
-          >Сбросить на стандартный шаблон</a>
-        </div>
-      </form>
-    </div>
-
-    <div class="card" style="width: 18rem;">
-      <div class="card-body">
-        <h5 class="card-title">Пример сообщения</h5>
-        <p class="card-text">{{ message_example|linebreaksbr }}</p>
       </div>
     </div>
   </div>
