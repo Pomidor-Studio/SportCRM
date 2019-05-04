@@ -102,6 +102,16 @@
 {% js 'js/moment.min.js' %}
 {% js 'js/base.js' %}
 
+
+<!-- Заморозка Thead -->
+{% js 'js/jquery-freeze-table/dist/js/freeze-table.js' %}
+<script>
+  $('.tab-pane').freezeTable({
+    'container':'.page',
+    'shadow':'true'
+  });
+</script>
+
 <script type="text/javascript">
     function getCookie(name) {
       let cookieValue = null;
