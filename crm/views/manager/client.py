@@ -43,7 +43,7 @@ from gcp.tasks import enqueue
 
 
 class List(PermissionRequiredMixin, FilterView):
-    queryset = Client.all_objects.all()
+    queryset = Client.all_objects
     filterset_class = ClientFilter
     template_name = 'crm/manager/client/list.html'
     context_object_name = 'clients'
