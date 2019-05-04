@@ -1,11 +1,11 @@
 from datetime import date
 
-from bot.api.messages.base import Message, TemplateItem
+from bot.api.messages.base import Message, TemplateItem, RecipientTypes
 from crm.models import EventClass
 
 
 class EventClassMessage(Message, abstract=True):
-
+    recipient = RecipientTypes.client
     template_args = {
         'DATE': TemplateItem(
             text='Дата тренировки, в формате ДД.ММ.ГГГГ',

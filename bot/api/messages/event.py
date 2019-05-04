@@ -1,6 +1,6 @@
 from datetime import date
 
-from bot.api.messages.base import Message, TemplateItem
+from bot.api.messages.base import Message, TemplateItem, RecipientTypes
 from crm.models import Event, Client
 
 
@@ -42,6 +42,7 @@ class CancelledEvent(EventMessage):
     default_template = (
         'Была отменена тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}'
     )
+    recipient = RecipientTypes.client
 
 
 class ClosedEvent(EventMessage):
@@ -72,7 +73,7 @@ class ClosedEvent(EventMessage):
             example=5
         ),
     }
-
+    recipient = RecipientTypes.manager
     detailed_description = 'Уведомление менеджеру при закрытии тренировки'
     default_template = (
         'Была закрыта тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}\n'
@@ -96,6 +97,7 @@ class ClosedEvent(EventMessage):
 
 class OpenedEvent(EventMessage):
     detailed_description = 'Уведомление менеджеру при открытии тренировки'
+    recipient = RecipientTypes.manager
     default_template = (
         'Была открыта тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}\n'
         'Тренером: {{COACH}}'
@@ -103,6 +105,7 @@ class OpenedEvent(EventMessage):
 
 
 class ManagerEventMessage(EventMessage, abstract=True):
+    recipient = RecipientTypes.manager
     template_args = {
         **EventMessage.template_args,
         'CLIENT': TemplateItem(

@@ -1,6 +1,6 @@
 from datetime import date
 
-from bot.api.messages.base import Message, TemplateItem
+from bot.api.messages.base import Message, TemplateItem, RecipientTypes
 from crm.models import ClientSubscriptions
 
 
@@ -23,6 +23,7 @@ class ClientSubscriptionMessage(Message, abstract=True):
             example=5000
         )
     }
+    recipient = RecipientTypes.client
 
     def __init__(
         self,
@@ -82,6 +83,7 @@ class ClientUpdateBalance(Message):
     template_args = {
         'BALANCE': TemplateItem(text='Балас клиента', example=1500)
     }
+    recipient = RecipientTypes.client
 
     def get_template_context(self):
         context = super().get_template_context()
@@ -104,6 +106,7 @@ class ClientHaveNegativeBalance(Message):
     template_args = {
         'BALANCE': TemplateItem(text='Балас клиента', example=-1500)
     }
+    recipient = RecipientTypes.client
 
     def get_template_context(self):
         context = super().get_template_context()

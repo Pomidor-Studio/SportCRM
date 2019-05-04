@@ -1,18 +1,20 @@
 from operator import attrgetter
 from typing import List
 
-from bot.api.messages.base import Message, TemplateItem
+from bot.api.messages.base import Message, TemplateItem, RecipientTypes
 from crm.models import Client
 
 
 class UserToUserBirthday(Message):
     detailed_description = 'Поздравление клиента с днем рождения'
     default_template = 'Поздравляем вас с Днем рождения!'
+    recipient = RecipientTypes.client
 
 
 class UsersToManagerBirthday(Message):
     detailed_description = 'Уведомление менеджеру о днях рождения клиентов'
     default_template = 'Сегодня день рождения у\n{{CLIENTS}}'
+    recipient = RecipientTypes.manager
     template_args = {
         'CLIENTS': TemplateItem(
             text='Список учеников, у которых сегодня день рождения',
