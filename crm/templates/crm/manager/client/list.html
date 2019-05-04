@@ -308,16 +308,27 @@
           </div>
         </div>
 
-        <div id="show_archive" class="form-check">
+      </div>
+    </div>
+
+    <div class="bottom_sidebar">
+      <div class="row align-items-center">
+        <div class="col-6">
+          {% if page_obj.paginator.num_pages > 1 %}
+            <nav>
+              {% bootstrap_pagination page_obj %}
+            </nav>
+          {% endif %}
+        </div>
+        <div id="show_archive" class="form-check col-6">
           <div>
             <label class="form-check-label" for="archive">
               <input id="archive" type="checkbox" class="form-check-input">
               <div class="form-check-input-div"></div>
-              Показать архивные
+              Архивные
             </label>
           </div>
         </div>
-
       </div>
     </div>
   </div>
