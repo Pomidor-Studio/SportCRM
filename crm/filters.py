@@ -30,7 +30,10 @@ class ClientFilter(django_filters.FilterSet):
         for client in queryset.filter(
             clientsubscriptions__end_date__lt=month_ago
         ):
-            if client.last_sub().end_date < month_ago:
+            last_sub = client.last_sub()
+            if not last_sub:
+                continue
+            if last_sub.end_date < month_ago:
                 long_time_not_go_ids.append(client.id)
 
         return queryset.filter(id__in=long_time_not_go_ids)
