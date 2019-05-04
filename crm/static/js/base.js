@@ -4,7 +4,7 @@ $('#mobile_logo, #overlay').click(function() {
 	$('.mobile_sidebar .bredcams, .logo_name').toggle()
 	$('.sidebar-wrapper').slideToggle();
 	$('#overlay').fadeToggle();
-})
+});
 
 /* Показать «Вспомнить пароль» */
 $('#recall_password , #recall_password_back').click(function() {
@@ -12,8 +12,8 @@ $('#recall_password , #recall_password_back').click(function() {
 });
 
 /* Отступ для подвала сайдбара */
-var nav_bottom_height = $('.nav .bottom').height() + 20
-$('.nav .top').attr('style','padding-bottom:'+nav_bottom_height+'px;')
+var nav_bottom_height = $('.nav .bottom').height() + 20;
+$('.nav .top').attr('style','padding-bottom:'+nav_bottom_height+'px;');
 
 
 
@@ -30,7 +30,7 @@ $('.day :checkbox').click(function(){
 $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 
 
-/* Живой поиск */
+/* Живой поиск 
 $('#table_search').on('keyup', function() {
 	var value = $(this).val();
 	var patt = new RegExp(value, "i");
@@ -45,6 +45,7 @@ $('#table_search').on('keyup', function() {
 	
 	});
 });
+*/
 
 /* Выбор абонемента на занятие */
 $('.subscription_select input').click(function() {
@@ -56,4 +57,53 @@ $('.subscription_select input').click(function() {
 /* Показать архив */
 $('#show_archive .form-check-input').click(function() {
 	$('.table .archive').fadeToggle();
+})
+
+/* Копировать в буфер */
+$('.btn-copy').click(function() {
+	var copyHref = $(this).next('span').html()
+	$(this).next('span').html('Скопировано!')
+	$(this).delay(1500).queue(function(next){
+	    $(this).next('span').html(copyHref)
+	    next();
+	});
+})
+$('#copy_url').click(function() {
+	var copyHref = $(this).html()
+	$(this).html('Скопировано!').addClass('btn-primary')
+	$(this).delay(1500).queue(function(next){
+	    $(this).html(copyHref).removeClass('btn-primary')
+	    next();
+	});
+})
+
+
+
+
+
+
+/* Абонементы */
+$('#no_visit_limit').click(function() {
+	$('#id_visit_limit').prop('disabled', function(i, v) { return !v; });
+})
+$('#subscription_all').change(function() {
+    var checkboxes = $(this).closest('.subscription_check').find(':checkbox').not($(this));
+    checkboxes.prop('checked', $(this).is(':checked'));
+});
+$('.subscription_check').find('input:not(#subscription_all)').click(function() {
+	$('#subscription_all').prop('checked',false)
+})
+
+
+
+/* Просмотр ученика */
+$('.btn-down, .buy_subscriptions .fio_name').click(function() {
+	$(this).parents('tr').toggleClass('active')
+	$(this).parents('tr').next('tr').toggleClass('active').toggle();
+	return(false)
+})
+$('.buy_subscriptions .cancel').click(function() {
+	$(this).parents('tr').prev('tr').toggleClass('active')
+	$(this).parents('tr').toggleClass('active').toggle();
+	return(false)
 })

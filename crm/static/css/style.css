@@ -17,6 +17,8 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 .orange { color: #EE5F0F; }
 
+small { font-size: 12px; }
+
 .alert { font-size: 14px; }
 
 .dropdown-menu { border: 1px solid #EEEEEE; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25); border-radius: 6px; padding: 18px 0; }
@@ -34,7 +36,7 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 .form-control:focus { outline: inherit; box-shadow: inherit; border: 1px solid #76BD1B; }
 
-.form-group { margin-bottom: 16px; }
+.form-group { margin-bottom: 16px; font-size: 14px; }
 
 .form-group .btn { margin-right: 8px; }
 
@@ -84,6 +86,18 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 .btn-icon.btn-delete span { background: url(../img/icons.png) 0 -53px no-repeat; top: 1px; left: 0; width: 11px; height: 14px; }
 
+.btn-icon.btn-copy span { background: url(../img/icons.png) 0 -190px no-repeat; top: 2px; left: 0; width: 13px; height: 13px; }
+
+.btn-icon.btn-extend { padding: 0 12px !important; }
+
+.btn-icon.btn-extend span { background: url(../img/icons.png) 0 -208px no-repeat; top: 1px; left: 1px; width: 14px; height: 14px; }
+
+.btn-icon.btn-down { padding: 0 12px !important; border: none; padding: 0 !important; background: transparent; min-width: inherit; left: 3px; }
+
+.btn-icon.btn-down span { background: url(../img/icons.png) 0 -226px no-repeat; top: 1px; left: 1px; width: 11px; height: 7px; }
+
+tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat; }
+
 .datepick .btn, .timepick .btn { margin: 0 0 0 1px; }
 
 .datepick .btn svg, .timepick .btn svg { position: absolute; top: 12px; right: 15px; }
@@ -100,7 +114,7 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 .form-check .form-check-label { font-size: 14px; }
 
-.form-check .form-check-input { position: absolute; left: 0; z-index: 3; margin: 2px 0 0 2px; opacity: 0; }
+.form-check .form-check-input { position: absolute; left: 0; z-index: 3; margin: 5px 0 0 2px; opacity: 0; }
 
 .form-check .form-check-input-div { height: 16px; width: 16px; border-radius: 2px; background: #DEE2E6; border: 1px solid #DEE2E6; box-sizing: border-box; border-radius: 4px; float: left; margin-right: 8px; margin-top: 1px; }
 
@@ -117,6 +131,14 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 .form-check .form-check-input-div-radio { border-radius: 8px !important; }
 
 .form-check .form-check-input-div-radio:after { margin-top: 4px; margin-left: 4px; width: 4px; height: 4px; border: solid white; border-width: 3px; border-radius: 3px; }
+
+.input-group-append .btn { margin-right: 0; padding: 0.375rem 0.75rem; }
+
+.input-group-append .btn:hover, .input-group-append .btn:active, .input-group-append .btn:focus { outline: inherit !important; box-shadow: inherit !important; border: 1px solid #76BD1B !important; background: #fff; color: #76818F; }
+
+.input-group-append .btn:active { background: #EEEEEE !important; color: #76818F !important; }
+
+.input-group-append .btn.btn-primary:hover { color: #fff !important; }
 
 @media (max-width: 1024px) { .btn { padding: 5px 10px; }
   .btn-icon abbr { display: none; } }
@@ -143,11 +165,9 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 .table .fio_name:hover { color: #76BD1B; }
 
-.table small { font-size: 12px; }
+.table .form-check-input { margin-top: 3px; }
 
-.table .form-check { margin-top: 2px; }
-
-.table .photo { display: block; width: 32px; height: 32px; }
+.table .photo { display: block; width: 32px; height: 32px; border-radius: 32px; }
 
 .table .sell { font-size: 12px; color: #2B8CBB; text-decoration: underline; }
 
@@ -159,9 +179,23 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 .table .archive:hover { opacity: 1; }
 
-#show_archive { text-align: right; width: 100%; max-width: inherit; position: fixed; bottom: 0; right: 0; background: #fff; }
+.clone-head-table-wrap { border-bottom: 1px solid #EEEEEE; }
 
-#show_archive > div { padding: 18px 0; margin: 0 15px; border-top: 1px solid #EEEEEE; }
+.clone-head-table-wrap .table { top: 0 !important; }
+
+.bottom_sidebar { width: 100%; max-width: inherit; position: fixed; bottom: 0; right: 0; background: #fff; }
+
+.bottom_sidebar .row { padding: 18px 0; margin: 0; border-top: 1px solid #EEEEEE; }
+
+.bottom_sidebar #show_archive { text-align: right; }
+
+.bottom_sidebar .pagination { margin-bottom: 0; font-size: 14px; }
+
+.bottom_sidebar .pagination .active a { background: #76BD1B; border-color: #76BD1B; }
+
+.bottom_sidebar .pagination a { color: #76818F; }
+
+.bottom_sidebar .pagination a:hover { color: #76BD1B; }
 
 .tab-content { margin-bottom: 60px; }
 
@@ -184,7 +218,7 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 .page .live_search input { padding-left: 30px; }
 
-.page .live_search span { background: url(../img/icons.png) 0 -173px no-repeat; position: absolute; width: 12px; height: 12px; top: 11px; left: 11px; }
+.page .live_search span { background: url(../img/icons.png) 0 -173px no-repeat; position: absolute; z-index: 5; width: 12px; height: 12px; top: 11px; left: 11px; }
 
 /* Вкладки и поиск по таблице */
 /* Страница */
@@ -252,7 +286,7 @@ footer { position: absolute; bottom: 24px; width: 100%; text-align: center; }
 
 footer a, footer a:hover { color: #636363; }
 
-footer .vk_link { border-left: 1px solid #E5E5E5; border-right: 1px solid #E5E5E5; padding: 0 8px; margin: 0 8px; }
+footer .vk_link { border-left: 1px solid #E5E5E5; border-right: 1px solid #E5E5E5; padding: 0 6px; margin: 0 6px; }
 
 footer .vk_link:hover { text-decoration: none; }
 
@@ -360,6 +394,9 @@ footer, .bottom { color: #636363; }
 
 .fc-list-table td { height: 20px; }
 
+@media (max-width: 374px) { .fc-prev-button, .fc-next-button { position: relative !important; top: 0 !important; right: 0 !important; margin-left: 8px !important; }
+  .fc-prev-button { margin-left: 13px !important; } }
+
 @media (max-width: 767px) { .fc-list_month-button, .fc-list_week-button { display: block !important; }
   .fc-dayGridMonth-button, .fc-dayGridWeek-button { display: none !important; } }
 
@@ -434,3 +471,40 @@ footer, .bottom { color: #636363; }
   .workout_page .table .btn, .students_page .table .btn { top: 10px; } }
 
 /* Тренировка, ученики и тренеры */
+/* Абонементы */
+.skip_line { position: relative; top: -6px; }
+
+.subscription_check .form-check { margin-bottom: 8px; }
+
+@media (max-width: 767px) { .skip_line { top: 0; } }
+
+/* Абонементы */
+/* Юзер инфо */
+.user_info { margin-bottom: 8px; }
+
+.user_info .user_pic { margin-right: 18px; }
+
+.user_info .user_pic img { display: block; width: 100px; height: 100px; border-radius: 100px; }
+
+.user_info .big_name { font-size: 24px; font-weight: bold; }
+
+.user_info .save_buttons { margin: 8px 0; }
+
+.user_info .save_buttons a { margin-bottom: 0; }
+
+.user_info .balance { border: 1px solid #76BD1B; color: #76BD1B; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin-top: 8px; }
+
+/* Юзер инфо */
+#pills-subscriptions tr.active { background-color: #F4F4F4 !important; }
+
+#pills-subscriptions tr.active p { color: #000; }
+
+#pills-subscriptions tr.active p small { color: #76818F; }
+
+#pills-subscriptions tr.active_info { display: none; }
+
+#pills-subscriptions .buy_subscriptions .fio_name { position: relative; top: 4px; }
+
+#pills-subscriptions .buy_subscriptions tr:hover { background: #F4F4F4 !important; }
+
+#pills-subscriptions .save_buttons { margin-bottom: 0; }
