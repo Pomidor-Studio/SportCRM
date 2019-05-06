@@ -1,0 +1,16 @@
+<td class="d-none d-md-block">
+  {% for sub in client.get_active_sub %}
+    {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+    {{ sub.last_visited_event.start_time }}
+    {% if client.get_active_sub|length > 1 %}
+      {% if not forloop.last %}
+        <div class="greyline"></div>
+      {% endif %}
+    {% endif %}
+  {% empty %}
+    {% if client.last_sub %}
+      {{ client.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+      {{ client.last_visited_event.start_time }}&nbsp;
+    {% endif %}
+  {% endfor %}
+</td>

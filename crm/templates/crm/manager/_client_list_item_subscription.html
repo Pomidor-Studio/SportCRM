@@ -1,0 +1,47 @@
+{% load html_helper %}
+
+<td class="d-none d-md-block">
+  {% if client.get_active_sub|length == 1 %}
+    {% with client.get_active_sub.first as sub %}
+      {{ sub.subscription.name }} ({{ sub.visits_left }}/{{ sub.visits_on_by_time }})
+    {% endwith %}
+  {% elif client.get_active_sub|length > 1 %}
+    <form class="subscription_select">
+      {% for sub in client.get_active_sub %}
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="abonement"
+                 id="abonement{{ sub.id }}"
+                 value="{{ sub.id }}"
+                 {% if forloop.counter0 == 0 %}checked="checked" {% endif %}
+                 data-subscription="{{ sub.id }}"/>
+          <div class="form-check-input-div form-check-input-div-radio"></div>
+          <label class="form-check-label" for="abonement{{ sub.id }}">
+            {{ sub.subscription.name }}
+            ({{ sub.visits_left }}/{{ sub.visits_on_by_time }})
+          </label>
+        </div>
+        {% if not forloop.last %}
+          <div class="greyline"></div>
+        {% endif %}
+      {% endfor %}
+    </form>
+  {% elif client.last_sub %}
+    {{ client.last_sub.subscription.name }}
+    {% if not client.deleted %}
+      {% ifhasperm 'client_subscription.sale' user %}
+        <br/>
+        <a class="sell"
+           href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+      {% endifhasperm %}
+    {% endif %}
+  {% else %}
+    Без абонемента
+    {% if not client.deleted %}
+      {% ifhasperm 'client_subscription.sale' user %}
+        <br/>
+        <a class="sell"
+           href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+      {% endifhasperm %}
+    {% endif %}
+  {% endif %}
+</td>

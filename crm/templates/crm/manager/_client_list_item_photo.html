@@ -1,0 +1,17 @@
+{% load html_helper static %}
+
+<td class="td_photo">
+  {% if client.vk_user_id %}
+    {% if vk_group_id %}
+      <a href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}">
+        <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+      </a>
+    {% else %}
+      <a href="https://vk.com/?sel={{ client.vk_user_id }}">
+        <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+      </a>
+    {% endif %}
+  {% else %}
+    <a href="#"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
+  {% endif %}
+</td>

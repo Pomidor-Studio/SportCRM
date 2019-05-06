@@ -1,0 +1,7 @@
+{% load humanize %}
+
+<td class="d-none d-md-block">
+  <span class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">
+    {{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽
+  </span>
+</td>
