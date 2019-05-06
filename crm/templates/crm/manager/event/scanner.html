@@ -1,48 +1,67 @@
-{% extends "crm/base.html" %}
-{% load html_helper bootstrap4 %}
+{% extends "crm/base_design.html" %}
 
-{% block extrahead %}
-  {% js 'js/instascan.min.js' %}
-  <script type="text/javascript">
-    function processCode(content) {
-      let sqcode = content.split("/").pop();
-      window.location.replace("{% url 'crm:manager:event-class:event:do-scan' event.event_class.id event.date.year event.date.month event.date.day 9999999999%}".replace("9999999999", sqcode));
-    }
-
-    $(function () {
-      let scanner = new Instascan.Scanner({
-        video: document.getElementById('preview'),
-        mirror: false,
-        backgroundScan: false
-      });
-      scanner.addListener('scan', processCode);
-      Instascan.Camera.getCameras().then(function (cameras) {
-        if (cameras.length > 0) {
-          scanner.start(cameras[cameras.length - 1]);
-        } else {
-          console.error('No cameras found.');
-        }
-      }).catch(function (e) {
-        console.error(e);
-      });
-    });
-  </script>
-{% endblock %}
+{% load html_helper %}
 
 {% block content %}
-  <legend class="border-bottom mb-2">{{ event.date }}
-    - {{ event.event_class.name }} -
-    {{ event.event_class.location }} - {{ event.event_class.coach }}
-  </legend>
-
-  <div class="row">
-    <a
-      class="btn btn-sm btn-outline-info"
-      href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}"
-    >Назад</a>
+  <div class="page workout_page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </li>
+        <li>
+          <a href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">{{ event.event_class.name }}</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </li>
+        <li>
+          QR-сканер
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
+    <div class="row">
+      <div class="col-12">
+        <video id="qr_scaner"></video>
+      </div>
+    </div>
   </div>
-  <div class="row">
-    <video id="preview"></video>
-  </div>
-
 {% endblock content %}
+
+{% block extrajs %}
+  {% js 'js/popper.min.js' %}
+  <!-- Сканер QR -->
+    {% js 'js/instascan.min.js' %}
+		<script>
+			function processCode(content) {
+				let sqcode = content.split("/").pop();
+				window.location.replace("{% url 'crm:manager:event-class:event:do-scan' event.event_class.id event.date.year event.date.month event.date.day 9999999999%}".replace("9999999999", sqcode));
+			}
+
+			$(function() {
+				let scanner = new Instascan.Scanner({
+					video: document.getElementById('qr_scaner'),
+					mirror: false,
+					backgroundScan: false
+				});
+				scanner.addListener('scan', processCode);
+				Instascan.Camera.getCameras().then(function(cameras) {
+					if (cameras.length > 0) {
+						scanner.start(cameras[cameras.length - 1]);
+					} else {
+						console.error('No cameras found.');
+					}
+				}).catch(function(e) {
+					console.error(e);
+				});
+			});
+		</script>
+{% endblock extrajs %}
