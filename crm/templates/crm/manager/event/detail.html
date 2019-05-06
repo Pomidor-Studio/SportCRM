@@ -45,7 +45,7 @@
     <div class="bredcams clearfix">
       <ul>
         <li>
-          <a href="index.html">Тренировки</a>
+          <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
                xmlns="http://www.w3.org/2000/svg">
             <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
@@ -59,18 +59,22 @@
     </div>
     <div class="workout_actions mobile_workout_actions d-md-none">
       <ul class="row">
-        <li class="new_student col-4">
-          <a href="new_student.html">
-            <span class="icon"></span>
-            <span>Добавить<br/>ученика</span>
-          </a>
-        </li>
-        <li class="QR col-4">
-          <a href="#">
-            <span class="icon"></span>
-            <span>Сканер<br/>QR-кода</span>
-          </a>
-        </li>
+        {% ifhasperm 'client.add' user %}
+          <li class="new_student col-4">
+            <a href="{% url 'crm:manager:client:new' %}">
+              <span class="icon"></span>
+              <span>Добавить<br/>ученика</span>
+            </a>
+          </li>
+        {% endifhasperm %}
+        {% if not event.is_closed %}
+          <li class="QR col-4">
+            <a href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">
+              <span class="icon"></span>
+              <span>Сканер<br/>QR-кода</span>
+            </a>
+          </li>
+        {% endif %}
       </ul>
     </div>
     <div class="greyline"></div>
