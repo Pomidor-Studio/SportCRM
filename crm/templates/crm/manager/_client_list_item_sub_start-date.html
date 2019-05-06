@@ -1,6 +1,5 @@
 {% for sub in client.get_active_sub %}
-  {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
-  {{ sub.last_visited_event.start_time }}
+  {{ sub.start_date|date:"SHORT_DATE_FORMAT" }}
   {% if client.get_active_sub|length > 1 %}
     {% if not forloop.last %}
       <div class="greyline"></div>
@@ -8,7 +7,6 @@
   {% endif %}
 {% empty %}
   {% if client.last_sub %}
-    {{ client.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
-    {{ client.last_visited_event.start_time }}&nbsp;
+    {{ client.last_sub.start_date|date:"SHORT_DATE_FORMAT" }}
   {% endif %}
 {% endfor %}
