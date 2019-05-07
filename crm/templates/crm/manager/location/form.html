@@ -1,29 +1,57 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
 {% load bootstrap4 %}
 
-{% block extrahead %}
-  {{ form.media }}
+{% block sidbar %}
+  {% url 'crm:manager:locations:list' as back_link %}
+  {% if object.id %}
+    {% include 'crm/bars/_sidebar_design.html' with name=object.name back_link=back_link %}
+  {% else %}
+    {% include 'crm/bars/_sidebar_design.html' with name="Новый место" back_link=back_link %}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
-  <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Место проведения тренировок</legend>
-      <form method="POST">
-        {% csrf_token %}
-        <fieldset class="form-group">
-          {% bootstrap_form form %}
-        </fieldset>
-        <div class="form-group">
-          {% if object.id %}
-            <button class="btn btn-primary" type="submit">Сохранить</button>
-          {% else %}
-            <button class="btn btn-primary" type="submit">Добавить</button>
-            <button type="submit" name="another" class="btn btn-primary">Сохранить и добавить ещё</button>
-          {% endif %}
-          <a name="cancel" href="{% url 'crm:manager:locations:list' %}"
-             class="btn btn-outline-info">Назад</a>
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url "crm:manager:locations:list" %}">Места проведения</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
+        <li>
+          {% firstof object.name  'Новый место' %}
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-12 col-md-10 col-xl-6 form-group">
+          {% bootstrap_field form.name %}
         </div>
-      </form>
+      </div>
+      <div class="row">
+        <div class="col-12 col-md-10 col-xl-6 form-group">
+          {% bootstrap_field form.address %}
+        </div>
+      </div>
+
+      <div class="form-group save_buttons">
+        <input class="btn btn-primary" type="submit" value="Сохранить">
+        <a name="cancel" href="{% url 'crm:manager:locations:list' %}" class="btn">Отмена</a>
+      </div>
+    </form>
   </div>
 {% endblock content %}

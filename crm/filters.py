@@ -98,9 +98,9 @@ class ArchivableFilterSet(django_filters.FilterSet):
         super().__init__(new_data, queryset, request=request, prefix=prefix)
 
         self.queryset = (
-            self._meta.model.all_objects.all()
+            self._meta.model.all_objects
             if with_archive else
-            self._meta.model.objects.all()
+            self._meta.model.objects
         )
 
     @property
@@ -119,6 +119,17 @@ class ArchivableFilterSet(django_filters.FilterSet):
 class CoachFilter(ArchivableFilterSet):
     class Meta:
         model = models.Coach
+        fields = '__all__'
+        filter_overrides = {
+            modelfields.PhoneNumberField: {
+                'filter_class': django_filters.CharFilter
+            }
+        }
+
+
+class ManagerFilter(ArchivableFilterSet):
+    class Meta:
+        model = models.Manager
         fields = '__all__'
         filter_overrides = {
             modelfields.PhoneNumberField: {

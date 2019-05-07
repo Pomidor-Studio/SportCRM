@@ -3,21 +3,24 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import (DeleteView, DetailView, ListView, UpdateView)
+from django.views.generic import (DeleteView, DetailView, UpdateView)
+from django_filters.views import FilterView
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.auth.one_time_login import get_one_time_login_link
+from crm.filters import ManagerFilter
 from crm.forms import ManagerMultiForm
 from crm.models import Manager
-from crm.views.mixin import CreateAndAddView, SocialAuthMixin
+from crm.views.mixin import CreateAndAddView, SocialAuthMixin, UnDeleteView
 
 
-class List(PermissionRequiredMixin, ListView):
+class List(PermissionRequiredMixin, FilterView):
     model = Manager
     template_name = 'crm/manager/manager/list.html'
     context_object_name = 'managers'
     paginate_by = 25
+    filterset_class = ManagerFilter
     permission_required = 'manager'
 
 
@@ -32,6 +35,7 @@ class Detail(PermissionRequiredMixin, DetailView):
         context['login_temp_link'] = get_one_time_login_link(
             self.request.get_host(), self.object.user)
         return context
+
 
 class Create(
     PermissionRequiredMixin,
@@ -130,4 +134,26 @@ class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
 
         messages.info(self.request, f'Менеджер {manager_name} удален.')
 
+        return HttpResponseRedirect(success_url)
+
+
+class Undelete(
+    PermissionRequiredMixin,
+    RevisionMixin,
+    UnDeleteView
+):
+    template_name = 'crm/manager/manager/confirm_undelete.html'
+    model = Manager
+    context_object_name = 'manager'
+    success_url = reverse_lazy('crm:manager:manager:list')
+    permission_required = 'manager.undelete'
+
+    def undelete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        user = self.object.user
+        success_url = self.get_success_url()
+        self.object.undelete()
+        user.is_active = True
+        user.save()
+        messages.info(self.request, f'Менеджер {self.object} возвращен.')
         return HttpResponseRedirect(success_url)

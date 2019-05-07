@@ -7,147 +7,143 @@
 {% endblock %}
 
 {% block content %}
-<div class="page col-md-12 col-lg-9 col-xl-10">
-  {% ifhasperm 'manager.add' user %}
-    <a class="btn btn-primary btn-new"
-       href="{% url 'crm:manager:manager:new' %}">Новый</a>
-  {% endifhasperm %}
-  <div class="bredcams clearfix">
-    <ul>
-      <li>
-        Менеджеры
-      </li>
-      <li>
-        <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-             xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      </li>
-    </ul>
-  </div>
-  <div class="greyline"></div>
-  {% if managers %}
-  <table class="table table-hover">
-    <thead class="d-none d-md-block">
-    <tr>
-      <th width="1"></th>
-      <th>
-        ФИО
-      </th>
-      <th>
-        Телефон
-      </th>
-      <th>
-        VK
-      </th>
-      <th>
-        Ссылка для входа
-      </th>
-      <th width="1"></th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for manager in managers %}
-      <tr {% if manager.deleted %}archive{% endif %}>
-        <td class="td_photo" width="1">
-          {% if manager.vk_user_id %}
-            {% if vk_group_id %}
-              <a
-                href="https://vk.com/gim{{ vk_group_id }}?sel={{ manager.vk_user_id }}">
-                <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
-              </a>
-            {% else %}
-              <a href="https://vk.com/?sel={{ manager.vk_user_id }}">
-                <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
-              </a>
-            {% endif %}
-          {% else %}
-            <a href="#"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
-          {% endif %}
-        </td>
-        <td>
-          {% ifhasperm 'manager.view_detail' user %}
-          <a href="{% url "crm:manager:manager:detail" manager.id %}"
-             class="fio_name">{{ manager }}</a>
-          {% else %}
-          <a href="#" class="fio_name">{{ manager }}</a>
-          {% endifhasperm %}
-          {% if manager.user_id == user.id %}
-            <div>
-              <small class="yellow">Это вы</small>
-            </div>
-          {% endif %}
-          <div class="d-md-none">
-            <a href="tel:{{ manager.phone_number}}"
-            >{{ manager.phone_number }}</a>
-            <br/>
-            {% if manager.user.vk_link %}
-              <a href="{{ manager.user.vk_link|safe }}"
-                 target="_blank"
-                 class="btn-icon btn-copy"
-                 data-clipboard-text="{{ manager.user.vk_link|safe }}">
-                <span></span></a><span>{{ manager.user.vk_link|safe }}</span>
-            {% endif %}
-          </div>
-        </td>
-        <td class="d-none d-md-block">
-          <a
-            href="tel:{{ manager.phone_number }}">{{ manager.phone_number }}</a>
-        </td>
-        <td class="d-none d-md-block">
-          {% if manager.user.vk_link %}
-            <a href="{{ manager.user.vk_link|safe }}"
-               target="_blank">{{ manager.user.vk_link|safe }}</a>
-          {% else %}
-            Не привязано
-          {% endif %}
-        </td>
-        <td class="d-none d-md-block">
-          <a href="#" class="btn-icon btn-copy"
-             data-clipboard-text="{% one_time_login_link manager.user %}">
-            <span></span>
-          </a>
-          {% filter truncatechars_html:30 %}
-            <span>{% one_time_login_link manager.user %}</span>
-          {% endfilter %}
-        </td>
-        {% ifhasperm 'manager.delete' user %}
-          <td width="1">
-            <a class="btn btn-icon btn-delete"
-               href="{% url "crm:manager:manager:delete" manager.id %}">
-              <span></span>
-              <abbr>Удалить</abbr>
-            </a>
-          </td>
-        {% endifhasperm %}
-      </tr>
-    {% endfor %}
-    </tbody>
-  </table>
-
-  <div class="bottom_sidebar">
-      <div class="row align-items-center">
-        <div class="col-6">
-          {% if page_obj.paginator.num_pages > 1 %}
-            <nav>
-              {% bootstrap_pagination page_obj %}
-            </nav>
-          {% endif %}
-        </div>
-        <div id="show_archive" class="form-check col-6">
-          <div>
-            <label class="form-check-label" for="archive">
-              <input id="archive" type="checkbox" class="form-check-input">
-              <div class="form-check-input-div"></div>
-              Архивные
-            </label>
-          </div>
-        </div>
-      </div>
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    {% ifhasperm 'manager.add' user %}
+      <a class="btn btn-primary btn-new"
+         href="{% url 'crm:manager:manager:new' %}">Новый</a>
+    {% endifhasperm %}
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          Менеджеры
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
     </div>
-  {% else %}
-    <p>Ваш список менеджеров пуст</p>
-  {% endif %}
-</div>
+    <div class="greyline"></div>
+    {% if managers %}
+      <table class="table table-hover">
+        <thead class="d-none d-md-block">
+        <tr>
+          <th width="1"></th>
+          <th>
+            ФИО
+          </th>
+          <th>
+            Телефон
+          </th>
+          <th>
+            VK
+          </th>
+          <th>
+            Ссылка для входа
+          </th>
+          <th width="1"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for manager in managers %}
+          <tr {% if manager.deleted %}class="archive"{% endif %}>
+            <td class="td_photo" width="1">
+              {% if manager.vk_user_id %}
+                {% if vk_group_id %}
+                  <a
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ manager.vk_user_id }}">
+                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                  </a>
+                {% else %}
+                  <a href="https://vk.com/?sel={{ manager.vk_user_id }}">
+                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                  </a>
+                {% endif %}
+              {% else %}
+                <a href="#"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
+              {% endif %}
+            </td>
+            <td>
+              {% if not manager.deleted %}
+                {% ifhasperm 'manager.update' user %}
+                  <a href="{% url "crm:manager:manager:update" manager.id %}"
+                     class="fio_name">{{ manager }}</a>
+                {% else %}
+                  <a href="#" class="fio_name">{{ manager }}</a>
+                {% endifhasperm %}
+              {% else %}
+                {{ manager }}
+              {% endif %}
+              {% if manager.user_id == user.id %}
+                <div>
+                  <small class="yellow">Это вы</small>
+                </div>
+              {% endif %}
+              <div class="d-md-none">
+                <a href="tel:{{ manager.phone_number }}"
+                >{{ manager.phone_number }}</a>
+                <br/>
+                {% if manager.user.vk_link %}
+                  <a href="{{ manager.user.vk_link|safe }}"
+                     target="_blank"
+                     class="btn-icon btn-copy"
+                     data-clipboard-text="{{ manager.user.vk_link|safe }}">
+                    <span></span></a><span>{{ manager.user.vk_link|safe }}</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="d-none d-md-block">
+              <a
+                href="tel:{{ manager.phone_number }}">{{ manager.phone_number }}</a>
+            </td>
+            <td class="d-none d-md-block">
+              {% if manager.user.vk_link %}
+                <a href="{{ manager.user.vk_link|safe }}"
+                   target="_blank">{{ manager.user.vk_link|safe }}</a>
+              {% else %}
+                Не привязано
+              {% endif %}
+            </td>
+            <td class="d-none d-md-block">
+              {% if not manager.deleted %}
+                <a href="#" class="btn-icon btn-copy"
+                   data-clipboard-text="{% one_time_login_link manager.user %}">
+                  <span></span>
+                </a>
+                {% filter truncatechars_html:30 %}
+                  <span>{% one_time_login_link manager.user %}</span>
+                {% endfilter %}
+              {% endif %}
+            </td>
+            <td width="1">
+              {% if manager.deleted %}
+                {% ifhasperm 'manager.undelete' user %}
+                  <a class="btn btn-icon btn-undo"
+                     href="{% url "crm:manager:manager:undelete" manager.id %}">
+                    <span></span>
+                    <abbr>Вернуть</abbr>
+                  </a>
+                {% endifhasperm %}
+              {% else %}
+                {% ifhasperm 'manager.delete' user %}
+                  <a class="btn btn-icon btn-delete"
+                     href="{% url "crm:manager:manager:delete" manager.id %}">
+                    <span></span>
+                    <abbr>Удалить</abbr>
+                  </a>
+                {% endifhasperm %}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% include "crm/bars/_bottom_sidebar.html" %}
+    {% else %}
+      <p>Ваш список менеджеров пуст</p>
+    {% endif %}
+  </div>
 {% endblock content %}
