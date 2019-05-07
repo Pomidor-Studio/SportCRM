@@ -16,6 +16,8 @@ from transliterate.utils import _
 
 from contrib import text_utils
 
+from crm.auth.one_time_login import get_one_time_login_link
+
 register = template.Library()
 
 # Port of https://github.com/noirbizarre/django.js/blob/master/djangojs/templatetags/js.py  # noqa
@@ -244,3 +246,8 @@ def get_value(dictionary, key):
 @register.simple_tag
 def pluralize(amount, singular, plural1, plural2):
     return text_utils.pluralize(singular, plural1, plural2, amount)
+
+
+@register.simple_tag(takes_context=True)
+def one_time_login_link(context, user):
+    return get_one_time_login_link(context.request.get_host(), user)
