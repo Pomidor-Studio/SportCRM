@@ -2,6 +2,11 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
+{% block sidbar %}
+  {% url 'crm:manager:event:calendar' as back_link %}
+  {% include 'crm/bars/_sidebar_design.html' with name=event.event_class.name back_link=back_link %}
+{% endblock %}
+
 {% block content %}
   <div class="page workout_page col-md-12 col-lg-9 col-xl-10">
     <div class="workout_actions desktop_workout_actions d-none d-md-block">
