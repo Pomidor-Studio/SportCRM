@@ -1,5 +1,7 @@
 {% for sub in client.get_active_sub %}
   {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
+  <br/>
+  <small>{{ sub.sold_by }}</small>
   {% if client.get_active_sub|length > 1 %}
     {% if not forloop.last %}
       <div class="greyline"></div>
@@ -8,5 +10,7 @@
 {% empty %}
   {% if client.last_sub %}
     {{ client.last_sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
+    <br/>
+    <small>{{ sub.sold_by }}</small>
   {% endif %}
 {% endfor %}

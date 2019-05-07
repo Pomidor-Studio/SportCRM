@@ -33,37 +33,25 @@
       <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
     {% endwith %}
   {% elif client.get_active_sub|length > 1 %}
-    <form class="subscription_select">
       {% for sub in client.get_active_sub %}
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="abonement"
-                 id="abonement{{ sub.id }}" value="{{ sub.id }}"
-                 checked="checked" data-subscription="{{ sub.id }}">
-          <div class="form-check-input-div form-check-input-div-radio"></div>
-          <label class="form-check-label" for="abonement{{ sub.id }}">
-            <small>{{ sub.subscription.name }}</small>
-            <br/>
-            {% if sub.visits_left == sub.visits_on_by_time %}
-              <small>Доступно: {{ sub.visits_on_by_time }}</small>
-            {% else %}
-              <small>Доступно: {{ sub.visits_left }} из
-                {{ sub.visits_on_by_time }}</small>
-            {% endif %}
-            <br/>
-            <small>Действует
-              до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
-          </label>
-        </div>
+        <small>{{ sub.subscription.name }}</small>
+        <br/>
+        {% if sub.visits_left == sub.visits_on_by_time %}
+          <small>Доступно: {{ sub.visits_on_by_time }}</small>
+        {% else %}
+          <small>Доступно: {{ sub.visits_left }} из
+            {{ sub.visits_on_by_time }}</small>
+        {% endif %}
+        <br/>
+        <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
         {% if not forloop.last %}
           <div class="greyline"></div>
         {% endif %}
       {% endfor %}
-    </form>
   {% elif client.last_sub %}
     {{ client.last_sub.subscription.name }}
     <br/>
-    <small>Абонемент
-      закончился {{ client.last_sub.end_date|date:"SHORT_DATE_FORMAT" }} </small>
+    <small>Абонемент закончился {{ client.last_sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
   {% else %}
     Без абонемента
   {% endif %}

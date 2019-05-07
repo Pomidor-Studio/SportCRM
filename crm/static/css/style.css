@@ -96,6 +96,10 @@ small { font-size: 12px; }
 
 .btn-icon.btn-down span { background: url(../img/icons.png) 0 -226px no-repeat; top: 1px; left: 1px; width: 11px; height: 7px; }
 
+.btn-icon.btn-undo { padding: 0 12px !important; }
+
+.btn-icon.btn-undo span { background: url(../img/icons.png) 0 -246px no-repeat; top: 1px; left: 0; width: 14px; height: 14px; }
+
 tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat; }
 
 .datepick .btn, .timepick .btn { margin: 0 0 0 1px; }
@@ -142,12 +146,16 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .dropdown-item.active, .dropdown-item:active { background: #76BD1B; }
 
+#some_reason { display: none; }
+
 @media (max-width: 1024px) { .btn { padding: 5px 10px; }
   .btn-icon abbr { display: none; } }
 
 /* Формы, общее */
 /* Таблицы */
 .table { font-size: 14px; line-height: 19px; position: relative; top: -10px; color: #484F57; }
+
+.table thead th { background: #fff; position: -webkit-sticky; position: sticky; top: 0; z-index: 10; }
 
 .table tbody tr:hover { background: #eff8e5 !important; }
 
@@ -159,7 +167,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .table td, .table th { padding: 8px; vertical-align: middle; border: none; border-bottom: 1px solid #EEEEEE !important; min-height: 55px; }
 
-.table th { font-weight: bold; font-size: 10px; line-height: 12px; text-transform: uppercase; color: #484F57; }
+.table th { font-weight: bold; font-size: 10px; line-height: 12px; text-transform: uppercase; white-space: nowrap; color: #484F57; }
 
 .table td { height: 55px; }
 
@@ -173,7 +181,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .table .sell { font-size: 12px; color: #2B8CBB; text-decoration: underline; }
 
-.table .td_photo { width: 32px; vertical-align: top; padding-top: 14px; }
+.table .td_photo { width: 32px; }
 
 .table .dropdown-menu { margin-right: -10px; }
 
@@ -182,6 +190,8 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 .table .archive:hover { opacity: 1; }
 
 .table.workout_time .d-flex div { padding: 8px 16px; }
+
+.table .several .date { line-height: 35px; }
 
 .clone-head-table-wrap { border-bottom: 1px solid #EEEEEE; }
 
@@ -201,10 +211,14 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .bottom_sidebar .pagination a:hover { color: #76BD1B; }
 
-.tab-content { margin-bottom: 60px; }
+.tab-content, .freeze_table { margin-bottom: 60px; }
 
 @media (min-width: 768px) { thead.d-md-block { display: table-header-group !important; }
   th.d-md-block, td.d-md-block { display: table-cell !important; } }
+
+@media (max-width: 768px) { .table { top: 0; }
+  .table td { height: 80px; }
+  .table .several .td_photo { vertical-align: top; padding-top: 15px; } }
 
 /* Таблицы */
 /* Вкладки и поиск по таблице */
@@ -223,6 +237,8 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 .page .live_search input { padding-left: 30px; }
 
 .page .live_search span { background: url(../img/icons.png) 0 -173px no-repeat; position: absolute; z-index: 5; width: 12px; height: 12px; top: 11px; left: 11px; }
+
+@media (max-width: 768px) { .page .nav-pills { margin-bottom: 8px; } }
 
 /* Вкладки и поиск по таблице */
 /* Страница */
@@ -474,7 +490,9 @@ footer, .bottom { color: #636363; }
   .desktop_workout_actions .icon { margin-right: 12px; } }
 
 @media (max-width: 767px) { .workout_page .table .balance, .students_page .table .balance { position: absolute; right: 10px; }
-  .workout_page .table .btn, .students_page .table .btn { top: 10px; } }
+  .workout_page .table .btn, .students_page .table .btn { top: 10px; }
+  .workout_page .table .several .btn, .students_page .table .several .btn { margin: 12px 0; }
+  .workout_page .table .several .btn + .greyline, .students_page .table .several .btn + .greyline { position: relative; top: 12px; } }
 
 /* Тренировка, ученики и тренеры */
 /* Абонементы */
@@ -501,19 +519,35 @@ footer, .bottom { color: #636363; }
 #qr_scaner { width: 100%; max-width: 500px; margin: 0 auto; }
 
 /* Абонементы */
-/* Юзер инфо */
-.user_info { margin-bottom: 8px; }
+/* Ученик */
+.student_page .user_info { margin-bottom: 8px; }
 
-.user_info .user_pic { margin-right: 18px; }
+.student_page .user_info .user_pic { margin-right: 18px; }
 
-.user_info .user_pic img { display: block; width: 100px; height: 100px; border-radius: 100px; }
+.student_page .user_info .user_pic img { display: block; width: 100px; height: 100px; border-radius: 100px; }
 
-.user_info .big_name { font-size: 24px; font-weight: bold; }
+.student_page .user_info .big_name { font-size: 24px; font-weight: bold; }
 
-.user_info .save_buttons { margin: 8px 0; }
+.student_page .user_info .save_buttons { margin: 8px 0; }
 
-.user_info .save_buttons a { margin-bottom: 0; }
+.student_page .user_info .save_buttons a { margin-bottom: 0; }
 
-.user_info .balance { border: 1px solid #76BD1B; color: #76BD1B; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin-top: 8px; }
+.student_page .user_info .balance { border: 1px solid #484F57; color: #484F57; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin: 8px 8px 8px 0; }
 
-/* Юзер инфо */
+.student_page .user_info .balance.green { border: 1px solid #76BD1B; color: #76BD1B; }
+
+.student_page .user_info .balance.yellow { border: 1px solid #EAB701; color: #EAB701; }
+
+.student_page .user_info .balance.orange { border: 1px solid #EE5F0F; color: #EE5F0F; }
+
+.student_page #pills-journal table tr td:first-child { text-align: right; width: 100px; }
+
+.student_page #pills-journal table tr td:nth-child(2) { max-width: 300px; }
+
+.student_page .qr-code img { display: block; margin: 18px auto; }
+
+@media (max-width: 767px) { .student_page .nav-pills .nav-item:nth-child(2) .nav-link { border-right: none !important; padding-right: 0; }
+  .student_page .nav-pills .nav-item:nth-child(4) .nav-link { padding-left: 0; } }
+
+/* Ученик */
+

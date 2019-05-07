@@ -40,8 +40,22 @@
                 занятие</a>
               <a class="dropdown-item" href="#">Подробнее о занятии</a>
               <div class="greyline"></div>
-              <a class="dropdown-item" href="#">Отменить текущее занятие</a>
-              <a class="dropdown-item" href="#">Удалить все занятия</a>
+              {% if not event.is_canceled %}
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить занятие и продлить абонементы</a>
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить занятие без продления абонементов</a>
+              {% else %}
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
+              {% endif %}
+              {% if not event.is_closed %}
+                {% ifhasperm 'event.close' user event %}
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}">Закрыть занятие</a>
+                {% endifhasperm %}
+              {% else %}
+                {% ifhasperm 'event.open' user event %}
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}">Открыть занятие</a>
+                {% endifhasperm %}
+              {% endif %}
             </div>
           </div>
         </li>
@@ -65,7 +79,7 @@
     <div class="workout_actions mobile_workout_actions d-md-none">
       <ul class="row">
         {% ifhasperm 'client.add' user %}
-          <li class="new_student col-4">
+          <li class="new_student col-6">
             <a href="{% url 'crm:manager:client:new' %}">
               <span class="icon"></span>
               <span>Добавить<br/>ученика</span>
@@ -73,7 +87,7 @@
           </li>
         {% endifhasperm %}
         {% if not event.is_closed %}
-          <li class="QR col-4">
+          <li class="QR col-6">
             <a href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">
               <span class="icon"></span>
               <span>Сканер<br/>QR-кода</span>
@@ -135,7 +149,7 @@
                 <td colspan="10">Записанные</td>
               </tr>
               {% for client, subscriptions in signed_up_clients.items %}
-                <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
+                <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
                   <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
                   <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
@@ -144,7 +158,7 @@
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
-                  <td>{% include 'crm/manager/_client_list_item_button.html' with action=client.get_active_sub|length|yesno:"mark,new_subscription" %}</td>
+                  <td>{% include 'crm/manager/_client_list_item_buttons.html' with action=client.get_active_sub|length|yesno:"mark,new_subscription" %}</td>
                   <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                 </tr>
               {% endfor %}
@@ -152,7 +166,7 @@
                 <td colspan="10">Доступные по абонементу</td>
               </tr>
               {% for client, subscriptions in unmarked_clients.items %}
-                <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
+                <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
                   <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
                   <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
@@ -161,7 +175,7 @@
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
-                  <td>{% include 'crm/manager/_client_list_item_button.html' with action=client.get_active_sub|length|yesno:"mark,new_subscription" %}</td>
+                  <td>{% include 'crm/manager/_client_list_item_buttons.html' with action=client.get_active_sub|length|yesno:"mark,new_subscription" %}</td>
                   <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                 </tr>
               {% endfor %}
@@ -201,7 +215,7 @@
               </thead>
               <tbody>
               {% for attendance in attendance_list_marked %}
-                <tr class="{% if attendance.client.balance < 0 %}minus_balance{% endif %} {% if attendance.client.deleted %}archive{% endif %} ">
+                <tr class="{% if attendance.client.balance < 0 %}minus_balance{% endif %} {% if attendance.client.deleted %}archive{% endif %} several">
                   <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' with client=attendance.client %}</td>
                   <td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
                   <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client %}</td>
