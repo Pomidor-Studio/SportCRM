@@ -21,7 +21,7 @@ class List(PermissionRequiredMixin, FilterView):
     model = Coach
     template_name = 'crm/manager/coach/list.html'
     context_object_name = 'coachs'
-    paginate_by = 2
+    paginate_by = 25
     filterset_class = CoachFilter
     permission_required = 'coach'
 
