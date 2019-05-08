@@ -45,7 +45,7 @@
           <tr {% if location.deleted %}class="archive"{% endif %}>
             <td>
               {% if not location.deleted %}
-                {% ifhasperm 'location.update' user %}
+                {% ifhasperm 'location.edit' user %}
                   <a href="{% url "crm:manager:locations:update" location.id %}"
                      class="fio_name"> {{ location.name }}</a>
                 {% else %}
