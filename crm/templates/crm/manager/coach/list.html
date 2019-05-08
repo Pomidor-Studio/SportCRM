@@ -68,7 +68,7 @@
             </td>
             <td>
               {% if not coach.deleted %}
-                {% ifhasperm 'coach.update' user %}
+                {% ifhasperm 'coach.edit' user %}
                   <a href="{% url "crm:manager:coach:update" coach.id %}"
                      class="fio_name">{{ coach }}</a>
                 {% else %}

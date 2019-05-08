@@ -68,7 +68,7 @@
             </td>
             <td>
               {% if not manager.deleted %}
-                {% ifhasperm 'manager.update' user %}
+                {% ifhasperm 'manager.edit' user %}
                   <a href="{% url "crm:manager:manager:update" manager.id %}"
                      class="fio_name">{{ manager }}</a>
                 {% else %}
