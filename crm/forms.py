@@ -487,7 +487,7 @@ class UserForm(TenantModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ('first_name', 'last_name')
+        fields = ('first_name', 'last_name', 'email')
         widgets = {
             'first_name': forms.HiddenInput(),
             'last_name': forms.HiddenInput()

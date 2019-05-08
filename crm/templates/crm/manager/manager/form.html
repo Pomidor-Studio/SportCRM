@@ -38,7 +38,7 @@
 
     <form method="post">
       {% csrf_token %}
-      {% bootstrap_form form.user exclude="fullname" %}
+      {% bootstrap_form form.user exclude="fullname,email" %}
 
       <div class="form-group row align-items-center">
         <div class="col-12 col-md-10 col-xl-6 order-2 order-md-1">
@@ -46,8 +46,8 @@
         </div>
         {% if object.id %}
           <div class="col-12 col-md-1 order-1 order-md-2">
-            {% if object.vk_id %}
-              <img src="{% vk_small_avatar object.vk_id %}">
+            {% if object.user.vk_id %}
+              <img src="{% vk_small_avatar object.user.vk_id %}">
             {% else %}
               <img src="{% static "img/no-photo.png" %}"/>
             {% endif %}
@@ -67,6 +67,9 @@
       <div class="form-group row">
         <div class="col-12 col-md-5 col-xl-3">
           {% bootstrap_field form.manager.phone_number %}
+        </div>
+        <div class="col-12 col-md-5 col-xl-3">
+          {% bootstrap_field form.user.email %}
         </div>
       </div>
       <div class="row">
