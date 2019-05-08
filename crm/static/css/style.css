@@ -5,7 +5,7 @@ body { font-family: 'Roboto', sans-serif; font-size: 12px; color: #000; height: 
 
 @media (max-width: 992px) { body { height: calc(100vh - 60px); } }
 
-a { color: #76818F; }
+a { color: #484F57; }
 
 a:hover { color: #76BD1B; text-decoration: underline; }
 
@@ -29,10 +29,10 @@ small { font-size: 12px; }
 
 .dropdown-menu .dropdown-item:focus { background: #76BD1B; color: #fff; }
 
-.dropdown-menu a { font-size: 14px; color: #76818F; }
+.dropdown-menu a { font-size: 14px; color: #484F57; }
 
 /* Формы, общее */
-.form-control { font-size: 14px; color: #76818F; border: 1px solid #DEE2E6; border-radius: 4px; }
+.form-control { font-size: 14px; color: #484F57; border: 1px solid #DEE2E6; border-radius: 4px; }
 
 .form-control:focus { outline: inherit; box-shadow: inherit; border: 1px solid #76BD1B; }
 
@@ -44,9 +44,9 @@ small { font-size: 12px; }
 
 .save_buttons .btn { margin-bottom: 20px; }
 
-.btn { font-size: 14px; background: #fff; color: #76818F; border: 1px solid #DEE2E6; padding: 10px 20px; }
+.btn { font-size: 14px; background: #fff; color: #484F57; border: 1px solid #DEE2E6; padding: 10px 20px; }
 
-.btn:hover { background: #EEEEEE; color: #76818F; }
+.btn:hover { background: #EEEEEE; color: #484F57; }
 
 .btn:focus, .btn:active { outline: inherit; box-shadow: inherit; border: 1px solid #76BD1B; }
 
@@ -96,6 +96,10 @@ small { font-size: 12px; }
 
 .btn-icon.btn-down span { background: url(../img/icons.png) 0 -226px no-repeat; top: 1px; left: 1px; width: 11px; height: 7px; }
 
+.btn-icon.btn-undo { padding: 0 12px !important; }
+
+.btn-icon.btn-undo span { background: url(../img/icons.png) 0 -246px no-repeat; top: 1px; left: 0; width: 14px; height: 14px; }
+
 tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat; }
 
 .datepick .btn, .timepick .btn { margin: 0 0 0 1px; }
@@ -134,18 +138,24 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .input-group-append .btn { margin-right: 0; padding: 0.375rem 0.75rem; }
 
-.input-group-append .btn:hover, .input-group-append .btn:active, .input-group-append .btn:focus { outline: inherit !important; box-shadow: inherit !important; border: 1px solid #76BD1B !important; background: #fff; color: #76818F; }
+.input-group-append .btn:hover, .input-group-append .btn:active, .input-group-append .btn:focus { outline: inherit !important; box-shadow: inherit !important; border: 1px solid #76BD1B !important; background: #fff; color: #484F57; }
 
-.input-group-append .btn:active { background: #EEEEEE !important; color: #76818F !important; }
+.input-group-append .btn:active { background: #EEEEEE !important; color: #484F57 !important; }
 
 .input-group-append .btn.btn-primary:hover { color: #fff !important; }
+
+.dropdown-item.active, .dropdown-item:active { background: #76BD1B; }
+
+#some_reason { display: none; }
 
 @media (max-width: 1024px) { .btn { padding: 5px 10px; }
   .btn-icon abbr { display: none; } }
 
 /* Формы, общее */
 /* Таблицы */
-.table { font-size: 14px; line-height: 19px; position: relative; top: -10px; color: #76818F; }
+.table { font-size: 14px; line-height: 19px; position: relative; top: -10px; color: #484F57; }
+
+.table thead th { background: #fff; position: -webkit-sticky; position: sticky; top: 0; z-index: 10; }
 
 .table tbody tr:hover { background: #eff8e5 !important; }
 
@@ -157,7 +167,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .table td, .table th { padding: 8px; vertical-align: middle; border: none; border-bottom: 1px solid #EEEEEE !important; min-height: 55px; }
 
-.table th { font-weight: bold; font-size: 10px; line-height: 12px; text-transform: uppercase; color: #76818F; }
+.table th { font-weight: bold; font-size: 10px; line-height: 12px; text-transform: uppercase; white-space: nowrap; color: #484F57; }
 
 .table td { height: 55px; }
 
@@ -171,13 +181,17 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .table .sell { font-size: 12px; color: #2B8CBB; text-decoration: underline; }
 
-.table .td_photo { width: 32px; vertical-align: top; padding-top: 14px; }
+.table .td_photo { width: 32px; }
 
 .table .dropdown-menu { margin-right: -10px; }
 
 .table .archive { opacity: 0.6; display: none; }
 
 .table .archive:hover { opacity: 1; }
+
+.table.workout_time .d-flex div { padding: 8px 16px; }
+
+.table .several .date { line-height: 35px; }
 
 .clone-head-table-wrap { border-bottom: 1px solid #EEEEEE; }
 
@@ -193,14 +207,18 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .bottom_sidebar .pagination .active a { background: #76BD1B; border-color: #76BD1B; }
 
-.bottom_sidebar .pagination a { color: #76818F; }
+.bottom_sidebar .pagination a { color: #484F57; }
 
 .bottom_sidebar .pagination a:hover { color: #76BD1B; }
 
-.tab-content { margin-bottom: 60px; }
+.tab-content, .freeze_table { margin-bottom: 60px; }
 
 @media (min-width: 768px) { thead.d-md-block { display: table-header-group !important; }
   th.d-md-block, td.d-md-block { display: table-cell !important; } }
+
+@media (max-width: 768px) { .table { top: 0; }
+  .table td { height: 80px; }
+  .table .several .td_photo { vertical-align: top; padding-top: 15px; } }
 
 /* Таблицы */
 /* Вкладки и поиск по таблице */
@@ -219,6 +237,8 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 .page .live_search input { padding-left: 30px; }
 
 .page .live_search span { background: url(../img/icons.png) 0 -173px no-repeat; position: absolute; z-index: 5; width: 12px; height: 12px; top: 11px; left: 11px; }
+
+@media (max-width: 768px) { .page .nav-pills { margin-bottom: 8px; } }
 
 /* Вкладки и поиск по таблице */
 /* Страница */
@@ -350,7 +370,7 @@ footer, .bottom { color: #636363; }
 
 #calendar .fc-toolbar h2:before { content: "Тренировки: "; }
 
-#calendar .fc-toolbar .btn { background: #fff !important; color: #76818F !important; border: 1px solid #DEE2E6 !important; }
+#calendar .fc-toolbar .btn { background: #fff !important; color: #484F57 !important; border: 1px solid #DEE2E6 !important; }
 
 #calendar .fc-toolbar .btn.active { background: #EEEEEE !important; }
 
@@ -376,9 +396,9 @@ footer, .bottom { color: #636363; }
 
 #calendar .table-bordered thead td { border-bottom-width: 1px; }
 
-#calendar .fc-day-header { font-size: 12px; color: #76818F; padding: 3px; }
+#calendar .fc-day-header { font-size: 12px; color: #484F57; padding: 3px; }
 
-#calendar .fc-day-number { color: #76818F; padding: 8px 8px 2px 2px; }
+#calendar .fc-day-number { color: #484F57; padding: 8px 8px 2px 2px; }
 
 #calendar .fc-day-grid-event { margin: 4px 8px; border: none; }
 
@@ -393,6 +413,8 @@ footer, .bottom { color: #636363; }
 .fc-list-table { top: 0; }
 
 .fc-list-table td { height: 20px; }
+
+.fc-day-grid-event .fc-content { white-space: inherit !important; }
 
 @media (max-width: 374px) { .fc-prev-button, .fc-next-button { position: relative !important; top: 0 !important; right: 0 !important; margin-left: 8px !important; }
   .fc-prev-button { margin-left: 13px !important; } }
@@ -468,7 +490,9 @@ footer, .bottom { color: #636363; }
   .desktop_workout_actions .icon { margin-right: 12px; } }
 
 @media (max-width: 767px) { .workout_page .table .balance, .students_page .table .balance { position: absolute; right: 10px; }
-  .workout_page .table .btn, .students_page .table .btn { top: 10px; } }
+  .workout_page .table .btn, .students_page .table .btn { top: 10px; }
+  .workout_page .table .several .btn, .students_page .table .several .btn { margin: 12px 0; }
+  .workout_page .table .several .btn + .greyline, .students_page .table .several .btn + .greyline { position: relative; top: 12px; } }
 
 /* Тренировка, ученики и тренеры */
 /* Абонементы */
@@ -478,28 +502,11 @@ footer, .bottom { color: #636363; }
 
 @media (max-width: 767px) { .skip_line { top: 0; } }
 
-/* Абонементы */
-/* Юзер инфо */
-.user_info { margin-bottom: 8px; }
-
-.user_info .user_pic { margin-right: 18px; }
-
-.user_info .user_pic img { display: block; width: 100px; height: 100px; border-radius: 100px; }
-
-.user_info .big_name { font-size: 24px; font-weight: bold; }
-
-.user_info .save_buttons { margin: 8px 0; }
-
-.user_info .save_buttons a { margin-bottom: 0; }
-
-.user_info .balance { border: 1px solid #76BD1B; color: #76BD1B; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin-top: 8px; }
-
-/* Юзер инфо */
 #pills-subscriptions tr.active { background-color: #F4F4F4 !important; }
 
 #pills-subscriptions tr.active p { color: #000; }
 
-#pills-subscriptions tr.active p small { color: #76818F; }
+#pills-subscriptions tr.active p small { color: #484F57; }
 
 #pills-subscriptions tr.active_info { display: none; }
 
@@ -508,3 +515,39 @@ footer, .bottom { color: #636363; }
 #pills-subscriptions .buy_subscriptions tr:hover { background: #F4F4F4 !important; }
 
 #pills-subscriptions .save_buttons { margin-bottom: 0; }
+
+#qr_scaner { width: 100%; max-width: 500px; margin: 0 auto; }
+
+/* Абонементы */
+/* Ученик */
+.student_page .user_info { margin-bottom: 8px; }
+
+.student_page .user_info .user_pic { margin-right: 18px; }
+
+.student_page .user_info .user_pic img { display: block; width: 100px; height: 100px; border-radius: 100px; }
+
+.student_page .user_info .big_name { font-size: 24px; font-weight: bold; }
+
+.student_page .user_info .save_buttons { margin: 8px 0; }
+
+.student_page .user_info .save_buttons a { margin-bottom: 0; }
+
+.student_page .user_info .balance { border: 1px solid #484F57; color: #484F57; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin: 8px 8px 8px 0; }
+
+.student_page .user_info .balance.green { border: 1px solid #76BD1B; color: #76BD1B; }
+
+.student_page .user_info .balance.yellow { border: 1px solid #EAB701; color: #EAB701; }
+
+.student_page .user_info .balance.orange { border: 1px solid #EE5F0F; color: #EE5F0F; }
+
+.student_page #pills-journal table tr td:first-child { text-align: right; width: 100px; }
+
+.student_page #pills-journal table tr td:nth-child(2) { max-width: 300px; }
+
+.student_page .qr-code img { display: block; margin: 18px auto; }
+
+@media (max-width: 767px) { .student_page .nav-pills .nav-item:nth-child(2) .nav-link { border-right: none !important; padding-right: 0; }
+  .student_page .nav-pills .nav-item:nth-child(4) .nav-link { padding-left: 0; } }
+
+/* Ученик */
+

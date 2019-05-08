@@ -1,0 +1,14 @@
+{% if not client.deleted %}
+  {% for sub in client.get_active_sub %}
+    {% include 'crm/manager/_client_list_item_button.html' %}
+    {% if client.get_active_sub|length > 1 %}
+      {% if not forloop.last %}
+        <div class="greyline"></div>
+      {% endif %}
+    {% endif %}
+  {% empty %}
+    {% if client.last_sub %}
+      {% include 'crm/manager/_client_list_item_button.html' %}
+    {% endif %}
+  {% endfor %}
+{% endif %}

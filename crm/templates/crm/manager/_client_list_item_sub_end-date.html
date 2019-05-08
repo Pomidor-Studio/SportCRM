@@ -1,0 +1,12 @@
+{% for sub in client.get_active_sub %}
+  <span class="date">{{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</span>
+  {% if client.get_active_sub|length > 1 %}
+    {% if not forloop.last %}
+      <div class="greyline"></div>
+    {% endif %}
+  {% endif %}
+{% empty %}
+  {% if client.last_sub %}
+    {{ client.last_sub.end_date|date:"SHORT_DATE_FORMAT" }}
+  {% endif %}
+{% endfor %}

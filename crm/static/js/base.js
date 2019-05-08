@@ -4,7 +4,7 @@ $('#mobile_logo, #overlay').click(function() {
 	$('.mobile_sidebar .bredcams, .logo_name').toggle()
 	$('.sidebar-wrapper').slideToggle();
 	$('#overlay').fadeToggle();
-});
+})
 
 /* Показать «Вспомнить пароль» */
 $('#recall_password , #recall_password_back').click(function() {
@@ -12,8 +12,8 @@ $('#recall_password , #recall_password_back').click(function() {
 });
 
 /* Отступ для подвала сайдбара */
-var nav_bottom_height = $('.nav .bottom').height() + 20;
-$('.nav .top').attr('style','padding-bottom:'+nav_bottom_height+'px;');
+var nav_bottom_height = $('.nav .bottom').height() + 20
+$('.nav .top').attr('style','padding-bottom:'+nav_bottom_height+'px;')
 
 
 
@@ -107,3 +107,19 @@ $('.buy_subscriptions .cancel').click(function() {
 	$(this).parents('tr').toggleClass('active').toggle();
 	return(false)
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
