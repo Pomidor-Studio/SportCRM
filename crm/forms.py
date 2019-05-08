@@ -13,6 +13,7 @@ from django_select2.forms import (
     Select2Mixin, Select2MultipleWidget, Select2Widget,
 )
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
+from django.forms.widgets import TextInput, CheckboxSelectMultiple
 
 from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
 from crm.utils import VK_PAGE_REGEXP
@@ -142,6 +143,9 @@ class SubscriptionsTypeForm(TenantModelForm):
     class Meta:
         model = SubscriptionsType
         fields = '__all__'
+        widgets = {
+            'event_class': CheckboxSelectMultiple(),
+        }
 
 
 class SignUpClientWithoutSubscriptionForm(TenantForm):
@@ -179,7 +183,8 @@ class Select2ThemedMixin:
             super()._get_media() + forms.Media(
             css={
                 'screen': (
-                    'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',  # noqa
+                    'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',
+                # noqa
                 )
             })
         )
@@ -502,7 +507,7 @@ class UserForm(TenantModelForm):
 
 class CoachForm(TenantModelForm):
     vk_page = forms.RegexField(
-        label='Страница VK',
+        label='Профиль в Вконтакте',
         regex=VK_PAGE_REGEXP,
         required=False
     )
@@ -513,15 +518,18 @@ class CoachForm(TenantModelForm):
         widgets = {
             'phone_number': PhoneNumberInternationalFallbackWidget(
                 attrs={'data-phone': True}
+            ),
+            'vk_page': TextInput(
+                attrs={'placeholder': 'Ссылка на страницу пользователя'}
             )
         }
 
 
 class ManagerForm(TenantModelForm):
     vk_page = forms.RegexField(
-        label='Страница VK',
+        label='Профиль в Вконтакте',
         regex=VK_PAGE_REGEXP,
-        required=False
+        required=False,
     )
 
     class Meta:
@@ -530,6 +538,9 @@ class ManagerForm(TenantModelForm):
         widgets = {
             'phone_number': PhoneNumberInternationalFallbackWidget(
                 attrs={'data-phone': True}
+            ),
+            'vk_page': TextInput(
+                attrs={'placeholder': 'Ссылка на страницу пользователя'}
             )
         }
 
@@ -563,12 +574,15 @@ class ProfileCoachForm(MultiModelForm):
 
 
 class UploadExcelForm(forms.Form):
-    file = forms.FileField(label='Файл Excel',  help_text="Файл в формате excel")
+    file = forms.FileField(label='Файл Excel', help_text="Файл в формате excel")
     ignore_first_row = forms.BooleanField(label='Не учитывать первую строку', initial=False, required=False)
     name_col = forms.CharField(label='Столбец с ФИО', initial='A', help_text="Буква столбца с ФИО")
-    phone_col = forms.CharField(label='Столбец с номером телефона', initial='B', help_text="Буква столбца с номером телефона. Номер телефона в русском формате")
-    birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C', help_text="Буква столбца с датой рождения. Допустимые форматы даты: ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ")
-    vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D', help_text="Буква столбца со ссылкой на vk. Формат ссылки: vk.com/user_id или https://vk.com/user_id")
+    phone_col = forms.CharField(label='Столбец с номером телефона', initial='B',
+                                help_text="Буква столбца с номером телефона. Номер телефона в русском формате")
+    birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C',
+                                   help_text="Буква столбца с датой рождения. Допустимые форматы даты: ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ")
+    vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D',
+                             help_text="Буква столбца со ссылкой на vk. Формат ссылки: vk.com/user_id или https://vk.com/user_id")
     balance_col = forms.CharField(label='Столбец с балансом', initial='E', help_text="Буква столбца с балансом")
 
 

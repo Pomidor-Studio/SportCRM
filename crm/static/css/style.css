@@ -56,6 +56,12 @@ small { font-size: 12px; }
 
 .btn-primary:active { background: #EAB701 !important; border: 1px solid #EAB701 !important; }
 
+.btn-danger { background: #CA2929; border: 1px solid #CA2929; color: #fff; }
+
+.btn-danger:hover, .btn-danger:focus, .btn-danger:active { background: #9F1717 !important; outline: inherit !important; box-shadow: inherit !important; border: 1px solid #CA2929 !important; color: #fff; }
+
+.btn-danger:active { background: #EAB701 !important; border: 1px solid #EAB701 !important; }
+
 .btn-new { position: absolute; right: 15px; z-index: 4; }
 
 .btn-icon { min-width: 38px; height: 38px; line-height: 38px; padding: 0 8px !important; position: relative; }
@@ -106,7 +112,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .datepick .btn svg, .timepick .btn svg { position: absolute; top: 12px; right: 15px; }
 
-.gj-picker-bootstrap table tr td.selected.gj-cursor-pointer div { background-color: #76BD1B !important; border-color: #76BD1B !important; }
+.gj-picker-bootstrap table tr td.selected.gj-cursor-pointer div { background-color: #76BD1B !important; border-color: #76BD1B !important; color: #fff !important; }
 
 .timepick .form-control { text-align: center; }
 
@@ -122,7 +128,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .form-check .form-check-input-div { height: 16px; width: 16px; border-radius: 2px; background: #DEE2E6; border: 1px solid #DEE2E6; box-sizing: border-box; border-radius: 4px; float: left; margin-right: 8px; margin-top: 1px; }
 
-.form-check .form-check-input:hover ~ .form-check-input-div { background: #5F9914; border: 1px solid #76BD1B; }
+.form-check .form-check-input:hover ~ .form-check-input-div { /*background: $green_dark; border: 1px solid $green;*/ }
 
 .form-check .form-check-input:checked ~ .form-check-input-div { background-color: #76BD1B; }
 
@@ -155,7 +161,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 /* Таблицы */
 .table { font-size: 14px; line-height: 19px; position: relative; top: -10px; color: #484F57; }
 
-.table thead th { background: #fff; position: -webkit-sticky; position: sticky; top: 0; z-index: 10; }
+.table thead th { background: #fff; position: -webkit-sticky; position: sticky; top: 0; z-index: 2; }
 
 .table tbody tr:hover { background: #eff8e5 !important; }
 
@@ -185,7 +191,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .table .dropdown-menu { margin-right: -10px; }
 
-.table .archive { opacity: 0.6; display: none; }
+.table .archive { opacity: 0.6; }
 
 .table .archive:hover { opacity: 1; }
 
@@ -520,34 +526,39 @@ footer, .bottom { color: #636363; }
 
 /* Абонементы */
 /* Ученик */
-.student_page .user_info { margin-bottom: 8px; }
+.user_info { margin-bottom: 8px; }
 
-.student_page .user_info .user_pic { margin-right: 18px; }
+.user_info .user_pic { margin-right: 18px; }
 
-.student_page .user_info .user_pic img { display: block; width: 100px; height: 100px; border-radius: 100px; }
+.user_info .user_pic img { display: block; width: 100px; height: 100px; border-radius: 100px; }
 
-.student_page .user_info .big_name { font-size: 24px; font-weight: bold; }
+.user_info .big_name { font-size: 24px; font-weight: bold; }
 
-.student_page .user_info .save_buttons { margin: 8px 0; }
+.user_info .save_buttons { margin: 8px 0; }
 
-.student_page .user_info .save_buttons a { margin-bottom: 0; }
+.user_info .save_buttons a { margin-bottom: 0; }
 
-.student_page .user_info .balance { border: 1px solid #484F57; color: #484F57; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin: 8px 8px 8px 0; }
+.user_info .balance { border: 1px solid #484F57; color: #484F57; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin: 8px 8px 8px 0; }
 
-.student_page .user_info .balance.green { border: 1px solid #76BD1B; color: #76BD1B; }
+.user_info .balance.green { border: 1px solid #76BD1B; color: #76BD1B; }
 
-.student_page .user_info .balance.yellow { border: 1px solid #EAB701; color: #EAB701; }
+.user_info .balance.yellow { border: 1px solid #EAB701; color: #EAB701; }
 
-.student_page .user_info .balance.orange { border: 1px solid #EE5F0F; color: #EE5F0F; }
+.user_info .balance.orange { border: 1px solid #EE5F0F; color: #EE5F0F; }
 
 .student_page #pills-journal table tr td:first-child { text-align: right; width: 100px; }
 
 .student_page #pills-journal table tr td:nth-child(2) { max-width: 300px; }
 
-.student_page .qr-code img { display: block; margin: 18px auto; }
+.student_page #pills-qr img { display: block; }
+
+.student_page #pills-comment { padding-top: 18px; }
+
+.student_page #pills-comment p { margin-bottom: 10px; font-size: 14px; }
+
+.student_page .date_end small { white-space: nowrap; }
 
 @media (max-width: 767px) { .student_page .nav-pills .nav-item:nth-child(2) .nav-link { border-right: none !important; padding-right: 0; }
   .student_page .nav-pills .nav-item:nth-child(4) .nav-link { padding-left: 0; } }
 
 /* Ученик */
-

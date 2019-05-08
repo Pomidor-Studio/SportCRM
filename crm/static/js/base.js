@@ -47,17 +47,19 @@ $('#table_search').on('keyup', function() {
 });
 */
 
-/* Выбор абонемента на занятие */
+/* Выбор абонемента на занятие 
 $('.subscription_select input').click(function() {
 	var data = $(this).attr('data-subscription')
 	$(this).parents('tr').find('input[data-subscription='+data+']').prop('checked', true)
 	$(this).parents('tr').find('.btn-mark, .btn-pay').attr('data-subscription',data)
 })
+*/
 
-/* Показать архив */
+/* Показать архив 
 $('#show_archive .form-check-input').click(function() {
 	$('.table .archive').fadeToggle();
 })
+*/
 
 /* Копировать в буфер */
 $('.btn-copy').click(function() {
@@ -100,13 +102,42 @@ $('.subscription_check').find('input:not(#subscription_all)').click(function() {
 $('.btn-down, .buy_subscriptions .fio_name').click(function() {
 	$(this).parents('tr').toggleClass('active')
 	$(this).parents('tr').next('tr').toggleClass('active').toggle();
+	$(this).parents('tr').find('.date_end').toggle();
 	return(false)
 })
 $('.buy_subscriptions .cancel').click(function() {
 	$(this).parents('tr').prev('tr').toggleClass('active')
 	$(this).parents('tr').toggleClass('active').toggle();
+	$(this).parents('tr').find('.date_end').toggle();
 	return(false)
 })
+$.urlParam = function(name){
+    var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+    if (results==null) {
+       return null;
+    }
+    return decodeURI(results[1]) || 0;
+}
+var sell = $.urlParam('sell');
+if (sell == 'yes') {
+	$('.buy_subscriptions .cancel').parents('tr').prev('tr').toggleClass('active')
+	$('.buy_subscriptions .cancel').parents('tr').toggleClass('active').toggle();
+} 
+
+
+/* Другая причина в селекте 
+$('#id_reason').change(function() {
+  var option = $(this).find('option:selected').val();
+  if (option == 'Другая') {
+	  $('#some_reason').fadeIn();
+  } else {
+	  $('#some_reason').fadeOut();
+  }
+});
+*/
+
+
+
 
 
 

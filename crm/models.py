@@ -293,7 +293,7 @@ class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
         return self.user.get_full_name() or 'Имя не указано'
 
     def get_absolute_url(self):
-        return reverse('crm:manager:coach:detail', kwargs={'pk': self.pk})
+        return reverse('crm:manager:coach:update', kwargs={'pk': self.pk})
 
     @property
     def has_active_events(self):
@@ -305,7 +305,7 @@ class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
 
 
 @reversion.register()
-class Manager(CompanyObjectModel):
+class Manager(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     Профиль менеджера
     """
@@ -316,7 +316,7 @@ class Manager(CompanyObjectModel):
         return self.user.get_full_name() or 'Имя не указано'
 
     def get_absolute_url(self):
-        return reverse('crm:manager:manager:detail', kwargs={'pk': self.pk})
+        return reverse('crm:manager:manager:update', kwargs={'pk': self.pk})
 
 
 class EventClassManager(TenantManagerMixin, models.Manager):

@@ -87,6 +87,11 @@ manager_manager_urlpatterns = ([
         '<int:pk>/delete/',
         manager_manager_views.Delete.as_view(),
         name='delete'
+    ),
+    path(
+        '<int:pk>/undelete/',
+        manager_manager_views.Undelete.as_view(),
+        name='undelete'
     )
 ], 'manager')
 
