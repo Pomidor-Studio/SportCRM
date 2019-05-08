@@ -41,19 +41,19 @@
               <a class="dropdown-item" href="#">Подробнее о занятии</a>
               <div class="greyline"></div>
               {% if not event.is_canceled %}
-                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить занятие и продлить абонементы</a>
-                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить занятие без продления абонементов</a>
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить с продлением</a>
               {% else %}
                 <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
                 <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
               {% endif %}
               {% if not event.is_closed %}
                 {% ifhasperm 'event.close' user event %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}">Закрыть занятие</a>
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}">Удалить</a>
                 {% endifhasperm %}
               {% else %}
                 {% ifhasperm 'event.open' user event %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}">Открыть занятие</a>
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}">Восстановить занятие</a>
                 {% endifhasperm %}
               {% endif %}
             </div>

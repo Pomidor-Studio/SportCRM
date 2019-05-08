@@ -11,6 +11,11 @@
              href="{% url 'crm:manager:client:new-subscription' client.id %}"
              data-client-id="{{ client.id }}">Продать абонемент</a>
         {% endifhasperm %}
+        {% ifhasperm 'client_subscription.extend' user %}
+          <a class="dropdown-item"
+             href=""
+             data-client-id="{{ client.id }}">Продлить абонемент</a>
+        {% endifhasperm %}
       {% endif %}
       {% ifhasperm 'client-balance.add' user %}
         <a class="dropdown-item"
