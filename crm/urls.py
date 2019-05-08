@@ -193,9 +193,14 @@ manager_subscriptions_urlpatterns = ([
 manager_events_urlpatterns = ([
     path('', manager_event_views.Calendar.as_view(), name='calendar'),
     path(
-        'report/',
-        manager_event_views.Report.as_view(),
-        name='report'
+        'report/event/',
+        manager_event_views.EventReport.as_view(),
+        name='event-report'
+    ),
+    path(
+       'report/visit/',
+       manager_event_views.VisitReport.as_view(),
+       name='visit-report'
     ),
 ], 'event')
 

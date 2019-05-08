@@ -137,8 +137,17 @@ $('#id_reason').change(function() {
 */
 
 
-
-
+/* Архивирование ученика */
+$('#archive_student').on('show.bs.modal', function (event) {
+	var button = $(event.relatedTarget)
+	var arch_id = button.data('client-id')
+	var arch_name = button.data('client-name')
+	
+	var modal = $(this)
+	modal.find('.modal-body h5').text(arch_name)
+	modal.find('#archive_it').attr('href','/manager/clients/' + arch_id + '/delete/')
+	
+})
 
 
 

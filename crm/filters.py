@@ -5,11 +5,11 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.forms.utils import ErrorList
 from django.http import QueryDict
-from django_select2.forms import Select2MultipleWidget
+from django.utils import dateformat
 from phonenumber_field import modelfields
 
 from crm import models
-from crm.utils import BootstrapDateRangeField
+from crm.utils import BootstrapDateFromToRangeFilter
 
 
 class ClientFilter(django_filters.FilterSet):
@@ -46,39 +46,110 @@ class ClientFilter(django_filters.FilterSet):
         fields = ('name', 'debtor',)
 
 
-class EventReportFilter(forms.Form):
-    date = BootstrapDateRangeField(
-        label='Диапазон дат:',
-    )
-    employee = forms.ModelMultipleChoiceField(
-        label='Сотрудник:',
-        queryset=models.User.objects.all(),
-        widget=Select2MultipleWidget,
+class EventReportFilter(django_filters.FilterSet):
+    date = BootstrapDateFromToRangeFilter(label='Диапазон дат:')
+    coach = django_filters.ModelMultipleChoiceFilter(
+        label='Тренер:',
+        field_name='event_class__coach',
+        queryset=models.Coach.objects,
+        widget=forms.SelectMultiple(
+            attrs={
+                'class': 'selectpicker form-control',
+                'multiple': '',
+                'data-selected-text-format': 'static',
+                'title': 'Тренер',
+            }
+        ),
         required=False,
     )
-    event_class = forms.ModelMultipleChoiceField(
+    event_class = django_filters.ModelMultipleChoiceFilter(
         label='Тип тренировки:',
-        queryset=models.EventClass.objects.all(),
-        widget=Select2MultipleWidget,
+        field_name='event_class',
+        queryset=models.EventClass.objects,
+        widget=forms.SelectMultiple(
+            attrs={
+                'class': 'selectpicker form-control',
+                'multiple': '',
+                'data-selected-text-format': 'static',
+                'title': 'Тип тренировки',
+            }
+        ),
         required=False,
     )
 
-    def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None, initial=None, error_class=ErrorList,
-                 label_suffix=None, empty_permitted=False, field_order=None, use_required_attribute=None,
-                 renderer=None):
+    def __init__(self, data=None, queryset=None, *, request=None, prefix=None):
         with_defaults_data = (
             data.copy() if data is not None else QueryDict(mutable=True)
         )
         # Подставляем текущий месяц
         if data is None or not ('date_after' in data and 'date_before' in data):
-            with_defaults_data['date_after'] = datetime.today().replace(day=1)
-            with_defaults_data['date_before'] = (
-                datetime.today().replace(day=1) +
-                relativedelta(months=1) - timedelta(days=1)
+            with_defaults_data['date_after'] = dateformat.format(
+                datetime.today().replace(day=1), 'd.m.Y'
             )
-        super().__init__(with_defaults_data, files, auto_id, prefix, initial, error_class, label_suffix,
-                         empty_permitted, field_order,
-                         use_required_attribute, renderer)
+            with_defaults_data['date_before'] = dateformat.format(
+                datetime.today().replace(day=1) + relativedelta(months=1) - timedelta(days=1),
+                'd.m.Y'
+            )
+        super().__init__(
+            with_defaults_data, queryset, request=request, prefix=prefix)
+
+    class Meta:
+        model = models.Event
+        fields = ('date',)
+
+
+class VisitReportFilter(forms.Form):
+    event_class = forms.ModelMultipleChoiceField(
+        label='Тип тренировки:',
+        queryset=models.EventClass.objects,
+        widget=forms.SelectMultiple(
+            attrs={
+                'class': 'selectpicker form-control',
+                'multiple': '',
+                'data-selected-text-format': 'static',
+                'title': 'Тип тренировки',
+            }
+        ),
+        required=False,
+    )
+    month = forms.ChoiceField(
+        label='Месяц:',
+        initial=date.today().month,
+        choices=(
+            (1, 'Январь'),
+            (2, 'Февраль'),
+            (3, 'Март'),
+            (4, 'Апрель'),
+            (5, 'Май'),
+            (6, 'Июнь'),
+            (7, 'Июль'),
+            (8, 'Август'),
+            (9, 'Сентябрь'),
+            (10, 'Октябрь'),
+            (11, 'Ноябрь'),
+            (12, 'Декабрь'),
+        ),
+        widget=forms.Select(
+            attrs={
+                'class': 'selectpicker form-control',
+                'title': 'Месяц',
+            }
+        ),
+    )
+    year = forms.ChoiceField(
+        label='Год:',
+        initial=date.today().year,
+        choices=(
+            (y, y) for y in range(2019, date.today().year + 1)
+        ),
+        widget=forms.Select(
+            attrs={
+                'class': 'selectpicker form-control',
+                'title': 'Год',
+            }
+        ),
+
+    )
 
 
 class ArchivableFilterSet(django_filters.FilterSet):
