@@ -1,4 +1,4 @@
-{% load bootstrap4  %}
+{% load bootstrap4 %}
 <div class="bottom_sidebar">
   <div class="row align-items-center">
     <div class="col-6">
@@ -10,11 +10,13 @@
     </div>
     <div id="show_archive" class="form-check col-6">
       <div>
-        <label class="form-check-label" for="archive">
-          <input id="archive" type="checkbox" class="form-check-input" {% if filter.form.with_archive.value %}checked="checked"{% endif %}/>
-          <div class="form-check-input-div"></div>
-          Архивные
-        </label>
+        <form action="?{{ filter.data.urlencode }}" method="get">
+          <label class="form-check-label" for="archive">
+            <input id="archive" type="checkbox" value="True" name="with_archive" class="form-check-input"  {% if filter.form.with_archive.value %}checked="checked"{% endif %} onclick="this.form.submit()">
+            <div class="form-check-input-div"></div>
+            Архивные
+          </label>
+        </form>
       </div>
     </div>
   </div>

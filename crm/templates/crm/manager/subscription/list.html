@@ -17,6 +17,12 @@
         <li>
           Абонементы
         </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
       </ul>
     </div>
 
@@ -71,9 +77,16 @@
             {% endfor %}
           </td>
           <td>
-            {{ subscription.duration }} {{ subscription.duration_postfix }}
+            <div class="d-none d-md-block">
+              {{ subscription.duration }} {{ subscription.duration_postfix }}
+            </div>
+            <div class="d-block d-md-none">
+              <small> {{ subscription.duration }} {{ subscription.duration_postfix }}</small>
+              <br>
+              <small>Посещений: {{ subscription.visit_limit }}</small>
+            </div>
           </td>
-          <td>
+          <td class="d-none d-md-block">
             {{ subscription.visit_limit }}
           </td>
           <td>

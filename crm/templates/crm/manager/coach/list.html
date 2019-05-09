@@ -109,13 +109,12 @@
             </td>
             <td class="d-none d-md-block">
               {% if not coach.deleted %}
-                <a href="#" class="btn-icon btn-copy"
-                   data-clipboard-text="{% one_time_login_link coach.user %}">
-                  <span></span>
-                </a>
-                {% filter truncatechars_html:30 %}
-                  <span>{% one_time_login_link coach.user %}</span>
-                {% endfilter %}
+                <div class="copy_url">
+                  <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link coach.user %}"><span></span></a>
+                  {% filter truncatechars_html:30 %}
+                    <span>{% one_time_login_link coach.user %}</span>
+                  {% endfilter %}
+                </div>
               {% endif %}
             </td>
             <td width="1">
@@ -148,3 +147,11 @@
     {% endif %}
   </div>
 {% endblock content %}
+
+
+{% block extrajs %}
+  {% js "js/clipboard.min.js" %}
+  <script>
+    new ClipboardJS('.btn-copy');
+  </script>
+{% endblock %}
