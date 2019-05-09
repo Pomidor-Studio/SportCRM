@@ -1,31 +1,43 @@
 {% load html_helper %}
 
 <div class="btn-group">
-  <a class="btn btn-icon btn-more" data-toggle="dropdown" aria-haspopup="true"
-     aria-expanded="false"><span></span></a>
+  <a class="btn btn-icon btn-more"
+     data-toggle="dropdown"
+     aria-haspopup="true"
+     aria-expanded="false">
+    <span></span>
+  </a>
   <div class="dropdown-menu dropdown-menu-right">
     {% if not client.deleted %}
       {% if has_active_event_class %}
         {% ifhasperm 'client_subscription.sale' user %}
           <a class="dropdown-item"
              href="{% url 'crm:manager:client:new-subscription' client.id %}"
-             data-client-id="{{ client.id }}">Продать абонемент</a>
+             data-client-id="{{ client.id }}">
+            Продать абонемент
+          </a>
         {% endifhasperm %}
         {% ifhasperm 'client_subscription.extend' user %}
           <a class="dropdown-item"
              href=""
-             data-client-id="{{ client.id }}">Продлить абонемент</a>
+             data-client-id="{{ client.id }}">
+            Продлить абонемент
+          </a>
         {% endifhasperm %}
       {% endif %}
       {% ifhasperm 'client-balance.add' user %}
         <a class="dropdown-item"
            href="{% url 'crm:manager:client:balance:new' client.id %}"
-           data-client-id="{{ client.id }}">Пополнить баланс</a>
+           data-client-id="{{ client.id }}">
+          Пополнить баланс
+        </a>
       {% endifhasperm %}
       {% ifhasperm 'client' user %}
         <a class="dropdown-item"
            href="{% url 'crm:manager:client:detail' client.id %}"
-           data-client-id="{{ client.id }}">Перейти к карточке ученика</a>
+           data-client-id="{{ client.id }}">
+          Перейти к карточке ученика
+        </a>
       {% endifhasperm %}
       {% if client.vk_user_id or client.phone_number %}
         <div class="greyline"></div>
@@ -45,15 +57,23 @@
           {% endif %}
         {% endif %}
         {% if client.phone_number %}
-          <a class="dropdown-item" href="tel:{{ client.phone_number }}"
-             data-client-id="92">Позвонить</a>
+          <a class="dropdown-item"
+             href="tel:{{ client.phone_number }}"
+             data-client-id="92">
+            Позвонить
+          </a>
         {% endif %}
       {% endif %}
       <div class="greyline"></div>
       {% ifhasperm 'client.delete' user %}
         <a class="dropdown-item"
-           href="{% url 'crm:manager:client:delete' client.id %}"
-           data-client-id="{{ client.id }}">Переместить в архив</a>
+           href="#"
+           data-client-id="{{ client.id }}"
+           data-client-name="{{ client.name }}"
+           data-toggle="modal"
+           data-target="#archive_student_{{ client.id }}">
+          Переместить в архив
+        </a>
       {% endifhasperm %}
     {% else %}
       {% ifhasperm 'client.undelete' user %}
@@ -62,5 +82,37 @@
            data-client-id="{{ client.id }}">Вернуть из архива</a>
       {% endifhasperm %}
     {% endif %}
+  </div>
+</div>
+
+<!-- Переместить в архив -->
+<div class="modal fade"
+     id="archive_student_{{ client.id }}"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="archive_student"
+     aria-hidden="true">
+  <div class="modal-dialog"
+       role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Переместить ученика в архив?</h5>
+        <button type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body"><h5></h5></div>
+      <div class="modal-footer">
+        <button type="button"
+                class="btn"
+                data-dismiss="modal">Назад</button>
+        <a id="archive_it"
+           href="{% url 'crm:manager:client:delete' client.id %}"
+           class="btn btn-primary">В архив</a>
+      </div>
+    </div>
   </div>
 </div>
