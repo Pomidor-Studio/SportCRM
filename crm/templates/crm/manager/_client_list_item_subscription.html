@@ -1,7 +1,7 @@
 {% load html_helper %}
 
-{% if client.get_active_sub|length == 1 %}
-  {% with client.get_active_sub.first as sub %}
+{% if active_sub|length == 1 %}
+  {% with active_sub.first as sub %}
     {{ sub.subscription.name }}
     <br/>
       {% if sub.visits_left == sub.visits_on_by_time %}
@@ -11,9 +11,9 @@
           {{ sub.visits_on_by_time }}</small>
       {% endif %}
   {% endwith %}
-{% elif client.get_active_sub|length > 1 %}
+{% elif active_sub|length > 1 %}
   <form class="subscription_select">
-    {% for sub in client.get_active_sub %}
+    {% for sub in active_sub %}
       {{ sub.subscription.name }}
       <br/>
       {% if sub.visits_left == sub.visits_on_by_time %}
@@ -27,8 +27,8 @@
       {% endif %}
     {% endfor %}
   </form>
-{% elif client.last_sub %}
-  {{ client.last_sub.subscription.name }}
+{% elif last_sub %}
+  {{ last_sub.subscription.name }}
   {% if not client.deleted %}
     {% ifhasperm 'client_subscription.sale' user %}
       <br/>

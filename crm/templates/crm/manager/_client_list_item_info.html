@@ -19,8 +19,8 @@
   <small>{{ client.phone_number }}</small>
 </div>
 <div class="d-md-none">
-  {% if client.get_active_sub|length == 1 %}
-    {% with client.get_active_sub.first as sub %}
+  {% if active_sub|length == 1 %}
+    {% with active_sub.first as sub %}
       {{ sub.subscription.name }}
       <br/>
       {% if sub.visits_left == sub.visits_on_by_time %}
@@ -33,7 +33,7 @@
       <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
     {% endwith %}
   {% elif client.get_active_sub|length > 1 %}
-      {% for sub in client.get_active_sub %}
+      {% for sub in active_sub %}
         <small>{{ sub.subscription.name }}</small>
         <br/>
         {% if sub.visits_left == sub.visits_on_by_time %}
@@ -48,10 +48,10 @@
           <div class="greyline"></div>
         {% endif %}
       {% endfor %}
-  {% elif client.last_sub %}
-    {{ client.last_sub.subscription.name }}
+  {% elif last_sub %}
+    {{ last_sub.subscription.name }}
     <br/>
-    <small>Абонемент закончился {{ client.last_sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
+    <small>Абонемент закончился {{ last_sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
   {% else %}
     Без абонемента
   {% endif %}
