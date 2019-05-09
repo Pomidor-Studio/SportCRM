@@ -17,13 +17,17 @@
             Продать абонемент
           </a>
         {% endifhasperm %}
-        {% ifhasperm 'client_subscription.extend' user %}
-          <a class="dropdown-item"
-             href=""
-             data-client-id="{{ client.id }}">
-            Продлить абонемент
-          </a>
-        {% endifhasperm %}
+        {% if active_sub|length == 1 %}
+          {% ifhasperm 'client_subscription.extend' user %}
+            {% with active_sub.first as sub %}
+              <a class="dropdown-item"
+                 href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
+                 data-client-id="{{ client.id }}">
+                Продлить абонемент
+              </a>
+            {% endwith %}
+          {% endifhasperm %}
+        {% endif %}
       {% endif %}
       {% ifhasperm 'client-balance.add' user %}
         <a class="dropdown-item"
