@@ -71,8 +71,12 @@
         <div class="greyline"></div>
         {% ifhasperm 'report.list' user %}
           <a class="nav-link"
-             href="{% url 'crm:manager:reports' %}">
+             href="{% url 'crm:manager:event:event-report' %}">
             Отчет по тренировкам
+          </a>
+          <a class="nav-link"
+             href="{% url 'crm:manager:event:visit-report' %}">
+            Отчет по посещениям
           </a>
         {% endifhasperm %}
       </div>
