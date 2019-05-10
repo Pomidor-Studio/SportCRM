@@ -72,7 +72,8 @@
   >
 
   <!-- CSS -->
-  {% bootstrap_css %}
+  {% css 'css/bootstrap.min.css' %}
+  {% css 'css/bootstrap-select.css' %}
   {% css 'css/gijgo.min.css' %}
   {% css 'css/style.css' %}
 
@@ -96,16 +97,16 @@
 
 {% block main %}{% endblock %}
 
-<!-- JQuery -->
-{% bootstrap_javascript jquery='full' %}
-
-<!-- Coustom JS -->
-{% js 'js/moment.min.js' %}
+{% js 'js/jquery.min.js' %}
+{% js 'js/popper.min.js' %}
+{% js 'js/bootstrap.min.js' %}
+{% js 'js/bootstrap-select.min.js' %}
 {% js 'js/cleave.min.js' %}
 {% js 'js/cleave-phone.ru.js' %}
 {% js 'js/gijgo.min.js' %}
 {% js 'js/gijgo/messages.ru-ru.js' %}
 {% js 'js/base.js' %}
+
 
 <script type="text/javascript">
     function getCookie(name) {
