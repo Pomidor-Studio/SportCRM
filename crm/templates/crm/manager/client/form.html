@@ -1,150 +1,107 @@
-{% extends "crm/base.html" %}
-
-{% block extrahead %}
-{{ form.media }}
-<script src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
-<script src="https://vk.com/js/api/openapi.js?160" type="text/javascript"></script>
-<script src="https://unpkg.com/libphonenumber-js@1.7.10/bundle/libphonenumber-max.js"></script>
-<script type="text/javascript">
-    $(function () {
-      const phoneAYT = new libphonenumber.AsYouType('RU');
-      let oldData = $('[data-phone]').val();
-      const vkUserId = $("#id_vk_user_id").val();
-
-      if (vkUserId !== undefined && vkUserId !== "") {
-        getUserData(vkUserId);
-       }
-
-      $('[data-phone]').on('input', function(e) {
-        const data = $(this).val().trim();
-        const phone = phoneAYT.input(data);
-        const number = phoneAYT.getNumber();
-
-        if (number === undefined || number.isValid()) {
-            e.currentTarget.setCustomValidity('');
-        } else {
-            e.currentTarget.setCustomValidity('Неправильный номер');
-        }
-        if (oldData !== phone) {
-          $(e.currentTarget).val(phone);
-          oldData = phone;
-        }
-        phoneAYT.reset();
-      });
-
-        $("#vk_user_ref").change(function() {
-            const data = $(this).val().trim;
-            var idRe = new RegExp("vk.com\/(?<user_id>([A-Za-z0-9_])+)");
-            var matchString = $("#vk_user_ref").val();
-
-            if (matchString === '' || matchString === null) {
-              clearFields()
-            } else {
-              var matchObj = idRe.exec(matchString);
-              try {
-                  var id = matchObj.groups.user_id;
-                  getUserData(id);
-              } catch (err) {
-                 showError("Ошибка! Неверный формат ссылки вк!");
-              }
-            }
-        });
-
-    });
-
-    function clearFields() {
-        $("#id_vk_user_id").val("");
-        $("#profile_pic").attr("src", "");
-        $("#profile_pic_container").hide();
-    }
-
-    function showError(errorText) {
-        clearFields()
-        $("#alert")
-          .text(errorText)
-          .show();
-    }
-
-    function getUserData(id) {
-        var returnData;
-        var access_token = '6cd5df431f32f7b9f67a44baf2e0859265b290fc6e892d26b39fed3b961e72355dbea36fcc2d9a02dc4f4';
-        $.ajax({
-            url: 'https://api.vk.com/method/users.get',
-            data: {
-                user_ids: id,
-                fields: "photo_100, bdate, domain",
-                access_token: access_token,
-                v: 5.63
-            },
-            type: 'GET',
-            dataType: 'jsonp',
-            crossDomain: true,
-            async: false,
-            success: function(data) {
-                if (data.error) {
-                    showError("Ошибка! Такого пользователя не существует!");
-                }
-                else {
-                    $("#alert").hide();
-                    var $name = $("#id_name");
-                    if ($name.val() === "") {
-                        $name.val(
-                          data.response[0].first_name + ' ' + data.response[0].last_name);
-                    }
-                    var $birthday = $("#id_birthday");
-                    if ($birthday.val() === "") {
-                        try {
-                            $birthday.val(data.response[0].bdate);
-                        } catch (err) { }
-                    }
-                    const vkUserId = $("#id_vk_user_id").val();
-                    if (vkUserId === undefined || vkUserId === "")
-                      $("#id_vk_user_id").val(data.response[0].id);
-                    else
-                      $("#vk_user_ref").val("vk.com/" + data.response[0].domain);
-                    $("#profile_pic").attr("src", data.response[0].photo_100);
-                    $("#profile_pic_container").show();
-                    $("#alert").hide();
-                }
-            },
-            error: function (data) {
-                showError('Request error');
-            }
-        });
-    }
-</script>
-{% endblock %}
+{% extends "crm/base_design.html" %}
 
 {% load bootstrap4 %}
 
+{% block sidbar %}
+  {% url 'crm:manager:client:list' as back_link %}
+  {% if object.id %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=object.name back_link=back_link %}
+  {% else %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новый ученик" back_link=back_link %}
+  {% endif %}
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Ученик</legend>
-    <div id="alert" class="alert alert-danger" style="display: none" role="alert"></div>
-        <div id="profile_pic_container" style="display: none" class="form-group">
-            <img id="profile_pic" class="rounded"/>
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url 'crm:manager:client:list' %}">Ученики</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
+        <li>
+          {% if object.id %}{{ object.name }}{% else %}Новый ученик {% endif %}
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
+    </div>
+
+    <div class="greyline"></div>
+
+    <form method="POST" action="">
+      {% csrf_token %}
+      <div class="row">
+        <div class="col-12 col-md-10 col-xl-6 form-group">
+          {% bootstrap_field form.vk_page %}
         </div>
-        <div class="form-group">
-            <label>Профиль в Вконтакте</label>
-            <input id="vk_user_ref" class="form-control" placeholder="Ссылка на профиль vk">
+      </div>
+      <div class="row">
+        <div class="col-12 col-md-10 col-xl-6 form-group">
+          {% bootstrap_field form.name %}
         </div>
-        <form method="POST">
-            {% csrf_token %}
-            {% bootstrap_form form %}
-            <div class="form-group">
-              {% if object.id %}
-                <button class="btn btn-primary" type="submit">Сохранить</button>
-              {% else %}
-                <button class="btn btn-primary" type="submit">Добавить</button>
-                <button type="submit" name="another" class="btn btn-primary">Сохранить и добавить ещё</button>
-              {% endif %}
-                <a
-                  name="cancel"
-                  href="{% if object.id %}{% url 'crm:manager:client:detail' object.id %}{% else %}{% url 'crm:manager:client:list' %}{% endif %}"
-                  class="btn btn-outline-info">
-                      Назад
-                </a>
-            </div>
-        </form>
-</div>
+
+      </div>
+      <div class="row">
+        <div class="col-12 col-md-10 col-xl-6 form-group">
+          {% bootstrap_field form.address %}
+
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group datepick col-12 col-md-3">
+          {% bootstrap_field form.birthday %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group col-12 col-md-5 col-xl-3">
+          {% bootstrap_field form.phone_number %}
+        </div>
+        <div class="form-group col-12 col-md-5 col-xl-3">
+          {% bootstrap_field form.email_address %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group col-12 col-md-10 col-xl-6">
+          {% bootstrap_field form.additional_info %}
+        </div>
+      </div>
+      {% if next %}
+        <input type="hidden" name="next" value="{{ next|urlencode }}">
+      {% endif %}
+
+      <div class="form-group save_buttons">
+        <input class="btn btn-primary" type="submit" value="Сохранить">
+        <a name="cancel" href="
+
+          {% if object.id %}{% url 'crm:manager:client:detail' object.id %}{% else %}{% url 'crm:manager:client:list' %}{% endif %}"
+           class="btn">Отмена</a>
+      </div>
+    </form>
+  </div>
 {% endblock content %}
+
+{% block extrajs %}
+  <script>
+    $('#id_birthday').datepicker({
+      uiLibrary: 'bootstrap4',
+      locale: 'ru-ru',
+      format: 'dd.mm.yyyy',
+      modal: false,
+      icons: {
+        rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+      }
+    });
+    var cleave = new Cleave('#id_phone_number', {
+      phone: true,
+      phoneRegionCode: 'RU'
+    });
+  </script>
+{% endblock %}

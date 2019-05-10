@@ -46,25 +46,35 @@ class Select2SingleTagWidget(
 
 
 class ClientForm(TenantModelForm):
+    vk_page = forms.RegexField(
+        label='Профиль в Вконтакте',
+        regex=VK_PAGE_REGEXP,
+        required=False,
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "vk.com/id234533221"},
+        )
+    )
+
     birthday = forms.DateField(
         label='Дата рождения',
         required=False,
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        )
     )
+
+    def full_clean(self):
+        super().full_clean()
+
+    # def get_initial_for_field(self, field, field_name):
+    #     if field_name == 'vk_page' and self.instance:
+    #         return
+    #     return super().get_initial_for_field(field, field_name)
 
     class Meta:
         model = Client
 
         fields = [
             'name', 'address', 'birthday', 'phone_number',
-            'email_address', 'vk_user_id', 'additional_info',
+            'email_address',  'additional_info',
         ]
         widgets = {
             'address': forms.TextInput(
@@ -77,7 +87,7 @@ class ClientForm(TenantModelForm):
                 attrs={"class": "form-control", "placeholder": "ФИО"}
             ),
             'phone_number': PhoneNumberInternationalFallbackWidget(
-                attrs={'data-phone': True}
+                attrs={'data-phone': True, "placeholder": "+7 919 123 45 67"}
             ),
             'email_address': forms.EmailInput(
                 attrs={
@@ -88,8 +98,7 @@ class ClientForm(TenantModelForm):
                 attrs={
                     "class": "form-control",
                 }
-            ),
-            'vk_user_id': forms.HiddenInput(),
+            )
         }
 
 
@@ -184,7 +193,7 @@ class Select2ThemedMixin:
             css={
                 'screen': (
                     'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',
-                # noqa
+                    # noqa
                 )
             })
         )

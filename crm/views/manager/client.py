@@ -2,17 +2,19 @@ import re
 
 import openpyxl as openpyxl
 from django.contrib import messages
+from django.contrib.auth.views import SuccessURLAllowedHostsMixin
 from django.db import transaction
-from django.db.models import ProtectedError
 from django.forms import forms
 from django.forms.utils import ErrorList
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.utils.http import is_safe_url
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, RedirectView, TemplateView,
     UpdateView,
 )
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django_filters.views import FilterView
 from django_multitenant.utils import get_current_tenant
 from openpyxl.utils import cell
@@ -21,6 +23,7 @@ from rest_framework.serializers import DateField, IntegerField
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
+from contrib.vk_utils import get_vk_id_from_page_link
 from crm import utils
 from crm.enums import BALANCE_REASON
 from crm.filters import ClientFilter
@@ -58,7 +61,42 @@ class List(PermissionRequiredMixin, FilterView):
         return context
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddView):
+class ClientEditMixin(SuccessURLAllowedHostsMixin):
+
+    def form_valid(self, form):
+        result = super().form_valid(form)
+        vk_page = form.cleaned_data['vk_page']
+        self.object.vk_user_id = get_vk_id_from_page_link(vk_page)
+        self.object.save()
+        return result
+
+    def get_redirect_url(self):
+        redirect_to = self.request.POST.get(
+            REDIRECT_FIELD_NAME,
+            self.request.GET.get(REDIRECT_FIELD_NAME, '')
+        )
+        url_is_safe = is_safe_url(
+            url=redirect_to,
+            allowed_hosts=self.get_success_url_allowed_hosts(),
+            require_https=self.request.is_secure(),
+        )
+        return redirect_to if url_is_safe else ''
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        next_page = self.get_redirect_url()
+        if next_page:
+            context[REDIRECT_FIELD_NAME] = next_page
+        return context
+
+    def get_success_url(self):
+        next_page = self.get_redirect_url()
+        if next_page:
+            return next_page
+        return super().get_success_url()
+
+
+class Create(PermissionRequiredMixin, RevisionMixin, ClientEditMixin, CreateAndAddView):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
@@ -125,11 +163,17 @@ class CancelAttendance(
             'crm:manager:client:detail', kwargs=self.kwargs)
 
 
-class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
+class Update(PermissionRequiredMixin, RevisionMixin, ClientEditMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.edit'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        vkid = self.object.vk_user_id
+        initial['vk_page'] = 'https://vk.com/id{}'.format(vkid) if vkid else None
+        return initial
 
 
 class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
