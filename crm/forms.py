@@ -16,6 +16,7 @@ from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 from django.forms.widgets import TextInput, CheckboxSelectMultiple
 
 from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
+from contrib.vk_utils import get_vk_id_from_page_link
 from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
@@ -61,20 +62,12 @@ class ClientForm(TenantModelForm):
         input_formats=DATE_INPUT_FORMATS,
     )
 
-    def full_clean(self):
-        super().full_clean()
-
-    # def get_initial_for_field(self, field, field_name):
-    #     if field_name == 'vk_page' and self.instance:
-    #         return
-    #     return super().get_initial_for_field(field, field_name)
-
     class Meta:
         model = Client
 
         fields = [
             'name', 'address', 'birthday', 'phone_number',
-            'email_address',  'additional_info',
+            'email_address', 'additional_info',
         ]
         widgets = {
             'address': forms.TextInput(
@@ -100,6 +93,13 @@ class ClientForm(TenantModelForm):
                 }
             )
         }
+
+    def save(self, commit=True):
+        instance = super().save(commit)
+        vk_page = self.cleaned_data['vk_page']
+        instance.vk_user_id = get_vk_id_from_page_link(vk_page)
+        instance.save()
+        return instance
 
 
 class Balance(TenantModelForm):
@@ -159,11 +159,28 @@ class SubscriptionsTypeForm(TenantModelForm):
 
 class SignUpClientWithoutSubscriptionForm(TenantForm):
     client = forms.ModelMultipleChoiceField(
-        queryset=Client.objects.all(),
+        queryset=Client.objects,
         label='Ученик',
-        widget=Select2MultipleWidget
+        widget=forms.SelectMultiple(
+            attrs={
+                'class': 'selectpicker form-control',
+                'multiple': '',
+                'data-selected-text-format': 'static',
+                'title': 'Выбрать ученика',
+                'placeholder': 'Выбрать ученика'
+            }
+        ),
     )
 
+
+class SignUpClientMultiForm(MultiModelForm):
+    form_classes = {
+        'exists': SignUpClientWithoutSubscriptionForm,
+        'new': ClientForm
+    }
+
+    def is_valid(self):
+        return any(form.is_valid() for form in self.forms.values())
 
 class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
