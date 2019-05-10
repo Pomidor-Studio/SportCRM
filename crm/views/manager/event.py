@@ -106,6 +106,10 @@ class VisitReport(PermissionRequiredMixin, FormView):
             attendances = ['grey'] * len(dates)
             from_date_ = max(from_date, subs.start_date)
             to_date_ = min(to_date, subs.end_date or to_date)
+            # Фикс для абоенментов из будущего
+            if to_date_ > from_date_:
+                from_date_ = from_date
+                to_date_ = to_date
 
             for event in subs.subscription.events_to_date(from_date=from_date_, to_date=to_date_):
                 attendances[event.date.day - 1] = 'red'
