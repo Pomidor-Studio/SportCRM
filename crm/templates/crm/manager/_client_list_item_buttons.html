@@ -7,8 +7,6 @@
       {% endif %}
     {% endif %}
   {% empty %}
-    {% if last_sub %}
-      {% include 'crm/manager/_client_list_item_button.html' %}
-    {% endif %}
+    {% include 'crm/manager/_client_list_item_button.html' %}
   {% endfor %}
 {% endif %}

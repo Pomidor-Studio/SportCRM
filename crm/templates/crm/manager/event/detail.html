@@ -115,6 +115,7 @@
         <div class="tab-content" id="pills-tabContent">
           <div class="tab-pane fade show active" id="pills-all" role="tabpanel"
                aria-labelledby="pills-all-tab">
+          {% if signed_up_clients or unmarked_clients %}
             <table class="table table-hover">
               <thead class="d-none d-md-block">
               <tr>
@@ -145,97 +146,108 @@
               </tr>
               </thead>
               <tbody>
-              <tr class="otbivka">
-                <td colspan="10">Записанные</td>
-              </tr>
-              {% for client, subscriptions in signed_up_clients.items %}
-                {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
-                  <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
-                    <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_buttons.html' with action=client.get_active_sub|length|yesno:"mark,new_subscription" %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
-                  </tr>
-                {% endwith %}
-              {% endfor %}
-              <tr class="otbivka">
-                <td colspan="10">Доступные по абонементу</td>
-              </tr>
-              {% for client, subscriptions in unmarked_clients.items %}
-                {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
-                  <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
-                    <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_buttons.html' with action=client.get_active_sub|length|yesno:"mark,new_subscription" %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
-                  </tr>
-                {% endwith %}
-              {% endfor %}
+              {% if signed_up_clients %}
+                <tr class="otbivka">
+                  <td colspan="10">Записанные</td>
+                </tr>
+                {% for client, subscriptions in signed_up_clients.items %}
+                  {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
+                    <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
+                      <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_buttons.html' with action=active_sub|length|yesno:"mark,new_subscription" %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
+                    </tr>
+                  {% endwith %}
+                {% endfor %}
+              {% endif %}
+              {% if unmarked_clients %}
+                <tr class="otbivka">
+                  <td colspan="10">Доступные по абонементу</td>
+                </tr>
+                {% for client, subscriptions in unmarked_clients.items %}
+                  {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
+                    <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
+                      <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_buttons.html' with action=active_sub|length|yesno:"mark,new_subscription" %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
+                    </tr>
+                  {% endwith %}
+                {% endfor %}
+              {% endif %}
               </tbody>
             </table>
+          {% else %}
+            Не отмеченных учеников нет
+          {% endif %}
           </div>
           <div class="tab-pane fade" id="pills-marked" role="tabpanel"
                aria-labelledby="pills-marked-tab">
-            <table class="table table-hover">
-              <thead class="d-none d-md-block">
-              <tr>
-                <th></th>
-                <th>
-                  ФИО
-                </th>
-                <th class="d-none d-md-block">
-                  Абонемент
-                </th>
-                <th class="d-none d-md-block">
-                  Продано
-                </th>
-                <th class="d-none d-md-block">
-                  Начало
-                </th>
-                <th class="d-none d-md-block">
-                  Окончание
-                </th>
-                <th class="d-none d-md-block">
-                  Посл. посещение
-                </th>
-                <th class="d-none d-md-block">
-                  Баланс
-                </th>
-                <th width="1"></th>
-                <th width="1"></th>
-              </tr>
-              </thead>
-              <tbody>
-              {% for attendance in attendance_list_marked %}
-                {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
-                  <tr class="{% if attendance.client.balance < 0 %}minus_balance{% endif %} {% if attendance.client.deleted %}archive{% endif %} several">
-                    <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' with client=attendance.client %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' with client=attendance.client %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' with client=attendance.client %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' with client=attendance.client %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' with client=attendance.client %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' with client=attendance.client %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_button.html' with client=attendance.client action='unmark' %}</td>
-                    <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
-                  </tr>
-                {% endwith %}
-              {% endfor %}
-              </tbody>
-            </table>
+            {% if attendance_list_marked %}
+              <table class="table table-hover">
+                <thead class="d-none d-md-block">
+                <tr>
+                  <th></th>
+                  <th>
+                    ФИО
+                  </th>
+                  <th class="d-none d-md-block">
+                    Абонемент
+                  </th>
+                  <th class="d-none d-md-block">
+                    Продано
+                  </th>
+                  <th class="d-none d-md-block">
+                    Начало
+                  </th>
+                  <th class="d-none d-md-block">
+                    Окончание
+                  </th>
+                  <th class="d-none d-md-block">
+                    Посл. посещение
+                  </th>
+                  <th class="d-none d-md-block">
+                    Баланс
+                  </th>
+                  <th width="1"></th>
+                  <th width="1"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for attendance in attendance_list_marked %}
+                  {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
+                    <tr class="{% if attendance.client.balance < 0 %}minus_balance{% endif %} {% if attendance.client.deleted %}archive{% endif %} several">
+                      <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' with client=attendance.client %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' with client=attendance.client %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_button.html' with client=attendance.client action='unmark' %}</td>
+                      <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
+                    </tr>
+                  {% endwith %}
+                {% endfor %}
+                </tbody>
+              </table>
+            {% else %}
+              Отмеченных учеников нет
+            {% endif %}
           </div>
         </div>
       </div>
