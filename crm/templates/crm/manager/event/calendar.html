@@ -84,6 +84,9 @@
         displayEventTime: true,
         displayEventEnd: true,
         timeFormat: 'H:mm',
+        buttonText: {
+						list: 'Сегодня',
+        },
         eventSources: [
           {
             url: '{% url 'api-v1:manager:event:calendar' %}',
