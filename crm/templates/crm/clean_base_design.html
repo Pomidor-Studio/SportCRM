@@ -72,12 +72,9 @@
   >
 
   <!-- CSS -->
-  {#  {% bootstrap_css %}#}
-  {% css 'css/bootstrap.min.css' %}
-  {% css 'css/bootstrap-select.css' %}
-  {% css 'css/style.css' %}
+  {% bootstrap_css %}
   {% css 'css/gijgo.min.css' %}
-
+  {% css 'css/style.css' %}
 
   {% block extrahead %}{% endblock %}
   <title>
@@ -100,70 +97,49 @@
 {% block main %}{% endblock %}
 
 <!-- JQuery -->
-{#{% bootstrap_javascript jquery='full' %}#}
+{% bootstrap_javascript jquery='full' %}
 
 <!-- Coustom JS -->
-{% js 'js/jquery.min.js' %}
-{% js 'js/popper.min.js' %}
-{% js 'js/bootstrap.min.js' %}
-{% js 'js/bootstrap-select.min.js' %}
+{% js 'js/moment.min.js' %}
 {% js 'js/cleave.min.js' %}
 {% js 'js/cleave-phone.ru.js' %}
 {% js 'js/gijgo.min.js' %}
 {% js 'js/gijgo/messages.ru-ru.js' %}
 {% js 'js/base.js' %}
-{#{% js 'js/jquery.min.js' %}#}
-{#{% js 'js/popper.min.js' %}#}
-{#{% js 'js/bootstrap.bundle.min.js' %}#}
-{#{% js 'js/bootstrap.min.js' %}#}
-{#{% js 'js/moment.min.js' %}#}
-
-{#{% js 'js/bootstrap-select.min.js' %}#}
-{#{% js 'js/base.js' %}#}
-
-
-{#<!-- Заморозка Thead -->#}
-{#{% js 'js/freeze-table.min.js' %}#}
-{#<script>#}
-{#  $('.tab-pane').freezeTable({#}
-{#    'container':'.page',#}
-{#    'shadow':'true'#}
-{#  });#}
-{#</script>#}
 
 <script type="text/javascript">
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      let cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        let cookie = jQuery.trim(cookies[i]);
-        // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          let cookie = jQuery.trim(cookies[i]);
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
         }
       }
+      return cookieValue;
     }
-    return cookieValue;
-  }
 
-  let csrftoken = getCookie('csrftoken');
+    let csrftoken = getCookie('csrftoken');
 
-  function csrfSafeMethod(method) {
-    // these HTTP methods do not require CSRF protection
-    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
-  }
+    function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
 
-  $.ajaxSetup({
-    beforeSend: function (xhr, settings) {
-      if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
-        xhr.setRequestHeader("X-CSRFToken", csrftoken);
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+          xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
       }
-    }
-  });
-</script>
-{% block extra %}{% endblock %}
+    });
+  </script>
+  {% block extra %}{% endblock %}
 </body>
 
 {% block extrajs %}{% endblock %}

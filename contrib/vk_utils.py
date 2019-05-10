@@ -5,7 +5,6 @@ from typing import Optional, Dict, Sequence, Union
 import vk
 from django.conf import settings
 
-
 VK_PAGE_REGEXP = re.compile('(https?://)?vk.com/(?P<user_id>([A-Za-z0-9_])+)')
 
 
@@ -82,3 +81,18 @@ def get_vk_user_info(
         ret[result['id']] = result
 
     return ret
+
+
+def get_vk_id_from_page_link(vk_page: str) -> Union[None, int]:
+    if not vk_page:
+        return
+    try:
+        vk_id = get_vk_id_from_link(vk_page)
+        if not vk_id:
+            return
+        vk_user = get_one_vk_user_info(vk_id)
+        if not vk_user:
+            return
+    except Exception:
+        return
+    return vk_user['id']
