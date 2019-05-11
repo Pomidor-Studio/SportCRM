@@ -34,6 +34,13 @@ class VisitReport(PermissionRequiredMixin, FormView):
     permission_required = 'report.events'
     form_class = VisitReportFilter
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['event_class'] = EventClass.objects.first()
+        initial['year'] = date.today().year
+        initial['month'] = date.today().month
+        return initial
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['data'] = self.request.GET
@@ -57,7 +64,7 @@ class VisitReport(PermissionRequiredMixin, FormView):
         else:
             month = date.today().month
             year = date.today().year
-            event_class = None
+            event_class = EventClass.objects.first()
         context['month'] = month
         context['year'] = year
         context['years'] = range(2019, date.today().year + 1)
@@ -72,10 +79,10 @@ class VisitReport(PermissionRequiredMixin, FormView):
         data.sort(key=lambda i: i['client'].name)
         return data
 
-    def get_table_data(self, year: int, month: int, event_classes):
-        data = self.get_subscription_visits(year, month, event_classes)
+    def get_table_data(self, year: int, month: int, event_class: EventClass):
+        data = self.get_subscription_visits(year, month, event_class)
 
-        for client, attendances in self.get_one_time_visits(year, month, event_classes).items():
+        for client, attendances in self.get_one_time_visits(year, month, event_class).items():
             data.append({
                 'client': client,
                 'subscription': 'Разовые',
@@ -85,19 +92,18 @@ class VisitReport(PermissionRequiredMixin, FormView):
             })
         return data
 
-    def get_subscription_visits(self, year: int, month: int, event_classes):
+    def get_subscription_visits(self, year: int, month: int, event_class: EventClass):
         dates = self.get_month_dates_range(year, month)
         from_date, to_date = dates[0], dates[-1]
         fltr = {
             'subscription__one_time': False,
             'start_date__lte': to_date,
             'end_date__gte': from_date,
+            'subscription__event_class': event_class
         }
-        if event_classes:
-            fltr['subscription__event_class__in'] = event_classes
 
         active_subs = ClientSubscriptions.objects.exclude_onetime().filter(
-           **fltr
+            **fltr
         ).select_related(
             'subscription', 'client'
         ).iterator()
@@ -142,15 +148,14 @@ class VisitReport(PermissionRequiredMixin, FormView):
             })
         return result
 
-    def get_one_time_visits(self, year: int, month: int, event_classes) -> Dict:
+    def get_one_time_visits(self, year: int, month: int, event_class: EventClass) -> Dict:
         dates = self.get_month_dates_range(year, month)
         fltr = {
             'subscription__subscription__one_time': True,
             'event__is_closed': True,
-            'event__date__range': (dates[0], dates[-1])
+            'event__date__range': (dates[0], dates[-1]),
+            'event__event_class': event_class
         }
-        if event_classes:
-            fltr['event__event_class__in'] = event_classes
 
         attendances = Attendance.objects.filter(
             **fltr

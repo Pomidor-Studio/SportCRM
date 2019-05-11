@@ -99,22 +99,18 @@ class EventReportFilter(django_filters.FilterSet):
 
 
 class VisitReportFilter(forms.Form):
-    event_class = forms.ModelMultipleChoiceField(
+    event_class = forms.ModelChoiceField(
         label='Тип тренировки:',
         queryset=models.EventClass.objects,
-        widget=forms.SelectMultiple(
+        empty_label=None,
+        widget=forms.Select(
             attrs={
                 'class': 'selectpicker form-control',
-                'multiple': '',
-                'data-selected-text-format': 'static',
-                'title': 'Тип тренировки',
             }
         ),
-        required=False,
     )
     month = forms.ChoiceField(
         label='Месяц:',
-        initial=date.today().month,
         choices=(
             (1, 'Январь'),
             (2, 'Февраль'),
@@ -138,7 +134,6 @@ class VisitReportFilter(forms.Form):
     )
     year = forms.ChoiceField(
         label='Год:',
-        initial=date.today().year,
         choices=(
             (y, y) for y in range(2019, date.today().year + 1)
         ),
@@ -148,7 +143,6 @@ class VisitReportFilter(forms.Form):
                 'title': 'Год',
             }
         ),
-
     )
 
 
