@@ -90,13 +90,14 @@ class VisitReport(PermissionRequiredMixin, FormView):
         from_date, to_date = dates[0], dates[-1]
         fltr = {
             'subscription__one_time': False,
+            'start_date__lte': to_date,
+            'end_date__gte': from_date,
         }
         if event_classes:
             fltr['subscription__event_class__in'] = event_classes
 
         active_subs = ClientSubscriptions.objects.exclude_onetime().filter(
-            start_date__lte=to_date,
-            end_date__gte=from_date,
+           **fltr
         ).select_related(
             'subscription', 'client'
         ).iterator()
