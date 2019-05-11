@@ -63,13 +63,6 @@ class List(PermissionRequiredMixin, FilterView):
 
 class ClientEditMixin(SuccessURLAllowedHostsMixin):
 
-    def form_valid(self, form):
-        result = super().form_valid(form)
-        vk_page = form.cleaned_data['vk_page']
-        self.object.vk_user_id = get_vk_id_from_page_link(vk_page)
-        self.object.save()
-        return result
-
     def get_redirect_url(self):
         redirect_to = self.request.POST.get(
             REDIRECT_FIELD_NAME,

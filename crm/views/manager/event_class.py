@@ -3,7 +3,6 @@ from typing import List, Optional
 from uuid import UUID
 
 from django.contrib import messages
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import ProtectedError
 from django.http import HttpResponseRedirect
@@ -23,7 +22,7 @@ from rules.contrib.views import PermissionRequiredMixin
 from crm.enums import GRANULARITY
 from crm.forms import (
     DayOfTheWeekClassForm, EventClassForm, InplaceSellSubscriptionForm,
-    SignUpClientWithoutSubscriptionForm,
+    ClientForm, SignUpClientMultiForm
 )
 from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
@@ -382,7 +381,7 @@ class SignUpClientWithoutSubscription (
     EventByDateMixin,
     FormView
 ):
-    form_class = SignUpClientWithoutSubscriptionForm
+    form_class = SignUpClientMultiForm
     template_name = 'crm/manager/event/mark_client_without_sub.html'
     permission_required = 'event.manipulate'
 
@@ -390,15 +389,27 @@ class SignUpClientWithoutSubscription (
         context = super().get_context_data(**kwargs)
         event = self.get_object()
         context.update({
-            'event': event
+            'event': event,
         })
         return context
 
-    def form_valid(self, form):
+    def add_exists(self, form):
         clients = form.cleaned_data['client']
         event = self.get_object()
         for client in clients:
             client.signup_for_event(event)
+
+    def add_new(self, form: ClientForm):
+        event = self.get_object()
+        client = form.save()
+        client.signup_for_event(event)
+
+    def form_valid(self, form):
+        if form['exists'].is_valid() and  "exists" in self.request.POST:
+            self.add_exists(form['exists'])
+        if form['new'].is_valid() and "new" in self.request.POST:
+            self.add_new(form['new'])
+
         return super(SignUpClientWithoutSubscription, self).form_valid(form)
 
     def get_success_url(self):
