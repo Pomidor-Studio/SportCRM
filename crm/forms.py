@@ -107,17 +107,9 @@ class Balance(TenantModelForm):
         model = ClientBalanceChangeHistory
         widgets = {
             'change_value': forms.NumberInput(),
-            'reason': Select2SingleTagWidget(
-                choices=[
-                    ('Пополнение баланса', 'Пополнение баланса'),
-                    ('Покупка абонемента', 'Покупка абонемента'),
-                    ('Разовое посещение', 'Разовое посещение'),
-                    ('Исправление ошибки', 'Исправление ошибки'),
-                    ('Иное', 'Иное'),
-                ],
+            'reason': forms.TextInput(
                 attrs={
-                    'class': 'form-control',
-                    'placeholder': 'Укажите причину изменения баланса'
+                    'placeholder': 'Комментарий'
                 }
             ),
             'client': forms.HiddenInput(),
