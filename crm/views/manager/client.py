@@ -1,5 +1,6 @@
 import re
 
+from itertools import chain
 import openpyxl as openpyxl
 from django.contrib import messages
 from django.contrib.auth.views import SuccessURLAllowedHostsMixin
@@ -11,7 +12,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.http import is_safe_url
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, FormView, RedirectView, TemplateView,
+    CreateView, DeleteView, FormView, RedirectView, TemplateView,
     UpdateView,
 )
 from django.contrib.auth import REDIRECT_FIELD_NAME
@@ -23,7 +24,6 @@ from rest_framework.serializers import DateField, IntegerField
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
-from contrib.vk_utils import get_vk_id_from_page_link
 from crm import utils
 from crm.enums import BALANCE_REASON
 from crm.filters import ClientFilter
@@ -183,12 +183,6 @@ class UnDelete(PermissionRequiredMixin, RevisionMixin, UnDeleteView):
     permission_required = 'client.undelete'
 
 
-class Detail(PermissionRequiredMixin, DetailView):
-    model = Client
-    template_name = 'crm/manager/client/detail.html'
-    permission_required = 'client'
-
-
 class ClientMixin:
     def get_client(self) -> Client:
         return get_object_or_404(Client, id=self.kwargs['client_id'])
@@ -226,8 +220,16 @@ class AddSubscription(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['client'] = self.get_client()
+        client = self.get_client()
+        context['client'] = client
         context['allow_check_overlapping'] = True
+        attendance = client.attendance_set.order_by('-event__date')
+        balancehistory = client.clientbalancechangehistory_set.order_by(
+            '-entry_date')
+        # TODO: fix ordering
+        attendance_with_balance = chain(attendance, balancehistory)
+        context['attendance_with_balance'] = attendance_with_balance
+        context['hide_form'] = self.kwargs.get('hide_form')
         return context
 
     def form_valid(self, form):
@@ -278,9 +280,17 @@ class SubscriptionUpdate(
         context = super().get_context_data(**kwargs)
         context['history'] = ExtensionHistory.objects.filter(
             client_subscription=self.object.id)
-        context['client'] = self.object.client
+        client = self.object.client
+        context['client'] = client
         context['activated_subscription'] = self.activated_subscription()
         context['allow_check_overlapping'] = False
+        attendance = client.attendance_set.order_by('-event__date')
+        balancehistory = client.clientbalancechangehistory_set.order_by(
+            '-entry_date')
+        # TODO: fix ordering
+        attendance_with_balance = chain(attendance, balancehistory)
+        context['attendance_with_balance'] = attendance_with_balance
+        context['hide_form'] = self.kwargs.get('hide_form')
         return context
 
     def get(self, request, *args, **kwargs):

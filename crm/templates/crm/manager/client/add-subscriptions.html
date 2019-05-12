@@ -1,48 +1,559 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
-{% load bootstrap4 %}
+{% load bootstrap4 html_helper qr_code humanize static %}
 
-{% block extrahead %}
-  {{ form.media }}
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False %}
 {% endblock %}
 
 {% block content %}
+  <div class="page student_page col-md-12 col-lg-9 col-xl-10">
+    <div class="workout_actions desktop_workout_actions d-none d-md-block">
+      <ul class="d-flex justify-content-end">
+        <li class="more">
+          <div class="btn-group">
+            <a href="#"
+               class="d-flex"
+               data-toggle="dropdown"
+               aria-haspopup="true"
+               aria-expanded="false">
+              <span class="icon align-self-center"></span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-right">
+              {% if client.phone_number %}
+                <a class="dropdown-item"
+                   href="tel:{{ client.phone_number }}">
+                  Позвонить
+                </a>
+              {% endif %}
+              {% if client.vk_user_id %}
+                {% if vk_group_id %}
+                  <a class="dropdown-item"
+                     href="https://vk.com/gim{{ vk_group_id }}?sel={{ client.vk_user_id }}"
+                     data-client-id="92">
+                    Написать в Вконтакте
+                  </a>
+                {% else %}
+                  <a class="dropdown-item"
+                     href="https://vk.com/?sel={{ client.vk_user_id }}"
+                     data-client-id="92">
+                    Написать в Вконтакте
+                  </a>
+                {% endif %}
+              {% endif %}
+              <div class="greyline"></div>
+                {% ifhasperm 'client.edit' user %}
+                  <a class="dropdown-item"
+                     href="{% url 'crm:manager:client:update' client.id %}">
+                    Редактировать
+                  </a>
+                {% endifhasperm %}
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          Ученик
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
+    <div class="user_info d-flex">
+      <div class="user_pic">
+        {% include 'crm/manager/_client_list_item_photo.html' %}
+      </div>
+      <div class="user_login flex-grow-1">
+							<span class="big_name">
+                {% ifhasperm 'client.edit' user %}
+                  <a href="{% url 'crm:manager:client:update' client.id %}">
+                    {{ client.name }}
+                  </a>
+                {% else %}
+                  <a href="#">{{ client.name }}</a>
+                {% endifhasperm %}
+              </span>
+        <div class="contacts">
+          <a href="tel:{{ client.phone_number }}">{{ client.phone_number }}</a>
+        </div>
+        <div class="balance green">
+          {{ client.balance | floatformat:"-2" | intcomma }} ₽
+        </div>
+        <a href="{% url 'crm:manager:client:balance:new' client.id %}">
+          Изменить баланс
+        </a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-12">
+        <div class="row">
+          <div class="col-12 col-md-8 ">
+            <ul class="nav nav-pills row no-gutters" id="pills-tab"
+                role="tablist">
+              <li class="nav-item col-6 col-md-auto text-center text-md-left">
+                <a class="nav-link active" id="pills-subscriptions-tab"
+                   data-toggle="pill" href="#pills-subscriptions" role="tab"
+                   aria-controls="pills-subscriptions" aria-selected="true">Абонементы</a>
+              </li>
+              <li class="nav-item col-6 col-md-auto text-center text-md-left">
+                <a class="nav-link" id="pills-journal-tab" data-toggle="pill"
+                   href="#pills-journal" role="tab"
+                   aria-controls="pills-journal"
+                   aria-selected="false">Журнал</a>
+              </li>
+              <div class="greyline d-block d-md-none"></div>
+              <li class="nav-item col-6 col-md-auto text-center text-md-left">
+                <a class="nav-link" id="pills-comment-tab" data-toggle="pill"
+                   href="#pills-comment" role="tab"
+                   aria-controls="pills-comment" aria-selected="false">Информация</a>
+              </li>
+              <li class="nav-item col-6 col-md-auto text-center text-md-left">
+                <a class="nav-link" id="pills-qr-tab" data-toggle="pill"
+                   href="#pills-qr" role="tab" aria-controls="pills-qr"
+                   aria-selected="false">QR</a>
+              </li>
+            </ul>
+          </div>
+        </div>
 
-  <script language="javascript">
-    $(function () {
-      let $fStartDate = $('#{{ form.start_date.id_for_label }}');
-      let $fEndDate = $('#id_end_date');
-      let $fVisitsLeft = $('#{{ form.visits_left.id_for_label }}');
-      let $fPrice = $('#{{ form.price.id_for_label }}');
-      function updateDateRange(st) {
-        $.get(
-          '{% url "api-v1:manager:subscription:sell-range" 0 %}'.replace('0', st),
-          {
-            requested_date: $fStartDate.val()
-          },
-          function(data) {
-            $fStartDate.val(data.start_date);
-            $fEndDate.val(data.end_date);
-          }
-        );
-      }
-      {% if allow_check_overlapping %}
+        <div class="greyline"></div>
+
+        <div class="tab-content" id="pills-tabContent">
+          <div class="tab-pane fade show active" id="pills-subscriptions"
+               role="tabpanel" aria-labelledby="pills-subscriptions-tab">
+            <!- Новый абонемент ->
+            <table class="table table-hover buy_subscriptions">
+              <tbody>
+              <tr class="{{ hide_form|yesno:",active" }}">
+                <td width="27">
+                  <a class="btn btn-icon btn-down" href="#"><span></span></a>
+                </td>
+                <td>
+                  <a href="#" class="fio_name">НОВЫЙ АБОНЕМЕНТ</a>
+                </td>
+              </tr>
+              {% if hide_form %}
+                <tr class="active_info " style="display: none;">
+              {% else %}
+                <tr class="active_info active" style="display: table-row;">
+              {% endif %}
+                <td colspan="2">
+                  <form id="add-form" method="POST" action="">
+                    {% csrf_token %}
+                    <div class="container-fluid">
+                      <div class="row">
+                        <div class="col-12 col-md-6 form-group">
+                          {% bootstrap_field form.subscription %}
+                        </div>
+                        <div class="col-12 col-md-3 form-group">
+                          {% bootstrap_field form.price %}
+                        </div>
+                        <div class="col-12 col-md-3 col-xl-3 form-group">
+                          {% bootstrap_field form.visits_left %}
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                          {% bootstrap_field form.start_date %}
+                        </div>
+                        <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                          <label for="id_end_date">Дата окончания</label>
+                          <input type="text" name="end_date"
+                                 class="form-control"
+                                 placeholder="Дата окончания" title=""
+                                 disabled="" id="id_end_date">
+                        </div>
+                        <div class="col-12 col-md-4 col-xl-3 d-flex align-items-end form-group">
+                          <div class="form-check d-flex skip_line">
+                            <label class="form-check-label" for="{{ form.cash_earned.id_for_label }}">
+                              {{ form.cash_earned }}
+                              <div class="form-check-input-div"></div>
+                            </label>
+                            <label class="form-check-label" for="{{ form.cash_earned.id_for_label }}">Деньги получены</label>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="alert alert-info overlapping"
+                        id="is-overlapping"
+                        style="display: block;"
+                      >
+                        В тренировочной сетке есть отменённые занятия, из-за
+                        которых
+                        нельзя будет потратить все посещения.
+                      </div>
+                      <div
+                        class="alert alert-info overlapping"
+                        id="is-overlapping-with-canceled"
+                        style="display: none;;"
+                      >
+                        В тренировочной сетке есть отменённые занятия, но даже
+                        вместе с
+                        ними, нельзя будет потратить все посещения.
+                      </div>
+                      <div
+                        class="alert alert-info overlapping"
+                        id="is-overlapping-total"
+                        style="display: none;;"
+                      >
+                        Количество тренировок в сетке не позволяет потратить все
+                        посещения.
+                      </div>
+                      {% bootstrap_field form.client %}
+                      {% bootstrap_field form.sold_by %}
+                      <div class="form-group save_buttons">
+                        {% if not activated_subscription %}
+                          <button
+                            id="add"
+                            class="btn btn-primary add-subscription"
+                            type="submit"
+                            data-action="{% url 'crm:manager:client:new-subscription' client.id %}">
+                            {% if object.id %}Изменить{% else %}Продать{% endif %}
+                        </button>
+                        {% endif %}
+                        {% if allow_check_overlapping %}
+                        <button
+                          id="add-with-autoextend"
+                          class="btn"
+                          style="display: none;"
+                          type="submit"
+                          data-action="{% url 'crm:manager:client:add-subscription-with-extending' client.id %}">
+                          Добавить с продлением абонемента
+                        </button>
+                        {% endif %}
+                        <a name="cancel"
+                           href="{% url 'crm:manager:client:detail' client.id %}"
+                           class="btn cancel">
+                          Назад
+                        </a>
+                      </div>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+              </tbody>
+            </table>
+            <!- Абонементы -!>
+            <table class="table table-hover">
+              <thead class="d-none d-md-block">
+              <tr>
+                <th></th>
+                <th>
+                  Наименование
+                </th>
+                <th class="d-none d-md-block">
+                  Продано
+                </th>
+                <th class="d-none d-md-block">
+                  Начало
+                </th>
+                <th class="d-none d-md-block">
+                  Окончание
+                </th>
+                <th class="d-none d-md-block">
+                  Посл. посещение
+                </th>
+                <th class="d-none d-md-block">
+                  Цена
+                </th>
+                <th width="1"></th>
+                <th width="1"></th>
+                <th width="1" class="d-md-none"></th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for sub in client.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
+                <tr>
+                  <td width="27">
+                    <a class="btn btn-icon btn-down d-md-none"
+                       href="#"><span></span></a>
+                  </td>
+                  <td>
+                    {% ifhasperm 'client_subscription.edit' user %}
+                      <a href="{% url 'crm:manager:client:subscription:update' sub.id %}"
+                    {% else %}
+                      <a href="#"
+                    {% endifhasperm %}
+                       class="fio_name">
+                      {{ sub.subscription.name }}
+                    </a>
+                    <div>
+                      <small>Посещения: {{ sub.visits_left }} из {{ sub.visits_on_by_time }}</small>
+                    </div>
+                  </td>
+                  <td class="d-none d-md-block">
+                    {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
+                    <br/>
+                    <small>{{ sub.sold_by }}</small>
+                  </td>
+                  <td class="d-none d-md-block">
+                    {{ sub.start_date|date:"SHORT_DATE_FORMAT" }}
+                  </td>
+                  <td>
+                    <div class="date_end">
+                      <div class="d-block d-md-none">
+                        <small>Действует до:</small>
+                      </div>
+                      {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
+                    </div>
+                  </td>
+                  <td class="d-none d-md-block">
+                    {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}
+                  </td>
+                  <td class="d-none d-md-block">
+                    {% if sub.price %}
+                      {{ sub.price | floatformat:"-2" | intcomma }} ₽
+                    {% endif %}
+                  </td>
+                  <td class="d-none d-md-block">
+                    {% ifhasperm 'client_subscription.extend' user %}
+                      <a class="btn btn-icon btn-extend"
+                         href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
+                        <span></span>
+                        <abbr>Продлить</abbr>
+                      </a>
+                    {% endifhasperm %}
+                  </td>
+                  <td class="d-none d-md-block">
+                    {% ifhasperm 'client_subscription.delete' user %}
+                      {% if sub.visits_on_by_time == sub.visits_left %}
+                        <a class="btn btn-icon btn-delete"
+                           href="{% url 'crm:manager:client:subscription:delete' sub.id %}">
+                          <span></span>
+                          <abbr>Удалить</abbr>
+                        </a>
+                      {% endif %}
+                    {% endifhasperm %}
+                  </td>
+                  <td class="d-md-none" width="1">
+                    <div class="btn-group">
+                      <a class="btn btn-icon btn-more" data-toggle="dropdown"
+                         aria-haspopup="true" aria-expanded="false"><span></span></a>
+                      <div class="dropdown-menu dropdown-menu-right">
+                        {% ifhasperm 'client_subscription.extend' user %}
+                          <a class="dropdown-item"
+                             href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
+                             data-client-id="{{ client.id }}">
+                            Продлить
+                          </a>
+                        {% endifhasperm %}
+                        {% ifhasperm 'client_subscription.delete' user %}
+                          {% if sub.visits_on_by_time == sub.visits_left %}
+                            <a class="dropdown-item"
+                               href="{% url 'crm:manager:client:subscription:delete' sub.id %}"
+                               data-client-id="{{ client.id }}">
+                              Удалить
+                            </a>
+                          {% endif %}
+                        {% endifhasperm %}
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="active_info">
+                <td></td>
+                <td colspan="7">
+                  <div class="row">
+                    <div class="col-6 col-md-5 col-xl-3">
+                      <p>
+                        <small>Продажа</small>
+                        <br/>
+                        {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }} — {{ sub.sold_by }}
+                      </p>
+                    </div>
+                    <div class="col-6 col-md-5 col-xl-3">
+                      <p>
+                        <small>Стоимость</small>
+                        <br/>
+                        {% if sub.price %}{{ sub.price | floatformat:"-2" | intcomma }} ₽{% endif %}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-6 col-md-5 col-xl-3">
+                      <p>
+                        <small>Начало действия</small>
+                        <br/>
+                        {{ sub.start_date|date:"d M Y" }}
+                      </p>
+                    </div>
+                    <div class="col-6 col-md-5 col-xl-3">
+                      <p>
+                        <small>Окончание действия</small>
+                        <br/>
+                        {{ sub.end_date|date:"d M Y" }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tab-pane fade" id="pills-journal" role="tabpanel"
+               aria-labelledby="pills-journal-tab">
+            <div class="col-12 col-md-10 col-xl-6">
+              <table class="table">
+                {% for item in attendance_with_balance %}
+                  {% if item.change_value %}
+                    <tr>
+                      <td>
+                        {{ item.entry_date|time }}<br>
+                        {{ item.entry_date|date:"d M Y" }}
+                      </td>
+                      <td>
+                        <a href="#" class="fio_name">
+                          {% if item.reason %}
+                            {{ item.reason }}
+                          {% else %}
+                            (Причина не указана)
+                          {% endif %}
+                        </a>
+                        <div>
+                          <small>{{ item.subscription.subscription.name }}</small>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="{% if item.change_value < 0 %}orange{% else %}green{% endif %}">
+                          {{ item.change_value|floatformat:"-2"|intcomma }} ₽
+                        </span>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr>
+                      <td>
+                        {{ item.event.start_time }}<br>
+                        {{ item.event.date|date:"d M Y" }}
+                      </td>
+                      <td>
+                        <a href="{% url 'crm:manager:event-class:event:event-by-date' item.event.event_class.id item.event.date.year item.event.date.month item.event.date.day %}" class="fio_name">
+                          {{ item.event.event_class }}
+                        </a>
+                        <div>
+                          <small>
+                            {% if item.subscription %}
+                              {{ item.subscription }}
+                            {% else %}
+                              Записался, но не пришел
+                            {% endif %}
+                          </small>
+                        </div>
+                      </td>
+                      <td>
+                      </td>
+                    </tr>
+                  {% endif %}
+                {% endfor %}
+              </table>
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="pills-comment" role="tabpanel"
+               aria-labelledby="pills-comment-tab">
+            <div class="row">
+              <div class="col-12 col-md-5 col-xl-3">
+                <h5>Об ученике:</h5>
+                {% if client.phone_number %}
+                  <p>
+                    Телефон:
+                    <a href="tel:{{ client.phone_number }}">
+                      {{ client.phone_number }}
+                    </a>
+                  </p>
+                {% endif %}
+                {% if client.vk_user_id %}
+                  <p>
+                    Страница ВК:
+                    <a href="https://vk.com/id{{ client.vk_user_id }}">
+                      vk.com/id{{ client.vk_user_id }}
+                    </a>
+                  </p>
+                {% endif %}
+                {% if client.email_address %}
+                  <p>
+                    E-mail:
+                    <a href="mail:{{ client.email_address }}">
+                      {{client.email_address}}
+                    </a>
+                  </p>
+                {% endif %}
+                {% if client.birthday %}
+                  <p>
+                    Дата рождения: {{ client.birthday }}
+                  </p>
+                {% endif %}
+              </div>
+              {% if client.additional_info %}
+                <div class="col-12 col-md-5 col-xl-3">
+                  <h5>Дополнительная информация:</h5>
+                  {{ client.additional_info|truncatechars:300|linebreaksbr }}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="tab-pane fade" id="pills-qr" role="tabpanel"
+               aria-labelledby="pills-qr-tab">
+            <div class="qr-code">
+              <img src="{% qr_url_from_text client.qr_code.hex error_correction=" H" %}">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block extrajs %}
+  {{ form.media }}
+  <script>
+    $(function() {
+	  	let $fStartDate = $('#{{ form.start_date.id_for_label }}');
+	  	let $fEndDate = $('#id_end_date');
+	  	let $fVisitsLeft = $('#{{ form.visits_left.id_for_label }}');
+	  	let $fPrice = $('#{{ form.price.id_for_label }}');
+
+	  	function updateDateRange(st) {
+	  		$.get(
+	  			'{% url "api-v1:manager:subscription:sell-range" 0 %}'.replace('0', st), {
+	  				requested_date: $fStartDate.val()
+	  			},
+	  			function(data) {
+	  				$fStartDate.val(data.start_date);
+	  				$fEndDate.val(data.end_date);
+	  			}
+	  		);
+	  	}
+
+	  	{% if allow_check_overlapping %}
         function canCheckOverlapping() {
           return $("#id_subscription option:selected") &&
             $fStartDate.val() &&
             $fVisitsLeft.val();
         }
+
         function checkOverlapping() {
           $('div.overlapping').hide();
           $('#is-overlapping').hide();
           $.get(
-            '{% url "crm:manager:client:check-overlapping" %}',
-            {
+            '{% url "crm:manager:client:check-overlapping" %}', {
               st: $("#id_subscription option:selected").attr('value'),
               start: $fStartDate.val(),
               vl: $fVisitsLeft.val()
             },
-            function (data) {
+            function(data) {
               if (data.is_overlapping && !data.is_overlapping_with_cancelled) {
                 $('#is-overlapping').show();
                 $('#add-with-autoextend').show();
@@ -67,172 +578,50 @@
             }
           );
         }
-      {% endif %}
+	  	{% endif %}
 
-      $('#{{ form.subscription.id_for_label }}')
-        .on('select2:select', function (e) {
-          if (e.params.data.id === '') {
-            $fVisitsLeft.val('');
-            $fPrice.val('');
-          } else {
-            let $elem = $(e.params.data.element);
-            $fVisitsLeft.val($elem.data('visits'));
-            $fPrice.val($elem.data('price'));
-          }
-          updateDateRange(e.params.data.id);
-          {% if allow_check_overlapping %}
-            if (canCheckOverlapping()) {
-              checkOverlapping();
-            }
-          {% endif %}
-        });
+	  	$('#{{ form.subscription.id_for_label }}')
+	  		.on('select2:select', function(e) {
+	  			if (e.params.data.id === '') {
+	  				$fVisitsLeft.val('');
+	  				$fPrice.val('');
+	  			} else {
+	  				let $elem = $(e.params.data.element);
+	  				$fVisitsLeft.val($elem.data('visits'));
+	  				$fPrice.val($elem.data('price'));
+	  			}
+	  			updateDateRange(e.params.data.id);
 
-      $fStartDate.on('input, dp.change', function() {
-        updateDateRange($("#id_subscription option:selected").attr('value'));
-        {% if allow_check_overlapping %}
-          if (canCheckOverlapping()) {
-            checkOverlapping();
-          }
-        {% endif %}
-      });
+	  			if (canCheckOverlapping()) {
+	  				checkOverlapping();
+	  			}
 
-      {% if allow_check_overlapping %}
-        $fVisitsLeft.on('input', function () {
-          if (canCheckOverlapping()) {
-            checkOverlapping();
-          }
-        });
+	  		});
 
-        $('button.add-subscription').click(function () {
-          $('#add-form').attr('action', $(this).data('action'));
-        });
-        {% comment %}
-        Perform forced check, as form may have some attendance selected on
-        init
-        {% endcomment %}
-        if (canCheckOverlapping()) {
-            checkOverlapping();
-          }
-      {% endif %}
+	  	$fStartDate.on('input, dp.change', function() {
+	  		updateDateRange($("#id_subscription option:selected").attr('value'));
 
-    updateDateRange($("#id_subscription option:selected").attr('value'));
-    });
+	  		if (canCheckOverlapping()) {
+	  			checkOverlapping();
+	  		}
+
+	  	});
+
+	  	$fVisitsLeft.on('input', function() {
+	  		if (canCheckOverlapping()) {
+	  			checkOverlapping();
+	  		}
+	  	});
+
+	  	$('button.add-subscription').click(function() {
+	  		$('#add-form').attr('action', $(this).data('action'));
+	  	});
+
+	  	if (canCheckOverlapping()) {
+	  		checkOverlapping();
+	  	}
+
+	  	updateDateRange($("#id_subscription option:selected").attr('value'));
+	  });
   </script>
-
-  <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">{{ client.name }} - продажа абонемента
-    </legend>
-    <div class="w-100">
-      <div class="row">
-        <div class="col">
-          <form id="add-form" method="POST" action="">
-            {% csrf_token %}
-            <fieldset class="form-group">
-              {% bootstrap_field form.subscription %}
-              <div class="row">
-                <div class="col">
-                  {% bootstrap_field form.start_date %}
-                </div>
-                <div class="col">
-                  <div class="form-group">
-                    <label for="id_end_date">Дата окончания</label>
-                    <input type="text" name="end_date" class="form-control" placeholder="Дата окончания" title="" disabled="" id="id_end_date">
-                  </div>
-                </div>
-              </div>
-              {% bootstrap_field form.price %}
-              {% bootstrap_field form.visits_left %}
-              {% bootstrap_field form.cash_earned %}
-              {% bootstrap_field form.client %}
-              {% bootstrap_field form.sold_by %}
-            </fieldset>
-
-            <div
-              class="alert alert-info overlapping"
-              id="is-overlapping"
-              style="{% if object and object.is_overlapping and not object.is_overlapping_with_cancelled %}{% else %}display: none;{% endif %}"
-            >
-              В тренировочной сетке есть отменённые занятия, из-за которых
-              нельзя будет потратить все посещения.
-            </div>
-            <div
-              class="alert alert-info overlapping"
-              id="is-overlapping-with-canceled"
-              style="{% if object and object.is_overlapping and object.is_overlapping_with_cancelled and object.canceled_events_count != 0 %}{% else %}display: none;{% endif %};"
-            >
-              В тренировочной сетке есть отменённые занятия, но даже вместе с
-              ними,
-              нельзя будет потратить все посещения.
-            </div>
-            <div
-
-              class="alert alert-info overlapping"
-              id="is-overlapping-total"
-              style="{% if object and object.is_overlapping and object.is_overlapping_with_cancelled and object.canceled_events_count == 0  %}{% else %}display: none;{% endif %};"
-            >
-              Количество тренировок в сетке не позволяет потратить все
-              посещения.
-            </div>
-            <div class="form-group">
-              {% if not activated_subscription %}
-                <button
-                  id="add"
-                  class="btn btn-primary add-subscription"
-                  type="submit"
-                  data-action="{% url 'crm:manager:client:new-subscription' client.id %}"
-                >
-                  {% if object.id %}Изменить{% else %}Продать{% endif %}
-                </button>
-              {% endif %}
-              {% if allow_check_overlapping %}
-                <button
-                  id="add-with-autoextend"
-                  class="btn btn-outline-info add-subscription"
-                  style="display: none;"
-                  type="submit"
-                  data-action="{% url 'crm:manager:client:add-subscription-with-extending' client.id %}"
-                >
-                  Добавить с продлением абонемента
-                </button>
-              {% endif %}
-              <a
-                name="cancel"
-                href="{% url 'crm:manager:client:detail' client.id %}"
-                class="btn btn-outline-info"
-              >
-                Назад
-              </a>
-            </div>
-          </form>
-        </div>
-        <div class="col">
-          {% if history %}
-            <div>История продлений:</div>
-            <div>
-              <table class="table table-sm table-bordered">
-                <thead>
-                <tr>
-                  <th scope="col">Дата продления</th>
-                  <th scope="col">Причина продления</th>
-                  <th scope="col">Кол-во занятий</th>
-                  <th scope="col">Продлен до</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for hist_obj in history %}
-                  <tr>
-                    <td>{{ hist_obj.date_extended }}</td>
-                    <td>{{ hist_obj.reason }}</td>
-                    <td>{{ hist_obj.added_visits }}</td>
-                    <td>{{ hist_obj.extended_to|date:"d.m.Y" }}</td>
-                  </tr>
-                {% endfor %}
-                </tbody>
-              </table>
-            </div>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-{% endblock content %}
+{% endblock %}

@@ -290,7 +290,10 @@ class ClientSubscriptionForm(TenantModelForm):
     cash_earned = forms.BooleanField(
         label='Деньги получены',
         required=False,
-        initial=True
+        initial=True,
+        widget=forms.CheckboxInput(
+            attrs={'class': "form-check-input"}
+        )
     )
     subscription = forms.ModelChoiceField(
         empty_label='',
@@ -333,7 +336,7 @@ class ClientSubscriptionForm(TenantModelForm):
         }
         labels = {
             'start_date': 'Начало действия',
-            'visits_left': 'Количество посещений'
+            'visits_left': 'Лимит занятий'
         }
         exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event',)
 

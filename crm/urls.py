@@ -119,7 +119,7 @@ manager_client_balance_urlpatterns = ([
 
 manager_clients_urlpatterns = ([
     path('', manager_client_views.List.as_view(), name='list'),
-    path('<int:pk>/', manager_client_views.Detail.as_view(), name='detail'),
+    path('<int:client_id>/', manager_client_views.AddSubscription.as_view(), {'hide_form': True}, name='detail'),
     path('<int:pk>/balance/', include(manager_client_balance_urlpatterns)),
     path('new/', manager_client_views.Create.as_view(), name='new'),
     path('import-report/', manager_client_views.ImportReport.as_view(), name='import-report'),
