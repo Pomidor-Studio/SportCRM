@@ -176,7 +176,7 @@ class SignUpClientMultiForm(MultiModelForm):
 
 class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
-    reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
+    reason = forms.CharField(label='Причина продления', widget=forms.TextInput)
 
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
