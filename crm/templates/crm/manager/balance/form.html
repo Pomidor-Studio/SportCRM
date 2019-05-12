@@ -78,3 +78,13 @@
     </form>
   </div>
 {% endblock content %}
+
+{% block extrajs %}
+  <script>
+    var cleave = new Cleave('#id_change_value', {
+      numeral: true,
+      blocks: [3],
+      delimiter: ' '
+    });
+  </script>
+{% endblock %}
