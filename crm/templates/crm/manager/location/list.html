@@ -65,7 +65,12 @@
               {% if location.deleted %}
                 {% ifhasperm 'location.undelete' user %}
                   <a class="btn btn-icon btn-undo"
-                     href="{% url "crm:manager:locations:undelete" location.id %}">
+                     href="#confirm_popup"
+                     data-action-text="Вернуть"
+                     data-body-text="Вернуть из архива?"
+                     data-title="Возврат из архива"
+                     data-toggle="modal"
+                     data-url="{% url "crm:manager:locations:undelete" location.id %}">
                     <span></span>
                     <abbr>Вернуть</abbr>
                   </a>
@@ -73,7 +78,12 @@
               {% else %}
                 {% ifhasperm 'location.delete' user %}
                   <a class="btn btn-icon btn-delete"
-                     href="{% url "crm:manager:locations:delete" location.id %}">
+                     href="#confirm_popup"
+                     data-action-text="В архив"
+                     data-title="Перемещение в архив"
+                     data-body-text="Переместить в архив?"
+                     data-toggle="modal"
+                     data-url="{% url "crm:manager:locations:delete" location.id %}">
                     <span></span>
                     <abbr>Удалить</abbr>
                   </a>

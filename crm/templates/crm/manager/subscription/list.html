@@ -51,14 +51,18 @@
       </thead>
       <tbody>
       {% for subscription in subscriptions %}
-        <tr>
+        <tr {% if subscription.deleted %}class="archive"{% endif %}>
           <td>
-            {% ifhasperm 'subscription.edit' user subscription %}
-              <a href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                 class="fio_name"> {{ subscription.name }}</a>
-            {% else %}
-              {{ subscription.name }}
-            {% endifhasperm %}
+           {% if not subscription.deleted %}
+                {% ifhasperm 'location.edit' user %}
+                <a href="{% url 'crm:manager:subscription:update' subscription.id %}"
+                     class="fio_name"> {{ subscription.name }}</a>
+                {% else %}
+                  <a href="#" class="fio_name"> {{ subscription.name }}</a>
+                {% endifhasperm %}
+              {% else %}
+                {{ subscription.name }}
+           {% endif %}
             <div class="balance d-md-none">
               {% for eventclass in subscription.event_class.all %}
                 <small>{{ eventclass }}</small>
@@ -93,11 +97,33 @@
             {{ subscription.price|floatformat:"-2"|intcomma }} ₽
           </td>
           <td>
-            {% ifhasperm 'subscription.delete' user %}
-              <a class="btn btn-icon btn-delete"
-                 href="{% url "crm:manager:subscription:delete" subscription.id %}"><span></span><abbr>Удалить</abbr></a>
-            {% endifhasperm %}
-
+            {% if subscription.deleted %}
+              {% ifhasperm 'subscription.undelete' user %}
+                <a class="btn btn-icon btn-undo"
+                   href="#confirm_popup"
+                   data-action-text="Вернуть"
+                   data-body-text="Вернуть из архива?"
+                   data-title="Возврат из архива"
+                   data-toggle="modal"
+                   data-url="{% url "crm:manager:subscription:undelete" subscription.id %}">
+                  <span></span>
+                  <abbr>Вернуть</abbr>
+                </a>
+              {% endifhasperm %}
+            {% else %}
+              {% ifhasperm 'location.delete' user %}
+                <a class="btn btn-icon btn-delete"
+                   href="#confirm_popup"
+                   data-action-text="В архив"
+                   data-title="Перемещение в архив"
+                   data-body-text="Переместить в архив?"
+                   data-toggle="modal"
+                   data-url="{% url "crm:manager:subscription:delete" subscription.id %}">
+                  <span></span>
+                  <abbr>Удалить</abbr>
+                </a>
+              {% endifhasperm %}
+            {% endif %}
           </td>
         </tr>
       {% endfor %}

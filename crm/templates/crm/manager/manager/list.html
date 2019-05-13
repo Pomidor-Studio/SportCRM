@@ -74,12 +74,12 @@
                   <a href="{% url "crm:accounts:profile" %}"
                      class="fio_name">{{ manager }}</a>
                 {% else %}
-                {% ifhasperm 'manager.edit' user %}
-                  <a href="{% url "crm:manager:manager:update" manager.id %}"
-                     class="fio_name">{{ manager }}</a>
-                {% else %}
-                  <a href="#" class="fio_name">{{ manager }}</a>
-                {% endifhasperm %}
+                  {% ifhasperm 'manager.edit' user %}
+                    <a href="{% url "crm:manager:manager:update" manager.id %}"
+                       class="fio_name">{{ manager }}</a>
+                  {% else %}
+                    <a href="#" class="fio_name">{{ manager }}</a>
+                  {% endifhasperm %}
                 {% endif %}
               {% else %}
                 {{ manager }}
@@ -132,7 +132,12 @@
                 {% if manager.deleted %}
                   {% ifhasperm 'manager.undelete' user %}
                     <a class="btn btn-icon btn-undo"
-                       href="{% url "crm:manager:manager:undelete" manager.id %}">
+                       href="#confirm_popup"
+                       data-action-text="Вернуть"
+                       data-body-text="Вернуть из архива?"
+                       data-title="Возврат из архива"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:manager:undelete" manager.id %}">
                       <span></span>
                       <abbr>Вернуть</abbr>
                     </a>
@@ -140,7 +145,12 @@
                 {% else %}
                   {% ifhasperm 'manager.delete' user %}
                     <a class="btn btn-icon btn-delete"
-                       href="{% url "crm:manager:manager:delete" manager.id %}">
+                       href="#confirm_popup"
+                       data-action-text="В архив"
+                       data-title="Перемещение в архив"
+                       data-body-text="Переместить в архив?"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:manager:delete" manager.id %}">
                       <span></span>
                       <abbr>Удалить</abbr>
                     </a>
@@ -152,7 +162,7 @@
         {% endfor %}
         </tbody>
       </table>
-    {% include "crm/bars/_bottom_sidebar.html" %}
+      {% include "crm/bars/_bottom_sidebar.html" %}
     {% else %}
       <p>Ваш список менеджеров пуст</p>
     {% endif %}
