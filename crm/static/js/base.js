@@ -138,16 +138,19 @@ $('#id_reason').change(function() {
 
 
 /* Архивирование ученика */
-$('#archive_student').on('show.bs.modal', function (event) {
-	var button = $(event.relatedTarget)
-	var arch_id = button.data('client-id')
-	var arch_name = button.data('client-name')
-	
-	var modal = $(this)
-	modal.find('.modal-body h5').text(arch_name)
-	modal.find('#archive_it').attr('href','/manager/clients/' + arch_id + '/delete/')
-	
-})
+$('#confirm_popup').on('show.bs.modal', function (event) {
+    var button = $(event.relatedTarget);
+    var url = button.data('url');
+    var action_text = button.data('action-text');
+    var title = button.data('title');
+    var body = button.data('body-text');
+
+    var modal = $(this);
+    modal.find('.modal-body h5').text(body);
+    modal.find('.modal-title').text(title);
+    modal.find('input[type=submit]').attr('value', action_text);
+    modal.find('form').attr('action', url);
+});
 
 
 

@@ -46,7 +46,7 @@ from gcp.tasks import enqueue
 
 
 class List(PermissionRequiredMixin, FilterView):
-    queryset = Client.all_objects
+    model = Client
     filterset_class = ClientFilter
     template_name = 'crm/manager/client/list.html'
     context_object_name = 'clients'
@@ -389,7 +389,7 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
 
     def get_success_url(self):
         return reverse(
-            'crm:manager:client:detail', kwargs={'pk': self.object.client_id})
+            'crm:manager:client:detail', args=(self.object.client_id,))
 
 
 class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):

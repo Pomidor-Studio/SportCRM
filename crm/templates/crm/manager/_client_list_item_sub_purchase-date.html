@@ -11,6 +11,6 @@
   {% if last_sub %}
     {{ last_sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
     <br/>
-    <small>{{ sub.sold_by }}</small>
+    <small>{{ sub.sold_by|default_if_none:'' }}</small>
   {% endif %}
 {% endfor %}

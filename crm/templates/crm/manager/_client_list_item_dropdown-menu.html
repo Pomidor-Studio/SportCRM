@@ -9,7 +9,7 @@
   </a>
   <div class="dropdown-menu dropdown-menu-right">
     {% if not client.deleted %}
-      {% if has_active_event_class %}
+      {% if has_active_event_class and event_class_id %}
         {% ifhasperm 'client_subscription.sale' user %}
           <a class="dropdown-item"
              href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event_class_id event_year event_month event_day %}"
@@ -69,54 +69,32 @@
         {% endif %}
       {% endif %}
       <div class="greyline"></div>
+
       {% ifhasperm 'client.delete' user %}
         <a class="dropdown-item"
-           href="#"
-           data-client-id="{{ client.id }}"
-           data-client-name="{{ client.name }}"
+           href="#confirm_popup"
+           data-action-text="В архив"
+           data-title="Перемещение в архив"
+           data-body-text="Переместить в архив?"
            data-toggle="modal"
-           data-target="#archive_student_{{ client.id }}">
+           data-url="{%  url "crm:manager:client:delete" client.id %}">
           Переместить в архив
         </a>
       {% endifhasperm %}
     {% else %}
       {% ifhasperm 'client.undelete' user %}
         <a class="dropdown-item"
-           href="{% url 'crm:manager:client:undelete' client.id %}"
-           data-client-id="{{ client.id }}">Вернуть из архива</a>
+           href="#confirm_popup"
+           data-action-text="Вернуть"
+           data-body-text="Вернуть из архива?"
+           data-title="Возврат из архива"
+           data-toggle="modal"
+           data-url="{%  url "crm:manager:client:undelete" client.id %}">
+          Вернуть из архива
+        </a>
       {% endifhasperm %}
     {% endif %}
   </div>
 </div>
 
-<!-- Переместить в архив -->
-<div class="modal fade"
-     id="archive_student_{{ client.id }}"
-     tabindex="-1"
-     role="dialog"
-     aria-labelledby="archive_student"
-     aria-hidden="true">
-  <div class="modal-dialog"
-       role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Переместить ученика в архив?</h5>
-        <button type="button"
-                class="close"
-                data-dismiss="modal"
-                aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body"><h5></h5></div>
-      <div class="modal-footer">
-        <button type="button"
-                class="btn"
-                data-dismiss="modal">Назад</button>
-        <a id="archive_it"
-           href="{% url 'crm:manager:client:delete' client.id %}"
-           class="btn btn-primary">В архив</a>
-      </div>
-    </div>
-  </div>
-</div>
+
