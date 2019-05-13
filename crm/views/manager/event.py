@@ -34,16 +34,16 @@ class VisitReport(PermissionRequiredMixin, FormView):
     permission_required = 'report.events'
     form_class = VisitReportFilter
 
-    def get_initial(self):
-        initial = super().get_initial()
-        initial['event_class'] = EventClass.objects.first()
-        initial['year'] = date.today().year
-        initial['month'] = date.today().month
-        return initial
+    def default_data(self):
+        return {
+            'month': date.today().month,
+            'year': date.today().year,
+            'event_class': EventClass.objects.first().pk
+        }
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['data'] = self.request.GET
+        kwargs['data'] = self.request.GET or self.default_data()
         return kwargs
 
     def get_month_dates_range(self, year: int, month: int):
@@ -57,21 +57,15 @@ class VisitReport(PermissionRequiredMixin, FormView):
     def get_context_data(self, **kwargs: dict):
         context = super().get_context_data(**kwargs)
         form = self.get_form()
+
         if form.is_valid():
             month = int(form.cleaned_data['month'])
             year = int(form.cleaned_data['year'])
             event_class = form.cleaned_data['event_class']
-        else:
-            month = date.today().month
-            year = date.today().year
-            event_class = EventClass.objects.first()
-        context['month'] = month
-        context['year'] = year
-        context['years'] = range(2019, date.today().year + 1)
-        dates = self.get_month_dates_range(year, month)
-        context['month_days'] = range(1, len(dates) + 1)
-        data = self.get_table_data(year, month, event_class)
-        context['table_data'] = self.sort_data(data)
+
+            data = self.get_table_data(year, month, event_class)
+            context['table_data'] = self.sort_data(data)
+
         return context
 
     def sort_data(self, data: list) -> List[dict]:
