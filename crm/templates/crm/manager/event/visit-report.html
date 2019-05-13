@@ -24,7 +24,6 @@
     </div>
 
     <div class="greyline"></div>
-
     <div class="report_filter">
       <form action="" method="GET">
         <div class="d-flex flex-wrap flex-md-nowrap">
@@ -34,28 +33,11 @@
           </div>
           <div class="form-group select flex-shrink-1">
             <label for="id_month">{{ form.month.label }}</label>
-            <select name="month" class="selectpicker form-control" title="Выбрать месяц" id="id_month">
-              <option value="1" {% if month == 1 %}selected=""{% endif %}>Январь</option>
-              <option value="2" {% if month == 2 %}selected=""{% endif %}>Февраль</option>
-              <option value="3" {% if month == 3 %}selected=""{% endif %}>Март</option>
-              <option value="4" {% if month == 4 %}selected=""{% endif %}>Апрель</option>
-              <option value="5" {% if month == 5 %}selected=""{% endif %}>Май</option>
-              <option value="6" {% if month == 6 %}selected=""{% endif %}>Июнь</option>
-              <option value="7" {% if month == 7 %}selected=""{% endif %}>Июль</option>
-              <option value="8" {% if month == 8 %}selected=""{% endif %}>Август</option>
-              <option value="9" {% if month == 9 %}selected=""{% endif %}>Сентябрь</option>
-              <option value="10" {% if month == 10 %}selected=""{% endif %}>Октябрь</option>
-              <option value="11" {% if month == 11 %}selected=""{% endif %}>Ноябрь</option>
-              <option value="12" {% if month == 12 %}selected=""{% endif %}>Декабрь</option>
-            </select>
+            {{ form.month }}
           </div>
           <div class="form-group select flex-shrink-1">
             <label for="id_year">{{ form.year.label }}</label>
-            <select name="year" class="selectpicker form-control" title="Выбрать месяц" id="id_year">
-              {% for y in years %}
-                <option value="{{ y }}" {% if y == year %}selected=""{% endif %}>{{ y }}</option>
-              {% endfor %}
-            </select>
+            {{ form.year }}
           </div>
           <div class="form-group button flex-shrink-1">
             <label>&nbsp;</label><br/>
