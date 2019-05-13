@@ -3,7 +3,12 @@
 {% load bootstrap4 html_helper qr_code humanize static %}
 
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False %}
+  {% if event_class_id %}
+    {% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day as back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=back_link %}
+  {% else %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False %}
+  {% endif %}
 {% endblock %}
 
 {% block content %}
@@ -55,6 +60,20 @@
     </div>
     <div class="bredcams clearfix">
       <ul>
+        {% if event_class_id %}
+          <li>
+            <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
+            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </li>
+          <li>
+            <a href="{% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}">{{ event_class_name }}</a>
+            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </li>
+        {% endif %}
         <li>
           Ученик
         </li>
@@ -231,7 +250,11 @@
                         </button>
                         {% endif %}
                         <a name="cancel"
-                           href="{% url 'crm:manager:client:detail' client.id %}"
+                           {% if event_class_id %}
+                            href="{% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}"
+                           {% else %}
+                             href="{% url 'crm:manager:client:detail' client.id %}"
+                           {% endif %}
                            class="btn cancel">
                           Назад
                         </a>

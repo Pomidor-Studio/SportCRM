@@ -97,6 +97,11 @@ manager_manager_urlpatterns = ([
 
 manager_client_subs_urlpatterns = ([
     path(
+        '<int:pk>/update/<int:event_class_id>/<int:year>/<int:month>/<int:day>/',
+        manager_client_views.SubscriptionUpdate.as_view(),
+        name='update-with-event-by-date'
+    ),
+    path(
         '<int:pk>/update',
         manager_client_views.SubscriptionUpdate.as_view(),
         name='update'
@@ -138,6 +143,11 @@ manager_clients_urlpatterns = ([
         '<int:pk>/undelete/',
         manager_client_views.UnDelete.as_view(),
         name='undelete'
+    ),
+    path(
+        '<int:client_id>/add-subscription/<int:event_class_id>/<int:year>/<int:month>/<int:day>/',
+        manager_client_views.AddSubscription.as_view(),
+        name='new-subscription-with-event-by-date'
     ),
     path(
         '<int:client_id>/add-subscription/',

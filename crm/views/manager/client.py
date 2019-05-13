@@ -230,6 +230,15 @@ class AddSubscription(
         attendance_with_balance = chain(attendance, balancehistory)
         context['attendance_with_balance'] = attendance_with_balance
         context['hide_form'] = self.kwargs.get('hide_form')
+        if self.kwargs.get('event_class_id'):
+            event_class_id = self.kwargs.get('event_class_id')
+            context.update(
+                event_class_name=EventClass.objects.get(pk=event_class_id).name,
+                event_class_id=event_class_id,
+                event_year=self.kwargs.get('year'),
+                event_month=self.kwargs.get('month'),
+                event_day=self.kwargs.get('day'),
+            )
         return context
 
     def form_valid(self, form):
@@ -291,6 +300,15 @@ class SubscriptionUpdate(
         attendance_with_balance = chain(attendance, balancehistory)
         context['attendance_with_balance'] = attendance_with_balance
         context['hide_form'] = self.kwargs.get('hide_form')
+        if self.kwargs.get('event_class_id'):
+            event_class_id = self.kwargs.get('event_class_id')
+            context.update(
+                event_class_name=EventClass.objects.get(pk=event_class_id).name,
+                event_class_id=event_class_id,
+                event_year=self.kwargs.get('year'),
+                event_month=self.kwargs.get('month'),
+                event_day=self.kwargs.get('day'),
+            )
         return context
 
     def get(self, request, *args, **kwargs):

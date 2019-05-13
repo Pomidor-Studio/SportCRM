@@ -12,7 +12,7 @@
       {% if has_active_event_class %}
         {% ifhasperm 'client_subscription.sale' user %}
           <a class="dropdown-item"
-             href="{% url 'crm:manager:client:new-subscription' client.id %}"
+             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event_class_id event_year event_month event_day %}"
              data-client-id="{{ client.id }}">
             Продать абонемент
           </a>
