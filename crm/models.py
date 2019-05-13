@@ -451,9 +451,6 @@ class EventClass(CompanyObjectModel):
             self.event_set.filter(date__range=(start_date, end_date))
         }
 
-        if not events:
-            return events
-
         if self.date_from and start_date < self.date_from:
             start_date = self.date_from
 
