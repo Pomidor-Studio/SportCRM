@@ -1,7 +1,7 @@
 {% for sub in active_sub %}
   {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
   <br/>
-  <small>{{ sub.sold_by }}</small>
+  <small>{{ sub.sold_by|default_if_none:'' }}</small>
   {% if active_sub|length > 1 %}
     {% if not forloop.last %}
       <div class="greyline"></div>
