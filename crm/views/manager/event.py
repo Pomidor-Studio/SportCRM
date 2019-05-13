@@ -118,21 +118,33 @@ class VisitReport(PermissionRequiredMixin, FormView):
                 from_date_ = from_date
                 to_date_ = to_date
 
-            for event in subs.subscription.events_to_date(from_date=from_date_, to_date=to_date_):
-                attendances[event.date.day - 1] = 'red'
+            try:
+                for event in subs.subscription.events_to_date(
+                        from_date=from_date_, to_date=to_date_):
+                    attendances[event.date.day - 1] = 'red'
+            except ValueError:
+                pass
 
             visit_start = subs.visits_on_by_time
             if subs.start_date < from_date:
                 visit_start -= subs.attendance_set.filter(
                     marked=True,
-                    event__date__lt=from_date,
-                    event__is_closed=True,
+                    event__date__lt=from_date
+                    # TODO: Возможно надо добавить фильтр для проверки тренировок
+                    #   которые из будущего - если были отметки они должны
+                    #   не показываться, так как не должны отмечать будущие дни.
+                    #   Для прошедших тренировок игнорировать флаг
+                    # event__is_closed=True,
                 ).count()
 
             visited = subs.attendance_set.filter(
                 marked=True,
-                event__date__range=(from_date, to_date),
-                event__is_closed=True,
+                event__date__range=(from_date, to_date)
+                # TODO: Возможно надо добавить фильтр для проверки тренировок
+                #   которые из будущего - если были отметки они должны
+                #   не показываться, так как не должны отмечать будущие дни.
+                #   Для прошедших тренировок игнорировать флаг
+                #event__is_closed=True,
             ).select_related('event').all()
 
             for visit in visited:
@@ -152,7 +164,11 @@ class VisitReport(PermissionRequiredMixin, FormView):
         dates = self.get_month_dates_range(year, month)
         fltr = {
             'subscription__subscription__one_time': True,
-            'event__is_closed': True,
+            # TODO: Возможно надо добавить фильтр для проверки тренировок
+            #   которые из будущего - если были отметки они должны
+            #   не показываться, так как не должны отмечать будущие дни.
+            #   Для прошедших тренировок игнорировать флаг
+            # 'event__is_closed': True,
             'event__date__range': (dates[0], dates[-1]),
             'event__event_class': event_class
         }
