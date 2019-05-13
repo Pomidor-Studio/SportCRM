@@ -158,6 +158,12 @@ class EventByDate(
             )
         })
 
+        context.update(
+            event_class_id=self.kwargs.get('event_class_id'),
+            event_year=self.kwargs.get('year'),
+            event_month=self.kwargs.get('month'),
+            event_day=self.kwargs.get('day'), )
+
         return context
 
 
