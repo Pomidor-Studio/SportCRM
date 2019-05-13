@@ -41,9 +41,11 @@
           <th>
             VK
           </th>
+          {% ifhasperm 'coach.add' user %}
           <th>
             Ссылка для входа
           </th>
+          {% endifhasperm %}
           <th width="1"></th>
         </tr>
         </thead>
@@ -112,16 +114,18 @@
                 Не привязано
               {% endif %}
             </td>
+            {% ifhasperm 'coach.add' user %}
             <td class="d-none d-md-block">
-              {% if not coach.deleted %}
-                <div class="copy_url">
-                  <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link coach.user %}"><span></span></a>
-                  {% filter truncatechars_html:30 %}
-                    <span>{% one_time_login_link coach.user %}</span>
-                  {% endfilter %}
-                </div>
-              {% endif %}
+                {% if not coach.deleted %}
+                  <div class="copy_url">
+                    <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link coach.user %}"><span></span></a>
+                    {% filter truncatechars_html:30 %}
+                      <span>{% one_time_login_link coach.user %}</span>
+                    {% endfilter %}
+                  </div>
+                {% endif %}
             </td>
+            {% endifhasperm %}
             <td width="1">
               {% if coach.deleted %}
                 {% ifhasperm 'coach.undelete' user %}
