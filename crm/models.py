@@ -727,7 +727,7 @@ class Client(ScrmSafeDeleteModel, CompanyObjectModel):
         unique_together = ('company', 'name')
 
     def get_absolute_url(self):
-        return reverse('crm:manager:client:detail', kwargs={'pk': self.pk})
+        return reverse('crm:manager:client:detail', kwargs={'client_id': self.pk})
 
     def last_sub(self, with_deleted=False):
         qs = self.clientsubscriptions_set.exclude_onetime()
