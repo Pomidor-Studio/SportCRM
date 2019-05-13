@@ -38,7 +38,13 @@
     <div class="nav flex-column">
       <div class="top">
         <a class="nav-link active"
-           href="{% url 'crm:manager:event:calendar' %}">
+           {% ifhasperm 'is_manager' user %}
+            href="{% url 'crm:manager:event:calendar' %}"
+          {% endifhasperm %}
+          {% ifhasperm 'is_coach' user %}
+            href="{% url "crm:coach:home" %}"
+          {% endifhasperm %}
+        >
           Тренировки
         </a>
         <a class="nav-link"
