@@ -6,6 +6,15 @@
   {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False %}
 {% endblock %}
 
+{# ToDo: Remove gijgo.min.js  #}
+{% block extrahead %}
+  <style>
+  .bootstrap-datetimepicker-widget, .input-group-addon {
+    display: none !important;
+  }
+  </style>
+{% endblock %}
+
 {% block content %}
   <div class="page student_page col-md-12 col-lg-9 col-xl-10">
     <div class="workout_actions desktop_workout_actions d-none d-md-block">
@@ -163,7 +172,8 @@
                       </div>
                       <div class="row">
                         <div class="form-group datepick col-12 col-sm-6 col-md-3">
-                          {% bootstrap_field form.start_date %}
+                            <label for="{{ form.start_date.id_for_label }}">Дата начала</label>
+                            {{ form.start_date }}
                         </div>
                         <div class="form-group datepick col-12 col-sm-6 col-md-3">
                           <label for="id_end_date">Дата окончания</label>
@@ -597,7 +607,6 @@
 	  			}
 
 	  		});
-
 	  	$fStartDate.on('input, dp.change', function() {
 	  		updateDateRange($("#id_subscription option:selected").attr('value'));
 
@@ -622,6 +631,17 @@
 	  	}
 
 	  	updateDateRange($("#id_subscription option:selected").attr('value'));
+
+    $('#{{ form.start_date.id_for_label }}').datepicker({
+	        uiLibrary: 'bootstrap4',
+	        locale: 'ru-ru',
+	        format: 'dd.mm.yyyy',
+	        modal: false,
+	        icons: {
+		         rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+		    }
+	    });
 	  });
+
   </script>
 {% endblock %}
