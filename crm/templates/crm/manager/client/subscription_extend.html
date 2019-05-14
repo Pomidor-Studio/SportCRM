@@ -39,6 +39,7 @@
 
     <form method="POST">
       {% csrf_token %}
+      {% bootstrap_field form.go_back %}
       <div class="form-group row">
 			  <div class="col-12 col-md-10 col-xl-6">
           <input id="client_id" name="client_id" hidden="true" value="{{ form.subscription.client.id }}">

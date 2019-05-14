@@ -199,6 +199,9 @@ class AddSubscription(
     permission_required = 'client_subscription.sale'
 
     def get_success_url(self):
+        if self.form.cleaned_data.get('go_back'):
+            return self.form.cleaned_data['go_back']
+
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
@@ -207,6 +210,7 @@ class AddSubscription(
         client = self.get_client()
         initial['client'] = client
         initial['sold_by'] = self.request.user
+        initial['go_back'] = self.request.GET.get('gb')
 
         # Add preselected subscription type from previous client subscriptions
         # history.
@@ -242,6 +246,7 @@ class AddSubscription(
         return context
 
     def form_valid(self, form):
+        self.form = form
         cash_earned = form.cleaned_data['cash_earned']
         abon_price = form.cleaned_data['price']
         client = self.get_client()
@@ -363,6 +368,11 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
 
     object: ClientSubscriptions = ...
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['go_back'] = self.request.GET.get('gb')
+        return initial
+
     def get_object(self):
         self.object = get_object_or_404(
             ClientSubscriptions, id=self.kwargs['pk'])
@@ -381,6 +391,7 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
+        self.form = form
         self.object.extend_duration(
             form.cleaned_data['visit_limit'],
             form.cleaned_data['reason']
@@ -388,6 +399,9 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        if self.form.cleaned_data.get('go_back'):
+            return self.form.cleaned_data['go_back']
+
         return reverse(
             'crm:manager:client:detail', args=(self.object.client_id,))
 

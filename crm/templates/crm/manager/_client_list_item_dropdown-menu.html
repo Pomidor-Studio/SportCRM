@@ -12,7 +12,7 @@
       {% if has_active_event_class and event_class_id %}
         {% ifhasperm 'client_subscription.sale' user %}
           <a class="dropdown-item"
-             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event_class_id event_year event_month event_day %}"
+             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event_class_id event_year event_month event_day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}"
              data-client-id="{{ client.id }}">
             Продать абонемент
           </a>
@@ -21,7 +21,7 @@
           {% ifhasperm 'client_subscription.extend' user %}
             {% with active_sub.first as sub %}
               <a class="dropdown-item"
-                 href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
+                 href="{% url 'crm:manager:client:subscription:extend' sub.id %}?gb={% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}"
                  data-client-id="{{ client.id }}">
                 Продлить абонемент
               </a>
@@ -30,9 +30,9 @@
         {% endif %}
       {% endif %}
       {% ifhasperm 'client-balance.add' user %}
-        <a class="dropdown-item"
-           href="{% url 'crm:manager:client:balance:new' client.id %}"
-           data-client-id="{{ client.id }}">
+          <a class="dropdown-item"
+            href="{% url 'crm:manager:client:balance:new' client.id %}{% if has_active_event_class and event_class_id %}?gb={% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}{% endif %}"
+            data-client-id="{{ client.id }}">
           Пополнить баланс
         </a>
       {% endifhasperm %}
