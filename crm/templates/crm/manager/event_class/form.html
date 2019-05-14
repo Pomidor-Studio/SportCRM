@@ -1,141 +1,146 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
-{% load bootstrap4 %}
+{% load bootstrap4  html_helper %}
+{% block sidbar %}
+  {% ifhasperm 'is_manager' user %}
+    {% url 'crm:manager:event:calendar' as back_link %}
+  {% else %}
+    {% ifhasperm 'is_coach' user %}
+      {% url "crm:coach:home" as back_link %}
+    {% endifhasperm %}
+  {% endifhasperm %}
+  {% if object.id %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=object.name back_link=back_link %}
+  {% else %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новое" back_link=back_link %}
+  {% endif %}
+{% endblock %}
+{% block content %}
+  <!- Новое занятие -!>
+  <div class="page new_class col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          {% ifhasperm 'is_manager' user %}
+            <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
+          {% else %}
+            {% ifhasperm 'is_coach' user %}
+              <a href="{% url "crm:coach:home" %}">Тренировки</a>
+            {% endifhasperm %}
+          {% endifhasperm %}
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"/>
+          </svg>
+        </li>
+        <li>
+          {% if not object.id %}
+            Новое
+          {% else %}
+            {{ object.name }}
+          {% endif %}
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
 
-{% block extrahead %}
-  {{ eventclass_form.media }}
-  {{ weekdays.media }}
-  <script type="text/javascript">
-    $(function () {
-      $('#save-ec').click(function(e) {
-        if ($('input:checkbox.day-of-week:checked').length === 0) {
-          $('div.messages').append(
-            '<div class="alert alert-danger alert-dismissible fade show" role="alert">\n' +
-            '  Не выбрано ни одного дня проведения тренировки!\n' +
-            '  <button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
-            '    <span aria-hidden="true">&times;</span>\n' +
-            '  </button>\n' +
-            '</div>');
-          window.scroll(0, 0);
-          e.preventDefault();
-        }
-      });
+    <form action="" method="POST">
+      {% csrf_token %}
+
+      <div class="form-group row">
+        <div class="col-12 col-md-10 col-xl-6">
+          {% bootstrap_field eventclass_form.name %}
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-12 col-md-10 col-xl-6">
+          <label for="id_event_class">{{ eventclass_form.location.label }}</label>
+          {{ eventclass_form.location }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group col-sm-6 col-md-6 col-xl-4">
+          <label for="id_coach">{{ eventclass_form.coach.label }}</label>
+          {{ eventclass_form.coach }}
+        </div>
+        <div class="form-group col-sm-6 col-md-4 col-xl-2">
+          <label for="id_coach">{{ eventclass_form.one_time_price.label }}</label>
+          {{ eventclass_form.one_time_price }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group datepick col-12 col-sm-6 col-md-3">
+          {% bootstrap_field eventclass_form.date_from %}
+        </div>
+        <div class="form-group datepick col-12 col-sm-6 col-md-3">
+          {% bootstrap_field eventclass_form.date_to %}
+        </div>
+      </div>
+      {% if form.detail.vk_page.errors %}is-invalid{% endif %}
+      <div class="form-group row days timepick">
+        {% for weekday in weekdays %}
+          <div class="col-6 col-md-3 col-lg day is-invalid">
+            <div class="form-check">
+              {{ weekday.checked }}
+              <div class="form-check-input-div"></div>
+              <label class="form-check-label" for="id_weekday0-checked"> {% weekday forloop.counter %}</label>
+            </div>
+            {{ weekday.start_time }}
+            —
+            {{ weekday.end_time }}
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="form-group save_buttons">
+        <input id="save-ec" class="btn btn-primary" type="submit" value="Сохранить"/>
+
+        {% ifhasperm 'is_manager' user %}
+          {#          {% if not object.id %}#}
+          <a id="cancel" class="btn" href="{% url 'crm:manager:event:calendar' %}">Отмена</a>
+          {#          {% else %}#}
+          {#            <a id="cancel" class="btn" href="{% url 'crm:manager:event-class:calendar' 1 1 1 1 %}">Отмена</a>#}
+          {#          {% endif %}#}
+        {% else %}
+          {% ifhasperm 'is_coach' user %}
+            <a id="cancel" class="btn" href="{% url "crm:coach:home" %}">Отмена</a>
+          {% endifhasperm %}
+        {% endifhasperm %}
+
+
+      </div>
+    </form>
+
+  </div>
+
+{% endblock content %}
+
+{% block extrajs %}
+  <script>
+    $('#{{ eventclass_form.date_from.id_for_label }}').datepicker({
+      uiLibrary: 'bootstrap4',
+      locale: 'ru-ru',
+      format: 'dd.mm.yyyy',
+      modal: false,
+      icons: {
+        rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+      }
+    });
+    $('#{{ eventclass_form.date_to.id_for_label }}').datepicker({
+      uiLibrary: 'bootstrap4',
+      locale: 'ru-ru',
+      format: 'dd.mm.yyyy',
+      modal: false,
+      icons: {
+        rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+      }
+    });
+    $('.day :checkbox').each(function () {
+      if (this.checked) {
+        $(this).parents('.day').find(':not([type=checkbox])').prop('disabled', false);
+      } else {
+        $(this).parents('.day').find(':not([type=checkbox])').prop('disabled', true);
+      }
     });
   </script>
-{% endblock extrahead %}
-
-{% block content %}
-  <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Тренировка</legend>
-    <div class="container-fluid">
-      <form action="" method="POST">
-
-        {% csrf_token %}
-
-        {% bootstrap_form eventclass_form %}
-
-        <div class="row">
-          <div class="col-2">
-
-          </div>
-          <div class="col">
-            Начало
-          </div>
-          <div class="col">
-            Окончание
-          </div>
-        </div>
-        <div class="row border-top">
-          <div class="col-2 mt-1 mb-1">
-            {% bootstrap_field weekdays.0.checked %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.0.start_time show_label=False %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.0.end_time show_label=False %}
-          </div>
-        </div>
-        <div class="row border-top">
-          <div class="col-2 mt-1 mb-1">
-            {% bootstrap_field weekdays.1.checked %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.1.start_time show_label=False %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.1.end_time show_label=False %}
-          </div>
-        </div>
-        <div class="row border-top">
-          <div class="col-2 mt-1 mb-1">
-            {% bootstrap_field weekdays.2.checked %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.2.start_time show_label=False %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.2.end_time show_label=False %}
-          </div>
-        </div>
-        <div class="row border-top">
-          <div class="col-2 mt-1 mb-1">
-            {% bootstrap_field weekdays.3.checked %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.3.start_time show_label=False %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.3.end_time show_label=False %}
-          </div>
-        </div>
-        <div class="row border-top">
-          <div class="col-2 mt-1 mb-1">
-            {% bootstrap_field weekdays.4.checked %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.4.start_time show_label=False %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.4.end_time show_label=False %}
-          </div>
-        </div>
-        <div class="row border-top">
-          <div class="col-2 mt-1 mb-1">
-            {% bootstrap_field weekdays.5.checked %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.5.start_time show_label=False %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.5.end_time show_label=False %}
-          </div>
-        </div>
-        <div class="row border-top">
-          <div class="col-2 mt-1 mb-1">
-            {% bootstrap_field weekdays.6.checked %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.6.start_time show_label=False %}
-          </div>
-          <div class="col mt-1 mb-1">
-            {% bootstrap_field weekdays.6.end_time show_label=False %}
-          </div>
-        </div>
-
-        <div class="row">
-          <button
-            id="save-ec" class="btn btn-primary mr-1"
-            href="{% url 'crm:manager:event-class:list' %}" type="submit"
-          >
-            {% if object.id %}Сохранить{% else %}Добавить{% endif %}
-          </button>
-          <a
-            name="cancel" href="{% url 'crm:manager:event-class:list' %}"
-            class="btn btn-outline-info"
-          >Назад</a>
-        </div>
-      </form>
-    </div>
-  </div>
-{% endblock content %}
+{% endblock %}

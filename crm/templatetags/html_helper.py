@@ -20,6 +20,7 @@ from crm.auth.one_time_login import get_one_time_login_link
 
 register = template.Library()
 
+
 # Port of https://github.com/noirbizarre/django.js/blob/master/djangojs/templatetags/js.py  # noqa
 
 
@@ -44,6 +45,21 @@ def js(filename, type='text/javascript'):
     """"A simple shortcut to render a
     ``script`` tag to a static javascript file"""
     return javascript(filename, type=type)
+
+
+@register.simple_tag
+def weekday(day):
+    days = {
+        1: 'Понедельник',
+        2: 'Вторник',
+        3: 'Среда',
+        4: ' Четверг',
+        5: 'Пятница',
+        6: 'Суббота',
+        7: 'Воскресенье',
+    }
+
+    return days.get(day, '')
 
 
 @register.simple_tag
@@ -132,7 +148,7 @@ def bootstrap_alert_message(message: Message, dismissable=True):
     return render_alert(
         str(message), DJANGO_TO_BOOTSTRAP[message.level_tag], dismissable)
 
-  
+
 class IfHasPermNode(Node):
 
     def __init__(self, conditions_nodelists):
@@ -161,7 +177,7 @@ class IfHasPermNode(Node):
     def render(self, context):
         for condition, nodelist in self.conditions_nodelists:
 
-            if condition is not None:           # if / elif clause
+            if condition is not None:  # if / elif clause
                 perm = self.resolve(condition[0], context)
                 user = self.resolve(condition[1], context)
                 try:
@@ -174,7 +190,7 @@ class IfHasPermNode(Node):
                     match = False
                 else:
                     match = user.has_perm(perm, obj)
-            else:                               # else clause
+            else:  # else clause
                 match = True
 
             if match:

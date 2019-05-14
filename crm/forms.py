@@ -359,48 +359,47 @@ class ClientSubscriptionForm(TenantModelForm):
 
 
 class EventClassForm(TenantModelForm):
+    error_css_class = 'is-invalid'
+
     one_time_price = forms.IntegerField(
         label='Стоимость разового посещения',
         initial='',
         min_value=0,
-        required=False
+        required=False,
+        widget=forms.NumberInput(
+            attrs={
+                'class': 'form-control',
+            }
+        ),
     )
     location = forms.ModelChoiceField(
         empty_label='',
-        queryset=Location.objects.all(),
+        queryset=Location.objects,
         label='Место проведения',
-        widget=Select2WidgetAttributed(
-            attr_getter=subcription_type_attrs)
+        widget=forms.Select(
+            attrs={
+                'class': 'form-control',
+            }
+        ),
     )
     coach = forms.ModelChoiceField(
         empty_label='',
-        queryset=Coach.objects.all(),
+        queryset=Coach.objects,
         label='Тренер',
-        widget=Select2WidgetAttributed(
-            attr_getter=subcription_type_attrs)
+        widget=forms.Select(
+            attrs={
+                'class': 'form-control',
+            }
+        ),
     )
     date_from = forms.DateField(
         label='Начало тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        ),
         required=False
     )
     date_to = forms.DateField(
         label='Окончание тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        ),
         required=False
     )
 
@@ -411,19 +410,38 @@ class EventClassForm(TenantModelForm):
             'one_time_price'
         ]
         exclude = ('client',)
+        widgets = {
+            'one_time_price': forms.NumberInput(
+                attrs={"class": "form-control"},
+            )
+        }
 
 
 class DayOfTheWeekClassForm(TenantModelForm):
     checked = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={'class': 'day-of-week'})
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
     )
 
     class Meta:
         model = DayOfTheWeekClass
         fields = ('checked', 'start_time', 'end_time')
         widgets = {
-            'start_time': TimePickerInput(),
-            'end_time': TimePickerInput()
+            'start_time': forms.TimeInput(
+                format='%H:%M',
+                attrs={
+                    'class': 'form-control time',
+                    'placeholder': ':',
+                    'dp_config': '{&quot;id&quot;: &quot;dp_5&quot;, &quot;picker_type&quot;: &quot;TIME&quot;, &quot;linked_to&quot;: null, &quot;options&quot;: {&quot;showClose&quot;: true, &quot;showClear&quot;: true, &quot;showTodayButton&quot;: true, &quot;format&quot;: &quot;HH:mm&quot;}}',
+                }
+            ),
+            'end_time': forms.TimeInput(
+                format='%H:%M',
+                attrs={
+                    'class': 'form-control time',
+                    'placeholder': ':',
+                    'dp_config': '{&quot;id&quot;: &quot;dp_5&quot;, &quot;picker_type&quot;: &quot;TIME&quot;, &quot;linked_to&quot;: null, &quot;options&quot;: {&quot;showClose&quot;: true, &quot;showClear&quot;: true, &quot;showTodayButton&quot;: true, &quot;format&quot;: &quot;HH:mm&quot;}}',
+                }
+            ),
         }
 
     def clean(self):

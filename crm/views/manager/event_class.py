@@ -595,8 +595,10 @@ class CreateEdit(
                             weekdayform.save()
                     self.weekdays[i] = weekdayform
 
-        return HttpResponseRedirect(reverse(
-            'crm:manager:event-class:list'))
+        return HttpResponseRedirect(
+            reverse('crm:manager:event-class:update', args=(self.object.pk,)
+        )
+)
 
 
 class Scanner(

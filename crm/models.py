@@ -493,9 +493,8 @@ class EventClass(CompanyObjectModel):
     #   - Валидация всех event (а можно ли редактировать описание
     #   тренировки, если они уже были?)
 
-    @staticmethod
-    def get_absolute_url():
-        return reverse_lazy('crm:manager:event-class:list')
+    def get_absolute_url(self):
+        return reverse_lazy('crm:manager:event-class:update', self.pk)
 
     def __str__(self):
         return self.name
