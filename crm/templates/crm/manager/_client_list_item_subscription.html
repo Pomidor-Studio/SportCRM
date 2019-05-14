@@ -19,22 +19,24 @@
       {% endif %}
     {% endfor %}
   </form>
-{% elif last_sub %}
-  {{ last_sub.subscription.name }}
-  {% if not client.deleted %}
-    {% ifhasperm 'client_subscription.sale' user %}
-      <br/>
-      <a class="sell"
-         href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
-    {% endifhasperm %}
-  {% endif %}
 {% else %}
-  Без абонемента
+  {% if last_sub %}
+    {{ last_sub.subscription.name }}
+  {% else %}
+    Без абонемента
+  {% endif %}
+
   {% if not client.deleted %}
     {% ifhasperm 'client_subscription.sale' user %}
       <br/>
-      <a class="sell"
-         href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+      {% if has_active_event_class and event_class_id %}
+        <a class="sell"
+             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event_class_id event_year event_month event_day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}">
+        Продать</a>
+      {% else %}
+        <a class="sell"
+           href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+      {% endif %}
     {% endifhasperm %}
   {% endif %}
 {% endif %}

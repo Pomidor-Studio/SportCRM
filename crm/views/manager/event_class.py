@@ -155,6 +155,11 @@ class EventByDate(
             'sell_subscription_form': InplaceSellSubscriptionForm(
                 subscription_type_qs=SubscriptionsType.objects.filter(
                     event_class=self.object.event_class)
+            ),
+            'has_active_event_class': (
+                EventClass.objects
+                .active()
+                .filter(id=self.object.event_class_id).exists()
             )
         })
 

@@ -103,6 +103,11 @@ class ClientForm(TenantModelForm):
 
 
 class Balance(TenantModelForm):
+    go_back = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput()
+    )
+
     class Meta:
         model = ClientBalanceChangeHistory
         widgets = {
@@ -174,9 +179,14 @@ class SignUpClientMultiForm(MultiModelForm):
     def is_valid(self):
         return any(form.is_valid() for form in self.forms.values())
 
+
 class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
     reason = forms.CharField(label='Причина продления', widget=forms.TextInput)
+    go_back = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput()
+    )
 
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
@@ -305,6 +315,10 @@ class ClientSubscriptionForm(TenantModelForm):
                 'locale': 'ru'
             }
         )
+    )
+    go_back = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput()
     )
 
     class Meta:
