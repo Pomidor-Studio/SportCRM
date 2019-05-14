@@ -49,17 +49,11 @@ class ResetPasswordView(LoginRequiredMixin, TemplateView):
         return context
 
     def get(self, request, *args, **kwargs):
-        if request.session['confirm-reset']:
-            self.password = get_user_model().objects.make_random_password()
-            request.user.set_password(self.password)
-            request.user.save()
-            update_session_auth_hash(request, request.user)
-            ret = super().get(request, *args, **kwargs)
-        else:
-            ret = HttpResponseRedirect(reverse('crm:accounts:profile'))
-
-        request.session['confirm-reset'] = False
-        return ret
+        self.password = get_user_model().objects.make_random_password()
+        request.user.set_password(self.password)
+        request.user.save()
+        update_session_auth_hash(request, request.user)
+        return super().get(request, *args, **kwargs)
 
 
 class ProfileView(LoginRequiredMixin, SocialAuthMixin, UpdateView):

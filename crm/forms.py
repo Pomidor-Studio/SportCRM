@@ -569,6 +569,9 @@ class ManagerForm(TenantModelForm):
         label='Профиль в Вконтакте',
         regex=VK_PAGE_REGEXP,
         required=False,
+        widget=TextInput(
+            attrs={'placeholder': 'Ссылка на страницу пользователя', 'class': 'form-control'}
+        )
     )
 
     class Meta:
@@ -578,9 +581,6 @@ class ManagerForm(TenantModelForm):
             'phone_number': PhoneNumberInternationalFallbackWidget(
                 attrs={'data-phone': True}
             ),
-            'vk_page': TextInput(
-                attrs={'placeholder': 'Ссылка на страницу пользователя'}
-            )
         }
 
 
