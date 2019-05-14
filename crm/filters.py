@@ -3,11 +3,11 @@ from datetime import datetime, timedelta, date
 import django_filters
 from dateutil.relativedelta import relativedelta
 from django import forms
-from django.forms.utils import ErrorList
 from django.http import QueryDict
 from django.utils import dateformat
 from phonenumber_field import modelfields
 
+from contrib.forms import TenantForm
 from crm import models
 from crm.utils import BootstrapDateFromToRangeFilter
 
@@ -64,7 +64,7 @@ class EventReportFilter(django_filters.FilterSet):
         fields = ('date',)
 
 
-class VisitReportFilter(forms.Form):
+class VisitReportFilter(TenantForm):
     event_class = forms.ModelChoiceField(
         label='Тип тренировки:',
         queryset=models.EventClass.objects,

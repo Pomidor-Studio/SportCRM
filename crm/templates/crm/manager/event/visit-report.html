@@ -75,7 +75,7 @@
           </th>
           {% for i in month_days %}
             <th class="text-center">
-              {{ i }}
+              {{ i|date:'d' }}
             </th>
           {% endfor %}
 

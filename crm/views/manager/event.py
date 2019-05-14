@@ -65,6 +65,7 @@ class VisitReport(PermissionRequiredMixin, FormView):
 
             data = self.get_table_data(year, month, event_class)
             context['table_data'] = self.sort_data(data)
+            context['month_days'] = self.get_month_dates_range(year, month)
 
         return context
 
