@@ -601,7 +601,7 @@ class CreateEdit(
                     self.weekdays[i] = weekdayform
 
         return HttpResponseRedirect(reverse(
-            'crm:manager:event-class:list'))
+            'crm:manager:event:calendar'))
 
 
 class Scanner(
