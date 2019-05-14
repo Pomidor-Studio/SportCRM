@@ -205,6 +205,11 @@ class AddSubscription(
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['exclude_one_time'] = bool(int(self.request.GET.get('eot', 1)))
+        return kwargs
+
     def get_initial(self):
         initial = super().get_initial()
         client = self.get_client()

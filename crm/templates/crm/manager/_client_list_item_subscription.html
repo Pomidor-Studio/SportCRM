@@ -31,7 +31,7 @@
       <br/>
       {% if has_active_event_class and event_class_id %}
         <a class="sell"
-             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event_class_id event_year event_month event_day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}">
+             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event_class_id event_year event_month event_day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}&eot=0">
         Продать</a>
       {% else %}
         <a class="sell"
