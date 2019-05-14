@@ -2,6 +2,8 @@ from datetime import datetime, date
 
 import vk
 from bootstrap4.components import render_alert
+from bootstrap4.forms import render_label
+from bootstrap4.renderers import FieldRenderer
 from bootstrap4.text import text_value
 from bootstrap4.utils import render_tag
 from django import template
@@ -10,7 +12,7 @@ from django.contrib.messages.storage.base import Message
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.cache import cache
 from django.template import Node, NodeList, TemplateSyntaxError
-from django.utils.html import format_html
+from django.utils.html import format_html, escape, strip_tags
 from django.utils.safestring import mark_safe
 from transliterate.utils import _
 
@@ -131,6 +133,24 @@ def try_parse_date(text):
 def bootstrap_alert_message(message: Message, dismissable=True):
     return render_alert(
         str(message), DJANGO_TO_BOOTSTRAP[message.level_tag], dismissable)
+
+
+class DayOfWeekRenderer(FieldRenderer):
+
+    def post_widget_render(self, html):
+        return html + render_tag(
+            'div', {'class': 'form-check-input-div'}
+        ) + render_label(
+            content=self.field.label,
+            label_for=self.field.id_for_label,
+            label_title=escape(strip_tags(self.field_help)),
+            label_class="form-check-label",
+        )
+
+
+@register.simple_tag
+def bootstrap_dayofweek_render(field):
+    return DayOfWeekRenderer(field).render()
 
   
 class IfHasPermNode(Node):

@@ -440,8 +440,8 @@ class DayOfTheWeekClassForm(TenantModelForm):
         model = DayOfTheWeekClass
         fields = ('checked', 'start_time', 'end_time')
         widgets = {
-            'start_time': TimePickerInput(),
-            'end_time': TimePickerInput()
+            'start_time': TimePickerInput(attrs={'class': 'time'}),
+            'end_time': TimePickerInput(attrs={'class': 'time'})
         }
 
     def clean(self):
