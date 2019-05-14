@@ -351,21 +351,25 @@ class ClientSubscriptionForm(TenantModelForm):
             'disable_subscription_type', False)
         activated_subscription = kwargs.pop(
             'activated_subscription', False)
+        exclude_one_time = kwargs.pop('exclude_one_time', True)
 
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
 
         # Set subscription queryset on init, as if it will be defined in
         # class field initialization, it will ignore SafeDeleteMixin
         if not disable_subscription_type:
-            self.fields['subscription'].queryset = \
-                SubscriptionsType.objects.exclude(one_time=True)
+            qs = SubscriptionsType.objects.all()
         else:
             self.fields['subscription'].disabled = True
             # Select all subscriptions, as field is non-editable, and
             # we can safely display subscription type, event it was in
             # archive
-            self.fields['subscription'].queryset = \
-                SubscriptionsType.all_objects.exclude(one_time=True)
+            qs = SubscriptionsType.all_objects.all()
+
+        if exclude_one_time:
+            qs = qs.exclude(one_time=True)
+
+        self.fields['subscription'].queryset = qs
 
         if activated_subscription:
             for __, field in self.fields.items():
