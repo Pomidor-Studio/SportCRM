@@ -174,6 +174,7 @@ class SignUpClientMultiForm(MultiModelForm):
     def is_valid(self):
         return any(form.is_valid() for form in self.forms.values())
 
+
 class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
     reason = forms.CharField(label='Причина продления', widget=forms.TextInput)
@@ -551,6 +552,9 @@ class ManagerForm(TenantModelForm):
         label='Профиль в Вконтакте',
         regex=VK_PAGE_REGEXP,
         required=False,
+        widget=TextInput(
+            attrs={'placeholder': 'Ссылка на страницу пользователя', 'class': 'form-control'}
+        )
     )
 
     class Meta:
@@ -560,9 +564,6 @@ class ManagerForm(TenantModelForm):
             'phone_number': PhoneNumberInternationalFallbackWidget(
                 attrs={'data-phone': True}
             ),
-            'vk_page': TextInput(
-                attrs={'placeholder': 'Ссылка на страницу пользователя'}
-            )
         }
 
 
