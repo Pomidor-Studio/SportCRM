@@ -289,6 +289,8 @@ class InplaceSellSubscriptionForm(TenantModelForm):
 
 
 class ClientSubscriptionForm(TenantModelForm):
+    error_css_class = 'is-invalid'
+
     cash_earned = forms.BooleanField(
         label='Деньги получены',
         required=False,
@@ -308,12 +310,13 @@ class ClientSubscriptionForm(TenantModelForm):
         label='Дата начала',
         initial=timezone.localdate(),
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
+        widget=forms.DateInput(
             format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
+            attrs={
+                "class": "form-control",
+                "placeholder": "ДД.MM.ГГГГ",
+                "dp_config": '{&quot;id&quot;: &quot;dp_7&quot;, &quot;picker_type&quot;: &quot;DATE&quot;, &quot;linked_to&quot;: null, &quot;options&quot;: {&quot;showClose&quot;: true, &quot;showClear&quot;: true, &quot;showTodayButton&quot;: true, &quot;locale&quot;: &quot;ru&quot;, &quot;format&quot;: &quot;DD.MM.YYYY&quot;}}',
+            },
         )
     )
     go_back = forms.CharField(

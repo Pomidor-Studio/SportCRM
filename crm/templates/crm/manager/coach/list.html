@@ -50,18 +50,19 @@
         </tr>
         </thead>
         <tbody>
+
         {% for coach in coachs %}
           <tr {% if coach.deleted %}class="archive"{% endif %}>
             <td class="td_photo" width="1">
-              {% if coach.vk_user_id %}
+              {% if coach.user.vk_id %}
                 {% if vk_group_id %}
                   <a
-                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ coach.vk_user_id }}">
-                    <img src="{% vk_small_avatar coach.vk_user_id %}" class="photo">
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ coach.user.vk_id }}">
+                    <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
                   </a>
                 {% else %}
-                  <a href="https://vk.com/?sel={{ coach.vk_user_id }}">
-                    <img src="{% vk_small_avatar coach.vk_user_id %}" class="photo">
+                  <a href="https://vk.com/?sel={{ coach.user.vk_id }}">
+                    <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
                   </a>
                 {% endif %}
               {% else %}

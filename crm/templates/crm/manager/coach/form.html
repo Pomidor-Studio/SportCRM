@@ -100,8 +100,15 @@
         <a name="cancel" href="{% url "crm:manager:coach:list" %}" class="btn">Отмена</a>
         {% if object.id %}
           {% ifhasperm 'coach.delete' user %}
-            <a name="archive" href="{% url "crm:manager:coach:delete" object.id %}" class="btn">Переместить в
-              архив</a>
+            <a class="btn"
+           href="#confirm_popup"
+           data-action-text="В архив"
+           data-title="Перемещение в архив"
+           data-body-text="Переместить в архив?"
+           data-toggle="modal"
+           data-url="{% url "crm:manager:coach:delete" object.id %}">
+          Переместить в архив
+          </a>
           {% endifhasperm %}
         {% endif %}
       </div>
