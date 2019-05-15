@@ -2,6 +2,7 @@ from datetime import timedelta, date
 
 from typing import Dict, List
 
+from django.db.models import Sum
 from django.utils import timezone
 from django.views.generic import (
     TemplateView,
@@ -15,7 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rules.contrib.views import PermissionRequiredMixin
 
 from crm.filters import EventReportFilter, VisitReportFilter
-from crm.models import EventClass, Event, ClientSubscriptions, Attendance
+from crm.models import EventClass, Event, ClientSubscriptions, Attendance, ExtensionHistory
 from crm.serializers import CalendarEventSerializer
 from crm.tables import EventReportTable
 
@@ -64,8 +65,9 @@ class VisitReport(PermissionRequiredMixin, FormView):
             event_class = form.cleaned_data['event_class']
 
             data = self.get_table_data(year, month, event_class)
+            date_list = self.get_month_dates_range(year, month)
             context['table_data'] = self.sort_data(data)
-            context['month_days'] = self.get_month_dates_range(year, month)
+            context['month_days'] = date_list
 
         return context
 
@@ -105,20 +107,30 @@ class VisitReport(PermissionRequiredMixin, FormView):
 
         result = []
         for subs in active_subs:
-            attendances = ['grey'] * len(dates)
-            from_date_ = max(from_date, subs.start_date)
-            to_date_ = min(to_date, subs.end_date or to_date)
-            # Фикс для абоенментов из будущего
-            if to_date_ > from_date_:
-                from_date_ = from_date
-                to_date_ = to_date
+            attendances = [''] * len(dates)
+
+            added_visits = ExtensionHistory.objects.filter(
+                date_extended__range=(from_date, to_date),
+                client_subscription=subs,
+            ).aggregate(
+                Sum('added_visits')
+            )['added_visits__sum'] or 0
+
+            from_date = max(from_date, subs.start_date)
+            to_date = min(to_date, subs.end_date or to_date)
 
             try:
                 for event in subs.subscription.events_to_date(
-                        from_date=from_date_, to_date=to_date_):
-                    attendances[event.date.day - 1] = 'red'
+                        from_date=from_date, to_date=to_date):
+                    if from_date <= event.date <= to_date:
+                        attendances[event.date.day - 1] = 'red'
             except ValueError:
                 pass
+
+            for dt in dates:
+                if from_date <= dt <= to_date:
+                    continue
+                attendances[dt.day - 1] = 'grey'
 
             visit_start = subs.visits_on_by_time
             if subs.start_date < from_date:
@@ -138,7 +150,7 @@ class VisitReport(PermissionRequiredMixin, FormView):
 
             for visit in visited:
                 attendances[visit.event.date.day - 1] = 'green'
-            visit_end = visit_start - len(visited)
+            visit_end = added_visits + visit_start - len(visited)
 
             result.append({
                 'client': subs.client,

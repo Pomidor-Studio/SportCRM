@@ -74,7 +74,7 @@ class ClosedEvent(EventMessage):
         ),
     }
     recipient = RecipientTypes.manager
-
+    detailed_description = 'Уведомление менеджеру при закрытии тренировки'
     default_template = (
         'Была закрыта тренировка на {{DATE|date:"d.m.Y"}} по {{NAME}}\n'
         'Тренером: {{COACH}}\n'
