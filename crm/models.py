@@ -1108,8 +1108,9 @@ class ClientSubscriptions(CompanyObjectModel):
     def last_visited_event(self):
         last = self.attendance_set.select_related('event').filter(
             marked=True,
-            event__is_closed=True,
             event__canceled_at__isnull=True,
+        ).exclude(
+            event__date__gt=date.today()
         ).order_by('-event__date').first()
         if last:
             return last.event
