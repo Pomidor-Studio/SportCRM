@@ -125,21 +125,15 @@ class VisitReport(PermissionRequiredMixin, FormView):
                 visit_start -= subs.attendance_set.filter(
                     marked=True,
                     event__date__lt=from_date
-                    # TODO: Возможно надо добавить фильтр для проверки тренировок
-                    #   которые из будущего - если были отметки они должны
-                    #   не показываться, так как не должны отмечать будущие дни.
-                    #   Для прошедших тренировок игнорировать флаг
-                    # event__is_closed=True,
+                ).exclude(
+                    event__date__gt=date.today()
                 ).count()
 
             visited = subs.attendance_set.filter(
                 marked=True,
                 event__date__range=(from_date, to_date)
-                # TODO: Возможно надо добавить фильтр для проверки тренировок
-                #   которые из будущего - если были отметки они должны
-                #   не показываться, так как не должны отмечать будущие дни.
-                #   Для прошедших тренировок игнорировать флаг
-                #event__is_closed=True,
+            ).exclude(
+                event__date__gt=date.today()
             ).select_related('event').all()
 
             for visit in visited:
@@ -159,17 +153,14 @@ class VisitReport(PermissionRequiredMixin, FormView):
         dates = self.get_month_dates_range(year, month)
         fltr = {
             'subscription__subscription__one_time': True,
-            # TODO: Возможно надо добавить фильтр для проверки тренировок
-            #   которые из будущего - если были отметки они должны
-            #   не показываться, так как не должны отмечать будущие дни.
-            #   Для прошедших тренировок игнорировать флаг
-            # 'event__is_closed': True,
             'event__date__range': (dates[0], dates[-1]),
             'event__event_class': event_class
         }
 
         attendances = Attendance.objects.filter(
             **fltr
+        ).exclude(
+           event__date__gt=date.today()
         ).select_related('client', 'event').all()
         result = {}
         for attendance in attendances:
