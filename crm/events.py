@@ -82,7 +82,7 @@ def next_day(
     :return: Next date of event
     """
     if start > stop:
-        raise ValueError('Start of period is greater than end date')
+        return
 
     if not len(days):
         return

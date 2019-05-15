@@ -1066,9 +1066,12 @@ class ClientSubscriptions(CompanyObjectModel):
         :return: True if after visiting all events from calendar will remain
         some visits on this subscription
         """
-        return len(self.subscription.events_to_date(
-            from_date=self.start_date, to_date=self.end_date
-        )) < self.visits_left
+        try:
+            return len(self.subscription.events_to_date(
+                from_date=self.start_date, to_date=self.end_date
+            )) < self.visits_left
+        except ValueError:
+            return False
 
     def is_overlapping_with_cancelled(self) -> bool:
         """
@@ -1079,22 +1082,28 @@ class ClientSubscriptions(CompanyObjectModel):
         some visits on this subscription. And this quantity of remaining
         canceled events is greater that remaining visits minus active events
         """
-        return len(self.subscription.events_to_date(
-            from_date=self.start_date,
-            to_date=self.end_date,
-            filter_runner=SubscriptionsTypeEventFilter.ALL
-        )) < self.visits_left
+        try:
+            return len(self.subscription.events_to_date(
+                from_date=self.start_date,
+                to_date=self.end_date,
+                filter_runner=SubscriptionsTypeEventFilter.ALL
+            )) < self.visits_left
+        except ValueError:
+            return False
 
     def canceled_events(
         self,
         from_date: date = None,
         to_date: date = None
     ) -> List[Event]:
-        return self.subscription.events_to_date(
-            from_date=from_date or self.start_date,
-            to_date=to_date or self.end_date,
-            filter_runner=SubscriptionsTypeEventFilter.CANCELED
-        )
+        try:
+            return self.subscription.events_to_date(
+                from_date=from_date or self.start_date,
+                to_date=to_date or self.end_date,
+                filter_runner=SubscriptionsTypeEventFilter.CANCELED
+            )
+        except ValueError:
+            return []
 
     def last_visited_event(self):
         last = self.attendance_set.select_related('event').filter(
