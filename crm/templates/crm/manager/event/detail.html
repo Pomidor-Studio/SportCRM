@@ -228,7 +228,7 @@
                 </thead>
                 <tbody>
                 {% for attendance in attendance_list_marked %}
-                  {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
+                  {% with active_sub=attendance.client.get_active_sub last_sub=attendance.client.last_sub %}
                     <tr class="{% if attendance.client.balance < 0 %}minus_balance{% endif %} {% if attendance.client.deleted %}archive{% endif %} several">
                       <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' with client=attendance.client %}</td>
                       <td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
