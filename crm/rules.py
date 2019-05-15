@@ -59,6 +59,7 @@ rules.add_perm('client', is_logged_personnel)
 rules.add_perm('client.add', is_logged_personnel)
 rules.add_perm('client.edit', is_logged_personnel)
 rules.add_perm('client.delete', is_logged_personnel)
+rules.add_perm('client.undelete', is_logged_personnel)
 
 rules.add_perm('coach', is_logged_personnel)
 rules.add_perm('coach.view_detail', is_logged_manager)
@@ -80,6 +81,8 @@ rules.add_perm(
     'manager.edit', is_logged_manager & is_not_hidden_managers_in_company)
 rules.add_perm(
     'manager.delete', is_logged_manager & is_not_hidden_managers_in_company)
+rules.add_perm(
+    'manager.undelete', is_logged_manager & is_not_hidden_managers_in_company)
 
 rules.add_perm('event_class', is_logged_manager)
 rules.add_perm('event_class.add', is_logged_manager)

@@ -4,7 +4,7 @@ from crm.models import Event
 
 
 class EventReportTable(tables.Table):
-    coach = tables.Column(accessor='event_class.coach')
+    coach = tables.Column(accessor='event_class.coach.user',  verbose_name='Тренер')
     event_class = tables.Column(
         accessor='event_class.name',
         verbose_name='Тренировка'
@@ -35,3 +35,5 @@ class EventReportTable(tables.Table):
         template_name = 'django_tables2/bootstrap.html'
         fields = ('date',)
         order_by = ('-date',)
+
+

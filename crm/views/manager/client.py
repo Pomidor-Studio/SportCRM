@@ -1,18 +1,21 @@
 import re
 
+from itertools import chain
 import openpyxl as openpyxl
 from django.contrib import messages
+from django.contrib.auth.views import SuccessURLAllowedHostsMixin
 from django.db import transaction
-from django.db.models import ProtectedError
 from django.forms import forms
 from django.forms.utils import ErrorList
-from django.http import Http404, HttpResponseRedirect
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
+from django.utils.http import is_safe_url
 from django.views.generic import (
-    CreateView, DeleteView, DetailView, FormView, RedirectView, TemplateView,
+    CreateView, DeleteView, FormView, RedirectView, TemplateView,
     UpdateView,
 )
+from django.contrib.auth import REDIRECT_FIELD_NAME
 from django_filters.views import FilterView
 from django_multitenant.utils import get_current_tenant
 from openpyxl.utils import cell
@@ -38,7 +41,7 @@ from crm.templatetags.html_helper import (
     get_vk_user_ids, try_parse_date,
 )
 from crm.views.manager.event_class import EventByDateMixin
-from crm.views.mixin import CreateAndAddView
+from crm.views.mixin import CreateAndAddView, UnDeleteView
 from gcp.tasks import enqueue
 
 
@@ -47,8 +50,9 @@ class List(PermissionRequiredMixin, FilterView):
     filterset_class = ClientFilter
     template_name = 'crm/manager/client/list.html'
     context_object_name = 'clients'
-    paginate_by = 25
+    paginate_by = 1000
     permission_required = 'client'
+    ordering = ['-deleted', 'name']
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
@@ -57,7 +61,35 @@ class List(PermissionRequiredMixin, FilterView):
         return context
 
 
-class Create(PermissionRequiredMixin, RevisionMixin, CreateAndAddView):
+class ClientEditMixin(SuccessURLAllowedHostsMixin):
+
+    def get_redirect_url(self):
+        redirect_to = self.request.POST.get(
+            REDIRECT_FIELD_NAME,
+            self.request.GET.get(REDIRECT_FIELD_NAME, '')
+        )
+        url_is_safe = is_safe_url(
+            url=redirect_to,
+            allowed_hosts=self.get_success_url_allowed_hosts(),
+            require_https=self.request.is_secure(),
+        )
+        return redirect_to if url_is_safe else ''
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        next_page = self.get_redirect_url()
+        if next_page:
+            context[REDIRECT_FIELD_NAME] = next_page
+        return context
+
+    def get_success_url(self):
+        next_page = self.get_redirect_url()
+        if next_page:
+            return next_page
+        return super().get_success_url()
+
+
+class Create(PermissionRequiredMixin, RevisionMixin, ClientEditMixin, CreateAndAddView):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
@@ -124,11 +156,17 @@ class CancelAttendance(
             'crm:manager:client:detail', kwargs=self.kwargs)
 
 
-class Update(PermissionRequiredMixin, RevisionMixin, UpdateView):
+class Update(PermissionRequiredMixin, RevisionMixin, ClientEditMixin, UpdateView):
     model = Client
     form_class = ClientForm
     template_name = 'crm/manager/client/form.html'
     permission_required = 'client.edit'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        vkid = self.object.vk_user_id
+        initial['vk_page'] = 'https://vk.com/id{}'.format(vkid) if vkid else None
+        return initial
 
 
 class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
@@ -137,34 +175,12 @@ class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     success_url = reverse_lazy('crm:manager:client:list')
     permission_required = 'client.delete'
 
-    def delete(self, request, *args, **kwargs):
-        try:
-            return super().delete(request, *args, **kwargs)
-        except ProtectedError as exc:
-            msg = (
-                f'Невозможно удалить клиента {self.object}, '
-                f'так как у него есть'
-            )
-            exc_str = str(exc)
-            possible_errors = []
-            if 'Attendance' in exc_str:
-                possible_errors.append('посещения занятий')
-            if 'ClientSubscriptions' in exc_str:
-                possible_errors.append('активные абонементы')
-            if 'ClientBalanceChangeHistory' in exc_str:
-                possible_errors.append('изменения личного баланса')
-            errors = 'и '.join(possible_errors)
 
-            messages.error(self.request, f'{msg} {errors}')
-            return HttpResponseRedirect(reverse(
-                'crm:manager:client:detail', kwargs={'pk': self.object.id}
-            ))
-
-
-class Detail(PermissionRequiredMixin, DetailView):
+class UnDelete(PermissionRequiredMixin, RevisionMixin, UnDeleteView):
     model = Client
-    template_name = 'crm/manager/client/detail.html'
-    permission_required = 'client'
+    success_url = reverse_lazy('crm:manager:client:list')
+    template_name = 'crm/manager/client/confirm_undelete.html'
+    permission_required = 'client.undelete'
 
 
 class ClientMixin:
@@ -183,13 +199,23 @@ class AddSubscription(
     permission_required = 'client_subscription.sale'
 
     def get_success_url(self):
+        if self.form.cleaned_data.get('go_back'):
+            return self.form.cleaned_data['go_back']
+
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['exclude_one_time'] = bool(int(self.request.GET.get('eot', 1)))
+        return kwargs
 
     def get_initial(self):
         initial = super().get_initial()
         client = self.get_client()
         initial['client'] = client
+        initial['sold_by'] = self.request.user
+        initial['go_back'] = self.request.GET.get('gb')
 
         # Add preselected subscription type from previous client subscriptions
         # history.
@@ -203,24 +229,45 @@ class AddSubscription(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['client'] = self.get_client()
+        client = self.get_client()
+        context['client'] = client
         context['allow_check_overlapping'] = True
+        attendance = client.attendance_set.order_by('-event__date')
+        balancehistory = client.clientbalancechangehistory_set.order_by(
+            '-entry_date')
+        # TODO: fix ordering
+        attendance_with_balance = chain(attendance, balancehistory)
+        context['attendance_with_balance'] = attendance_with_balance
+        context['hide_form'] = self.kwargs.get('hide_form')
+        if self.kwargs.get('event_class_id'):
+            event_class_id = self.kwargs.get('event_class_id')
+            context.update(
+                event_class_name=EventClass.objects.get(pk=event_class_id).name,
+                event_class_id=event_class_id,
+                event_year=self.kwargs.get('year'),
+                event_month=self.kwargs.get('month'),
+                event_day=self.kwargs.get('day'),
+            )
         return context
 
     def form_valid(self, form):
+        self.form = form
         cash_earned = form.cleaned_data['cash_earned']
         abon_price = form.cleaned_data['price']
         client = self.get_client()
+        current_user = self.request.user
 
         with transaction.atomic():
             client.add_balance_in_history(
                 -abon_price, BALANCE_REASON.BY_SUBSCRIPTION,
-                skip_notification=True
+                skip_notification=True,
+                changed_by=current_user,
             )
             if cash_earned:
                 client.add_balance_in_history(
                     abon_price, BALANCE_REASON.UPDATE_BALANCE,
-                    skip_notification=True
+                    skip_notification=True,
+                    changed_by=current_user,
                 )
             client.save()
             response = super().form_valid(form)
@@ -252,9 +299,26 @@ class SubscriptionUpdate(
         context = super().get_context_data(**kwargs)
         context['history'] = ExtensionHistory.objects.filter(
             client_subscription=self.object.id)
-        context['client'] = self.object.client
+        client = self.object.client
+        context['client'] = client
         context['activated_subscription'] = self.activated_subscription()
         context['allow_check_overlapping'] = False
+        attendance = client.attendance_set.order_by('-event__date')
+        balancehistory = client.clientbalancechangehistory_set.order_by(
+            '-entry_date')
+        # TODO: fix ordering
+        attendance_with_balance = chain(attendance, balancehistory)
+        context['attendance_with_balance'] = attendance_with_balance
+        context['hide_form'] = self.kwargs.get('hide_form')
+        if self.kwargs.get('event_class_id'):
+            event_class_id = self.kwargs.get('event_class_id')
+            context.update(
+                event_class_name=EventClass.objects.get(pk=event_class_id).name,
+                event_class_id=event_class_id,
+                event_year=self.kwargs.get('year'),
+                event_month=self.kwargs.get('month'),
+                event_day=self.kwargs.get('day'),
+            )
         return context
 
     def get(self, request, *args, **kwargs):
@@ -309,6 +373,11 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
 
     object: ClientSubscriptions = ...
 
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['go_back'] = self.request.GET.get('gb')
+        return initial
+
     def get_object(self):
         self.object = get_object_or_404(
             ClientSubscriptions, id=self.kwargs['pk'])
@@ -327,6 +396,7 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
         return super().post(request, *args, **kwargs)
 
     def form_valid(self, form):
+        self.form = form
         self.object.extend_duration(
             form.cleaned_data['visit_limit'],
             form.cleaned_data['reason']
@@ -334,8 +404,11 @@ class SubscriptionExtend(PermissionRequiredMixin, RevisionMixin, FormView):
         return super().form_valid(form)
 
     def get_success_url(self):
+        if self.form.cleaned_data.get('go_back'):
+            return self.form.cleaned_data['go_back']
+
         return reverse(
-            'crm:manager:client:detail', kwargs={'pk': self.object.client_id})
+            'crm:manager:client:detail', args=(self.object.client_id,))
 
 
 class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):

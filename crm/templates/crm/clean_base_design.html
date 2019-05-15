@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{% load static html_helper bootstrap4 %}
+{% load yandex_metrica %}
+{% load google_analytics_js %}
+
+<html>
+
+<head>
+  <!-- Favicon -->
+  <link
+    rel="apple-touch-icon"
+    sizes="180x180"
+    href="{% static 'favicon/apple-touch-icon.png' %}"
+  >
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="32x32"
+    href="{% static 'favicon/favicon-32x32.png' %}"
+  >
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="16x16"
+    href="{% static 'favicon/favicon-16x16.png' %}"
+  >
+  <link
+    rel="manifest"
+    href="{% static 'favicon/site.webmanifest' %}"
+  >
+  <link
+    rel="mask-icon"
+    href="{% static 'favicon/safari-pinned-tab.svg' %}"
+    color="#85db18"
+  >
+  <link
+    rel="shortcut icon"
+    href="{% static 'favicon/favicon.ico' %}"
+  >
+  <meta
+    name="msapplication-TileColor"
+    content="#00a300"
+  >
+  <meta
+    name="msapplication-config"
+    content="{% static 'favicon/browserconfig.xml' %}"
+  >
+  <meta
+    name="theme-color"
+    content="#ffffff"
+  >
+  <meta
+    name="apple-mobile-web-app-title"
+    content="SportAdmin"
+  >
+  <meta
+    name="application-name"
+    content="SportAdmin"
+  >
+
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, shrink-to-fit=no"
+  >
+
+  <!-- Font Roboto -->
+  <link
+    href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,700&amp;subset=cyrillic"
+    rel="stylesheet"
+  >
+
+  <!-- CSS -->
+  {% css 'css/bootstrap.min.css' %}
+  {% css 'css/bootstrap-select.css' %}
+  {% css 'css/gijgo.min.css' %}
+  {% css 'css/style.css' %}
+
+  {% block extrahead %}{% endblock %}
+  <title>
+    SportAdmin{% block title %}{% endblock %}
+    {% if user.is_manager %}
+      {% if company.active_to %}
+        (активна до {{ company.active_to|date:"d.m.Y" }})
+      {% else %}
+        (активна без ограничений)
+      {% endif %}
+    {% endif %}
+  </title>
+
+  {% yandex_metrica %}
+  {% google_analytics_js %}
+</head>
+
+<body>
+
+{% block main %}{% endblock %}
+
+{% js 'js/jquery.min.js' %}
+{% js 'js/popper.min.js' %}
+{% js 'js/bootstrap.min.js' %}
+{% js 'js/bootstrap-select.min.js' %}
+{% js 'js/cleave.min.js' %}
+{% js 'js/cleave-phone.ru.js' %}
+{% js 'js/gijgo.min.js' %}
+{% js 'js/gijgo/messages.ru-ru.js' %}
+{% js 'js/base.js' %}
+
+
+<script type="text/javascript">
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        let cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          let cookie = jQuery.trim(cookies[i]);
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    let csrftoken = getCookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+      beforeSend: function (xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+          xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+      }
+    });
+  </script>
+  {% block extra %}{% endblock %}
+</body>
+
+{% block extrajs %}{% endblock %}
+
+</html>

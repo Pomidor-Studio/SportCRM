@@ -13,8 +13,10 @@ from django_select2.forms import (
     Select2Mixin, Select2MultipleWidget, Select2Widget,
 )
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
+from django.forms.widgets import TextInput, CheckboxSelectMultiple
 
 from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
+from contrib.vk_utils import get_vk_id_from_page_link
 from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
@@ -45,17 +47,19 @@ class Select2SingleTagWidget(
 
 
 class ClientForm(TenantModelForm):
+    vk_page = forms.RegexField(
+        label='Профиль в Вконтакте',
+        regex=VK_PAGE_REGEXP,
+        required=False,
+        widget=forms.TextInput(
+            attrs={"class": "form-control", "placeholder": "vk.com/id234533221"},
+        )
+    )
+
     birthday = forms.DateField(
         label='Дата рождения',
         required=False,
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        )
     )
 
     class Meta:
@@ -63,7 +67,7 @@ class ClientForm(TenantModelForm):
 
         fields = [
             'name', 'address', 'birthday', 'phone_number',
-            'email_address', 'vk_user_id', 'additional_info',
+            'email_address', 'additional_info',
         ]
         widgets = {
             'address': forms.TextInput(
@@ -76,7 +80,7 @@ class ClientForm(TenantModelForm):
                 attrs={"class": "form-control", "placeholder": "ФИО"}
             ),
             'phone_number': PhoneNumberInternationalFallbackWidget(
-                attrs={'data-phone': True}
+                attrs={'data-phone': True, "placeholder": "+7 919 123 45 67"}
             ),
             'email_address': forms.EmailInput(
                 attrs={
@@ -87,30 +91,34 @@ class ClientForm(TenantModelForm):
                 attrs={
                     "class": "form-control",
                 }
-            ),
-            'vk_user_id': forms.HiddenInput(),
+            )
         }
+
+    def save(self, commit=True):
+        instance = super().save(commit)
+        vk_page = self.cleaned_data['vk_page']
+        instance.vk_user_id = get_vk_id_from_page_link(vk_page)
+        instance.save()
+        return instance
 
 
 class Balance(TenantModelForm):
+    go_back = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput()
+    )
+
     class Meta:
         model = ClientBalanceChangeHistory
         widgets = {
             'change_value': forms.NumberInput(),
-            'reason': Select2SingleTagWidget(
-                choices=[
-                    ('Пополнение баланса', 'Пополнение баланса'),
-                    ('Покупка абонемента', 'Покупка абонемента'),
-                    ('Разовое посещение', 'Разовое посещение'),
-                    ('Исправление ошибки', 'Исправление ошибки'),
-                    ('Иное', 'Иное'),
-                ],
+            'reason': forms.TextInput(
                 attrs={
-                    'class': 'form-control',
-                    'placeholder': 'Укажите причину изменения баланса'
+                    'placeholder': 'Комментарий'
                 }
             ),
-            'client': forms.HiddenInput()
+            'client': forms.HiddenInput(),
+            'changed_by': forms.HiddenInput(),
         }
         labels = {
             'change_value': 'Сумма пополнения, ₽'
@@ -141,19 +149,44 @@ class SubscriptionsTypeForm(TenantModelForm):
     class Meta:
         model = SubscriptionsType
         fields = '__all__'
+        widgets = {
+            'event_class': CheckboxSelectMultiple(),
+        }
 
 
 class SignUpClientWithoutSubscriptionForm(TenantForm):
     client = forms.ModelMultipleChoiceField(
-        queryset=Client.objects.all(),
+        queryset=Client.objects,
         label='Ученик',
-        widget=Select2MultipleWidget
+        widget=forms.SelectMultiple(
+            attrs={
+                'class': 'selectpicker form-control',
+                'multiple': '',
+                'data-selected-text-format': 'static',
+                'title': 'Выбрать ученика',
+                'placeholder': 'Выбрать ученика'
+            }
+        ),
     )
+
+
+class SignUpClientMultiForm(MultiModelForm):
+    form_classes = {
+        'exists': SignUpClientWithoutSubscriptionForm,
+        'new': ClientForm
+    }
+
+    def is_valid(self):
+        return any(form.is_valid() for form in self.forms.values())
 
 
 class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
-    reason = forms.CharField(label='Причина продления', widget=forms.Textarea)
+    reason = forms.CharField(label='Причина продления', widget=forms.TextInput)
+    go_back = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput()
+    )
 
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
@@ -178,7 +211,8 @@ class Select2ThemedMixin:
             super()._get_media() + forms.Media(
             css={
                 'screen': (
-                    'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',  # noqa
+                    'https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css',
+                    # noqa
                 )
             })
         )
@@ -241,9 +275,8 @@ class InplaceSellSubscriptionForm(TenantModelForm):
                 attrs={"placeholder": "Стоимость в рублях"}
             ),
             'client': forms.HiddenInput(),
-
         }
-        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event')
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event', 'sold_by')
 
     def __init__(self, *args, **kwargs):
         st_qs = kwargs.pop(
@@ -259,7 +292,10 @@ class ClientSubscriptionForm(TenantModelForm):
     cash_earned = forms.BooleanField(
         label='Деньги получены',
         required=False,
-        initial=True
+        initial=True,
+        widget=forms.CheckboxInput(
+            attrs={'class': "form-check-input"}
+        )
     )
     subscription = forms.ModelChoiceField(
         empty_label='',
@@ -280,12 +316,17 @@ class ClientSubscriptionForm(TenantModelForm):
             }
         )
     )
+    go_back = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput()
+    )
 
     class Meta:
         model = ClientSubscriptions
 
         widgets = {
             'client': forms.HiddenInput(),
+            'sold_by': forms.HiddenInput(),
             'price': forms.TextInput(
                 attrs={
                     "class": "form-control",
@@ -301,30 +342,34 @@ class ClientSubscriptionForm(TenantModelForm):
         }
         labels = {
             'start_date': 'Начало действия',
-            'visits_left': 'Количество посещений'
+            'visits_left': 'Лимит занятий'
         }
-        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event')
+        exclude = ('purchase_date', 'end_date', 'visits_on_by_time', 'event',)
 
     def __init__(self, *args, **kwargs):
         disable_subscription_type = kwargs.pop(
             'disable_subscription_type', False)
         activated_subscription = kwargs.pop(
             'activated_subscription', False)
+        exclude_one_time = kwargs.pop('exclude_one_time', True)
 
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
 
         # Set subscription queryset on init, as if it will be defined in
         # class field initialization, it will ignore SafeDeleteMixin
         if not disable_subscription_type:
-            self.fields['subscription'].queryset = \
-                SubscriptionsType.objects.exclude(one_time=True)
+            qs = SubscriptionsType.objects.all()
         else:
             self.fields['subscription'].disabled = True
             # Select all subscriptions, as field is non-editable, and
             # we can safely display subscription type, event it was in
             # archive
-            self.fields['subscription'].queryset = \
-                SubscriptionsType.all_objects.exclude(one_time=True)
+            qs = SubscriptionsType.all_objects.all()
+
+        if exclude_one_time:
+            qs = qs.exclude(one_time=True)
+
+        self.fields['subscription'].queryset = qs
 
         if activated_subscription:
             for __, field in self.fields.items():
@@ -355,25 +400,11 @@ class EventClassForm(TenantModelForm):
     date_from = forms.DateField(
         label='Начало тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        ),
         required=False
     )
     date_to = forms.DateField(
         label='Окончание тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        ),
         required=False
     )
 
@@ -395,8 +426,8 @@ class DayOfTheWeekClassForm(TenantModelForm):
         model = DayOfTheWeekClass
         fields = ('checked', 'start_time', 'end_time')
         widgets = {
-            'start_time': TimePickerInput(),
-            'end_time': TimePickerInput()
+            'start_time': TimePickerInput(attrs={'class': 'time'}),
+            'end_time': TimePickerInput(attrs={'class': 'time'})
         }
 
     def clean(self):
@@ -481,7 +512,7 @@ class UserForm(TenantModelForm):
 
     class Meta:
         model = get_user_model()
-        fields = ('first_name', 'last_name')
+        fields = ('first_name', 'last_name', 'email')
         widgets = {
             'first_name': forms.HiddenInput(),
             'last_name': forms.HiddenInput()
@@ -501,7 +532,7 @@ class UserForm(TenantModelForm):
 
 class CoachForm(TenantModelForm):
     vk_page = forms.RegexField(
-        label='Страница VK',
+        label='Профиль в Вконтакте',
         regex=VK_PAGE_REGEXP,
         required=False
     )
@@ -512,15 +543,21 @@ class CoachForm(TenantModelForm):
         widgets = {
             'phone_number': PhoneNumberInternationalFallbackWidget(
                 attrs={'data-phone': True}
+            ),
+            'vk_page': TextInput(
+                attrs={'placeholder': 'Ссылка на страницу пользователя'}
             )
         }
 
 
 class ManagerForm(TenantModelForm):
     vk_page = forms.RegexField(
-        label='Страница VK',
+        label='Профиль в Вконтакте',
         regex=VK_PAGE_REGEXP,
-        required=False
+        required=False,
+        widget=TextInput(
+            attrs={'placeholder': 'Ссылка на страницу пользователя', 'class': 'form-control'}
+        )
     )
 
     class Meta:
@@ -529,7 +566,7 @@ class ManagerForm(TenantModelForm):
         widgets = {
             'phone_number': PhoneNumberInternationalFallbackWidget(
                 attrs={'data-phone': True}
-            )
+            ),
         }
 
 
@@ -562,18 +599,27 @@ class ProfileCoachForm(MultiModelForm):
 
 
 class UploadExcelForm(forms.Form):
-    file = forms.FileField(label='Файл Excel',  help_text="Файл в формате excel")
+    file = forms.FileField(label='Файл Excel', help_text="Файл в формате excel")
     ignore_first_row = forms.BooleanField(label='Не учитывать первую строку', initial=False, required=False)
     name_col = forms.CharField(label='Столбец с ФИО', initial='A', help_text="Буква столбца с ФИО")
-    phone_col = forms.CharField(label='Столбец с номером телефона', initial='B', help_text="Буква столбца с номером телефона. Номер телефона в русском формате")
-    birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C', help_text="Буква столбца с датой рождения. Допустимые форматы даты: ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ")
-    vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D', help_text="Буква столбца со ссылкой на vk. Формат ссылки: vk.com/user_id или https://vk.com/user_id")
+    phone_col = forms.CharField(label='Столбец с номером телефона', initial='B',
+                                help_text="Буква столбца с номером телефона. Номер телефона в русском формате")
+    birthday_col = forms.CharField(label='Столбец с датой рождения', initial='C',
+                                   help_text="Буква столбца с датой рождения. Допустимые форматы даты: ГГГГ-ММ-ДД, ДД.ММ.ГГГГ, ДД/ММ/ГГГГ, ДД-ММ-ГГГГ")
+    vk_col = forms.CharField(label='Столбец со ссылкой вк', initial='D',
+                             help_text="Буква столбца со ссылкой на vk. Формат ссылки: vk.com/user_id или https://vk.com/user_id")
     balance_col = forms.CharField(label='Столбец с балансом', initial='E', help_text="Буква столбца с балансом")
 
 
 class CompanyForm(forms.ModelForm):
     active_to_display = forms.CharField(
         label='Компания активна до',
+        required=False,
+        disabled=True,
+        widget=forms.TextInput()
+    )
+    display_name = forms.CharField(
+        label='Название',
         required=False,
         disabled=True,
         widget=forms.TextInput()

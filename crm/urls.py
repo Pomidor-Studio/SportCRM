@@ -87,10 +87,20 @@ manager_manager_urlpatterns = ([
         '<int:pk>/delete/',
         manager_manager_views.Delete.as_view(),
         name='delete'
+    ),
+    path(
+        '<int:pk>/undelete/',
+        manager_manager_views.Undelete.as_view(),
+        name='undelete'
     )
 ], 'manager')
 
 manager_client_subs_urlpatterns = ([
+    path(
+        '<int:pk>/update/<int:event_class_id>/<int:year>/<int:month>/<int:day>/',
+        manager_client_views.SubscriptionUpdate.as_view(),
+        name='update-with-event-by-date'
+    ),
     path(
         '<int:pk>/update',
         manager_client_views.SubscriptionUpdate.as_view(),
@@ -114,7 +124,7 @@ manager_client_balance_urlpatterns = ([
 
 manager_clients_urlpatterns = ([
     path('', manager_client_views.List.as_view(), name='list'),
-    path('<int:pk>/', manager_client_views.Detail.as_view(), name='detail'),
+    path('<int:client_id>/', manager_client_views.AddSubscription.as_view(), {'hide_form': True}, name='detail'),
     path('<int:pk>/balance/', include(manager_client_balance_urlpatterns)),
     path('new/', manager_client_views.Create.as_view(), name='new'),
     path('import-report/', manager_client_views.ImportReport.as_view(), name='import-report'),
@@ -128,6 +138,16 @@ manager_clients_urlpatterns = ([
         '<int:pk>/delete/',
         manager_client_views.Delete.as_view(),
         name='delete'
+    ),
+    path(
+        '<int:pk>/undelete/',
+        manager_client_views.UnDelete.as_view(),
+        name='undelete'
+    ),
+    path(
+        '<int:client_id>/add-subscription/<int:event_class_id>/<int:year>/<int:month>/<int:day>/',
+        manager_client_views.AddSubscription.as_view(),
+        name='new-subscription-with-event-by-date'
     ),
     path(
         '<int:client_id>/add-subscription/',
@@ -183,9 +203,14 @@ manager_subscriptions_urlpatterns = ([
 manager_events_urlpatterns = ([
     path('', manager_event_views.Calendar.as_view(), name='calendar'),
     path(
-        'report/',
-        manager_event_views.Report.as_view(),
-        name='report'
+        'report/event/',
+        manager_event_views.EventReport.as_view(),
+        name='event-report'
+    ),
+    path(
+       'report/visit/',
+       manager_event_views.VisitReport.as_view(),
+       name='visit-report'
     ),
 ], 'event')
 
@@ -279,6 +304,11 @@ manager_event_class_urlpatterns = ([
         name='list'
     ),
     path('new/', manager_event_class_views.CreateEdit.as_view(), name='new'),
+    path(
+        '<int:pk>/',
+        manager_event_class_views.Detail.as_view(),
+        name='detail'
+    ),
     path(
         '<int:pk>/update/',
         manager_event_class_views.CreateEdit.as_view(),

@@ -18,6 +18,8 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
     def get_initial(self):
         initial = super().get_initial()
         initial['client'] = self.get_client()
+        initial['changed_by'] = self.request.user
+        initial['go_back'] = self.request.GET.get('gb')
         return initial
 
     def get_client(self) -> Client:
@@ -31,9 +33,13 @@ class Create(PermissionRequiredMixin, RevisionMixin, CreateView):
         return context
 
     def get_success_url(self):
+        if self.form.cleaned_data.get('go_back'):
+            return self.form.cleaned_data['go_back']
+
         return reverse('crm:manager:client:detail', args=[self.kwargs['pk']])
 
     def form_valid(self, form):
+        self.form = form
         with transaction.atomic():
             self.get_client().update_balance(form.cleaned_data['change_value'])
             return super().form_valid(form)

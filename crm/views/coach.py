@@ -6,6 +6,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.views.generic import TemplateView
+from rest_framework import ISO_8601
 from rest_framework.fields import DateField
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -48,11 +49,11 @@ class ApiCalendar(ListAPIView):
     def get_queryset(self):
         first_day = timezone.now().replace(day=1).date()
         start = DateField().to_internal_value(
-            self.request.query_params.get('start')
+            self.request.query_params.get('start').split('T')[0]
         ) or first_day
 
         end = DateField().to_internal_value(
-            self.request.query_params.get('end')
+            self.request.query_params.get('end').split('T')[0]
         ) or (first_day + timedelta(days=31))
 
         events = []

@@ -1,0 +1,121 @@
+{% extends "crm/base_design.html" %}
+
+{% load bootstrap4 html_helper %}
+
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Отчет по посещениям" back_link=False %}
+{% endblock %}
+
+{% block content %}
+  <!- Отчет -!>
+  <div class="page report_page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          Отчет по посещениям
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
+    </div>
+
+    <div class="greyline"></div>
+    <div class="report_filter">
+      <form action="" method="GET">
+        <div class="d-flex flex-wrap flex-md-nowrap">
+          <div class="form-group select flex-grow-1">
+            <label for="id_event_class">{{ form.event_class.label }}</label>
+            {{ form.event_class }}
+          </div>
+          <div class="form-group select flex-shrink-1">
+            <label for="id_month">{{ form.month.label }}</label>
+            {{ form.month }}
+          </div>
+          <div class="form-group select flex-shrink-1">
+            <label for="id_year">{{ form.year.label }}</label>
+            {{ form.year }}
+          </div>
+          <div class="form-group button flex-shrink-1">
+            <label>&nbsp;</label><br/>
+            <input class="btn btn-primary" type="submit" value="Поиск"/>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="instruction_report_2 row justify-content-end">
+      <div class="green">На тренировке был</div>
+      <div class="red">На тренировке не был</div>
+      <div class="grey">Абонемента нет</div>
+    </div>
+
+    <div class="greyline"></div>
+
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th colspan="3"></th>
+          <th class="text-center" colspan="12">Даты занятий</th>
+          <th></th>
+        </tr>
+        <tr>
+          <th>
+            Ученик
+          </th>
+          <th>
+            Абонемент
+          </th>
+          <th class="text-center">
+            Доступно в начале
+          </th>
+          {% for i in month_days %}
+            <th class="text-center">
+              {{ i|date:'d' }}
+            </th>
+          {% endfor %}
+
+          <th class="text-center">
+            Доступно в конце
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in table_data %}
+          <tr>
+            <td>
+              {% ifhasperm 'client' user %}
+                <a href="{% url "crm:manager:client:detail"  row.client.id %}">{{ row.client.name }}</a>
+              {% else %}
+                {{ row.client.name }}
+              {% endifhasperm %}
+            </td>
+            <td>
+              {{ row.subscription }}
+            </td>
+            <td class="text-center">
+              {% if row.visit_start > 0 %}
+                {{ row.visit_start }}
+              {% endif %}
+            </td>
+            {% for attendance in row.attendances %}
+              <td class="{{ attendance }}"></td>
+            {% endfor %}
+            <td class="text-center">
+              {% if row.visit_start > 0 %}
+                {{ row.visit_end }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% endblock content %}
+
+

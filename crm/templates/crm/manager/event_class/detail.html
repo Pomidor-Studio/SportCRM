@@ -1,0 +1,194 @@
+{% extends "crm/base_design.html" %}
+
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False %}
+{% endblock %}
+
+
+{% block content %}
+  <!- Новое занятие -!>
+
+  <div class="page new_class col-md-12 col-lg-9 col-xl-10">
+      <div class="bredcams clearfix">
+        <ul>
+          <li>
+            <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
+            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </li>
+          <li>
+            <a href="{{ go_back }}">{{ event_class.name }}</a>
+            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </li>
+          <li>
+            Подробнее
+          </li>
+        </ul>
+      </div>
+      <div class="greyline"></div>
+
+      <p>
+        <strong>Тренер</strong><br/>
+        {{ event_class.coach }}
+      </p>
+
+      <div class="greyline"></div>
+
+      <p>
+        <strong>Место проведения</strong><br/>
+        {{ event_class.location }}
+      </p>
+
+      <div class="greyline"></div>
+
+      <p>
+        <strong>Даты проведения</strong><br/>
+        {% if event_class.date_from %}c {{ event_class.date_from|date:"d.m.Y" }}{% endif %}{% if event_class.date_to %}до {{ event_class.date_to|date:"d.m.Y" }}{% endif %}
+      </p>
+
+      <div class="greyline"></div>
+
+      <p>
+        <strong>Время проведения</strong><br/>
+      </p>
+
+      <table class="table table-hover workout_time">
+        <tbody>
+          <tr>
+            <td width="1">
+              ПН
+            </td>
+            <td>
+              <div class="d-flex flex-wrap">
+                <div>
+                  {% if days.0 %}
+                    {{ days.0.start_time|time:"H:i" }}
+                    <br/>
+                    {{ days.0.end_time|time:"H:i" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td width="1">
+              ВТ
+            </td>
+            <td>
+              <div class="d-flex flex-wrap">
+                <div>
+                  {% if days.1 %}
+                    {{ days.1.start_time|time:"H:i" }}
+                    <br/>
+                    {{ days.1.end_time|time:"H:i" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td width="1">
+              СР
+            </td>
+            <td>
+              <div class="d-flex flex-wrap">
+                <div>
+                  {% if days.2 %}
+                    {{ days.2.start_time|time:"H:i" }}
+                    <br/>
+                    {{ days.2.end_time|time:"H:i" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td width="1">
+              ЧТ
+            </td>
+            <td>
+              <div class="d-flex flex-wrap">
+                <div>
+                  {% if days.3 %}
+                    {{ days.3.start_time|time:"H:i" }}
+                    <br/>
+                    {{ days.3.end_time|time:"H:i" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td width="1">
+              ПТ
+            </td>
+            <td>
+              <div class="d-flex flex-wrap">
+                <div>
+                  {% if days.4 %}
+                    {{ days.4.start_time|time:"H:i" }}
+                    <br/>
+                    {{ days.4.end_time|time:"H:i" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td width="1">
+              СБ
+            </td>
+            <td>
+              <div class="d-flex flex-wrap">
+                <div>
+                  {% if days.5 %}
+                    {{ days.5.start_time|time:"H:i" }}
+                    <br/>
+                    {{ days.5.end_time|time:"H:i" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td width="1">
+              ВС
+            </td>
+            <td>
+              <div class="d-flex flex-wrap">
+                <div>
+                  {% if days.6 %}
+                    {{ days.6.start_time|time:"H:i" }}
+                    <br/>
+                    {{ days.6.end_time|time:"H:i" }}
+                  {% else %}
+                    —
+                  {% endif %}
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="form-group save_buttons">
+        <a name="cancel" href="{{ go_back }}" class="btn">Назад</a>
+      </div>
+  </div>
+
+{% endblock %}

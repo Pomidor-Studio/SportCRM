@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from enum import IntEnum
 from dataclasses import dataclass
 from typing import Any, Dict, Sequence, Union
 from uuid import UUID, uuid5
@@ -13,6 +14,11 @@ from bot.template import EasyEngine, EasyTemplate
 from crm.models import Client, Coach, Manager
 
 InputRecipient = Union[Client, Manager, Coach]
+
+
+class RecipientTypes(IntEnum):
+    manager = 0
+    client = 1
 
 
 @dataclass
@@ -95,6 +101,7 @@ class Message:
 
     _registry = []
     message: str = None
+    recipient: str = None
 
     def __init__(
         self,
@@ -138,6 +145,21 @@ class Message:
                 f'{cls.__module__}.{cls.__qualname__}, '
                 'as it will be shown for manager in UI'
             )
+
+        if not hasattr(cls, 'recipient') or \
+            cls.detailed_description is None:
+            raise ValueError(
+                'recipient must be set on '
+                f'{cls.__module__}.{cls.__qualname__}, '
+                'as it will be shown for manager in UI'
+            )
+
+        if cls.recipient not in RecipientTypes:
+            raise ValueError(
+                'unknown recipient set on '
+                f'{cls.__module__}.{cls.__qualname__}'
+            )
+
         __class__._registry.append(cls)
 
     @classmethod

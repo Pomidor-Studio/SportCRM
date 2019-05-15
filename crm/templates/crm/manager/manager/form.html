@@ -1,33 +1,131 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
-{% block extrahead %}
-  <script
-    src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/3/jquery.inputmask.bundle.js"></script>
-  <script
-    src="https://unpkg.com/libphonenumber-js@1.7.10/bundle/libphonenumber-max.js"></script>
+{% load bootstrap4 html_helper static %}
+
+{% block sidbar %}
+  {% url 'crm:manager:manager:list' as back_link %}
+  {% if form.user.fullname.value %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=form.user.fullname.value back_link=back_link %}
+  {% else %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новый менеджер" back_link=back_link %}
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url "crm:manager:manager:list" %}">Менеджеры</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
+        <li>
+          {% firstof form.user.fullname.value 'Новый менеджер' %}
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
+    </div>
+
+    <div class="greyline"></div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% bootstrap_form form.user exclude="fullname,email" %}
+
+      <div class="form-group row align-items-center">
+        <div class="col-12 col-md-10 col-xl-6 order-2 order-md-1">
+          {% bootstrap_field form.manager.vk_page %}
+        </div>
+        {% if object.id %}
+          <div class="col-12 col-md-1 order-1 order-md-2">
+            {% if object.user.vk_id %}
+              <img src="{% vk_small_avatar object.user.vk_id %}">
+            {% else %}
+              <img src="{% static "img/no-photo.png" %}"/>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="greyline"></div>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-12 col-md-10 col-xl-6">
+          {% bootstrap_field form.user.fullname %}
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-12 col-md-5 col-xl-3">
+          {% bootstrap_field form.manager.phone_number %}
+        </div>
+        <div class="col-12 col-md-5 col-xl-3">
+          {% bootstrap_field form.user.email %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12">
+          <div class="greyline"></div>
+        </div>
+      </div>
+      {% if object.id %}
+        <div class="form-group row">
+          <div class="col-12 col-md-10 col-xl-6">
+            <label for="login_link">Ссылка для входа</label>
+            <div class="form-group input-group">
+              <input type="text" id="login_link" name="" class="form-control" disabled="disabled"
+                     placeholder="{{ login_temp_link }}"></input>
+              <div class="input-group-append">
+                <button id="copy_url" class="btn btn-outline-secondary" type="button"
+                        data-clipboard-text="{{ login_temp_link }}">
+                  Скопировать
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endif %}
+      <div class="form-group save_buttons">
+        <input class="btn btn-primary" type="submit" value="Сохранить"/>
+        <a name="cancel" href="{% url "crm:manager:manager:list" %}" class="btn">Отмена</a>
+        {% if object.id %}
+          {% ifhasperm 'manager.delete' user %}
+            <a name="archive" href="{% url "crm:manager:manager:delete" object.id %}" class="btn">Переместить в
+              архив</a>
+          {% endifhasperm %}
+
+        {% endif %}
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block extrajs %}
+  {% js "js/clipboard.min.js" %}
+  <script>
+    new ClipboardJS('#copy_url');
+  </script>
+
+  {% js "js/cleave.min.js" %}
+  {% js "js/cleave-phone.ru.js" %}
+  <script>
+    var cleave = new Cleave('[type=tel]', {
+      phone: true,
+      phoneRegionCode: 'RU'
+    });
+  </script>
 
   <script type="text/javascript">
     $(function () {
-      const phoneAYT = new libphonenumber.AsYouType('RU');
-      let oldData = $('[data-phone]').val();
-
-      $('[data-phone]').on('input', function(e) {
-        const data = $(this).val().trim();
-        const phone = phoneAYT.input(data);
-        const number = phoneAYT.getNumber();
-
-        if (number === undefined || number.isValid()) {
-            e.currentTarget.setCustomValidity('');
-        } else {
-            e.currentTarget.setCustomValidity('Неправильный номер');
-        }
-        if (oldData !== phone) {
-          $(e.currentTarget).val(phone);
-          oldData = phone;
-        }
-        phoneAYT.reset();
-      });
-
       $('[data-name-edit]').on('input', function () {
         var data = $(this).val().trim();
         var items = data.split(' ');
@@ -38,30 +136,6 @@
       });
     });
   </script>
-{% endblock %}
 
-{% load bootstrap4 %}
 
-{% block content %}
-  <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Менеджер</legend>
-    <form method="post">
-      {% csrf_token %}
-      {% bootstrap_form form.user %}
-      {% bootstrap_form form.manager %}
-      <div class="form-group">
-        {% if object.id %}
-          <button class="btn btn-primary" type="submit">Сохранить</button>
-        {% else %}
-          <button class="btn btn-primary" type="submit">Добавить</button>
-          <button type="submit" name="another" class="btn btn-primary">Сохранить и добавить ещё</button>
-        {% endif %}
-        <a name="cancel"
-           href="{% if object.id %}{% url 'crm:manager:manager:detail' object.id %}{% else %}{% url 'crm:manager:manager:list' %}{% endif %}"
-           class="btn btn-outline-info">
-          Назад
-        </a>
-      </div>
-    </form>
-  </div>
 {% endblock %}

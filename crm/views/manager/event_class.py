@@ -3,7 +3,6 @@ from typing import List, Optional
 from uuid import UUID
 
 from django.contrib import messages
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import ProtectedError
 from django.http import HttpResponseRedirect
@@ -23,7 +22,7 @@ from rules.contrib.views import PermissionRequiredMixin
 from crm.enums import GRANULARITY
 from crm.forms import (
     DayOfTheWeekClassForm, EventClassForm, InplaceSellSubscriptionForm,
-    SignUpClientWithoutSubscriptionForm,
+    ClientForm, SignUpClientMultiForm
 )
 from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
@@ -38,6 +37,21 @@ class ObjList(PermissionRequiredMixin, ListView):
     model = EventClass
     template_name = 'crm/manager/event_class/list.html'
     permission_required = 'event_class'
+
+
+class Detail(PermissionRequiredMixin, DetailView):
+    model = EventClass
+    context_object_name = 'event_class'
+    template_name = 'crm/manager/event_class/detail.html'
+    permission_required = 'event_class'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['go_back'] = self.request.GET.get('gb')
+        context['days'] = {
+            x.day: x for x in self.object.dayoftheweekclass_set.all()
+        }
+        return context
 
 
 class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
@@ -156,8 +170,19 @@ class EventByDate(
             'sell_subscription_form': InplaceSellSubscriptionForm(
                 subscription_type_qs=SubscriptionsType.objects.filter(
                     event_class=self.object.event_class)
+            ),
+            'has_active_event_class': (
+                EventClass.objects
+                .active()
+                .filter(id=self.object.event_class_id).exists()
             )
         })
+
+        context.update(
+            event_class_id=self.kwargs.get('event_class_id'),
+            event_year=self.kwargs.get('year'),
+            event_month=self.kwargs.get('month'),
+            event_day=self.kwargs.get('day'), )
 
         return context
 
@@ -329,14 +354,16 @@ class SellAndMark(
         abon_price = form.cleaned_data['price']
         client = form.cleaned_data['client']
         default_reason = 'Покупка абонемента'
+        current_user = self.request.user
         with transaction.atomic():
-            client.add_balance_in_history(-abon_price, default_reason)
+            client.add_balance_in_history(-abon_price, default_reason, changed_by=current_user)
             if cash_earned:
                 default_reason = 'Перечесление средств за абонемент'
-                client.add_balance_in_history(abon_price, default_reason)
+                client.add_balance_in_history(abon_price, default_reason, changed_by=current_user)
             client.save()
             subscription = form.save()
             subscription.event = self.get_object()
+            subscription.sold_by = current_user
             subscription.save()
             try:
                 client.mark_visit(self.get_object(), subscription)
@@ -380,7 +407,7 @@ class SignUpClientWithoutSubscription (
     EventByDateMixin,
     FormView
 ):
-    form_class = SignUpClientWithoutSubscriptionForm
+    form_class = SignUpClientMultiForm
     template_name = 'crm/manager/event/mark_client_without_sub.html'
     permission_required = 'event.manipulate'
 
@@ -388,15 +415,27 @@ class SignUpClientWithoutSubscription (
         context = super().get_context_data(**kwargs)
         event = self.get_object()
         context.update({
-            'event': event
+            'event': event,
         })
         return context
 
-    def form_valid(self, form):
+    def add_exists(self, form):
         clients = form.cleaned_data['client']
         event = self.get_object()
         for client in clients:
             client.signup_for_event(event)
+
+    def add_new(self, form: ClientForm):
+        event = self.get_object()
+        client = form.save()
+        client.signup_for_event(event)
+
+    def form_valid(self, form):
+        if form['exists'].is_valid() and  "exists" in self.request.POST:
+            self.add_exists(form['exists'])
+        if form['new'].is_valid() and "new" in self.request.POST:
+            self.add_new(form['new'])
+
         return super(SignUpClientWithoutSubscription, self).form_valid(form)
 
     def get_success_url(self):
@@ -577,7 +616,7 @@ class CreateEdit(
                     self.weekdays[i] = weekdayform
 
         return HttpResponseRedirect(reverse(
-            'crm:manager:event-class:list'))
+            'crm:manager:event:calendar'))
 
 
 class Scanner(

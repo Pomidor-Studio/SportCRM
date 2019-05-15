@@ -1,29 +1,75 @@
-{% extends "crm/base.html" %}
-{% load bootstrap4 %}
-{% block extrahead %}
-{{ form.media }}
-{% endblock %}
-{% block content %}
+{% extends "crm/base_design.html" %}
 
-<div class="container-fluid mt-4 ml-2">
-  <legend class="border-bottom mb-2">Абонемент</legend>
-  {% if form.subscription.is_extended %}
-    <div id="alert" class="alert alert-danger" role="alert">Этот абонемент уже продлевался ранее!</div>
-  {% endif %}
-  <div class="w-25">
+{% load bootstrap4 %}
+
+{% block sidbar %}
+  {% url 'crm:manager:client:detail' form.subscription.client.id as back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Продлить абонемент" back_link=back_link %}
+{% endblock %}
+
+{% block content %}
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url 'crm:manager:client:list' %}">Ученики</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </li>
+        <li>
+          <a href="{% url 'crm:manager:client:detail' form.subscription.client.id %}">
+            {{ form.subscription.client.name }}
+          </a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </li>
+        <li>
+          Продлить абонемент
+        </li>
+      </ul>
+    </div>
+
+    <div class="greyline"></div>
+
     <form method="POST">
       {% csrf_token %}
-      <fieldset class="form-group">
-        <input id="client_id" name="client_id" hidden="true" value="{{ form.subscription.client.id }}">
-        <input id="object_id" name="object_id" hidden="true" value="{{ form.subscription.id }}">
-        {% bootstrap_form form %}
-      </fieldset>
-      <div class="form-group">
-        <button class="btn btn-outline-info" type="submit">Продлить</button>
-        <a name="cancel" href="{% url 'crm:manager:client:detail' form.subscription.client.id %}"
-           class="btn btn-outline-info">Назад</a>
+      {% bootstrap_field form.go_back %}
+      <div class="form-group row">
+			  <div class="col-12 col-md-10 col-xl-6">
+          <input id="client_id" name="client_id" hidden="true" value="{{ form.subscription.client.id }}">
+          <input id="object_id" name="object_id" hidden="true" value="{{ form.subscription.id }}">
+          {% bootstrap_field form.visit_limit %}
+			  </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-12 col-md-10 col-xl-6">
+          {% bootstrap_field form.reason show_label=False %}
+        </div>
+      </div>
+      <div class="form-group save_buttons">
+        <input class="btn btn-primary" type="submit" value="Продлить"/>
+        <a name="cancel"
+           href="{% url 'crm:manager:client:detail' form.subscription.client.id %}"
+           class="btn">
+          Отмена
+        </a>
       </div>
     </form>
   </div>
-</div>
 {% endblock content %}
+
+{% block extrajs %}
+  <script>
+    var cleave = new Cleave('#id_visit_limit', {
+      numeral: true,
+      blocks: [3],
+      delimiter: ' '
+    });
+  </script>
+{% endblock %}

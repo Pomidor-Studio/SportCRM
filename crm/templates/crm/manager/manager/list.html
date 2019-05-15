@@ -1,73 +1,178 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
-{% load bootstrap4 html_helper %}
+{% load bootstrap4 html_helper humanize static %}
+
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Менеджеры" back_link=False %}
+{% endblock %}
 
 {% block content %}
-  <div class="ml-4 mt-4 mr-4 container-fluid">
-    <legend class="border-bottom mb-2">Менеджеры</legend>
+  <div class="page col-md-12 col-lg-9 col-xl-10">
     {% ifhasperm 'manager.add' user %}
-      <a
-        name="add-new" href="{% url 'crm:manager:manager:new' %}"
-        class="btn btn-sm btn-info"
-      >
-        Добавить
-      </a>
+      <a class="btn btn-primary btn-new"
+         href="{% url 'crm:manager:manager:new' %}">Новый</a>
     {% endifhasperm %}
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          Менеджеры
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
     {% if managers %}
-      <table class="table table-striped table-borderless">
-        <thead>
+      <table class="table table-hover">
+        <thead class="d-none d-md-block">
         <tr>
-          <th scope="col">ФИО</th>
-          <th scope="col">Телефон</th>
-          <th scope="col"><i class="fab fa-vk"></i></th>
-          {% ifhasperm 'coach.delete' user %}
-            <th scope="col">Управление</th>
+          <th width="1"></th>
+          <th>
+            ФИО
+          </th>
+          <th>
+            Телефон
+          </th>
+          <th>
+            VK
+          </th>
+          {% ifhasperm 'manager.add' user %}
+          <th>
+            Ссылка для входа
+          </th>
           {% endifhasperm %}
+          <th width="1"></th>
         </tr>
         </thead>
         <tbody>
         {% for manager in managers %}
-          <tr>
+          <tr {% if manager.deleted %}class="archive"{% endif %}>
+            <td class="td_photo" width="1">
+              {% if manager.vk_user_id %}
+                {% if vk_group_id %}
+                  <a
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ manager.vk_user_id }}">
+                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                  </a>
+                {% else %}
+                  <a href="https://vk.com/?sel={{ manager.vk_user_id }}">
+                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                  </a>
+                {% endif %}
+              {% else %}
+                <a href="#"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
+              {% endif %}
+            </td>
             <td>
-
-              {% ifhasperm 'manager.view_detail' user %}
-                <a
-                  href="{% url "crm:manager:manager:detail" manager.id %}"
-                >{{ manager }}</a>
+              {% if not manager.deleted %}
+                {% if manager.user_id == user.id %}
+                  <a href="{% url "crm:accounts:profile" %}"
+                     class="fio_name">{{ manager }}</a>
+                {% else %}
+                  {% ifhasperm 'manager.edit' user %}
+                    <a href="{% url "crm:manager:manager:update" manager.id %}"
+                       class="fio_name">{{ manager }}</a>
+                  {% else %}
+                    <a href="#" class="fio_name">{{ manager }}</a>
+                  {% endifhasperm %}
+                {% endif %}
               {% else %}
                 {{ manager }}
-              {% endifhasperm %}
+              {% endif %}
               {% if manager.user_id == user.id %}
-                <span class="badge badge-primary">Это вы</span>
+                <div>
+                  <small class="yellow">Это вы</small>
+                </div>
               {% endif %}
+              <div class="d-md-none">
+                <a href="tel:{{ manager.phone_number }}"
+                >{{ manager.phone_number }}</a>
+                <br/>
+                {% if manager.user.vk_link %}
+                  <a href="{{ manager.user.vk_link|safe }}"
+                     target="_blank"
+                     class="btn-icon btn-copy"
+                     data-clipboard-text="{{ manager.user.vk_link|safe }}">
+                    <span></span></a><span>{{ manager.user.vk_link|safe }}</span>
+                {% endif %}
+              </div>
             </td>
-            <td>{{ manager.phone_number.as_national }}</td>
-            <td>
+            <td class="d-none d-md-block">
+              <a
+                href="tel:{{ manager.phone_number }}">{{ manager.phone_number }}</a>
+            </td>
+            <td class="d-none d-md-block">
               {% if manager.user.vk_link %}
-                <a href="{{ manager.user.vk_link|safe }}" target="_blank">
-                  {{ manager.user.vk_link|safe }}
-                </a>
+                <a href="{{ manager.user.vk_link|safe }}"
+                   target="_blank">{{ manager.user.vk_link|safe }}</a>
+              {% else %}
+                Не привязано
               {% endif %}
             </td>
+            {% ifhasperm 'manager.add' user %}
+            <td class="d-none d-md-block">
+                {% if not manager.deleted %}
+                  <div class="copy_url">
+                    <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link manager.user %}"><span></span></a>
+                    {% filter truncatechars_html:30 %}
+                      <span>{% one_time_login_link manager.user %}</span>
+                    {% endfilter %}
+                  </div>
+                {% endif %}
 
-              {% ifhasperm 'manager.delete' user %}
-                <td>
-                    <a
-                      href="{% url "crm:manager:manager:delete" manager.id %}"
-                      class="btn btn-danger"
-                    >Удалить</a>
-                </td>
-              {% endifhasperm %}
-
+            </td>
+            {% endifhasperm %}
+            <td width="1">
+              {% if manager.user_id != user.id %}
+                {% if manager.deleted %}
+                  {% ifhasperm 'manager.undelete' user %}
+                    <a class="btn btn-icon btn-undo"
+                       href="#confirm_popup"
+                       data-action-text="Вернуть"
+                       data-body-text="Вернуть из архива?"
+                       data-title="Возврат из архива"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:manager:undelete" manager.id %}">
+                      <span></span>
+                      <abbr>Вернуть</abbr>
+                    </a>
+                  {% endifhasperm %}
+                {% else %}
+                  {% ifhasperm 'manager.delete' user %}
+                    <a class="btn btn-icon btn-delete"
+                       href="#confirm_popup"
+                       data-action-text="В архив"
+                       data-title="Перемещение в архив"
+                       data-body-text="Переместить в архив?"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:manager:delete" manager.id %}">
+                      <span></span>
+                      <abbr>Удалить</abbr>
+                    </a>
+                  {% endifhasperm %}
+                {% endif %}
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
-
-      {% bootstrap_pagination page_obj %}
+      {% include "crm/bars/_bottom_sidebar.html" %}
     {% else %}
-        <p>Ваш список менеджеров пуст</p>
+      <p>Ваш список менеджеров пуст</p>
     {% endif %}
   </div>
+{% endblock content %}
 
+
+{% block extrajs %}
+  {% js "js/clipboard.min.js" %}
+  <script>
+    new ClipboardJS('.btn-copy');
+  </script>
 {% endblock %}

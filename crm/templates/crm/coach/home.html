@@ -1,34 +1,113 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
 
 {% load html_helper %}
 
 {% block extrahead %}
-  {% css 'css/fullcalendar.min.css' %}
-  {% js 'js/fullcalendar.min.js' %}
-  {% js 'js/fullcalendar-locale-ru.js' %}
-  <script type="text/javascript">
-    $(function() {
-      $('#calendar').fullCalendar({
+  <!-- Full Calendar -->
+  {% css 'js/fullcalendar/packages/core/main.css' %}
+  {% css 'js/fullcalendar/packages/daygrid/main.css' %}
+  {% css 'js/fullcalendar/packages/timegrid/main.css' %}
+  {% css 'js/fullcalendar/packages/list/main.css' %}
+  {% css 'js/fullcalendar/packages/bootstrap/main.css' %}
+{% endblock %}
+
+{% block content %}
+  <div class="page page_with_calendar col-md-12 col-lg-9 col-xl-10">
+    <div id='calendar-container'>
+      <div id='calendar'></div>
+    </div>
+  </div>
+{% endblock content %}
+
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False %}
+{% endblock %}
+
+{% block extrajs %}
+  <!-- Full Calendar -->
+  {% js 'js/fullcalendar/packages/core/main.js' %}
+  {% js 'js/fullcalendar/packages/daygrid/main.js' %}
+  {% js 'js/fullcalendar/packages/list/main.js' %}
+  {% js 'js/fullcalendar/packages/bootstrap/main.js' %}
+  {% js 'js/fullcalendar/packages/core/locales/ru.js' %}
+  {% js 'js/fullcalendar/packages/moment/main.min.js' %}
+
+  {% js 'js/enquire.min.js' %}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var calendarEl = document.getElementById('calendar');
+
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        plugins: ['dayGrid', 'bootstrap', 'list'],
+        themeSystem: 'bootstrap',
         locale: 'ru',
-        height: 'auto',
-        aspectRatio: 3,
-        themeSystem: 'bootstrap4',
-        timeFormat: 'H:mm',
+        height: 'parent',
+        customButtons: {
+          new_workout: {
+            text: 'Новая',
+            click: function () {
+              open("{% url 'crm:manager:event-class:new' %}", '_self')
+            }
+          },
+          list_month: {
+            text: 'Месяц',
+            click: function () {
+              calendar.changeView('listMonth');
+              $('.fc-list_month-button').addClass('active')
+            }
+          },
+          list_week: {
+            text: 'Неделя',
+            click: function () {
+              calendar.changeView('listWeek');
+              $('.fc-list_week-button').addClass('active')
+            }
+          }
+        },
+        header: {
+          left: 'title',
+          center: '',
+          right: 'list_month,dayGridMonth,dayGridWeek,list_week,listDay prev next new_workout'
+        },
+
+        defaultView: 'dayGridMonth',
+        eventLimit: 4,
+        views: {
+          dayGridWeek: {
+            eventLimit: false
+          }
+        },
+        showNonCurrentDates: true,
+        navLinks: true,
+        editable: true,
         displayEventTime: true,
         displayEventEnd: true,
+        timeFormat: 'H:mm',
+        buttonText: {
+						list: 'Сегодня',
+        },
         eventSources: [
           {
             url: '{% url 'api-v1:coach:calendar' %}',
           }
         ]
       });
+      calendar.render();
+
+      enquire.register("screen and (max-width: 720px)", {
+
+        match: function () {
+          calendar.changeView('listMonth');
+          $('.fc-list_month-button').addClass('active')
+        },
+
+        unmatch: function () {
+          calendar.changeView('dayGridMonth');
+        }
+
+      });
     });
   </script>
-{% endblock %}
-
-
-{% block content %}
-  <div class="content-section ml-4 mt-4">
-    <div id="calendar"></div>
-  </div>
+  <!-- Full Calendar -->
 {% endblock %}

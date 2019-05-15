@@ -1,17 +1,11 @@
-{% extends 'crm/base.html' %}
+{% extends 'crm/base_design.html' %}
 
-{% block extrahead %}
-  <link
-    href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/css/bootstrap4-toggle.min.css"
-    rel="stylesheet"
-  >
-  <script
-    src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.4.0/js/bootstrap4-toggle.min.js"
-  ></script>
+{% load bootstrap4 html_helper %}
 
+{% block extrajs %}
   <script type="text/javascript">
     $(function () {
-      $('input.status-toggle').change(function () {
+      $('input.form-check-input').change(function () {
         let $this = $(this);
         $.ajax({
             url: `/api/v1/messages/${$this.data('message-id')}/toggle/`,
@@ -29,47 +23,86 @@
   </script>
 {% endblock %}
 
+
+{% block sidbar %}
+  {% url 'crm:manager:company' as back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Шаблоны сообщений бота" back_link=back_link %}
+{% endblock %}
+
+
+
 {% block content %}
-  <div class="container-fluid mt-4 ml-2">
-    <legend class="border-bottom mb-2">Шаблоны сообщений бота</legend>
-    <table>
-      <thead>
-      <tr>
-        <th>Тип сообщения</th>
-        <th>Статус</th>
-        <th></th>
-      </tr>
-      </thead>
-      {% for message in vk_messages %}
-        <tr>
-          <td>
-            {{ message.help_text }}
-          </td>
-          <td>
-            <input
-              class="status-toggle"
-              type="checkbox"
-              {% if message.is_enabled %}
-              checked
-              {% endif %}
-              data-toggle="toggle"
-              data-onstyle="outline-success"
-              data-offstyle="outline-danger"
-              data-on="Включено"
-              data-off="Выключено"
-              data-message-id="{{ message.uuid }}"
-            >
-          </td>
-          <td>
-            <a
-              class="btn btn-info"
-              href="{% url 'bot:messages:template-edit' message.uuid %}"
-            >
-              Редактировать шаблон сообщения
-            </a>
-          </td>
-        </tr>
-      {% endfor %}
-    </table>
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url 'crm:manager:company' %}">Моя компания</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round"/>
+          </svg>
+        </li>
+        <li>
+          Шаблоны сообщений бота
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
+
+    <div class="row">
+      <div class="col-12 col-md-10 col-xl-6">
+        {% for recipient, messages in vk_messages.items %}
+          <table class="table table-hover">
+            <thead>
+            <tr>
+              <th width="20"></th>
+              <th>
+                УВЕДОМЛЕНИЯ
+                {% if recipient.name == 'manager' %}
+                  МЕНЕДЖЕРУ:
+                {% elif recipient.name == 'client' %}
+                  УЧЕНИКУ:
+                {% endif %}
+              </th>
+              <th width=20></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for message in messages %}
+              <tr>
+                <td>
+                  <div class="form-check">
+                    <label class="form-check-label" for="m{{ message.uuid }}">
+                      <input id="m{{ message.uuid }}" type="checkbox" class="form-check-input"
+                        {% if message.is_enabled %}
+                             checked="checked"
+                        {% endif %}
+                             data-toggle="toggle"
+                             data-onstyle="outline-success"
+                             data-offstyle="outline-danger"
+                             data-on="Включено"
+                             data-off="Выключено"
+                             data-message-id="{{ message.uuid }}"
+                      >
+                      <div class="form-check-input-div"></div>
+                    </label>
+                  </div>
+                </td>
+                <td>
+                  <label class="form-check-label" for="m1"> {{ message.help_text }}</label>
+                </td>
+                <td>
+                  {% ifhasperm 'message.template' user %}
+                    <a class="btn btn-icon btn-edit"
+                       href="{% url 'bot:messages:template-edit' message.uuid %}"><span></span></a>
+                  {% endifhasperm %}
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 {% endblock %}
