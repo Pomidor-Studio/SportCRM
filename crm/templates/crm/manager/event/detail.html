@@ -38,7 +38,7 @@
               <a class="dropdown-item"
                  href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать
                 занятие</a>
-              <a class="dropdown-item" href="#">Подробнее о занятии</a>
+              <a class="dropdown-item" href="{% url 'crm:manager:event-class:detail' event.event_class.pk %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Подробнее о занятии</a>
               <div class="greyline"></div>
               {% if not event.is_canceled %}
                 <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>

@@ -305,6 +305,11 @@ manager_event_class_urlpatterns = ([
     ),
     path('new/', manager_event_class_views.CreateEdit.as_view(), name='new'),
     path(
+        '<int:pk>/',
+        manager_event_class_views.Detail.as_view(),
+        name='detail'
+    ),
+    path(
         '<int:pk>/update/',
         manager_event_class_views.CreateEdit.as_view(),
         name='update'

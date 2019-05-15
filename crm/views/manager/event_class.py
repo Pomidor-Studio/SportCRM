@@ -39,6 +39,21 @@ class ObjList(PermissionRequiredMixin, ListView):
     permission_required = 'event_class'
 
 
+class Detail(PermissionRequiredMixin, DetailView):
+    model = EventClass
+    context_object_name = 'event_class'
+    template_name = 'crm/manager/event_class/detail.html'
+    permission_required = 'event_class'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['go_back'] = self.request.GET.get('gb')
+        context['days'] = {
+            x.day: x for x in self.object.dayoftheweekclass_set.all()
+        }
+        return context
+
+
 class Delete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     model = EventClass
     success_url = reverse_lazy('crm:manager:event-class:list')
