@@ -400,25 +400,11 @@ class EventClassForm(TenantModelForm):
     date_from = forms.DateField(
         label='Начало тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        ),
         required=False
     )
     date_to = forms.DateField(
         label='Окончание тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
-            format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
-        ),
         required=False
     )
 

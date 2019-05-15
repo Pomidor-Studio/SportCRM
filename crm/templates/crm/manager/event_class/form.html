@@ -18,11 +18,31 @@
   <script type="text/javascript">
     $(function () {
 
-        $('.time').toArray().forEach(function(field){
-				new Cleave(field, {
-				time: true,
-				timePattern: ['h', 'm']})
+        $('.time').toArray().forEach(function(field) {
+				  new Cleave(field, {
+				    time: true,
+				    timePattern: ['h', 'm']
+				  });
 			});
+
+      $('#{{ eventclass_form.date_from.id_for_label}}').datepicker({
+        uiLibrary: 'bootstrap4',
+        locale: 'ru-ru',
+        format: 'dd.mm.yyyy',
+        modal: false,
+        icons: {
+          rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+        }
+      });
+      $('#{{ eventclass_form.date_to.id_for_label }}').datepicker({
+        uiLibrary: 'bootstrap4',
+        locale: 'ru-ru',
+        format: 'dd.mm.yyyy',
+        modal: false,
+        icons: {
+          rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+        }
+      });
 
       $('#save-ec').click(function(e) {
         if ($('input:checkbox.day-of-week:checked').length === 0) {
