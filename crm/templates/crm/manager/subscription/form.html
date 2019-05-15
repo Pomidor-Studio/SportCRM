@@ -97,6 +97,11 @@
             <label class="form-check-label" for="{{ field.id_for_label }}">{{ field.choice_label }}</label>
           </div>
         {% endfor %}
+        {% if form.event_class.errors %}
+          {% for error in form.event_class.errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+          {% endfor %}
+        {% endif %}
 
       </div>
 
