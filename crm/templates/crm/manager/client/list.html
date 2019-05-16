@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-  <div class="page students_page col-md-12 col-lg-9 col-xl-10">
+  <div class="page students_page col-md-12 col-lg-9 col-xl-10" xmlns="http://www.w3.org/1999/html">
     {% ifhasperm 'client.add' user %}
       <a class="btn btn-primary btn-new" href="{% url 'crm:manager:client:new' %}">Новый</a>
     {% endifhasperm %}
@@ -50,7 +50,18 @@
           <div class="col-12 col-md-4">
             <div class="form-group live_search">
               <span class="icon"></span>
-              <input type="text" id="table_search" class="form-control" placeholder="Найти"/>
+              <form action="?{{ filter.data.urlencode }}">
+                {% if filter.form.with_archive.value %}
+                  {{ filter.form.with_archive.as_hidden }}
+                {% endif %}
+                {% if filter.form.debtor.value %}
+                  {{ filter.form.debtor.as_hidden }}
+                {% endif %}
+                {% if filter.form.long_time_not_go.value %}
+                  {{ filter.form.long_time_not_go.as_hidden }}
+                {% endif %}
+                <input type="text" id="table_search" name="name" value="{{ filter.form.name.value|default_if_none:'' }}" class="form-control" placeholder="Найти"/>
+              </form>
             </div>
           </div>
         </div>

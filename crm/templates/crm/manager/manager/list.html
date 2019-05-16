@@ -53,15 +53,15 @@
         {% for manager in managers %}
           <tr {% if manager.deleted %}class="archive"{% endif %}>
             <td class="td_photo" width="1">
-              {% if manager.vk_user_id %}
+              {% if manager.user.vk_id %}
                 {% if vk_group_id %}
                   <a
-                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ manager.vk_user_id }}">
-                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ manager.user.vk_id }}">
+                    <img src="{% vk_small_avatar manager.user.vk_id %}" class="photo">
                   </a>
                 {% else %}
-                  <a href="https://vk.com/?sel={{ manager.vk_user_id }}">
-                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                  <a href="https://vk.com/?sel={{ manager.user.vk_id }}">
+                    <img src="{% vk_small_avatar manager.user.vk_id %}" class="photo">
                   </a>
                 {% endif %}
               {% else %}
