@@ -21,7 +21,7 @@ from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, Location, Manager, SubscriptionsType,
-    Company,
+    Company, Event,
 )
 
 
@@ -354,7 +354,7 @@ class ClientSubscriptionForm(TenantModelForm):
             'disable_subscription_type', False)
         activated_subscription = kwargs.pop(
             'activated_subscription', False)
-        exclude_one_time = kwargs.pop('exclude_one_time', True)
+        for_event_class = kwargs.pop('event_class', None)  # type: Event
 
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
 
@@ -369,7 +369,9 @@ class ClientSubscriptionForm(TenantModelForm):
             # archive
             qs = SubscriptionsType.all_objects.all()
 
-        if exclude_one_time:
+        if for_event_class:
+            qs = qs.filter(event_class=for_event_class)
+        else:
             qs = qs.exclude(one_time=True)
 
         self.fields['subscription'].queryset = qs
