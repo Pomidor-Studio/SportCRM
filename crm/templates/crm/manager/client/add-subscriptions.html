@@ -3,9 +3,9 @@
 {% load bootstrap4 html_helper qr_code humanize static %}
 
 {% block sidbar %}
-  {% if event_class_id %}
-    {% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day as back_link %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=back_link %}
+  {% if event %}
+    {% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day as back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=event.event_class.name back_link=back_link %}
   {% else %}
     {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False %}
   {% endif %}
@@ -46,13 +46,26 @@
                   </a>
                 {% endif %}
               {% endif %}
-              <div class="greyline"></div>
-                {% ifhasperm 'client.edit' user %}
-                  <a class="dropdown-item"
-                     href="{% url 'crm:manager:client:update' client.id %}">
-                    Редактировать
-                  </a>
-                {% endifhasperm %}
+
+              {% ifhasperm 'client.delete' user %}
+                <a class="dropdown-item"
+                   href="#confirm_popup"
+                   data-action-text="В архив"
+                   data-title="Перемещение в архив"
+                   data-body-text="Переместить в архив?"
+                   data-toggle="modal"
+                   data-url="{% url "crm:manager:client:delete" client.id %}">
+                 Переместить в архив
+                </a>
+              {% endifhasperm %}
+
+              {% ifhasperm 'client.edit' user %}
+                <div class="greyline"></div>
+                <a class="dropdown-item"
+                   href="{% url 'crm:manager:client:update' client.id %}">
+                  Редактировать
+                </a>
+              {% endifhasperm %}
             </div>
           </div>
         </li>
@@ -60,17 +73,20 @@
     </div>
     <div class="bredcams clearfix">
       <ul>
-        {% if event_class_id %}
+        {% if event %}
           <li>
             <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"></path>
             </svg>
           </li>
           <li>
-            <a href="{% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}">{{ event_class_name }}</a>
+            <a
+              href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">{{  event.event_class.name }}</a>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
+                    stroke-linejoin="round"></path>
             </svg>
           </li>
         {% endif %}
@@ -107,15 +123,6 @@
         <div class="balance green">
           {{ client.balance | floatformat:"-2" | intcomma }} ₽
         </div>
-        <a class="btn-danger btn-sm"
-           href="#confirm_popup"
-           data-action-text="В архив"
-           data-title="Перемещение в архив"
-           data-body-text="Переместить в архив?"
-           data-toggle="modal"
-           data-url="{% url "crm:manager:client:delete" client.id %}">
-          В архив
-        </a>&nbsp;
         <a href="{% url 'crm:manager:client:balance:new' client.id %}">
           Изменить баланс
         </a>
@@ -172,86 +179,91 @@
               </tr>
               {% if hide_form %}
                 <tr class="active_info " style="display: none;">
-              {% else %}
+                  {% else %}
                 <tr class="active_info active" style="display: table-row;">
               {% endif %}
-                <td colspan="2">
-                  <form id="add-form" method="POST" action="">
-                    {% csrf_token %}
-                    {% bootstrap_field form.go_back %}
-                    <div class="container-fluid">
-                      <div class="row">
-                        <div class="col-12 col-md-6 form-group">
-                          {% bootstrap_field form.subscription %}
-                        </div>
-                        <div class="col-12 col-md-3 form-group">
-                          {% bootstrap_field form.price %}
-                        </div>
-                        <div class="col-12 col-md-3 col-xl-3 form-group">
-                          {% bootstrap_field form.visits_left %}
+              <td colspan="2">
+                <form id="add-form" method="POST" action="">
+                  {% csrf_token %}
+                  {% bootstrap_field form.go_back %}
+                  <div class="container-fluid">
+                    <div class="row">
+                      <div class="col-12 col-md-6 form-group">
+                        {% bootstrap_field form.subscription %}
+                      </div>
+                      <div class="col-12 col-md-3 form-group">
+                        {% bootstrap_field form.price %}
+                      </div>
+                      <div class="col-12 col-md-3 col-xl-3 form-group">
+                        {% bootstrap_field form.visits_left %}
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                        {{ form.start_date.label_tag }}
+                        {{ form.start_date }}
+                      </div>
+                      <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                        <label for="id_end_date">Дата окончания</label>
+                        <input type="text" name="end_date"
+                               class="form-control"
+                               placeholder="Дата окончания" title=""
+                               disabled="" id="id_end_date">
+                      </div>
+                      <div class="col-12 col-md-4 col-xl-3 d-flex align-items-end form-group">
+                        <div class="form-check d-flex skip_line">
+                          <label class="form-check-label" for="{{ form.cash_earned.id_for_label }}">
+                            {{ form.cash_earned }}
+                            <div class="form-check-input-div"></div>
+                          </label>
+                          <label class="form-check-label" for="{{ form.cash_earned.id_for_label }}">Деньги
+                            получены</label>
                         </div>
                       </div>
-                      <div class="row">
-                        <div class="form-group datepick col-12 col-sm-6 col-md-3">
-                          {{ form.start_date.label_tag }}
-                          {{ form.start_date }}
-                        </div>
-                        <div class="form-group datepick col-12 col-sm-6 col-md-3">
-                          <label for="id_end_date">Дата окончания</label>
-                          <input type="text" name="end_date"
-                                 class="form-control"
-                                 placeholder="Дата окончания" title=""
-                                 disabled="" id="id_end_date">
-                        </div>
-                        <div class="col-12 col-md-4 col-xl-3 d-flex align-items-end form-group">
-                          <div class="form-check d-flex skip_line">
-                            <label class="form-check-label" for="{{ form.cash_earned.id_for_label }}">
-                              {{ form.cash_earned }}
-                              <div class="form-check-input-div"></div>
-                            </label>
-                            <label class="form-check-label" for="{{ form.cash_earned.id_for_label }}">Деньги получены</label>
-                          </div>
-                        </div>
-                      </div>
-                      <div
-                        class="alert alert-info overlapping"
-                        id="is-overlapping"
-                        style="display: none;"
-                      >
-                        В тренировочной сетке есть отменённые занятия, из-за
-                        которых
-                        нельзя будет потратить все посещения.
-                      </div>
-                      <div
-                        class="alert alert-info overlapping"
-                        id="is-overlapping-with-canceled"
-                        style="display: none;"
-                      >
-                        В тренировочной сетке есть отменённые занятия, но даже
-                        вместе с
-                        ними, нельзя будет потратить все посещения.
-                      </div>
-                      <div
-                        class="alert alert-info overlapping"
-                        id="is-overlapping-total"
-                        style="display: none;"
-                      >
-                        Количество тренировок в сетке не позволяет потратить все
-                        посещения.
-                      </div>
-                      {% bootstrap_field form.client %}
-                      {% bootstrap_field form.sold_by %}
-                      <div class="form-group save_buttons">
-                        {% if not activated_subscription %}
-                          <button
-                            id="add"
-                            class="btn btn-primary add-subscription"
-                            type="submit"
-                            data-action="{% url 'crm:manager:client:new-subscription' client.id %}">
-                            {% if object.id %}Изменить{% else %}Продать{% endif %}
+                    </div>
+                    <div
+                      class="alert alert-info overlapping"
+                      id="is-overlapping"
+                      style="display: none;"
+                    >
+                      В тренировочной сетке есть отменённые занятия, из-за
+                      которых
+                      нельзя будет потратить все посещения.
+                    </div>
+                    <div
+                      class="alert alert-info overlapping"
+                      id="is-overlapping-with-canceled"
+                      style="display: none;"
+                    >
+                      В тренировочной сетке есть отменённые занятия, но даже
+                      вместе с
+                      ними, нельзя будет потратить все посещения.
+                    </div>
+                    <div
+                      class="alert alert-info overlapping"
+                      id="is-overlapping-total"
+                      style="display: none;"
+                    >
+                      Количество тренировок в сетке не позволяет потратить все
+                      посещения.
+                    </div>
+                    {% bootstrap_field form.client %}
+                    {% bootstrap_field form.sold_by %}
+                    <div class="form-group save_buttons">
+                      {% if not activated_subscription %}
+                        <button
+                          id="add"
+                          class="btn btn-primary add-subscription"
+                          type="submit"
+                          {% if event and not object.id  %}
+                          data-action="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id  event.event_class.id event.date.year event.date.month event.date.day %}">
+                          {% else %}
+                          data-action="{% url 'crm:manager:client:new-subscription' client.id %}">
+                          {% endif %}
+                          {% if object.id %}Изменить{% else %}Продать{% endif %}
                         </button>
-                        {% endif %}
-                        {% if allow_check_overlapping %}
+                      {% endif %}
+                      {% if allow_check_overlapping %}
                         <button
                           id="add-with-autoextend"
                           class="btn"
@@ -260,20 +272,20 @@
                           data-action="{% url 'crm:manager:client:add-subscription-with-extending' client.id %}">
                           Добавить с продлением абонемента
                         </button>
+                      {% endif %}
+                      <a name="cancel"
+                        {% if event %}
+                         href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}"
+                        {% else %}
+                         href="{% url 'crm:manager:client:detail' client.id %}"
                         {% endif %}
-                        <a name="cancel"
-                           {% if event_class_id %}
-                            href="{% url 'crm:manager:event-class:event:event-by-date' event_class_id event_year event_month event_day %}"
-                           {% else %}
-                             href="{% url 'crm:manager:client:detail' client.id %}"
-                           {% endif %}
-                           class="btn cancel">
-                          Назад
-                        </a>
-                      </div>
+                         class="btn cancel">
+                        Назад
+                      </a>
                     </div>
-                  </form>
-                </td>
+                  </div>
+                </form>
+              </td>
               </tr>
               </tbody>
             </table>
@@ -307,19 +319,23 @@
               </thead>
               <tbody>
               {% for sub in client.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
-                <tr>
+                <tr {% if not sub.is_active %}class="archive"{% endif %}>
                   <td width="27">
                     <a class="btn btn-icon btn-down d-md-none"
                        href="#"><span></span></a>
                   </td>
                   <td>
-                    {% ifhasperm 'client_subscription.edit' user %}
-                      <a href="{% url 'crm:manager:client:subscription:update' sub.id %}" class="fio_name">
-                    {% else %}
-                      <a href="#" class="fio_name">
-                    {% endifhasperm %}
+                    {% if  sub.is_active %}
+                      {% ifhasperm 'client_subscription.edit' user %}
+                        <a href="{% url 'crm:manager:client:subscription:update' sub.id %}" class="fio_name">
+                      {% else %}
+                        <a href="#" class="fio_name">
+                      {% endifhasperm %}
                       {{ sub.subscription.name }}
-                    </a>
+                      </a>
+                  {% else %}
+                       {{ sub.subscription.name }}
+                  {% endif %}
                     <div>
                       <small>Посещения: {{ sub.visits_left }} из {{ sub.visits_on_by_time }}</small>
                     </div>
@@ -349,26 +365,31 @@
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% ifhasperm 'client_subscription.extend' user %}
-                      <a class="btn btn-icon btn-extend"
-                         href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
-                        <span></span>
-                        <abbr>Продлить</abbr>
-                      </a>
-                    {% endifhasperm %}
+                    {% if  sub.is_active %}
+                      {% ifhasperm 'client_subscription.extend' user %}
+                        <a class="btn btn-icon btn-extend"
+                           href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
+                          <span></span>
+                          <abbr>Продлить</abbr>
+                        </a>
+                      {% endifhasperm %}
+                    {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% ifhasperm 'client_subscription.delete' user %}
-                      {% if sub.visits_on_by_time == sub.visits_left %}
-                        <a class="btn btn-icon btn-delete"
-                           href="{% url 'crm:manager:client:subscription:delete' sub.id %}">
-                          <span></span>
-                          <abbr>Удалить</abbr>
-                        </a>
-                      {% endif %}
-                    {% endifhasperm %}
+                    {% if  sub.is_active %}
+                      {% ifhasperm 'client_subscription.delete' user %}
+                        {% if sub.visits_on_by_time == sub.visits_left %}
+                          <a class="btn btn-icon btn-delete"
+                             href="{% url 'crm:manager:client:subscription:delete' sub.id %}">
+                            <span></span>
+                            <abbr>Удалить</abbr>
+                          </a>
+                        {% endif %}
+                      {% endifhasperm %}
+                    {% endif %}
                   </td>
                   <td class="d-md-none" width="1">
+                   {% if  sub.is_active %}
                     <div class="btn-group">
                       <a class="btn btn-icon btn-more" data-toggle="dropdown"
                          aria-haspopup="true" aria-expanded="false"><span></span></a>
@@ -391,45 +412,46 @@
                         {% endifhasperm %}
                       </div>
                     </div>
+                    {% endif %}
                   </td>
                 </tr>
                 <tr class="active_info">
-                <td></td>
-                <td colspan="7">
-                  <div class="row">
-                    <div class="col-6 col-md-5 col-xl-3">
-                      <p>
-                        <small>Продажа</small>
-                        <br/>
-                        {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }} — {{ sub.sold_by }}
-                      </p>
+                  <td></td>
+                  <td colspan="7">
+                    <div class="row">
+                      <div class="col-6 col-md-5 col-xl-3">
+                        <p>
+                          <small>Продажа</small>
+                          <br/>
+                          {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }} — {{ sub.sold_by }}
+                        </p>
+                      </div>
+                      <div class="col-6 col-md-5 col-xl-3">
+                        <p>
+                          <small>Стоимость</small>
+                          <br/>
+                          {% if sub.price %}{{ sub.price | floatformat:"-2" | intcomma }} ₽{% endif %}
+                        </p>
+                      </div>
                     </div>
-                    <div class="col-6 col-md-5 col-xl-3">
-                      <p>
-                        <small>Стоимость</small>
-                        <br/>
-                        {% if sub.price %}{{ sub.price | floatformat:"-2" | intcomma }} ₽{% endif %}
-                      </p>
+                    <div class="row">
+                      <div class="col-6 col-md-5 col-xl-3">
+                        <p>
+                          <small>Начало действия</small>
+                          <br/>
+                          {{ sub.start_date|date:"d M Y" }}
+                        </p>
+                      </div>
+                      <div class="col-6 col-md-5 col-xl-3">
+                        <p>
+                          <small>Окончание действия</small>
+                          <br/>
+                          {{ sub.end_date|date:"d M Y" }}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                  <div class="row">
-                    <div class="col-6 col-md-5 col-xl-3">
-                      <p>
-                        <small>Начало действия</small>
-                        <br/>
-                        {{ sub.start_date|date:"d M Y" }}
-                      </p>
-                    </div>
-                    <div class="col-6 col-md-5 col-xl-3">
-                      <p>
-                        <small>Окончание действия</small>
-                        <br/>
-                        {{ sub.end_date|date:"d M Y" }}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-              </tr>
+                  </td>
+                </tr>
               {% endfor %}
               </tbody>
             </table>
@@ -464,6 +486,30 @@
                         </span>
                       </td>
                     </tr>
+                  {% elif item.reason %}
+                    <tr>
+                      <td>
+                        {{ item.date_extended|time }}<br>
+                        {{ item.date_extended|date:"d M Y" }}
+                      </td>
+                      <td>
+                        <a href="#" class="fio_name">
+                          {% if item.reason %}
+                            {{ item.reason }}
+                          {% else %}
+                            (Причина не указана)
+                          {% endif %}
+                        </a>
+                        <div>
+                          <small>{{ item.client_subscription.name }}</small>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="{% if item.change_value < 0 %}orange{% else %}green{% endif %}">
+                          {{ item.added_visits }}
+                        </span>
+                      </td>
+                    </tr>
                   {% else %}
                     <tr>
                       <td>
@@ -486,7 +532,7 @@
                       </td>
                       <td>
                       </td>
-                    </tr>
+                    </tr>{ %}
                   {% endif %}
                 {% endfor %}
               </table>
@@ -518,7 +564,7 @@
                   <p>
                     E-mail:
                     <a href="mail:{{ client.email_address }}">
-                      {{client.email_address}}
+                      {{ client.email_address }}
                     </a>
                   </p>
                 {% endif %}
@@ -552,11 +598,11 @@
 
 {% block extrajs %}
   <script>
-    $(function() {
-	  	let $fStartDate = $('#{{ form.start_date.id_for_label }}');
-	  	let $fEndDate = $('#id_end_date');
-	  	let $fVisitsLeft = $('#{{ form.visits_left.id_for_label }}');
-	  	let $fPrice = $('#{{ form.price.id_for_label }}');
+    $(function () {
+      let $fStartDate = $('#{{ form.start_date.id_for_label }}');
+      let $fEndDate = $('#id_end_date');
+      let $fVisitsLeft = $('#{{ form.visits_left.id_for_label }}');
+      let $fPrice = $('#{{ form.price.id_for_label }}');
 
       $fStartDate.datepicker({
         uiLibrary: 'bootstrap4',
@@ -575,19 +621,19 @@
         }
       });
 
-	  	function updateDateRange(st) {
-	  		$.get(
-	  			'{% url "api-v1:manager:subscription:sell-range" 0 %}'.replace('0', st), {
-	  				requested_date: $fStartDate.val()
-	  			},
-	  			function(data) {
-	  				$fStartDate.val(data.start_date);
-	  				$fEndDate.val(data.end_date);
-	  			}
-	  		);
-	  	}
+      function updateDateRange(st) {
+        $.get(
+          '{% url "api-v1:manager:subscription:sell-range" 0 %}'.replace('0', st), {
+            requested_date: $fStartDate.val()
+          },
+          function (data) {
+            $fStartDate.val(data.start_date);
+            $fEndDate.val(data.end_date);
+          }
+        );
+      }
 
-	  	{% if allow_check_overlapping %}
+      {% if allow_check_overlapping %}
         function canCheckOverlapping() {
           return $("#id_subscription option:selected") &&
             $fStartDate.val() &&
@@ -603,7 +649,7 @@
               start: $fStartDate.val(),
               vl: $fVisitsLeft.val()
             },
-            function(data) {
+            function (data) {
               if (data.is_overlapping && !data.is_overlapping_with_cancelled) {
                 $('#is-overlapping').show();
                 $('#add-with-autoextend').show();
@@ -628,41 +674,41 @@
             }
           );
         }
-	  	{% endif %}
+      {% endif %}
 
-	  	$('#{{ form.subscription.id_for_label }}')
-	  		.on('select2:select', function(e) {
-	  			if (e.params.data.id === '') {
-	  				$fVisitsLeft.val('');
-	  				$fPrice.val('');
-	  			} else {
-	  				let $elem = $(e.params.data.element);
-	  				$fVisitsLeft.val($elem.data('visits'));
-	  				$fPrice.val($elem.data('price'));
-	  			}
-	  			updateDateRange(e.params.data.id);
+      $('#{{ form.subscription.id_for_label }}')
+        .on('select2:select', function (e) {
+          if (e.params.data.id === '') {
+            $fVisitsLeft.val('');
+            $fPrice.val('');
+          } else {
+            let $elem = $(e.params.data.element);
+            $fVisitsLeft.val($elem.data('visits'));
+            $fPrice.val($elem.data('price'));
+          }
+          updateDateRange(e.params.data.id);
 
-	  			if (canCheckOverlapping()) {
-	  				checkOverlapping();
-	  			}
+          if (canCheckOverlapping()) {
+            checkOverlapping();
+          }
 
-	  		});
+        });
 
-	  	$fVisitsLeft.on('input', function() {
-	  		if (canCheckOverlapping()) {
-	  			checkOverlapping();
-	  		}
-	  	});
+      $fVisitsLeft.on('input', function () {
+        if (canCheckOverlapping()) {
+          checkOverlapping();
+        }
+      });
 
-	  	$('button.add-subscription').click(function() {
-	  		$('#add-form').attr('action', $(this).data('action'));
-	  	});
+      $('button.add-subscription').click(function () {
+        $('#add-form').attr('action', $(this).data('action'));
+      });
 
-	  	if (canCheckOverlapping()) {
-	  		checkOverlapping();
-	  	}
+      if (canCheckOverlapping()) {
+        checkOverlapping();
+      }
 
-	  	updateDateRange($("#id_subscription option:selected").attr('value'));
-	  });
+      updateDateRange($("#id_subscription option:selected").attr('value'));
+    });
   </script>
 {% endblock %}

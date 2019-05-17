@@ -105,6 +105,7 @@
 {% js 'js/cleave-phone.ru.js' %}
 {% js 'js/gijgo.min.js' %}
 {% js 'js/gijgo/messages.ru-ru.js' %}
+{% js 'js/enquire.min.js' %}
 {% js 'js/base.js' %}
 
 
@@ -138,6 +139,19 @@
           xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
       }
+    });
+
+    enquire.register("screen and (max-width: 720px)", {
+
+      match: function () {
+        calendar.changeView('listMonth');
+        $('.fc-list_month-button').addClass('active')
+      },
+
+      unmatch: function () {
+        calendar.changeView('dayGridMonth');
+      }
+
     });
   </script>
   {% block extra %}{% endblock %}
