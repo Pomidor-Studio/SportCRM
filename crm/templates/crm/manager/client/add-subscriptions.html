@@ -482,6 +482,7 @@
                         {{ item.entry_date|date:"d M Y" }}
                       </td>
                       <td>
+                       Пополнение счета -
                         <a href="#" class="fio_name">
                           {% if item.reason %}
                             {{ item.reason }}
@@ -506,6 +507,7 @@
                         {{ item.date_extended|date:"d M Y" }}
                       </td>
                       <td>
+                        Продление -
                         <a href="#" class="fio_name">
                           {% if item.reason %}
                             {{ item.reason }}
@@ -530,13 +532,14 @@
                         {{ item.event.date|date:"d M Y" }}
                       </td>
                       <td>
+                       Тренировка -
                         <a href="{% url 'crm:manager:event-class:event:event-by-date' item.event.event_class.id item.event.date.year item.event.date.month item.event.date.day %}" class="fio_name">
                           {{ item.event.event_class }}
                         </a>
                         <div {% if not item.subscription %}class="orange"{% endif %}>
                           <small>
                             {% if item.subscription %}
-                              Посещение - {{ item.subscription }}
+                              {{ item.subscription }}
                             {% else %}
                               Записался, но не пришел
                             {% endif %}

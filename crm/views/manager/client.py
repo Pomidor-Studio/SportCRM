@@ -1,11 +1,13 @@
 import re
-from datetime import date
+from datetime import date, datetime
+import pytz
 
 from itertools import chain
 import openpyxl as openpyxl
 from django.contrib import messages
 from django.contrib.auth.views import SuccessURLAllowedHostsMixin
 from django.db import transaction
+from django.db.models import F
 from django.forms import forms
 from django.forms.utils import ErrorList
 from django.http import Http404
@@ -258,16 +260,32 @@ class AddSubscription(
         client = self.get_client()
         context['client'] = client
         context['allow_check_overlapping'] = True
-        attendance = client.attendance_set.order_by('-event__date')
-        extensionhistory = ExtensionHistory.objects.filter(
+
+        attendance = client.attendance_set.annotate(
+            sort_dt=F('event__date')
+        ).order_by('-event__date')
+        for a in attendance:
+            tm = a.event.start_time if a.event.start_time else datetime.min.time()
+            a.sort_dt = datetime.combine(a.sort_dt, tm).replace(tzinfo=pytz.UTC)
+
+        extensionhistory = ExtensionHistory.objects.annotate(
+            sort_dt=F('date_extended')
+        ).filter(
             client_subscription__client__id=client.id,
         ).order_by(
             '-date_extended'
         )
-        balancehistory = client.clientbalancechangehistory_set.order_by(
-            '-entry_date')
-        # TODO: fix ordering
+
+        balancehistory = client.clientbalancechangehistory_set.annotate(
+            sort_dt=F('entry_date')
+        ).order_by('-entry_date')
+
         attendance_with_balance = list(chain(attendance, balancehistory, extensionhistory))
+        attendance_with_balance = sorted(
+            attendance_with_balance,
+            key=lambda i: i.sort_dt,
+            reverse=True,
+        )
         context['attendance_with_balance'] = attendance_with_balance
         context['hide_form'] = self.kwargs.get('hide_form')
         context['event'] = self.get_event()
