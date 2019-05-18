@@ -677,21 +677,20 @@
       {% endif %}
 
       $('#{{ form.subscription.id_for_label }}')
-        .on('select2:select', function (e) {
-          if (e.params.data.id === '') {
+        .change(function (e) {
+          var $elem = $(e.currentTarget).find('option:selected').first();
+          let id = $elem.val();
+          if (id === '') {
             $fVisitsLeft.val('');
             $fPrice.val('');
           } else {
-            let $elem = $(e.params.data.element);
             $fVisitsLeft.val($elem.data('visits'));
             $fPrice.val($elem.data('price'));
+            updateDateRange(id);
+            if (canCheckOverlapping()) {
+              checkOverlapping();
+            }
           }
-          updateDateRange(e.params.data.id);
-
-          if (canCheckOverlapping()) {
-            checkOverlapping();
-          }
-
         });
 
       $fVisitsLeft.on('input', function () {
