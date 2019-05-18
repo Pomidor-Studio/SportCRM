@@ -1,5 +1,5 @@
 {% load humanize %}
 
-<span class="{% if client.balance < 0 %}orange{% else %}green{% endif %}">
+<span class="{% if client.balance < 0 %}orange{% elif active_sub %}green{% else %}yellow{% endif %}">
   {{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽
 </span>

@@ -335,16 +335,10 @@
                   </td>
                   <td>
                     {% if  sub.is_active %}
-                      {% ifhasperm 'client_subscription.edit' user %}
-                        <a href="{% url 'crm:manager:client:subscription:update' sub.id %}" class="fio_name">
-                      {% else %}
-                        <a href="#" class="fio_name">
-                      {% endifhasperm %}
                       {{ sub.subscription.name }}
-                      </a>
-                  {% else %}
+                    {% else %}
                        {{ sub.subscription.name }}
-                  {% endif %}
+                    {% endif %}
                     <div>
                       <small>Посещения: {{ sub.visits_left }} из {{ sub.visits_on_by_time }}</small>
                     </div>
@@ -389,10 +383,15 @@
                       {% ifhasperm 'client_subscription.delete' user %}
                         {% if sub.visits_on_by_time == sub.visits_left %}
                           <a class="btn btn-icon btn-delete"
-                             href="{% url 'crm:manager:client:subscription:delete' sub.id %}">
-                            <span></span>
-                            <abbr>Удалить</abbr>
-                          </a>
+                         href="#confirm_popup"
+                         data-action-text="Удалить"
+                         data-title="Удаление абонемента"
+                         data-body-text="Удалить абонемент?"
+                         data-toggle="modal"
+                         data-url="{% url 'crm:manager:client:subscription:delete' sub.id %}">
+                        <span></span>
+                        <abbr>Удалить</abbr>
+                      </a>
                         {% endif %}
                       {% endifhasperm %}
                     {% endif %}
@@ -413,10 +412,15 @@
                         {% ifhasperm 'client_subscription.delete' user %}
                           {% if sub.visits_on_by_time == sub.visits_left %}
                             <a class="dropdown-item"
-                               href="{% url 'crm:manager:client:subscription:delete' sub.id %}"
-                               data-client-id="{{ client.id }}">
-                              Удалить
-                            </a>
+                         href="#confirm_popup"
+                         data-action-text="Удалить"
+                         data-title="Удаление абонемента"
+                         data-body-text="Удалить абонемент?"
+                         data-toggle="modal"
+                         data-url="{% url 'crm:manager:client:subscription:delete' sub.id %}">
+                        <span></span>
+                        <abbr>Удалить</abbr>
+                      </a>
                           {% endif %}
                         {% endifhasperm %}
                       </div>
