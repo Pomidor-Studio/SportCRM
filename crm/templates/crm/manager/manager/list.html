@@ -8,7 +8,16 @@
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
-    {% ifhasperm 'manager.add' user %}
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+      {% ifhasperm 'manager.add' user %}
       <a class="btn btn-primary btn-new"
          href="{% url 'crm:manager:manager:new' %}">Новый</a>
     {% endifhasperm %}

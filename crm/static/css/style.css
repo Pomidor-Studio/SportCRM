@@ -19,7 +19,8 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 small { font-size: 12px; }
 
-.alert { font-size: 14px; }
+.alert-box {position: absolute;z-index: 5;padding-right: 15px;}
+.alert { font-size: 14px;}
 
 .dropdown-menu { border: 1px solid #EEEEEE; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25); border-radius: 6px; padding: 18px 0; }
 
@@ -156,7 +157,13 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 @media (max-width: 1024px) { .btn { padding: 5px 10px; }
   .btn-icon abbr { display: none; } }
-
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  select,
+  textarea,
+  input {
+    font-size: 16px !important;
+  }
+}
 /* Формы, общее */
 /* Таблицы */
 .table { font-size: 14px; line-height: 19px; position: relative; top: -10px; color: #484F57; }
@@ -180,6 +187,8 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 .table .fio_name { font-size: 16px; color: #000; margin-bottom: 4px; display: inline-block; }
 
 .table .fio_name:hover { color: #76BD1B; }
+
+.table .active .fio_name {color: #76BD1B;}
 
 .table .form-check-input { margin-top: 3px; }
 
@@ -229,7 +238,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 /* Таблицы */
 /* Вкладки и поиск по таблице */
-.nav-pills .nav-item .nav-link { font-size: 16px; padding: 8px 0 8px 16px; font-weight: 300; padding-right: 16px; border-right: 1px solid #EEEEEE; }
+.nav-pills .nav-item .nav-link { font-size: 16px; padding: 8px 0 8px 13px; font-weight: 300; padding-right: 16px; border-right: 1px solid #EEEEEE; }
 
 .nav-pills .nav-item .nav-link.active, .nav-pills .nav-item .nav-link.active:hover { background: none; color: #76BD1B !important; font-weight: normal; cursor: pointer; }
 
@@ -370,7 +379,7 @@ footer, .bottom { color: #636363; }
 
 .mobile_sidebar .bredcams li { float: left; border-left: 1px solid #EEEEEE; padding: 0 16px; }
 
-.mobile_sidebar .bredcams li:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 230px; }
+.mobile_sidebar .bredcams li:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 214px; }
 
 .mobile_sidebar .workout_actions { position: absolute; top: 16px; right: 10px; background: #fff; }
 

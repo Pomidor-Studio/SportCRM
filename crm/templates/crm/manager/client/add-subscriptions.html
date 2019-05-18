@@ -13,6 +13,15 @@
 
 {% block content %}
   <div class="page student_page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="workout_actions desktop_workout_actions d-none d-md-block">
       <ul class="d-flex justify-content-end">
         <li class="more">
@@ -486,7 +495,7 @@
                         </span>
                       </td>
                     </tr>
-                  {% elif item.reason %}
+                  {% elif item.date_extended %}
                     <tr>
                       <td>
                         {{ item.date_extended|time }}<br>
@@ -510,7 +519,7 @@
                         </span>
                       </td>
                     </tr>
-                  {% else %}
+                  {% elif item.event %}
                     <tr>
                       <td>
                         {{ item.event.start_time }}<br>
@@ -520,10 +529,10 @@
                         <a href="{% url 'crm:manager:event-class:event:event-by-date' item.event.event_class.id item.event.date.year item.event.date.month item.event.date.day %}" class="fio_name">
                           {{ item.event.event_class }}
                         </a>
-                        <div>
+                        <div {% if not item.subscription %}class="orange"{% endif %}>
                           <small>
                             {% if item.subscription %}
-                              {{ item.subscription }}
+                              Посещение - {{ item.subscription }}
                             {% else %}
                               Записался, но не пришел
                             {% endif %}
@@ -532,7 +541,7 @@
                       </td>
                       <td>
                       </td>
-                    </tr>{ %}
+                    </tr>
                   {% endif %}
                 {% endfor %}
               </table>
@@ -677,21 +686,20 @@
       {% endif %}
 
       $('#{{ form.subscription.id_for_label }}')
-        .on('select2:select', function (e) {
-          if (e.params.data.id === '') {
+        .change(function (e) {
+          var $elem = $(e.currentTarget).find('option:selected').first();
+          let id = $elem.val();
+          if (id === '') {
             $fVisitsLeft.val('');
             $fPrice.val('');
           } else {
-            let $elem = $(e.params.data.element);
             $fVisitsLeft.val($elem.data('visits'));
             $fPrice.val($elem.data('price'));
+            updateDateRange(id);
+            if (canCheckOverlapping()) {
+              checkOverlapping();
+            }
           }
-          updateDateRange(e.params.data.id);
-
-          if (canCheckOverlapping()) {
-            checkOverlapping();
-          }
-
         });
 
       $fVisitsLeft.on('input', function () {
