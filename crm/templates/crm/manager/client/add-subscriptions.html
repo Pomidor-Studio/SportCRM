@@ -2,12 +2,13 @@
 
 {% load bootstrap4 html_helper qr_code humanize static %}
 
+{% block title %}Ученик{% endblock %}
 {% block sidbar %}
   {% if event %}
     {% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day as back_link %}
-    {% include 'crm/bars/_sidebar_design.html'  with name=event.event_class.name back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=event.event_class.name back_link=back_link current='client'%}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False current='client' %}
   {% endif %}
 {% endblock %}
 

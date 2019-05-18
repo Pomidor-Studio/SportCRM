@@ -2,9 +2,10 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
+{% block title %}Тренировка{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:event:calendar' as back_link %}
-  {% include 'crm/bars/_sidebar_design.html' with name=event.event_class.name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html' %}
+  {% include 'crm/bars/_sidebar_design.html' with name=event.event_class.name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}
 {% endblock %}
 
 {% block content %}

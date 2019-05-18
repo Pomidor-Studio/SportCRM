@@ -79,14 +79,7 @@
 
   {% block extrahead %}{% endblock %}
   <title>
-    SportAdmin{% block title %}{% endblock %}
-    {% if user.is_manager %}
-      {% if company.active_to %}
-        (активна до {{ company.active_to|date:"d.m.Y" }})
-      {% else %}
-        (активна без ограничений)
-      {% endif %}
-    {% endif %}
+    {% block title %}SportAdmin{% endblock %}
   </title>
 
   {% yandex_metrica %}

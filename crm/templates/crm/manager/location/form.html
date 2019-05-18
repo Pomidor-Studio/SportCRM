@@ -2,12 +2,13 @@
 
 {% load bootstrap4 html_helper %}
 
+{% block title %}Место проведения{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:locations:list' as back_link %}
   {% if object.id %}
-    {% include 'crm/bars/_sidebar_design.html' with name=object.name back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html' with name=object.name back_link=back_link current='location' %}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html' with name="Новый место" back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html' with name="Новый место" back_link=back_link current='location' %}
   {% endif %}
 {% endblock %}
 

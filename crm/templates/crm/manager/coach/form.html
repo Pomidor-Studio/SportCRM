@@ -2,12 +2,13 @@
 
 {% load bootstrap4 html_helper static %}
 
+{% block title %}Тренер{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:coach:list' as back_link %}
   {% if form.user.fullname.value %}
-    {% include 'crm/bars/_sidebar_design.html'  with name=form.user.fullname.value back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=form.user.fullname.value back_link=back_link current='coach' %}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Новый тренер" back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новый тренер" back_link=back_link current='coach' %}
   {% endif %}
 {% endblock %}
 

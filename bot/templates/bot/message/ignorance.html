@@ -23,10 +23,10 @@
   </script>
 {% endblock %}
 
-
+{% block title %}Шаблоны сообщений бота{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:company' as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Шаблоны сообщений бота" back_link=back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Шаблоны сообщений бота" back_link=back_link current='company' %}
 {% endblock %}
 
 

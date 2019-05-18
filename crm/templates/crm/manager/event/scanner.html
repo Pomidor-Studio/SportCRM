@@ -2,9 +2,10 @@
 
 {% load bootstrap4 html_helper %}
 
+{% block title %}QR-сканер{% endblock %}
 {% block sidbar %}
    {% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day as back_link %}
-   {% include 'crm/bars/_sidebar_design.html' with name='QR-сканер' back_link=back_link %}
+   {% include 'crm/bars/_sidebar_design.html' with name='QR-сканер' back_link=back_link  current='event' %}
  {% endblock %}
 
 {% block content %}

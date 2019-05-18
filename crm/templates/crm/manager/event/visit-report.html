@@ -2,8 +2,9 @@
 
 {% load bootstrap4 html_helper %}
 
+{% block title %}Отчет по посещениям{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Отчет по посещениям" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Отчет по посещениям" back_link=False current='visit-report' %}
 {% endblock %}
 
 {% block content %}
