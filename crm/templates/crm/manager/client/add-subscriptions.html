@@ -557,7 +557,7 @@
                   <p>
                     Телефон:
                     <a href="tel:{{ client.phone_number }}">
-                      {{ client.phone_number }}
+                      {{ client.phone_number|phone_format }}
                     </a>
                   </p>
                 {% endif %}

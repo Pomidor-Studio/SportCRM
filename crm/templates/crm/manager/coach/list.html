@@ -101,7 +101,7 @@
               {% endif %}
               <div class="d-md-none">
                 <a href="tel:{{ coach.phone_number }}"
-                >{{ coach.phone_number }}</a>
+                >{{ coach.phone_number|phone_format }}</a>
                 <br/>
                 {% if coach.user.vk_link and not coach.deleted %}
                   <a href="{{ coach.user.vk_link|safe }}"
@@ -114,7 +114,7 @@
             </td>
             <td class="d-none d-md-block">
               <a
-                href="tel:{{ coach.phone_number }}">{{ coach.phone_number }}</a>
+                href="tel:{{ coach.phone_number }}">{{ coach.phone_number|phone_format }}</a>
             </td>
             <td class="d-none d-md-block">
               {% if coach.user.vk_link %}

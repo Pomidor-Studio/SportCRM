@@ -142,7 +142,7 @@ class VisitReport(PermissionRequiredMixin, FormView):
 
             old_added_visits = ExtensionHistory.objects.filter(
                 date_extended__lt=from_date,
-                client_subscription = subs,
+                client_subscription=subs,
             ).aggregate(
                 Sum('added_visits')
             )['added_visits__sum'] or 0

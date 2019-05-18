@@ -2,18 +2,26 @@
 
 {% if active_sub|length == 1 %}
   {% with active_sub.first as sub %}
-    {{ sub.subscription.name }}
+    {% if sub.is_expiring %}
+      <span class="yellow">{{ sub.subscription.name }}</span>
+    {% else %}
+      {{ sub.subscription.name }}
+    {% endif %}
     <br/>
-        <small>Доступно посещений: {{ sub.visits_left }} из
-          {{ sub.visits_on_by_time }}</small>
+    <small>Доступно посещений: {{ sub.visits_left }} из
+      {{ sub.visits_on_by_time }}</small>
   {% endwith %}
 {% elif active_sub|length > 1 %}
   <form class="subscription_select">
     {% for sub in active_sub %}
-      {{ sub.subscription.name }}
+      {% if sub.is_expiring %}
+        <span class="yellow">{{ sub.subscription.name }}</span>
+      {% else %}
+        {{ sub.subscription.name }}
+      {% endif %}
       <br/>
-        <small>Доступно посещений: {{ sub.visits_left }} из
-          {{ sub.visits_on_by_time }}</small>
+      <small>Доступно посещений: {{ sub.visits_left }} из
+        {{ sub.visits_on_by_time }}</small>
       {% if not forloop.last %}
         <div class="greyline"></div>
       {% endif %}
@@ -21,7 +29,10 @@
   </form>
 {% else %}
   {% if last_sub %}
-    {{ last_sub.subscription.name }}
+    {% if last_sub.is_expiring %}<span class="yellow">{{ last_sub.subscription.name }}</span>
+    {% else %}
+      {{ last_sub.subscription.name }}
+    {% endif %}
   {% else %}
     Без абонемента
   {% endif %}
@@ -31,8 +42,8 @@
       <br/>
       {% if event %}
         <a class="sell"
-             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}">
-        Продать</a>
+           href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}">
+          Продать</a>
       {% else %}
         <a class="sell"
            href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
