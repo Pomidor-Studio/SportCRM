@@ -65,6 +65,7 @@
     <div class="greyline"></div>
 
     <div class="table-responsive">
+    {% if table_data %}
       <table class="table table-hover">
         <thead>
         <tr>
@@ -123,6 +124,10 @@
         {% endfor %}
         </tbody>
       </table>
+    {% else %}
+      За выбранный период тренировок не найдено.<br/>
+      Период проведения тренировки с {{ event_class.date_from|date:"SHORT_DATE_FORMAT"  }} {% if event_class.to_date %}по {{ event_class.to_date|date:"SHORT_DATE_FORMAT"}} {% endif %}
+    {% endif %}
     </div>
   </div>
 {% endblock content %}
