@@ -486,7 +486,7 @@
                         </span>
                       </td>
                     </tr>
-                  {% elif item.reason %}
+                  {% elif item.date_extended %}
                     <tr>
                       <td>
                         {{ item.date_extended|time }}<br>
@@ -510,7 +510,7 @@
                         </span>
                       </td>
                     </tr>
-                  {% else %}
+                  {% elif item.event %}
                     <tr>
                       <td>
                         {{ item.event.start_time }}<br>
@@ -520,7 +520,7 @@
                         <a href="{% url 'crm:manager:event-class:event:event-by-date' item.event.event_class.id item.event.date.year item.event.date.month item.event.date.day %}" class="fio_name">
                           {{ item.event.event_class }}
                         </a>
-                        <div>
+                        <div {% if not item.subscription %}orange{% endif %}>
                           <small>
                             {% if item.subscription %}
                               {{ item.subscription }}

@@ -13,21 +13,27 @@
     <div class="bredcams">
       <ul>
         {% if back_link %}
-        <li>
-          <a href="{{ back_link }}">
-            <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-                 xmlns="http://www.w3.org/2000/svg">
-              <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </li>
+          <li>
+            <a href="{{ back_link }}">
+              <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </li>
         {% endif %}
         <li>
-          {{ name|default_if_none:'Новая тренировка'}}
+          {{ name|default_if_none:'Новая тренировка' }}
         </li>
       </ul>
     </div>
+    {% if mobile_menu %}
+      {% include mobile_menu %}
+
+    {% endif %}
+
+
   </div>
   <!- Sidebar -!>
   <div class="sidebar-wrapper">
@@ -38,11 +44,11 @@
     <div class="nav flex-column">
       <div class="top">
         <a class="nav-link active"
-           {% ifhasperm 'is_manager' user %}
-            href="{% url 'crm:manager:event:calendar' %}"
+          {% ifhasperm 'is_manager' user %}
+           href="{% url 'crm:manager:event:calendar' %}"
           {% endifhasperm %}
           {% ifhasperm 'is_coach' user %}
-            href="{% url "crm:coach:home" %}"
+           href="{% url "crm:coach:home" %}"
           {% endifhasperm %}
         >
           Тренировки
