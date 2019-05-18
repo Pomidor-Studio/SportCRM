@@ -157,7 +157,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 @media (max-width: 1024px) { .btn { padding: 5px 10px; }
   .btn-icon abbr { display: none; } }
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
   select,
   textarea,
   input {
