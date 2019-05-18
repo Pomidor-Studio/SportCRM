@@ -1,6 +1,6 @@
 {% extends "crm/base_design.html" %}
 
-{% load bootstrap4 %}
+{% load bootstrap4 html_helper %}
 {% load render_table from django_tables2 %}
 
 
@@ -12,6 +12,15 @@
 {% block content %}
   <!- Отчет -!>
   <div class="page report_page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>

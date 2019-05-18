@@ -8,6 +8,15 @@
 
 {% block content %}
   <div class="page students_page col-md-12 col-lg-9 col-xl-10" xmlns="http://www.w3.org/1999/html">
+   <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     {% ifhasperm 'client.add' user %}
       <a class="btn btn-primary btn-new" href="{% url 'crm:manager:client:new' %}">Новый</a>
     {% endifhasperm %}
