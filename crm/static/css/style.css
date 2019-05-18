@@ -19,8 +19,9 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 small { font-size: 12px; }
 
-.alert-box {position: absolute;z-index: 5;padding-right: 15px;}
-.alert { font-size: 14px;}
+.alert-box {position: absolute; z-index: 10;padding-right: 15px;}
+.alert-box .alert { font-size: 14px; box-shadow: 0px 8px 18px 0px rgba(50, 50, 50, 0.2);}
+.alert-box .alert a { color:#76BD1B; text-decoration: underline;}
 
 .dropdown-menu { border: 1px solid #EEEEEE; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25); border-radius: 6px; padding: 18px 0; }
 
@@ -157,7 +158,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 @media (max-width: 1024px) { .btn { padding: 5px 10px; }
   .btn-icon abbr { display: none; } }
-@media screen and (-webkit-min-device-pixel-ratio:0) { 
+@media screen and (-webkit-min-device-pixel-ratio:0) {
   select,
   textarea,
   input {
@@ -230,6 +231,8 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 @media (max-width: 767px) { .table { top: 0; }
   .table td { height: 80px; vertical-align: top; }
+  .buy_subscriptions td {height: auto !important;}
+  .buy_subscriptions .btn-down {top: -8px;}
   .table .btn-group { margin-top: 12px; }
   .table .td_photo { padding-top: 15px; } }
 
@@ -345,7 +348,7 @@ footer, .bottom { color: #636363; }
 
 .sidebar.open { z-index: 10; }
 
-.sidebar .logo { padding: 16px 0 8px; }
+.sidebar .logo { padding: 27px 0 15px; }
 
 .sidebar .sidebar-wrapper { padding-left: 9px; padding-right: 14px; border-right: 1px solid #EEEEEE; min-height: 100vh; width: 100%; }
 
@@ -367,13 +370,15 @@ footer, .bottom { color: #636363; }
   .sidebar .sidebar-wrapper .bottom { position: relative; top: -30px; left: 0; right: 0; bottom: 0; }
   .sidebar .sidebar-wrapper .nav-link { font-size: 16px; } }
 
-.mobile_sidebar { width: 100%; height: 70px; background: #fff; }
+.mobile_sidebar { width: 100%; height: 75px; background: #fff; }
 
-.mobile_sidebar #mobile_logo { padding: 18px 18px 0 0; display: block; float: left; }
+.mobile_sidebar #mobile_logo { padding: 29px 18px 0 8px; display: block; float: left; }
 
-.mobile_sidebar .logo_name { display: none; position: relative; top: 22px; }
+.mobile_sidebar #mobile_logo .close_b { display: none; position: relative; left: 2px; }
 
-.mobile_sidebar .bredcams { font-size: 18px; line-height: 40px; padding: 15px 0; }
+.mobile_sidebar .logo_name { display: none; position: relative; top: 30px; left:8px; }
+
+.mobile_sidebar .bredcams { font-size: 18px; line-height: 40px; padding: 19px 0; }
 
 .mobile_sidebar .bredcams ul, .mobile_sidebar .bredcams li { margin: 0; padding: 0; list-style: none; }
 
@@ -540,7 +545,7 @@ footer, .bottom { color: #636363; }
 
 #pills-subscriptions tr.active_info { display: none; }
 
-#pills-subscriptions .buy_subscriptions .fio_name { position: relative; top: 4px; }
+#pills-subscriptions .buy_subscriptions .fio_name { position: relative; top: 4px; color: #76BD1B; }
 
 #pills-subscriptions .buy_subscriptions tr:hover { background: #F4F4F4 !important; }
 
@@ -560,7 +565,7 @@ footer, .bottom { color: #636363; }
 
 .user_info .save_buttons { margin: 8px 0; }
 
-.user_info .save_buttons a { margin-bottom: 0; }
+.user_info .save_buttons a { margin-bottom: 8px; }
 
 .user_info .balance { border: 1px solid #484F57; color: #484F57; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin: 8px 8px 8px 0; }
 
