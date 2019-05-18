@@ -16,7 +16,7 @@
   {% endifhasperm %}
 {% endif %}
 <div class="d-none d-md-block">
-  <small>{{ client.phone_number }}</small>
+  <small>{{ client.phone_number|phone_format }}</small>
 </div>
 <div class="d-md-none">
   {% if active_sub|length == 1 %}
