@@ -482,7 +482,7 @@
                         {{ item.entry_date|date:"d M Y" }}
                       </td>
                       <td>
-                       Пополнение счета -
+                       Изменение счета -
                         <a href="#" class="fio_name">
                           {% if item.reason %}
                             {{ item.reason }}
@@ -520,7 +520,7 @@
                         </div>
                       </td>
                       <td>
-                        <span class="{% if item.change_value < 0 %}orange{% else %}green{% endif %}">
+                        <span class="{% if item.added_visits < 0 %}orange{% else %}green{% endif %}">
                           {{ item.added_visits }}
                         </span>
                       </td>
