@@ -1,9 +1,9 @@
 {% extends "crm/base_design.html" %}
 
 {% load bootstrap4 html_helper humanize static %}
-
+{% block title %}Ученики{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Ученики" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Ученики" back_link=False current='client' %}
 {% endblock %}
 
 {% block content %}

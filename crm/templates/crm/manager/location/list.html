@@ -2,8 +2,9 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
+{% block title %}Места проведения{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Места проведения" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Места проведения" back_link=False current='location' %}
 {% endblock %}
 
 {% block content %}

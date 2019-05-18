@@ -11,6 +11,7 @@ class Edit(UpdateView):
     template_name = 'crm/manager/company/form.html'
     model = Company
     success_url = reverse_lazy('crm:manager:company')
+    current = 'company'
 
     def get_object(self, queryset=None):
         return get_current_tenant()

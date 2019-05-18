@@ -9,10 +9,10 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css"
   >
 {% endblock %}
-
+{% block title %}Изменить баланс{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:client:detail' client.id as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Изменить баланс" back_link=back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Изменить баланс" back_link=back_link  current='client' %}
 {% endblock %}
 
 {% block content %}

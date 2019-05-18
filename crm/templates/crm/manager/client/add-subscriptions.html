@@ -2,12 +2,13 @@
 
 {% load bootstrap4 html_helper qr_code humanize static %}
 
+{% block title %}Ученик{% endblock %}
 {% block sidbar %}
   {% if event %}
     {% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day as back_link %}
-    {% include 'crm/bars/_sidebar_design.html'  with name=event.event_class.name back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=event.event_class.name back_link=back_link current='client'%}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Ученик" back_link=False current='client' %}
   {% endif %}
 {% endblock %}
 
@@ -482,7 +483,7 @@
                         {{ item.entry_date|date:"d M Y" }}
                       </td>
                       <td>
-                       Пополнение счета -
+                       Изменение счета -
                         <a href="#" class="fio_name">
                           {% if item.reason %}
                             {{ item.reason }}
@@ -520,7 +521,7 @@
                         </div>
                       </td>
                       <td>
-                        <span class="{% if item.change_value < 0 %}orange{% else %}green{% endif %}">
+                        <span class="{% if item.added_visits < 0 %}orange{% else %}green{% endif %}">
                           {{ item.added_visits }}
                         </span>
                       </td>

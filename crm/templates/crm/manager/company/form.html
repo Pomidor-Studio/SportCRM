@@ -6,9 +6,9 @@
   {{ form.media }}
 {% endblock %}
 
-
+{% block title %}Моя компания{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Моя компания" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Моя компания" back_link=False current='company' %}
 {% endblock %}
 
 {% block content %}

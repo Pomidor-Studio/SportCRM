@@ -2,8 +2,9 @@
 
 {% load bootstrap4 i18n  l10n html_helper staticfiles %}
 
+{% block title %}Настройка профиля{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Настройка профиля" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Настройка профиля" back_link=False  current='profile' %}
 {% endblock %}
 
 {% block content %}

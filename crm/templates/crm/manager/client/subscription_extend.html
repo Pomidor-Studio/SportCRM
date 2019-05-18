@@ -2,9 +2,10 @@
 
 {% load bootstrap4 html_helper %}
 
+{% block title %}Продлить абонемент{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:client:detail' form.subscription.client.id as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Продлить абонемент" back_link=back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Продлить абонемент" back_link=back_link current='client' %}
 {% endblock %}
 
 {% block content %}
