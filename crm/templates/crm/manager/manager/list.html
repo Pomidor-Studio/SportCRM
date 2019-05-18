@@ -99,7 +99,7 @@
                 </div>
               {% endif %}
               <div class="d-md-none">
-                <a href="tel:{{ manager.phone_number }}"
+                <a href="tel:{{ manager.phone_number|phone_format }}"
                 >{{ manager.phone_number }}</a>
                 <br/>
                 {% if manager.user.vk_link %}
@@ -113,7 +113,7 @@
             </td>
             <td class="d-none d-md-block">
               <a
-                href="tel:{{ manager.phone_number }}">{{ manager.phone_number }}</a>
+                href="tel:{{ manager.phone_number }}">{{ manager.phone_number|phone_format }}</a>
             </td>
             <td class="d-none d-md-block">
               {% if manager.user.vk_link %}

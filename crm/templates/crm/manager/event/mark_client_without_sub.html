@@ -1,5 +1,5 @@
 {% extends "crm/base_design.html" %}
-{% load bootstrap4 %}
+{% load bootstrap4 html_helper %}
 
 {% block sidbar %}
   {% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day as back_link %}

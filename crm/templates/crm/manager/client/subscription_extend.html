@@ -1,6 +1,6 @@
 {% extends "crm/base_design.html" %}
 
-{% load bootstrap4 %}
+{% load bootstrap4 html_helper %}
 
 {% block sidbar %}
   {% url 'crm:manager:client:detail' form.subscription.client.id as back_link %}

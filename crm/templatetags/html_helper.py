@@ -1,5 +1,6 @@
 from datetime import datetime, date
 
+import phonenumbers
 import vk
 from bootstrap4.components import render_alert
 from bootstrap4.forms import render_label
@@ -271,3 +272,11 @@ def pluralize(amount, singular, plural1, plural2):
 @register.simple_tag(takes_context=True)
 def one_time_login_link(context, user):
     return get_one_time_login_link(context.request.get_host(), user)
+
+
+@register.filter
+def phone_format(number):
+    try:
+        return phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+    except Exception:
+        return number
