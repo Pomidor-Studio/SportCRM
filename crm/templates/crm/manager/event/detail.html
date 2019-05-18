@@ -38,6 +38,36 @@
             </a>
           </li>
         {% endif %}
+        <li class="more">
+          <div class="btn-group">
+            <a href="#" class="d-flex" data-toggle="dropdown"
+               aria-haspopup="true" aria-expanded="false"><span
+              class="icon align-self-center"></span></a>
+            <div class="dropdown-menu dropdown-menu-right">
+              <a class="dropdown-item"
+                 href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать
+                занятие</a>
+              <a class="dropdown-item" href="{% url 'crm:manager:event-class:detail' event.event_class.pk %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Подробнее о занятии</a>
+              <div class="greyline"></div>
+              {% if not event.is_canceled %}
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить с продлением</a>
+              {% else %}
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
+                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
+              {% endif %}
+              {% if not event.is_closed %}
+                {% ifhasperm 'event.close' user event %}
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}">Удалить</a>
+                {% endifhasperm %}
+              {% else %}
+                {% ifhasperm 'event.open' user event %}
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}">Восстановить занятие</a>
+                {% endifhasperm %}
+              {% endif %}
+            </div>
+          </div>
+        </li>
       </ul>
     </div>
 
@@ -74,36 +104,6 @@
             </a>
           </li>
         {% endif %}
-        <li class="more">
-          <div class="btn-group">
-            <a href="#" class="d-flex" data-toggle="dropdown"
-               aria-haspopup="true" aria-expanded="false"><span
-              class="icon align-self-center"></span></a>
-            <div class="dropdown-menu dropdown-menu-right">
-              <a class="dropdown-item"
-                 href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать
-                занятие</a>
-              <a class="dropdown-item" href="{% url 'crm:manager:event-class:detail' event.event_class.pk %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Подробнее о занятии</a>
-              <div class="greyline"></div>
-              {% if not event.is_canceled %}
-                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>
-                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить с продлением</a>
-              {% else %}
-                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
-                <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
-              {% endif %}
-              {% if not event.is_closed %}
-                {% ifhasperm 'event.close' user event %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}">Удалить</a>
-                {% endifhasperm %}
-              {% else %}
-                {% ifhasperm 'event.open' user event %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}">Восстановить занятие</a>
-                {% endifhasperm %}
-              {% endif %}
-            </div>
-          </div>
-        </li>
       </ul>
     </div>
     <div class="greyline"></div>
