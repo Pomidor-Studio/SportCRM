@@ -28,14 +28,7 @@
     {% endfor %}
   </form>
 {% else %}
-  {% if last_sub %}
-    {% if last_sub.is_expiring %}<span class="yellow">{{ last_sub.subscription.name }}</span>
-    {% else %}
-      {{ last_sub.subscription.name }}
-    {% endif %}
-  {% else %}
-    Без абонемента
-  {% endif %}
+  <span class="yellow">Без абонемента</span>
 
   {% if not client.deleted %}
     {% ifhasperm 'client_subscription.sale' user %}
