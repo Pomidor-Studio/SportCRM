@@ -70,6 +70,7 @@ class VisitReport(PermissionRequiredMixin, FormView):
             date_list = self.get_month_dates_range(year, month, event_class)
             context['table_data'] = self.sort_data(data)
             context['month_days'] = date_list
+            context['event_class'] = event_class
 
         return context
 
@@ -94,6 +95,8 @@ class VisitReport(PermissionRequiredMixin, FormView):
 
     def get_subscription_visits(self, year: int, month: int, event_class: EventClass):
         dates = self.get_month_dates_range(year, month, event_class)
+        if not dates:
+            return []
         today = date.today()
         from_date, to_date = dates[0], dates[-1]
         fltr = {
@@ -185,6 +188,8 @@ class VisitReport(PermissionRequiredMixin, FormView):
 
     def get_one_time_visits(self, year: int, month: int, event_class: EventClass) -> Dict:
         dates = self.get_month_dates_range(year, month, event_class)
+        if not dates:
+            return {}
         fltr = {
             'subscription__subscription__one_time': True,
             'event__date__range': (dates[0], dates[-1]),
