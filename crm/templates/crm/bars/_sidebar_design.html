@@ -91,6 +91,13 @@
             Отчет по посещениям
           </a>
         {% endifhasperm %}
+        {% ifhasperm 'manager' user %}
+          <div class="greyline"></div>
+          <a class="nav-link {% if current == 'help' %}active{% endif %}"
+              href="{% url 'crm:manager:help:home' %}">
+          Помощь
+          </a>
+        {% endifhasperm %}
       </div>
       <div class="bottom">
         <hr class="line line-table">

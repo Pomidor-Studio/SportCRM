@@ -8,6 +8,7 @@ from crm.views.manager import (
     client as manager_client_views,
     coach as manager_coach_views,
     core as manager_core_views,
+    help as manager_help_views,
     event as manager_event_views,
     event_class as manager_event_class_views,
     location as manager_locations_views,
@@ -360,11 +361,20 @@ manager_locations_urlpatterns = ([
     )
 ], 'locations')
 
+manager_help_urlpatterns = ([
+    path(
+        '',
+        manager_help_views.Help.as_view(),
+        name='home'
+    ),
+], 'help')
+
 manager_urlpatterns = ([
     path('', manager_core_views.Home.as_view(), name='home'),
     path('company/', manager_company_views.Edit.as_view(), name='company'),
     path('coach/', include(manager_coach_urlpatterns)),
     path('manager/', include(manager_manager_urlpatterns)),
+    path('help/', include(manager_help_urlpatterns)),
     path('clients/', include(manager_clients_urlpatterns)),
     path('subscriptions/', include(manager_subscriptions_urlpatterns)),
     path('events/', include(manager_events_urlpatterns)),
