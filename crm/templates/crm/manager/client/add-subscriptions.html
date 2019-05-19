@@ -616,6 +616,11 @@
 {% block extrajs %}
   <script>
     $(function () {
+      {% if event %}
+        let date = '{{ event.date|date:"SHORT_DATE_FORMAT" }}';
+      {% else %}
+        let date = '';
+      {% endif %}
       let $fStartDate = $('#{{ form.start_date.id_for_label }}');
       let $fEndDate = $('#id_end_date');
       let $fVisitsLeft = $('#{{ form.visits_left.id_for_label }}');
@@ -703,6 +708,10 @@
           } else {
             $fVisitsLeft.val($elem.data('visits'));
             $fPrice.val($elem.data('price'));
+            if (date !== ''){
+              $fStartDate.val(date);
+            }
+
             updateDateRange(id);
             if (canCheckOverlapping()) {
               checkOverlapping();
