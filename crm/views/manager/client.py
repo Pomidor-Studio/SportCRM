@@ -252,7 +252,9 @@ class AddSubscription(
             initial['subscription'] = last_sub.subscription
             initial['visits_left'] = last_sub.subscription.visit_limit
             initial['price'] = last_sub.subscription.price
-
+        event = self.get_event()
+        if event:
+            initial['start_date'] = event.date
         return initial
 
     def get_context_data(self, **kwargs):
