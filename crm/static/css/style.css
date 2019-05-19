@@ -229,6 +229,9 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .tab-content, .freeze_table { margin-bottom: 60px; }
 
+@media (max-width: 320px) { .table .fio_name {width: 180px;} }
+@media (min-width:321px) and (max-width: 375px) { .table .fio_name {width: 220px;} }
+@media (min-width:376px) and (max-width: 414px) { .table .fio_name {width: 260px;} }
 @media (max-width: 767px) { .table { top: 0; }
   .table td { height: 80px; vertical-align: top; }
   .buy_subscriptions td {height: auto !important;}
@@ -292,7 +295,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 /* Страница */
 /* Страница 404 и страница входа */
-.wrapper-404, .wrapper-sing-in { min-height: 100%; text-align: center; padding-bottom: 80px; position: relative; }
+.wrapper-404, .wrapper-sing-in { min-height: 100%; text-align: center; padding-top: 30px; padding-bottom: 80px; position: relative; }
 
 .wrapper-404 .logo { margin-bottom: 50px; }
 
