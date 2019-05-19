@@ -1,0 +1,49 @@
+{% extends "crm/base_design.html" %}
+
+{% load bootstrap4 html_helper humanize static %}
+
+{% block title %}Помошь{% endblock %}
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Помошь" back_link=False current='help'%}
+{% endblock %}
+
+{% block content %}
+  <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          Помошь
+        </li>
+        <li>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+               xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
+    <div class="form-group save_buttons">
+      <a name="new" href="https://vk.com/im?sel={{ support_group_id }}" class="btn btn-primary">Задать вопрос в чат</a>
+    </div>
+  </div>
+{% endblock content %}
+
+
+{% block extrajs %}
+  {% js "js/clipboard.min.js" %}
+  <script>
+    new ClipboardJS('.btn-copy');
+  </script>
+{% endblock %}
