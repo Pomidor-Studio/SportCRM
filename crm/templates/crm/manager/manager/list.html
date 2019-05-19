@@ -100,8 +100,8 @@
                 </div>
               {% endif %}
               <div class="d-md-none">
-                <a href="tel:{{ manager.phone_number|phone_format }}"
-                >{{ manager.phone_number }}</a>
+                <a href="tel:{{ manager.phone_number }}"
+                >{{ manager.phone_number|phone_format }}</a>
                 <br/>
                 {% if manager.user.vk_link %}
                   <a href="{{ manager.user.vk_link|safe }}"
