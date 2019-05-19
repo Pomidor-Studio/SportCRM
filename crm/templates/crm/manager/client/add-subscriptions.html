@@ -128,7 +128,7 @@
                 {% endifhasperm %}
               </span>
         <div class="contacts">
-          <a href="tel:{{ client.phone_number }}">{{ client.phone_number }}</a>
+          <a href="tel:{{ client.phone_number }}">{{ client.phone_number|phone_format }}</a>
         </div>
         <div class="balance green">
           {{ client.balance | floatformat:"-2" | intcomma }} ₽
