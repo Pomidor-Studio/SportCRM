@@ -2,8 +2,9 @@
 
 {% load bootstrap4 html_helper %}
 
+{% block title %}Тренировка{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False current='event' %}
 {% endblock %}
 
 
@@ -63,6 +64,15 @@
 
 {% block content %}
   <div class="page new_class col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>
@@ -109,58 +119,15 @@
           {% bootstrap_field eventclass_form.date_to %}
         </div>
       </div>
-
       <div class="form-group row days timepick">
-
+        {% for weekday in weekdays  %}
         <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekdays.0.checked %}
-          {% bootstrap_field weekdays.0.start_time show_label=False %}
+          {% bootstrap_dayofweek_render weekday.checked %}
+          {% bootstrap_field weekday.start_time show_label=False %}
           —
-          {% bootstrap_field weekdays.0.end_time show_label=False %}
+          {% bootstrap_field weekday.end_time show_label=False %}
         </div>
-
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekdays.1.checked %}
-          {% bootstrap_field weekdays.0.start_time show_label=False %}
-          —
-          {% bootstrap_field weekdays.0.end_time show_label=False %}
-        </div>
-
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekdays.2.checked %}
-          {% bootstrap_field weekdays.0.start_time show_label=False %}
-          —
-          {% bootstrap_field weekdays.0.end_time show_label=False %}
-        </div>
-
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekdays.3.checked %}
-          {% bootstrap_field weekdays.0.start_time show_label=False %}
-          —
-          {% bootstrap_field weekdays.0.end_time show_label=False %}
-        </div>
-
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekdays.4.checked %}
-          {% bootstrap_field weekdays.0.start_time show_label=False %}
-          —
-          {% bootstrap_field weekdays.0.end_time show_label=False %}
-        </div>
-
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekdays.5.checked %}
-          {% bootstrap_field weekdays.0.start_time show_label=False %}
-          —
-          {% bootstrap_field weekdays.0.end_time show_label=False %}
-        </div>
-
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekdays.6.checked %}
-          {% bootstrap_field weekdays.0.start_time show_label=False %}
-          —
-          {% bootstrap_field weekdays.0.end_time show_label=False %}
-        </div>
-
+        {% endfor %}
       </div>
 
       <div class="form-group save_buttons">

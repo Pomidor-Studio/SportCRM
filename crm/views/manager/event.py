@@ -47,13 +47,15 @@ class VisitReport(PermissionRequiredMixin, FormView):
         kwargs['data'] = self.request.GET or self.default_data()
         return kwargs
 
-    def get_month_dates_range(self, year: int, month: int):
-        dt = date.today().replace(year, month)
-        days = (dt.replace(month=month % 12 + 1, day=1) - timedelta(days=1)).day
-        dates = []
-        for day in range(1, days + 1):
-            dates.append(dt.replace(day=day))
-        return dates
+    def get_month_dates_range(self, year: int, month: int, event_class: EventClass):
+        dt1 = date.today().replace(year, month, 1)
+        days = (date.today().replace(month=month % 12 + 1, day=1) - timedelta(days=1)).day
+        dt2 = date.today().replace(year, month, days)
+        return sorted(
+            list(
+                event_class.get_calendar(dt1, dt2).keys()
+            )
+        )
 
     def get_context_data(self, **kwargs: dict):
         context = super().get_context_data(**kwargs)
@@ -65,9 +67,10 @@ class VisitReport(PermissionRequiredMixin, FormView):
             event_class = form.cleaned_data['event_class']
 
             data = self.get_table_data(year, month, event_class)
-            date_list = self.get_month_dates_range(year, month)
+            date_list = self.get_month_dates_range(year, month, event_class)
             context['table_data'] = self.sort_data(data)
             context['month_days'] = date_list
+            context['event_class'] = event_class
 
         return context
 
@@ -80,17 +83,21 @@ class VisitReport(PermissionRequiredMixin, FormView):
         data = self.get_subscription_visits(year, month, event_class)
 
         for client, attendances in self.get_one_time_visits(year, month, event_class).items():
+            tmp = self.attendances_to_list(attendances)
             data.append({
                 'client': client,
                 'subscription': 'Разовые',
                 'visit_start': 0,
                 'visit_end': 0,
-                'attendances': attendances
+                'attendances': tmp
             })
         return data
 
     def get_subscription_visits(self, year: int, month: int, event_class: EventClass):
-        dates = self.get_month_dates_range(year, month)
+        dates = self.get_month_dates_range(year, month, event_class)
+        if not dates:
+            return []
+        today = date.today()
         from_date, to_date = dates[0], dates[-1]
         fltr = {
             'subscription__one_time': False,
@@ -104,10 +111,16 @@ class VisitReport(PermissionRequiredMixin, FormView):
         ).select_related(
             'subscription', 'client'
         ).iterator()
-
         result = []
+
         for subs in active_subs:
-            attendances = [''] * len(dates)
+
+            attendances = {}
+            for dt in dates:
+                if dt <= today:
+                    attendances[dt] = 'red'
+                else:
+                    attendances[dt] = ''
 
             added_visits = ExtensionHistory.objects.filter(
                 date_extended__range=(from_date, to_date),
@@ -119,20 +132,22 @@ class VisitReport(PermissionRequiredMixin, FormView):
             from_date = max(from_date, subs.start_date)
             to_date = min(to_date, subs.end_date or to_date)
 
-            try:
-                for event in subs.subscription.events_to_date(
-                        from_date=from_date, to_date=to_date):
-                    if from_date <= event.date <= to_date:
-                        attendances[event.date.day - 1] = 'red'
-            except ValueError:
-                pass
-
             for dt in dates:
-                if from_date <= dt <= to_date:
+                if dt < from_date:
+                    attendances[dt] = 'grey'
                     continue
-                attendances[dt.day - 1] = 'grey'
+                if to_date < dt <= today:
+                    attendances[dt] = 'grey'
+                    continue
 
-            visit_start = subs.visits_on_by_time
+            old_added_visits = ExtensionHistory.objects.filter(
+                date_extended__lt=from_date,
+                client_subscription=subs,
+            ).aggregate(
+                Sum('added_visits')
+            )['added_visits__sum'] or 0
+            visit_start = subs.visits_on_by_time + old_added_visits
+
             if subs.start_date < from_date:
                 visit_start -= subs.attendance_set.filter(
                     marked=True,
@@ -143,44 +158,58 @@ class VisitReport(PermissionRequiredMixin, FormView):
 
             visited = subs.attendance_set.filter(
                 marked=True,
-                event__date__range=(from_date, to_date)
+                event__date__range=(from_date, to_date),
+                subscription=subs,
             ).exclude(
                 event__date__gt=date.today()
             ).select_related('event').all()
 
             for visit in visited:
-                attendances[visit.event.date.day - 1] = 'green'
+                if visit.event.date in dates and visit.event.date <= today:
+                    attendances[visit.event.date] = 'green'
+
             visit_end = added_visits + visit_start - len(visited)
+            tmp = self.attendances_to_list(attendances)
 
             result.append({
                 'client': subs.client,
                 'subscription': subs.subscription.name,
-                'attendances': attendances,
+                'attendances': tmp,
                 'visit_start': visit_start,
                 'visit_end': visit_end,
             })
         return result
 
+    def attendances_to_list(self, attendances):
+        tmp = []
+        for key in sorted(attendances.keys()):
+            tmp.append(attendances[key])
+        return tmp
+
     def get_one_time_visits(self, year: int, month: int, event_class: EventClass) -> Dict:
-        dates = self.get_month_dates_range(year, month)
+        dates = self.get_month_dates_range(year, month, event_class)
+        if not dates:
+            return {}
         fltr = {
             'subscription__subscription__one_time': True,
             'event__date__range': (dates[0], dates[-1]),
             'event__event_class': event_class
         }
+        attendances = {}
+        for dt in dates:
+            attendances[dt] = ''
 
-        attendances = Attendance.objects.filter(
+        visited = Attendance.objects.filter(
             **fltr
         ).exclude(
            event__date__gt=date.today()
         ).select_related('client', 'event').all()
         result = {}
-        for attendance in attendances:
-            client = attendance.client
+        for visit in visited:
+            client = visit.client
             if client not in result:
-                result[client] = ['grey'] * len(dates)
-            day = attendance.event.date.day
-            result[client][day - 1] = 'green'
+                result[client] = attendances.copy()
+            result[client][visit.event.date] = 'green'
         return result
 
 

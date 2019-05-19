@@ -137,7 +137,7 @@ class ClientBalanceChangeHistoryAdmin(CompareVersionAdmin):
 
 @admin.register(models.ClientSubscriptions)
 class ClientSubscriptionsAdmin(CompareVersionAdmin):
-    readonly_fields = ('visits_on_by_time', 'subscription', 'client',)
+    # readonly_fields = ('visits_on_by_time', 'subscription', 'client',)
     list_display = ('__str__', 'purchase_date', 'start_date', 'end_date', 'client',)
 
 

@@ -79,14 +79,7 @@
 
   {% block extrahead %}{% endblock %}
   <title>
-    SportAdmin{% block title %}{% endblock %}
-    {% if user.is_manager %}
-      {% if company.active_to %}
-        (активна до {{ company.active_to|date:"d.m.Y" }})
-      {% else %}
-        (активна без ограничений)
-      {% endif %}
-    {% endif %}
+    {% block title %}SportAdmin{% endblock %}
   </title>
 
   {% yandex_metrica %}
@@ -105,6 +98,7 @@
 {% js 'js/cleave-phone.ru.js' %}
 {% js 'js/gijgo.min.js' %}
 {% js 'js/gijgo/messages.ru-ru.js' %}
+{% js 'js/enquire.min.js' %}
 {% js 'js/base.js' %}
 
 
@@ -138,6 +132,19 @@
           xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
       }
+    });
+
+    enquire.register("screen and (max-width: 720px)", {
+
+      match: function () {
+        calendar.changeView('listMonth');
+        $('.fc-list_month-button').addClass('active')
+      },
+
+      unmatch: function () {
+        calendar.changeView('dayGridMonth');
+      }
+
     });
   </script>
   {% block extra %}{% endblock %}

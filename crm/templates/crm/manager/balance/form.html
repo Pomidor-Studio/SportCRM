@@ -1,6 +1,6 @@
 {% extends "crm/base_design.html" %}
 
-{% load bootstrap4 humanize %}
+{% load bootstrap4 humanize html_helper %}
 
 {% block extrahead %}
   {{ form.media.css }}
@@ -9,14 +9,23 @@
     href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css"
   >
 {% endblock %}
-
+{% block title %}Изменить баланс{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:client:detail' client.id as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Изменить баланс" back_link=back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Изменить баланс" back_link=back_link  current='client' %}
 {% endblock %}
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>
@@ -84,8 +93,7 @@
   <script>
     var cleave = new Cleave('#id_change_value', {
       numeral: true,
-      blocks: [3],
-      delimiter: ' '
+      delimiter: ''
     });
   </script>
 {% endblock %}

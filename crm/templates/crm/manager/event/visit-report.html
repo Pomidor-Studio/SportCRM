@@ -2,13 +2,23 @@
 
 {% load bootstrap4 html_helper %}
 
+{% block title %}Отчет по посещениям{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Отчет по посещениям" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Отчет по посещениям" back_link=False current='visit-report' %}
 {% endblock %}
 
 {% block content %}
   <!- Отчет -!>
   <div class="page report_page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>
@@ -56,6 +66,7 @@
     <div class="greyline"></div>
 
     <div class="table-responsive">
+    {% if table_data %}
       <table class="table table-hover">
         <thead>
         <tr>
@@ -114,6 +125,10 @@
         {% endfor %}
         </tbody>
       </table>
+    {% else %}
+      За выбранный период тренировок не найдено.<br/>
+      Период проведения тренировки с {{ event_class.date_from|date:"SHORT_DATE_FORMAT"  }} {% if event_class.to_date %}по {{ event_class.to_date|date:"SHORT_DATE_FORMAT"}} {% endif %}
+    {% endif %}
     </div>
   </div>
 {% endblock content %}

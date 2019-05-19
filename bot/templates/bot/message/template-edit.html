@@ -2,9 +2,10 @@
 
 {% load bootstrap4 %}
 
+{% block title %}Изменить шаблон{% endblock %}
 {% block sidbar %}
   {% url 'bot:messages:list' as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Изменить шаблон" back_link=back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Изменить шаблон" back_link=back_link current='company' %}
 {% endblock %}
 
 {% block content %}

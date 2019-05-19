@@ -2,18 +2,28 @@
 
 {% load bootstrap4 html_helper static %}
 
+{% block title %}Тренер{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:coach:list' as back_link %}
   {% if form.user.fullname.value %}
-    {% include 'crm/bars/_sidebar_design.html'  with name=form.user.fullname.value back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=form.user.fullname.value back_link=back_link current='coach' %}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Новый тренер" back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новый тренер" back_link=back_link current='coach' %}
   {% endif %}
 {% endblock %}
 
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>
@@ -100,8 +110,15 @@
         <a name="cancel" href="{% url "crm:manager:coach:list" %}" class="btn">Отмена</a>
         {% if object.id %}
           {% ifhasperm 'coach.delete' user %}
-            <a name="archive" href="{% url "crm:manager:coach:delete" object.id %}" class="btn">Переместить в
-              архив</a>
+            <a class="btn"
+           href="#confirm_popup"
+           data-action-text="В архив"
+           data-title="Перемещение в архив"
+           data-body-text="Переместить в архив?"
+           data-toggle="modal"
+           data-url="{% url "crm:manager:coach:delete" object.id %}">
+          Переместить в архив
+          </a>
           {% endifhasperm %}
         {% endif %}
       </div>

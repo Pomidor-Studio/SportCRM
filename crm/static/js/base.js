@@ -1,10 +1,11 @@
 /* Мобильное меню */
 $('#mobile_logo, #overlay').click(function() {
+    $('#mobile_logo .open_b, #mobile_logo .close_b').toggle();
 	$('.sidebar').toggleClass('open')
 	$('.mobile_sidebar .bredcams, .logo_name').toggle()
 	$('.sidebar-wrapper').slideToggle();
 	$('#overlay').fadeToggle();
-})
+});
 
 /* Показать «Вспомнить пароль» */
 $('#recall_password , #recall_password_back').click(function() {

@@ -1,10 +1,13 @@
 import re
+from datetime import date, datetime
+import pytz
 
 from itertools import chain
 import openpyxl as openpyxl
 from django.contrib import messages
 from django.contrib.auth.views import SuccessURLAllowedHostsMixin
 from django.db import transaction
+from django.db.models import F
 from django.forms import forms
 from django.forms.utils import ErrorList
 from django.http import Http404
@@ -33,7 +36,7 @@ from crm.forms import (
 )
 from crm.models import (
     Attendance, Client, ClientSubscriptions, EventClass, ExtensionHistory,
-    SubscriptionsType,
+    SubscriptionsType, Event, ExtensionHistory
 )
 from crm.serializers import ClientSubscriptionCheckOverlappingSerializer
 from crm.templatetags.html_helper import (
@@ -198,16 +201,41 @@ class AddSubscription(
     template_name = "crm/manager/client/add-subscriptions.html"
     permission_required = 'client_subscription.sale'
 
+    def get_event(self) -> Event:
+        try:
+            event_date = date(
+                self.kwargs['year'], self.kwargs['month'], self.kwargs['day']
+            )
+            return Event.objects.get_or_virtual(
+                self.kwargs['event_class_id'], event_date
+            )
+        except Exception:
+            pass
+
     def get_success_url(self):
         if self.form.cleaned_data.get('go_back'):
             return self.form.cleaned_data['go_back']
+
+        event = self.get_event()
+        if event:
+            args = (
+                event.event_class.id,
+                event.date.year,
+                event.date.month,
+                event.date.day,
+            )
+            return reverse(
+                'crm:manager:event-class:event:event-by-date', args=args
+            )
 
         return reverse(
             'crm:manager:client:detail', args=[self.kwargs['client_id']])
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['exclude_one_time'] = bool(int(self.request.GET.get('eot', 1)))
+        event = self.get_event()
+        if event:
+            kwargs['event_class'] = event.event_class
         return kwargs
 
     def get_initial(self):
@@ -224,7 +252,9 @@ class AddSubscription(
             initial['subscription'] = last_sub.subscription
             initial['visits_left'] = last_sub.subscription.visit_limit
             initial['price'] = last_sub.subscription.price
-
+        event = self.get_event()
+        if event:
+            initial['start_date'] = event.date
         return initial
 
     def get_context_data(self, **kwargs):
@@ -232,22 +262,36 @@ class AddSubscription(
         client = self.get_client()
         context['client'] = client
         context['allow_check_overlapping'] = True
-        attendance = client.attendance_set.order_by('-event__date')
-        balancehistory = client.clientbalancechangehistory_set.order_by(
-            '-entry_date')
-        # TODO: fix ordering
-        attendance_with_balance = chain(attendance, balancehistory)
+
+        attendance = client.attendance_set.annotate(
+            sort_dt=F('event__date')
+        ).order_by('-event__date')
+        for a in attendance:
+            tm = a.event.start_time if a.event.start_time else datetime.min.time()
+            a.sort_dt = datetime.combine(a.sort_dt, tm).replace(tzinfo=pytz.UTC)
+
+        extensionhistory = ExtensionHistory.objects.annotate(
+            sort_dt=F('date_extended')
+        ).filter(
+            client_subscription__client__id=client.id,
+        ).order_by(
+            '-date_extended'
+        )
+
+        balancehistory = client.clientbalancechangehistory_set.annotate(
+            sort_dt=F('entry_date')
+        ).order_by('-entry_date')
+
+        attendance_with_balance = list(chain(attendance, balancehistory, extensionhistory))
+        attendance_with_balance = sorted(
+            attendance_with_balance,
+            key=lambda i: i.sort_dt,
+            reverse=True,
+        )
         context['attendance_with_balance'] = attendance_with_balance
         context['hide_form'] = self.kwargs.get('hide_form')
-        if self.kwargs.get('event_class_id'):
-            event_class_id = self.kwargs.get('event_class_id')
-            context.update(
-                event_class_name=EventClass.objects.get(pk=event_class_id).name,
-                event_class_id=event_class_id,
-                event_year=self.kwargs.get('year'),
-                event_month=self.kwargs.get('month'),
-                event_day=self.kwargs.get('day'),
-            )
+        context['event'] = self.get_event()
+
         return context
 
     def form_valid(self, form):
@@ -271,6 +315,8 @@ class AddSubscription(
                 )
             client.save()
             response = super().form_valid(form)
+            self.object.event = self.get_event()
+            self.object.save()
             enqueue('notify_client_buy_subscription', self.object.id)
 
         return response

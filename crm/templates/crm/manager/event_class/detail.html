@@ -1,7 +1,9 @@
 {% extends "crm/base_design.html" %}
+{% load  bootstrap4 html_helper %}
 
+{% block title %}Тренировки{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False current='event' %}
 {% endblock %}
 
 
@@ -9,6 +11,15 @@
   <!- Новое занятие -!>
 
   <div class="page new_class col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
       <div class="bredcams clearfix">
         <ul>
           <li>

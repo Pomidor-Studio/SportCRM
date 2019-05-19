@@ -13,21 +13,27 @@
     <div class="bredcams">
       <ul>
         {% if back_link %}
-        <li>
-          <a href="{{ back_link }}">
-            <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-                 xmlns="http://www.w3.org/2000/svg">
-              <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </a>
-        </li>
+          <li>
+            <a href="{{ back_link }}">
+              <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+                   xmlns="http://www.w3.org/2000/svg">
+                <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
+                      stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </li>
         {% endif %}
         <li>
-          {{ name|default_if_none:'Новая тренировка'}}
+          {{ name|default_if_none:'Новая тренировка' }}
         </li>
       </ul>
     </div>
+    {% if mobile_menu %}
+      {% include mobile_menu %}
+
+    {% endif %}
+
+
   </div>
   <!- Sidebar -!>
   <div class="sidebar-wrapper">
@@ -37,52 +43,59 @@
     <div class="greyline"></div>
     <div class="nav flex-column">
       <div class="top">
-        <a class="nav-link active"
-           {% ifhasperm 'is_manager' user %}
-            href="{% url 'crm:manager:event:calendar' %}"
+        <a class="nav-link {% if current == 'event' %}active{% endif %}"
+          {% ifhasperm 'is_manager' user %}
+           href="{% url 'crm:manager:event:calendar' %}"
           {% endifhasperm %}
           {% ifhasperm 'is_coach' user %}
-            href="{% url "crm:coach:home" %}"
+           href="{% url "crm:coach:home" %}"
           {% endifhasperm %}
         >
           Тренировки
         </a>
-        <a class="nav-link"
+        <a class="nav-link {% if current == 'client' %}active{% endif %}"
            href="{% url 'crm:manager:client:list' %}">
           Ученики
         </a>
         <div class="greyline"></div>
-        <a class="nav-link"
+        <a class="nav-link {% if current == 'coach' %}active{% endif %}"
            href="{% url 'crm:manager:coach:list' %}">
           Тренеры
         </a>
         {% ifhasperm 'manager' user %}
-          <a class="nav-link"
+          <a class="nav-link {% if current == 'manager' %}active{% endif %}"
              href="{% url 'crm:manager:manager:list' %}">
             Менеджеры
           </a>
         {% endifhasperm %}
         {% ifhasperm 'location' user %}
-          <a class="nav-link"
+          <a class="nav-link {% if current == 'location' %}active{% endif %}"
              href="{% url 'crm:manager:locations:list' %}">
             Места проведения
           </a>
         {% endifhasperm %}
         {% ifhasperm 'subscription' user %}
-          <a class="nav-link"
+          <a class="nav-link {% if current == 'subscription' %}active{% endif %}"
              href="{% url 'crm:manager:subscription:list' %}">
             Абонементы
           </a>
         {% endifhasperm %}
         <div class="greyline"></div>
         {% ifhasperm 'report.list' user %}
-          <a class="nav-link"
+          <a class="nav-link {% if current == 'event-report' %}active{% endif %}"
              href="{% url 'crm:manager:event:event-report' %}">
             Отчет по тренировкам
           </a>
-          <a class="nav-link"
+          <a class="nav-link  {% if current == 'visit-report' %}active{% endif %}"
              href="{% url 'crm:manager:event:visit-report' %}">
             Отчет по посещениям
+          </a>
+        {% endifhasperm %}
+        {% ifhasperm 'manager' user %}
+          <div class="greyline"></div>
+          <a class="nav-link {% if current == 'help' %}active{% endif %}"
+              href="{% url 'crm:manager:help:home' %}">
+          Помощь
           </a>
         {% endifhasperm %}
       </div>
@@ -97,12 +110,12 @@
           {% endif %}
         {% endif %}
         {% ifhasperm 'company.edit' user %}
-          <a class="nav-link"
+          <a class="nav-link  {% if current == 'company' %}active{% endif %}"
              href="{% url 'crm:manager:company' %}">
             Моя компания
           </a>
         {% endifhasperm %}
-        <a class="nav-link"
+        <a class="nav-link  {% if current == 'profile' %}active{% endif %}"
            href="{% url 'crm:accounts:profile' %}">
           Настройки профиля
         </a>

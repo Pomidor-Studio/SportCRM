@@ -1,13 +1,14 @@
 {% extends "crm/base_design.html" %}
 
-{% load bootstrap4 %}
+{% load bootstrap4 html_helper %}
 
+{% block title %}Абонимент{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:subscription:list' as back_link %}
   {% if object.id %}
-    {% include 'crm/bars/_sidebar_design.html'  with name=object.name back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name=object.name back_link=back_link current='subscription' %}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Новый абонимент" back_link=back_link %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новый абонимент" back_link=back_link current='subscription' %}
   {% endif %}
 {% endblock %}
 
@@ -15,6 +16,15 @@
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>

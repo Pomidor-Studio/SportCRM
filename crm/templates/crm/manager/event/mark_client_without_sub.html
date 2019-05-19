@@ -1,15 +1,25 @@
 {% extends "crm/base_design.html" %}
-{% load bootstrap4 %}
+{% load bootstrap4 html_helper %}
 
+{% block title %}Добавить ученика{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name=" Добавить ученика" back_link=back_link %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Добавить ученика" back_link=back_link  current='event' %}
 {% endblock %}
 
 
 {% block content %}
   <!- Тренировка -!>
   <div class="page workout_page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>

@@ -2,12 +2,22 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
+{% block title %}Тренеры{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Тренеры" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Тренеры" back_link=False current='coach'%}
 {% endblock %}
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     {% ifhasperm 'coach.add' user %}
       <a class="btn btn-primary btn-new"
          href="{% url 'crm:manager:coach:new' %}">Новый</a>
@@ -50,18 +60,19 @@
         </tr>
         </thead>
         <tbody>
+
         {% for coach in coachs %}
           <tr {% if coach.deleted %}class="archive"{% endif %}>
             <td class="td_photo" width="1">
-              {% if coach.vk_user_id %}
+              {% if coach.user.vk_id %}
                 {% if vk_group_id %}
                   <a
-                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ coach.vk_user_id }}">
-                    <img src="{% vk_small_avatar coach.vk_user_id %}" class="photo">
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ coach.user.vk_id }}">
+                    <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
                   </a>
                 {% else %}
-                  <a href="https://vk.com/?sel={{ coach.vk_user_id }}">
-                    <img src="{% vk_small_avatar coach.vk_user_id %}" class="photo">
+                  <a href="https://vk.com/?sel={{ coach.user.vk_id }}">
+                    <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
                   </a>
                 {% endif %}
               {% else %}
@@ -91,7 +102,7 @@
               {% endif %}
               <div class="d-md-none">
                 <a href="tel:{{ coach.phone_number }}"
-                >{{ coach.phone_number }}</a>
+                >{{ coach.phone_number|phone_format }}</a>
                 <br/>
                 {% if coach.user.vk_link and not coach.deleted %}
                   <a href="{{ coach.user.vk_link|safe }}"
@@ -104,7 +115,7 @@
             </td>
             <td class="d-none d-md-block">
               <a
-                href="tel:{{ coach.phone_number }}">{{ coach.phone_number }}</a>
+                href="tel:{{ coach.phone_number }}">{{ coach.phone_number|phone_format }}</a>
             </td>
             <td class="d-none d-md-block">
               {% if coach.user.vk_link %}

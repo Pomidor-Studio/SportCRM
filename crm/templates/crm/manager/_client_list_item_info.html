@@ -16,7 +16,7 @@
   {% endifhasperm %}
 {% endif %}
 <div class="d-none d-md-block">
-  <small>{{ client.phone_number }}</small>
+  <small>{{ client.phone_number|phone_format }}</small>
 </div>
 <div class="d-md-none">
   {% if active_sub|length == 1 %}
@@ -40,12 +40,8 @@
           <div class="greyline"></div>
         {% endif %}
       {% endfor %}
-  {% elif last_sub %}
-    {{ last_sub.subscription.name }}
-    <br/>
-    <small>Абонемент закончился {{ last_sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
   {% else %}
-    Без абонемента
+    <span class="yellow">Без абонемента</span>
   {% endif %}
   <br>
 </div>

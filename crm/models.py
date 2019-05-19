@@ -533,6 +533,9 @@ class DayOfTheWeekClass(CompanyObjectModel):
     class Meta:
         unique_together = ('day', 'event',)
 
+    def __str__(self):
+        return f'{self.event} {self.day+1}'
+
 
 # noinspection PyPep8Naming
 class SubscriptionsTypeEventFilter:
@@ -1320,7 +1323,7 @@ class Event(CompanyObjectModel):
 
     def get_present_clients_count(self):
         # Получаем количество посетивших данную тренировку клиентов
-        return self.attendance_set.all().count()
+        return self.attendance_set.filter(marked=True).count()
 
     def get_clients_count_one_time_sub(self):
         # Получаем количество посетивших данную тренировку
@@ -1332,7 +1335,7 @@ class Event(CompanyObjectModel):
             event=self,
             client__in=[
                 attendance.client
-                for attendance in self.attendance_set.all()
+                for attendance in self.attendance_set.filter(marked=True).all()
             ]
         )
         return queryset.count()

@@ -33,7 +33,11 @@
   {% if action == 'new_subscription' %}
     {% ifhasperm 'client_subscription.sale' user %}
       <a class="btn btn-icon btn-pay"
-         href="{% url 'crm:manager:client:new-subscription' client.id %}">
+          {% if event %}
+             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}">
+      {% else %}
+           href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+      {% endif %}
         <span></span>
         <abbr>Оплатить</abbr>
       </a>

@@ -2,13 +2,23 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
+{% block title %}Места проведения{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Места проведения" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Места проведения" back_link=False current='location' %}
 {% endblock %}
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
-    {% ifhasperm 'location.add' user %}
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+      {% ifhasperm 'location.add' user %}
       <a class="btn btn-primary btn-new"
          href="{% url 'crm:manager:locations:new' %}">Новый</a>
     {% endifhasperm %}

@@ -21,7 +21,7 @@ from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
     DayOfTheWeekClass, EventClass, Location, Manager, SubscriptionsType,
-    Company,
+    Company, Event,
 )
 
 
@@ -289,6 +289,8 @@ class InplaceSellSubscriptionForm(TenantModelForm):
 
 
 class ClientSubscriptionForm(TenantModelForm):
+    error_css_class = 'is-invalid'
+
     cash_earned = forms.BooleanField(
         label='Деньги получены',
         required=False,
@@ -308,12 +310,13 @@ class ClientSubscriptionForm(TenantModelForm):
         label='Дата начала',
         initial=timezone.localdate(),
         input_formats=DATE_INPUT_FORMATS,
-        widget=DatePickerInput(
+        widget=forms.DateInput(
             format='%d.%m.%Y',
-            attrs={"class": "form-control", "placeholder": "ДД.MM.ГГГГ"},
-            options={
-                'locale': 'ru'
-            }
+            attrs={
+                "class": "form-control",
+                "placeholder": "ДД.MM.ГГГГ",
+                "dp_config": '{&quot;id&quot;: &quot;dp_7&quot;, &quot;picker_type&quot;: &quot;DATE&quot;, &quot;linked_to&quot;: null, &quot;options&quot;: {&quot;showClose&quot;: true, &quot;showClear&quot;: true, &quot;showTodayButton&quot;: true, &quot;locale&quot;: &quot;ru&quot;, &quot;format&quot;: &quot;DD.MM.YYYY&quot;}}',
+            },
         )
     )
     go_back = forms.CharField(
@@ -351,7 +354,7 @@ class ClientSubscriptionForm(TenantModelForm):
             'disable_subscription_type', False)
         activated_subscription = kwargs.pop(
             'activated_subscription', False)
-        exclude_one_time = kwargs.pop('exclude_one_time', True)
+        for_event_class = kwargs.pop('event_class', None)  # type: Event
 
         super(ClientSubscriptionForm, self).__init__(*args, **kwargs)
 
@@ -366,7 +369,9 @@ class ClientSubscriptionForm(TenantModelForm):
             # archive
             qs = SubscriptionsType.all_objects.all()
 
-        if exclude_one_time:
+        if for_event_class:
+            qs = qs.filter(event_class=for_event_class)
+        else:
             qs = qs.exclude(one_time=True)
 
         self.fields['subscription'].queryset = qs

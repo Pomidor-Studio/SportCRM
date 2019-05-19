@@ -6,13 +6,22 @@
   {{ form.media }}
 {% endblock %}
 
-
+{% block title %}Моя компания{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Моя компания" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Моя компания" back_link=False current='company' %}
 {% endblock %}
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
     <div class="bredcams clearfix">
       <ul>
         <li>

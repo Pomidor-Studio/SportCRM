@@ -6,7 +6,7 @@
     <div class="row">
       <!--Sidebar-->
       {% block sidbar %}
-        {% include 'crm/bars/_sidebar_design.html' with name="Новая тренировка" back_link=True %}
+        {% include 'crm/bars/_sidebar_design.html' with name="Новая тренировка" back_link=True current='event' %}
       {% endblock %}
       <!--Content-->
       {% block content %}{% endblock %}

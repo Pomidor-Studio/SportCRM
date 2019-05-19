@@ -2,13 +2,23 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
+{% block title %}Менеджеры{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Менеджеры" back_link=False %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Менеджеры" back_link=False current='manager' %}
 {% endblock %}
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
-    {% ifhasperm 'manager.add' user %}
+    <div class="row">
+      <div class="col-12">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+      {% ifhasperm 'manager.add' user %}
       <a class="btn btn-primary btn-new"
          href="{% url 'crm:manager:manager:new' %}">Новый</a>
     {% endifhasperm %}
@@ -53,15 +63,15 @@
         {% for manager in managers %}
           <tr {% if manager.deleted %}class="archive"{% endif %}>
             <td class="td_photo" width="1">
-              {% if manager.vk_user_id %}
+              {% if manager.user.vk_id %}
                 {% if vk_group_id %}
                   <a
-                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ manager.vk_user_id }}">
-                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ manager.user.vk_id }}">
+                    <img src="{% vk_small_avatar manager.user.vk_id %}" class="photo">
                   </a>
                 {% else %}
-                  <a href="https://vk.com/?sel={{ manager.vk_user_id }}">
-                    <img src="{% vk_small_avatar manager.vk_user_id %}" class="photo">
+                  <a href="https://vk.com/?sel={{ manager.user.vk_id }}">
+                    <img src="{% vk_small_avatar manager.user.vk_id %}" class="photo">
                   </a>
                 {% endif %}
               {% else %}
@@ -91,7 +101,7 @@
               {% endif %}
               <div class="d-md-none">
                 <a href="tel:{{ manager.phone_number }}"
-                >{{ manager.phone_number }}</a>
+                >{{ manager.phone_number|phone_format }}</a>
                 <br/>
                 {% if manager.user.vk_link %}
                   <a href="{{ manager.user.vk_link|safe }}"
@@ -104,7 +114,7 @@
             </td>
             <td class="d-none d-md-block">
               <a
-                href="tel:{{ manager.phone_number }}">{{ manager.phone_number }}</a>
+                href="tel:{{ manager.phone_number }}">{{ manager.phone_number|phone_format }}</a>
             </td>
             <td class="d-none d-md-block">
               {% if manager.user.vk_link %}
