@@ -843,6 +843,9 @@ class ClientSubscriptionQuerySet(TenantQuerySet):
             start_date__lte=today,
             end_date__gte=today,
             visits_left__gt=0
+        ) | self.filter(
+            visits_left=1,
+            subscription__one_time=True,
         )
 
 
@@ -1329,14 +1332,8 @@ class Event(CompanyObjectModel):
         # Получаем количество посетивших данную тренировку
         # по одноразовому абонементу
         queryset = ClientSubscriptions.objects.filter(
-            subscription__in=SubscriptionsType.objects.filter(
-                event_class=self.event_class, visit_limit=1
-            ),
+            subscription__one_time=True,
             event=self,
-            client__in=[
-                attendance.client
-                for attendance in self.attendance_set.filter(marked=True).all()
-            ]
         )
         return queryset.count()
 

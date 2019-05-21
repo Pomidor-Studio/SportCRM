@@ -58,15 +58,15 @@
                   <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
                   <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
                 {% endif %}
-                {% if not event.is_closed %}
-                  {% ifhasperm 'event.close' user event %}
-                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}">Удалить</a>
-                  {% endifhasperm %}
-                {% else %}
-                  {% ifhasperm 'event.open' user event %}
-                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}">Восстановить занятие</a>
-                  {% endifhasperm %}
-                {% endif %}
+              {% endif %}
+              {% if not event.is_closed %}
+                {% ifhasperm 'event.close' user event %}
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:close' event.event_class.id event.date.year event.date.month event.date.day %}">Удалить</a>
+                {% endifhasperm %}
+              {% else %}
+                {% ifhasperm 'event.open' user event %}
+                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:open' event.event_class.id event.date.year event.date.month event.date.day %}">Восстановить занятие</a>
+                {% endifhasperm %}
               {% endif %}
             </div>
           </div>
