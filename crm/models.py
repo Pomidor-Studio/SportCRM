@@ -1340,6 +1340,7 @@ class Event(CompanyObjectModel):
     def get_subs_sales(self):
         # Получаем количество проданных абонементов
         queryset = ClientSubscriptions.objects.filter(
+            subscription__one_time=False,
             event=self
         )
         return queryset.count()
