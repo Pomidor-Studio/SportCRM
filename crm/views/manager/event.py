@@ -36,11 +36,15 @@ class VisitReport(PermissionRequiredMixin, FormView):
     form_class = VisitReportFilter
 
     def default_data(self):
-        return {
+        default = {
             'month': date.today().month,
             'year': date.today().year,
-            'event_class': EventClass.objects.first().pk
+
         }
+        first_event_class = EventClass.objects.first()
+        if first_event_class:
+            default['event_class'] = first_event_class.pk
+        return default
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
