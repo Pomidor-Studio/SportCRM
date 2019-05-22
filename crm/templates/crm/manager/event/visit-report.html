@@ -66,69 +66,73 @@
     <div class="greyline"></div>
 
     <div class="table-responsive">
-    {% if table_data %}
-      <table class="table table-hover">
-        <thead>
-        <tr>
-          <th colspan="3"></th>
-          <th class="text-center" colspan="{{ month_days|length }}">Даты занятий</th>
-          <th></th>
-        </tr>
-        <tr>
-          <th>
-            Ученик
-          </th>
-          <th>
-            Абонемент
-          </th>
-          <th class="text-center">
-            Доступно в начале
-          </th>
-          {% for i in month_days %}
-            <th class="text-center">
-              {{ i|date:'d' }}
-            </th>
-          {% endfor %}
-
-          <th class="text-center">
-            Доступно в конце
-          </th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for row in table_data %}
+      {% if table_data %}
+        <table class="table table-hover">
+          <thead>
           <tr>
-            <td>
-              {% ifhasperm 'client' user %}
-                <a href="{% url "crm:manager:client:detail"  row.client.id %}">{{ row.client.name }}</a>
-              {% else %}
-                {{ row.client.name }}
-              {% endifhasperm %}
-            </td>
-            <td>
-              {{ row.subscription }}
-            </td>
-            <td class="text-center">
-              {% if row.visit_start > 0 %}
-                {{ row.visit_start }}
-              {% endif %}
-            </td>
-            {% for attendance in row.attendances %}
-              <td class="{{ attendance }}"></td>
-            {% endfor %}
-            <td class="text-center">
-              {% if row.visit_start > 0 %}
-                {{ row.visit_end }}
-              {% endif %}
-            </td>
+            <th colspan="3"></th>
+            <th class="text-center" colspan="{{ month_days|length }}">Даты занятий</th>
+            <th></th>
           </tr>
-        {% endfor %}
-        </tbody>
-      </table>
-    {% else %}
-      За выбранный период тренировок не найдено.<br/>
-      Период проведения тренировки с {{ event_class.date_from|date:"SHORT_DATE_FORMAT"  }} {% if event_class.to_date %}по {{ event_class.to_date|date:"SHORT_DATE_FORMAT"}} {% endif %}
-    {% endif %}
+          <tr>
+            <th>
+              Ученик
+            </th>
+            <th>
+              Абонемент
+            </th>
+            <th class="text-center">
+              Доступно в начале
+            </th>
+            {% for i in month_days %}
+              <th class="text-center">
+                {{ i|date:'d' }}
+              </th>
+            {% endfor %}
+
+            <th class="text-center">
+              Доступно в конце
+            </th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for row in table_data %}
+            <tr>
+              <td>
+                {% ifhasperm 'client' user %}
+                  <a href="{% url "crm:manager:client:detail"  row.client.id %}">{{ row.client.name }}</a>
+                {% else %}
+                  {{ row.client.name }}
+                {% endifhasperm %}
+              </td>
+              <td>
+                {{ row.subscription }}
+              </td>
+              <td class="text-center">
+                {% if row.visit_start > 0 %}
+                  {{ row.visit_start }}
+                {% endif %}
+              </td>
+              {% for attendance in row.attendances %}
+                <td class="{{ attendance }}"></td>
+              {% endfor %}
+              <td class="text-center">
+                {% if row.visit_start > 0 %}
+                  {{ row.visit_end }}
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        За выбранный период тренировок не найдено.<br/>
+        {% if event_class.date_from or event_class.to_date %}
+          Период проведения тренировки {% if event_class.date_from %} с
+          {{ event_class.date_from|date:"SHORT_DATE_FORMAT" }}{% endif %} {% if event_class.to_date %}по
+          {{ event_class.to_date|date:"SHORT_DATE_FORMAT" }} {% endif %}
+        {% endif %}
+      {% endif %}
     </div>
   </div>
 {% endblock content %}

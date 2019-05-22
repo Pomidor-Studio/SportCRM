@@ -17,19 +17,19 @@ def event_class_link(value, record):
 
 
 class EventReportTable(tables.Table):
-    coach = tables.Column(accessor='event_class.coach.user',  verbose_name='Тренер')
+    coach = tables.Column(accessor='event_class.coach.user',  verbose_name='Сотрудник')
     event_class = tables.Column(
         verbose_name='Тренировка',
         linkify=event_class_link
     )
     clients_count = tables.Column(
         accessor='get_present_clients_count',
-        verbose_name='Количество учеников',
+        verbose_name='Ученики',
         orderable=False
     )
     clients_count_one_time = tables.Column(
         accessor='get_clients_count_one_time_sub',
-        verbose_name='По одноразовому абонементу',
+        verbose_name='По разовому',
         orderable=False
     )
     subs_sales = tables.Column(
@@ -43,22 +43,9 @@ class EventReportTable(tables.Table):
         orderable=False
     )
 
-    # def link_render(self, record, value):
-    #     return self.text_value(record, value)
-    # def render_event_class(self, value):
-    #     url = reverse()
-    #     link = '<a href="{url}?year={year}&month={month}&event_class={event_class}">{title}</a>'
-    #     return link.format(
-    #         url=url,
-    #         title=value.name,
-    #         year=value.date.year,
-    #         month=value.date.month,
-    #         event_class=value.event_class.id,
-    #     )
-
     class Meta:
         model = Event
-        template_name = 'django_tables2/bootstrap.html'
+        template_name = 'crm/manager/_event_report_table.html'
         fields = ('date',)
         order_by = ('-date',)
 
