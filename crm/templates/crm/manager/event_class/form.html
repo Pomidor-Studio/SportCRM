@@ -17,6 +17,11 @@
 {% block extrajs %}
   {{ eventclass_form.media.js }}
   <script type="text/javascript">
+    enquire.register("screen and (max-width: 720px)", {
+      match: function () {
+        $('.selectpicker').attr('data-mobile', 'true');
+      }
+    });
     $(function () {
 
         $('.time').toArray().forEach(function(field) {

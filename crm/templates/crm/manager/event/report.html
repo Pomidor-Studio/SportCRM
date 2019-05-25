@@ -42,13 +42,15 @@
         <div class="d-flex flex-wrap flex-md-nowrap">
           <div class="form-group date">
             <label for="id_date_0">От:</label>
-            <input type="text" name="date_after" value="{{ filter.form.data.date_after }}" class="form-control" placeholder="Диапазон дат:"
+            <input type="text" name="date_after" value="{{ filter.form.data.date_after }}" class="form-control"
+                   placeholder="Диапазон дат:"
                    title="" required="" id="id_date_0"
                    dp_config="{&quot;id&quot;: &quot;dp_7&quot;, &quot;picker_type&quot;: &quot;DATE&quot;, &quot;linked_to&quot;: null, &quot;options&quot;: {&quot;showClose&quot;: true, &quot;showClear&quot;: true, &quot;showTodayButton&quot;: true, &quot;locale&quot;: &quot;ru&quot;, &quot;format&quot;: &quot;DD.MM.YYYY&quot;}}">
           </div>
           <div class="form-group date">
             <label for="id_date_1">До:</label>
-            <input type="text" name="date_before" value="{{ filter.form.data.date_before }}" class="form-control" placeholder="Диапазон дат:"
+            <input type="text" name="date_before" value="{{ filter.form.data.date_before }}" class="form-control"
+                   placeholder="Диапазон дат:"
                    title="" required="" id="id_date_1"
                    dp_config="{&quot;id&quot;: &quot;dp_8&quot;, &quot;picker_type&quot;: &quot;DATE&quot;, &quot;linked_to&quot;: null, &quot;options&quot;: {&quot;showClose&quot;: true, &quot;showClear&quot;: true, &quot;showTodayButton&quot;: true, &quot;locale&quot;: &quot;ru&quot;, &quot;format&quot;: &quot;DD.MM.YYYY&quot;}}">
           </div>
@@ -74,11 +76,13 @@
     {% render_table table %}
   </div>
 {% endblock content %}
-{#{% block extra %}#}
-{#  {{  filter.form.media.js }}#}
-{#{% endblock extra %}#}
 {% block extrajs %}
   <script>
+    enquire.register("screen and (max-width: 720px)", {
+      match: function () {
+        $('.selectpicker').attr('data-mobile', 'true');
+      }
+    });
     $(document).ready(function () {
       $('#id_date_0').datepicker({
         uiLibrary: 'bootstrap4',

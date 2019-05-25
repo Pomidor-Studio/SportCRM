@@ -171,6 +171,7 @@ class EventByDate(
                 subscription_type_qs=SubscriptionsType.objects.filter(
                     event_class=self.object.event_class)
             ),
+            'max_start_subscription_date': self.object.date,
             'has_active_event_class': (
                 EventClass.objects
                 .active()

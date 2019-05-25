@@ -1,0 +1,131 @@
+{% load django_tables2 i18n html_helper humanize bootstrap4 %}
+{% block table-wrapper %}
+  <table class="table table-hover">
+    {% block table.thead %}
+      {% if table.show_header %}
+        <thead class="d-none d-md-block" {{ table.attrs.thead.as_html }}>
+        <tr>
+          {% for column in table.columns %}
+            <th {{ column.attrs.th.as_html }}>
+              {% if column.orderable %}
+                <a
+                  href="{% querystring table.prefixed_order_by_field=column.order_by_alias.next %}">{{ column.header }}</a>
+              {% else %}
+                {{ column.header }}
+              {% endif %}
+            </th>
+          {% endfor %}
+        </tr>
+        </thead>
+      {% endif %}
+    {% endblock table.thead %}
+    {% block table.tbody %}
+      <tbody {{ table.attrs.tbody.as_html }}>
+      {% for row in table.paginated_rows %}
+        {% block table.tbody.row %}
+          <tr>
+            <td>
+              <div class="d-none d-md-block">
+                {{ row.cells.date }}
+              </div>
+              <div class="d-block d-md-none">
+                <small> {{ row.cells.date }}</small>
+                <br>
+                <small>{{ row.cells.coach }}</small>
+                <br>
+                <small>{{ row.cells.event_class }}</small>
+              </div>
+            </td>
+            <td class="d-none d-md-block">
+              {{ row.cells.coach }}
+            </td>
+            <td class="d-none d-md-block">
+              {{ row.cells.event_class }}
+            </td>
+            <td>
+              <div class="d-none d-md-block">
+                {{ row.cells.clients_count }}
+              </div>
+              <div class="d-block d-md-none">
+                <small>Ученики:{{ row.cells.clients_count }}</small>
+                <br>
+                <small>По разовому абонементу: {{ row.cells.clients_count_one_time }}</small>
+                <br>
+                <small>Продано абонементов: {{ row.cells.subs_sales }}</small>
+              </div>
+            </td>
+            <td class="d-none d-md-block">
+              {{ row.cells.clients_count_one_time }}
+            </td>
+            <td class="d-none d-md-block">
+              {{ row.cells.subs_sales }}
+            </td>
+            <td>
+              {{ row.cells.profit|floatformat:"-2"|intcomma }}&nbsp;₽
+            </td>
+          </tr>
+        {% endblock table.tbody.row %}
+      {% empty %}
+        {% if table.empty_text %}
+          {% block table.tbody.empty_text %}
+            <tr>
+              <td colspan="{{ table.columns|length }}">{{ table.empty_text }}</td>
+            </tr>
+          {% endblock table.tbody.empty_text %}
+        {% endif %}
+      {% endfor %}
+      </tbody>
+    {% endblock table.tbody %}
+  </table>
+
+
+  {% block pagination %}
+
+    {% if table.page and table.paginator.num_pages > 1 %}
+      <div class="bottom_sidebar">
+        <div class="row align-items-center">
+          <div class="col-6">
+            <nav aria-label="Table navigation">
+              <ul class="pagination">
+                {% if table.page.has_previous %}
+                  {% block pagination.previous %}
+                    <li class="previous page-item">
+                      <a href="{% querystring table.prefixed_page_field=table.page.previous_page_number %}"
+                         class="page-link">
+                        <span aria-hidden="true">&laquo;</span>
+
+                      </a>
+                    </li>
+                  {% endblock pagination.previous %}
+                {% endif %}
+                {% if table.page.has_previous or table.page.has_next %}
+                  {% block pagination.range %}
+                    {% for p in table.page|table_page_range:table.paginator %}
+                      <li class="page-item{% if table.page.number == p %} active{% endif %}">
+                        <a class="page-link"
+                           {% if p != '...' %}href="{% querystring table.prefixed_page_field=p %}"{% endif %}>
+                          {{ p }}
+                        </a>
+                      </li>
+                    {% endfor %}
+                  {% endblock pagination.range %}
+                {% endif %}
+                {% if table.page.has_next %}
+                  {% block pagination.next %}
+                    <li class="next page-item">
+                      <a href="{% querystring table.prefixed_page_field=table.page.next_page_number %}"
+                         class="page-link">
+
+                        <span aria-hidden="true">&raquo;</span>
+                      </a>
+                    </li>
+                  {% endblock pagination.next %}
+                {% endif %}
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  {% endblock pagination %}
+{% endblock %}

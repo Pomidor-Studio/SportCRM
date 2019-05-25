@@ -19,9 +19,11 @@ a:hover { color: #76BD1B; text-decoration: underline; }
 
 small { font-size: 12px; }
 
-.alert-box {position: absolute; z-index: 10;padding-right: 15px;}
-.alert-box .alert { font-size: 14px; box-shadow: 0px 8px 18px 0px rgba(50, 50, 50, 0.2);}
-.alert-box .alert a { color:#76BD1B; text-decoration: underline;}
+.alert-box { position: absolute; z-index: 10; padding-right: 15px; }
+
+.alert-box .alert { font-size: 14px; box-shadow: 0px 8px 18px 0px rgba(50, 50, 50, 0.2); }
+
+.alert-box a { color: #76BD1B; }
 
 .dropdown-menu { border: 1px solid #EEEEEE; box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25); border-radius: 6px; padding: 18px 0; }
 
@@ -158,13 +160,9 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 @media (max-width: 1024px) { .btn { padding: 5px 10px; }
   .btn-icon abbr { display: none; } }
-@media screen and (-webkit-min-device-pixel-ratio:0) {
-  select,
-  textarea,
-  input {
-    font-size: 16px !important;
-  }
-}
+
+@media screen and (-webkit-min-device-pixel-ratio: 0) { select, textarea, input { font-size: 16px !important; } }
+
 /* Формы, общее */
 /* Таблицы */
 .table { font-size: 14px; line-height: 19px; position: relative; top: -10px; color: #484F57; }
@@ -189,7 +187,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .table .fio_name:hover { color: #76BD1B; }
 
-.table .active .fio_name {color: #76BD1B;}
+.table .active .fio_name { color: #76BD1B; }
 
 .table .form-check-input { margin-top: 3px; }
 
@@ -229,15 +227,18 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .tab-content, .freeze_table { margin-bottom: 60px; }
 
-@media (max-width: 320px) { .table .fio_name {width: 180px;} }
-@media (min-width:321px) and (max-width: 375px) { .table .fio_name {width: 220px;} }
-@media (min-width:376px) and (max-width: 414px) { .table .fio_name {width: 260px;} }
+@media (max-width: 320px) { .table .fio_name { width: 180px; } }
+
+@media (min-width: 321px) and (max-width: 375px) { .table .fio_name { width: 220px; } }
+
+@media (min-width: 376px) and (max-width: 414px) { .table .fio_name { width: 260px; } }
+
 @media (max-width: 767px) { .table { top: 0; }
   .table td { height: 80px; vertical-align: top; }
-  .buy_subscriptions td {height: auto !important;}
-  .buy_subscriptions .btn-down {top: -8px;}
   .table .btn-group { margin-top: 12px; }
-  .table .td_photo { padding-top: 15px; } }
+  .table .td_photo { padding-top: 15px; }
+  .buy_subscriptions td { height: auto !important; }
+  .buy_subscriptions .btn-down { top: -8px; } }
 
 @media (min-width: 768px) { thead.d-md-block { display: table-header-group !important; }
   th.d-md-block, td.d-md-block { display: table-cell !important; } }
@@ -377,9 +378,9 @@ footer, .bottom { color: #636363; }
 
 .mobile_sidebar #mobile_logo { padding: 29px 18px 0 8px; display: block; float: left; }
 
-.mobile_sidebar #mobile_logo .close_b { display: none; position: relative; left: 2px; }
+.mobile_sidebar #mobile_logo .close_b { display: none; }
 
-.mobile_sidebar .logo_name { display: none; position: relative; top: 30px; left:8px; }
+.mobile_sidebar .logo_name { display: none; position: relative; top: 30px; }
 
 .mobile_sidebar .bredcams { font-size: 18px; line-height: 40px; padding: 19px 0; }
 
@@ -457,7 +458,7 @@ footer, .bottom { color: #636363; }
 @media (max-width: 767px) { .fc-list_month-button, .fc-list_week-button { display: block !important; }
   .fc-dayGridMonth-button, .fc-dayGridWeek-button { display: none !important; } }
 
-@media (max-width: 992px) { #calendar { height: calc(100vh - 80px); top: 50px; }
+@media (max-width: 992px) { #calendar { height: calc(100vh - 80px); top: 51px; }
   #calendar .fc-day-grid-event { margin: 2px 2px; }
   #calendar .fc-content { font-size: 10px; }
   #calendar .fc-toolbar { padding-top: 8px; margin-bottom: 10px; }
@@ -552,7 +553,7 @@ footer, .bottom { color: #636363; }
 
 #pills-subscriptions .buy_subscriptions tr:hover { background: #F4F4F4 !important; }
 
-#pills-subscriptions .save_buttons { margin-bottom: 0; }
+#pills-subscriptions .save_buttons { margin-bottom: 8px; }
 
 #qr_scaner { width: 100%; max-width: 500px; margin: 0 auto; }
 
@@ -568,7 +569,7 @@ footer, .bottom { color: #636363; }
 
 .user_info .save_buttons { margin: 8px 0; }
 
-.user_info .save_buttons a { margin-bottom: 8px; }
+.user_info .save_buttons a { margin-bottom: 0; }
 
 .user_info .balance { border: 1px solid #484F57; color: #484F57; border-radius: 4px; font-size: 14px; padding: 0 8px; display: inline-block; line-height: 20px; margin: 8px 8px 8px 0; }
 
@@ -597,7 +598,7 @@ footer, .bottom { color: #636363; }
 /* Отчёты */
 .report_filter .date { width: 135px; margin-right: 8px; }
 
-.report_filter .date input { padding: 10px; }
+.report_filter .date input { padding: 8px 0 8px 8px; }
 
 .report_filter .select { margin-right: 8px; }
 
@@ -613,7 +614,7 @@ footer, .bottom { color: #636363; }
 
 .instruction_report_2 div { width: auto !important; padding: 5px; color: #484F57; float: left; margin: 8px 0 10px 8px; text-align: center; white-space: nowrap; }
 
-@media (max-width: 1024px) { .report_filter .date input { padding: 5px 10px; }
+@media (max-width: 1024px) { .report_filter .date input { padding: 5px 0 5px 10px; }
   .report_filter .date .btn { padding: 5px !important; } }
 
 /* Отчеты */

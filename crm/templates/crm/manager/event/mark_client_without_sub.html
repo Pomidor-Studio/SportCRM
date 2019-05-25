@@ -116,5 +116,10 @@
       phone: true,
       phoneRegionCode: 'RU'
     });
+    enquire.register("screen and (max-width: 720px)", {
+      match: function () {
+        $('.selectpicker').attr('data-mobile', 'true');
+      }
+    });
   </script>
 {% endblock %}
