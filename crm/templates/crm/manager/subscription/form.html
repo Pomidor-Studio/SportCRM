@@ -127,3 +127,12 @@
 
   </div>
 {% endblock content %}
+{% block extrajs %}
+  <script>
+    enquire.register("screen and (max-width: 720px)", {
+      match: function () {
+        $('.selectpicker').attr('data-mobile', 'true');
+      }
+    });
+    </script>
+{% endblock %}

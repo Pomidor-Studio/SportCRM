@@ -78,6 +78,11 @@
 {% endblock content %}
 {% block extrajs %}
   <script>
+    enquire.register("screen and (max-width: 720px)", {
+      match: function () {
+        $('.selectpicker').attr('data-mobile', 'true');
+      }
+    });
     $(document).ready(function () {
       $('#id_date_0').datepicker({
         uiLibrary: 'bootstrap4',

@@ -615,6 +615,11 @@
 
 {% block extrajs %}
   <script>
+    enquire.register("screen and (max-width: 720px)", {
+      match: function () {
+        $('.selectpicker').attr('data-mobile', 'true');
+      }
+    });
     $(function () {
       {% if event %}
         let date = '{{ event.date|date:"SHORT_DATE_FORMAT" }}';
