@@ -1,12 +1,59 @@
-{% for sub in active_sub %}
-  {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
-  <br/>
-  <small>{{ sub.sold_by|default_if_none:'' }}</small>
-  {% if active_sub|length > 1 %}
-    {% if not forloop.last %}
-      <div class="greyline"></div>
+{% if event and event.is_overpast %}
+  {% for sub in subscriptions %}
+    {% if not sub.sold_by %}
+      {% if subscriptions|length > 1 %}
+        {% if not forloop.last %}
+          <small>&nbsp;</small><br>
+        {% endif %}
+      {% endif %}
     {% endif %}
-  {% endif %}
-{% empty %}
-  &nbsp;
-{% endfor %}
+    <span class="date">{{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}</span>
+    {% if sub.sold_by %}
+      <br/>
+    <small>{{ sub.sold_by|default_if_none:'&nbsp;' }}</small>
+    {% else %}
+      {% if subscriptions|length > 1 %}
+        {% if forloop.last %}
+          <br/>
+          <small>&nbsp;</small>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    {% if subscriptions|length > 1 %}
+      {% if not forloop.last %}
+        <div class="greyline"></div>
+      {% endif %}
+    {% endif %}
+  {% empty %}
+    &nbsp;
+  {% endfor %}
+{% else %}
+  {% for sub in active_sub %}
+    {% if not sub.sold_by %}
+      {% if active_sub|length > 1 %}
+        {% if not forloop.last %}
+          <small>&nbsp;</small><br>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    <span class="date">{{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}</span>
+    {% if sub.sold_by %}
+    <br/>
+    <small>{{ sub.sold_by|default_if_none:'&nbsp;' }}</small>
+    {% else %}
+      {% if active_sub|length > 1 %}
+        {% if forloop.last %}
+          <br/>
+          <small>&nbsp;</small>
+        {% endif %}
+      {% endif %}
+    {% endif %}
+    {% if active_sub|length > 1 %}
+      {% if not forloop.last %}
+        <div class="greyline"></div>
+      {% endif %}
+    {% endif %}
+  {% empty %}
+    &nbsp;
+  {% endfor %}
+{% endif %}

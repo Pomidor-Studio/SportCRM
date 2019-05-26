@@ -1,16 +1,29 @@
-{% for sub in active_sub %}
-  {% with  last_visited_event=sub.last_visited_event %}
-      <span class="date">
-        {{ last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
-      </span>
-        {% if not forloop.last %}
-          <div class="greyline"></div>
-        {% endif %}
-  {% endwith %}
-{% empty %}
-  {% if last_sub %}
-    {% with  last_visited_event=sub.last_visited_event %}
-      {{ last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+{% if event and event.is_overpast %}
+  {% for sub in subscriptions %}
+    {% with last_visited_event=sub.last_visited_event %}
+        <span class="date">
+          {{ last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+        </span>
+          {% if not forloop.last %}
+            <div class="greyline"></div>
+          {% endif %}
     {% endwith %}
-  {% endif %}
-{% endfor %}
+  {% endfor %}
+{% else %}
+  {% for sub in active_sub %}
+    {% with  last_visited_event=sub.last_visited_event %}
+        <span class="date">
+          {{ last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+        </span>
+          {% if not forloop.last %}
+            <div class="greyline"></div>
+          {% endif %}
+    {% endwith %}
+  {% empty %}
+    {% if last_sub %}
+      {% with  last_visited_event=sub.last_visited_event %}
+        {{ last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+      {% endwith %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
