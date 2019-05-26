@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView, UpdateView
 from django.views.generic.detail import SingleObjectMixin
-from django_multitenant.utils import set_current_tenant
+from django_multitenant.utils import set_current_tenant, get_current_tenant
 from rest_framework.generics import UpdateAPIView
 from rules.contrib.views import PermissionRequiredMixin
 
@@ -111,7 +111,12 @@ class ToggleIgnorance(UpdateAPIView):
     def get_object(self):
         self.msg_type = self.get_message_type()
         try:
-            return super().get_object()
+            msg = MessageMeta.objects.filter(
+                uuid=self.kwargs.get(self.lookup_url_kwarg)
+            ).first()
+            if not msg:
+                raise Http404()
+            return msg
         except Http404:
             return MessageMeta.objects.create(
                 uuid=self.kwargs.get(self.lookup_url_kwarg),
