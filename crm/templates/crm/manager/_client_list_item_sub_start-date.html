@@ -1,10 +1,23 @@
-{% for sub in active_sub %}
-  <span class="date">{{ sub.start_date|date:"SHORT_DATE_FORMAT" }}</span>
-  {% if active_sub|length > 1 %}
-    {% if not forloop.last %}
-      <div class="greyline"></div>
+{% if event and event.is_overpast %}
+  {% for sub in subscriptions %}
+    <span class="date">{{ sub.start_date|date:"SHORT_DATE_FORMAT" }}</span>
+    {% if subscriptions|length > 1 %}
+      {% if not forloop.last %}
+        <div class="greyline"></div>
+      {% endif %}
     {% endif %}
-  {% endif %}
-{% empty %}
-  &nbsp;
-{% endfor %}
+  {% empty %}
+    &nbsp;
+  {% endfor %}
+{% else %}
+  {% for sub in active_sub %}
+    <span class="date">{{ sub.start_date|date:"SHORT_DATE_FORMAT" }}</span>
+    {% if active_sub|length > 1 %}
+      {% if not forloop.last %}
+        <div class="greyline"></div>
+      {% endif %}
+    {% endif %}
+  {% empty %}
+    &nbsp;
+  {% endfor %}
+{% endif %}

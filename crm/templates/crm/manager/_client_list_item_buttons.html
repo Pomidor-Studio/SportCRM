@@ -1,14 +1,31 @@
 {% if not client.deleted %}
-  {% for sub in active_sub %}
-    {% if not max_start_subscription_date  or sub.start_date <= max_start_subscription_date%}
-      {% include 'crm/manager/_client_list_item_button.html' %}
-      {% if active_sub|length > 1 %}
-        {% if not forloop.last %}
-          <div class="greyline"></div>
+  {% if event and event.is_overpast %}
+    {% with action=subscriptions|length|yesno:"mark,new_subscription" %}
+      {% for sub in subscriptions %}
+        {% if not max_start_subscription_date  or sub.start_date <= max_start_subscription_date%}
+          {% include 'crm/manager/_client_list_item_button.html' %}
+          {% if subscriptions|length > 1 %}
+            {% if not forloop.last %}
+              <div class="greyline"></div>
+            {% endif %}
+          {% endif %}
         {% endif %}
-      {% endif %}
-    {% endif %}
-  {% empty %}
-    {% include 'crm/manager/_client_list_item_button.html' %}
-  {% endfor %}
+      {% endfor %}
+    {% endwith %}
+  {% else %}
+    {% with action=active_sub|length|yesno:"mark,new_subscription" %}
+      {% for sub in active_sub %}
+        {% if not max_start_subscription_date  or sub.start_date <= max_start_subscription_date%}
+          {% include 'crm/manager/_client_list_item_button.html' %}
+          {% if active_sub|length > 1 %}
+            {% if not forloop.last %}
+              <div class="greyline"></div>
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      {% empty %}
+        {% include 'crm/manager/_client_list_item_button.html' %}
+      {% endfor %}
+    {% endwith %}
+  {% endif %}
 {% endif %}
