@@ -64,6 +64,7 @@ class TenantUserChangeForm(UserChangeForm):
 class TenantUserAdmin(CompareVersionAdmin, UserAdmin):
     form = TenantUserChangeForm
     add_form = TenantUserCreateForm
+    list_display = ('username', 'get_user_full_name', 'email', 'last_login')
     fieldsets = UserAdmin.fieldsets + (
         (None, {
             'fields': ('company',)
@@ -74,6 +75,10 @@ class TenantUserAdmin(CompareVersionAdmin, UserAdmin):
             'fields': ('company',)
         }),
     )
+
+    def get_user_full_name(self, obj: models.User):
+        return str(obj)
+    get_user_full_name.short_description = 'ФИО'
 
 
 @admin.register(models.Location)
