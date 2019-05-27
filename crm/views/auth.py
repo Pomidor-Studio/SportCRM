@@ -1,10 +1,15 @@
 from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import PasswordChangeView
+from django.contrib.auth.views import PasswordChangeView, PasswordContextMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import (
-    RedirectView, TemplateView, UpdateView,
+    FormView, RedirectView, TemplateView, UpdateView,
 )
 
 from crm.forms import ProfileCoachForm, ProfileManagerForm
@@ -55,6 +60,45 @@ class ResetPasswordView(LoginRequiredMixin, TemplateView):
         update_session_auth_hash(request, request.user)
         return super().get(request, *args, **kwargs)
 
+
+class SetPasswordView(PasswordContextMixin, FormView):
+    form_class = SetPasswordForm
+    template_name = 'crm/auth/first-login.html'
+    title = 'Установка пароля'
+
+    @method_decorator(sensitive_post_parameters())
+    @method_decorator(csrf_protect)
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        if self.request.user.has_usable_password():
+            return HttpResponseRedirect(self.get_success_url())
+
+        return super().get(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        # Updating the password logs out all other sessions for the user
+        # except the current one.
+        update_session_auth_hash(self.request, form.user)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        if self.request.user.is_superuser:
+            return reverse('admin:index')
+        elif self.request.user.is_coach:
+            return reverse('crm:coach:home')
+        elif self.request.user.is_manager:
+            return reverse('crm:manager:event:calendar')
+        else:
+            return reverse('crm:accounts:login')
 
 class ProfileView(LoginRequiredMixin, SocialAuthMixin, UpdateView):
     template_name = 'crm/auth/profile.html'
