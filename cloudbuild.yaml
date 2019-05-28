@@ -44,6 +44,16 @@ steps:
             path: /cloudsql
       waitFor: ['pip-install']
 
+    # Make messages
+    - id: 'make-messages'
+      name: 'python:3.7'
+      entrypoint: python3
+      args: ['./manage.py', 'makemessages', '--noinput']
+      env:
+          - 'PYTHONPATH=./venv'
+          - 'DJANGO_SETTINGS_MODULE=sportcrm.settings.gcp_${_ENV}'
+      waitFor: ['pip-install', 'background deploy']
+
     # Collect static
     - id: 'collect-static'
       name: 'python:3.7'
