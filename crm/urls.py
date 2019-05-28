@@ -51,6 +51,11 @@ auth_urlpatterns = ([
         'password-reset/',
         scrm_auth_views.ResetPasswordView.as_view(),
         name='password-reset'
+    ),
+    path(
+        'first-login/',
+        scrm_auth_views.SetPasswordView.as_view(),
+        name='first-login'
     )
 ], 'accounts')
 

@@ -845,6 +845,8 @@ class ClientSubscriptionQuerySet(TenantQuerySet):
             visits_left__gt=0
         ) | self.filter(
             visits_left=1,
+            start_date=today,
+            end_date=today,
             subscription__one_time=True,
         )
 

@@ -152,18 +152,3 @@ $('#confirm_popup').on('show.bs.modal', function (event) {
     modal.find('input[type=submit]').attr('value', action_text);
     modal.find('form').attr('action', url);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
