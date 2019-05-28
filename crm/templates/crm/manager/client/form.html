@@ -61,6 +61,7 @@
 {% endblock content %}
 
 {% block extrajs %}
+  <script src="https://vk.com/js/api/openapi.js?160" type="text/javascript"></script>
   <script>
     $('#id_birthday').datepicker({
       uiLibrary: 'bootstrap4',
@@ -75,5 +76,62 @@
       phone: true,
       phoneRegionCode: 'RU'
     });
+  </script>
+
+  <script type="text/javascript">
+    $(function () {
+      $("#{{ form.vk_page.id_for_label}}").change(function() {
+          const data = $(this).val().trim();
+          var idRe = new RegExp("vk.com\/(?<user_id>([A-Za-z0-9_])+)");
+
+          if (data === '' || data === null) {
+          } else {
+            var matchObj = idRe.exec(data);
+            try {
+                var id = matchObj.groups.user_id;
+                getUserData(id);
+            } catch (err) {
+               //showError("Ошибка! Неверный формат ссылки вк!");
+            }
+          }
+      });
+
+    });
+
+    function getUserData(id) {
+        $.ajax({
+            url: 'https://api.vk.com/method/users.get',
+            data: {
+                user_ids: id,
+                fields: "photo_100, bdate, domain",
+                access_token: VK_TOKEN,
+                v: 5.63
+            },
+            type: 'GET',
+            dataType: 'jsonp',
+            crossDomain: true,
+            async: false,
+            success: function(data) {
+                if (data.error) {
+                  return;
+                }
+                else {
+                    var $name = $("#{{ form.name.id_for_label }}");
+                    if ($name.val() === "") {
+                        $name.val(
+                          data.response[0].first_name + ' ' + data.response[0].last_name);
+                    }
+                    var $birthday = $("#{{ form.birthday.id_for_label }}");
+                    if ($birthday.val() === "") {
+                        try {
+                            $birthday.val(data.response[0].bdate);
+                        } catch (err) { }
+                    }
+                }
+            },
+            error: function (data) {
+            }
+        });
+    }
   </script>
 {% endblock %}
