@@ -130,9 +130,7 @@
                 {% if not coach.deleted %}
                   <div class="copy_url">
                     <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link coach.user %}"><span></span></a>
-                    {% filter truncatechars_html:30 %}
-                      <span>{% one_time_login_link coach.user %}</span>
-                    {% endfilter %}
+                    <span>{% one_time_login_link coach.user %}</span>
                   </div>
                 {% endif %}
             </td>
