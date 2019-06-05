@@ -76,7 +76,7 @@
           </svg>
         </li>
         <li>
-          {{ event.event_class.name }}
+          {{ event.event_class.name }} {{ event.date|date:"d.m.Y" }} {{ event.event_class.coach }}
         </li>
       </ul>
     </div>
