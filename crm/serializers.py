@@ -19,17 +19,17 @@ class CalendarEventSerializer(serializers.Serializer):
     color = serializers.SerializerMethodField()
 
     event_colors = [
-        '#76bd1b',
-        '#cfb218',
-        '#cf6010',
-        '#c12727',
-        '#ad1d59',
-        '#84179f',
-        '#3a13ab',
-        '#1a44b1',
-        '#0d81a6'
+        '#D9F3FB',
+        '#B6DCFF',
+        '#DACEFC',
+        '#F6C6F7',
+        '#FFC4DC',
+        '#FFCACA',
+        '#FFE5D2',
+        '#FFF5C0',
+        '#D6F2B6'
     ]
-    canceled_event_color = '#0d81a6'
+    canceled_event_color = '#DDDDDD'
     event_colors_len = len(event_colors)
 
     def get_id(self, instance: Event):
