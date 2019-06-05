@@ -51,7 +51,7 @@
            href="{% url "crm:coach:home" %}"
           {% endifhasperm %}
         >
-          Тренировки
+          Расписание
         </a>
         <a class="nav-link {% if current == 'client' %}active{% endif %}"
            href="{% url 'crm:manager:client:list' %}">
