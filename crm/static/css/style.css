@@ -393,7 +393,7 @@ footer, .bottom { color: #636363; }
 
 #calendar .fc-toolbar h2 { font-size: 18px; line-height: 35px; }
 
-#calendar .fc-toolbar h2:before { content: "Тренировки: "; }
+#calendar .fc-toolbar h2:before { content: "Расписание: "; }
 
 #calendar .fc-toolbar .btn { background: #fff !important; color: #484F57 !important; border: 1px solid #DEE2E6 !important; }
 
