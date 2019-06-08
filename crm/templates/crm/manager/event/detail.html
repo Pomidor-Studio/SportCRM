@@ -21,7 +21,7 @@
     </div>
     <div class="workout_actions desktop_workout_actions d-none d-md-block">
       <ul class="d-flex justify-content-end">
-        {% ifhasperm 'client.add' user %}
+        {% ifhasperm 'client.add_to_event' user %}
           <li class="new_student">
             <a href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day  %}" class="d-flex">
               <span class="icon align-self-center"></span>
@@ -50,13 +50,18 @@
                 занятие</a>
               <a class="dropdown-item" href="{% url 'crm:manager:event-class:detail' event.event_class.pk %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Подробнее о занятии</a>
               {% if not event.is_overpast %}
-                <div class="greyline"></div>
                 {% if not event.is_canceled %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить с продлением</a>
+                  {% ifhasperm 'event.cancel' user event %}
+                    <div class="greyline"></div>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить с продлением</a>
+                  {% endifhasperm %}
                 {% else %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
+                  {% ifhasperm 'event.activate' user event %}
+                    <div class="greyline"></div>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
+                  {% endifhasperm %}
                 {% endif %}
               {% endif %}
             </div>

@@ -53,10 +53,12 @@
         >
           Расписание
         </a>
+        {% ifhasperm 'client' user %}
         <a class="nav-link {% if current == 'client' %}active{% endif %}"
            href="{% url 'crm:manager:client:list' %}">
           Ученики
         </a>
+        {% endifhasperm %}
         <div class="greyline"></div>
         <a class="nav-link {% if current == 'coach' %}active{% endif %}"
            href="{% url 'crm:manager:coach:list' %}">

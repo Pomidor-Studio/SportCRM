@@ -50,12 +50,14 @@
         },
         eventTextColor: '#484F57',
         customButtons: {
+          {% ifhasperm 'event_class.add' user %}
           new_workout: {
             text: 'Новая',
             click: function () {
               open("{% url 'crm:manager:event-class:new' %}", '_self')
             }
           },
+          {% endifhasperm %}
           list_month: {
             text: 'Месяц',
             click: function () {
