@@ -87,7 +87,11 @@
           </svg>
         </li>
         <li>
+          {% if object %}
+            {{ object.name }}
+          {% else %}
           Новая
+          {% endif %}
         </li>
       </ul>
     </div>
@@ -137,7 +141,6 @@
 
       <div class="form-group save_buttons">
         <button	id="save-ec" class="btn btn-primary" type="submit">Сохранить</button>
-{#        <button	id="save-and-new-ec" class="btn" href="/manager/event-class/" type="submit">Сохранить и создать новый</button>#}
         <a	id="cancel" class="btn" href="{% url 'crm:manager:event:calendar' %}">Отмена</a>
       </div>
     </form>
