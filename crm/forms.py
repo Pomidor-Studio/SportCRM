@@ -1,27 +1,25 @@
 import calendar
 
 from betterforms.multiform import MultiModelForm
-from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
 from django import forms
-from django.contrib.auth import get_user_model
 from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.forms.widgets import CheckboxSelectMultiple, TextInput
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext as _
 from django_select2.forms import (
-    Select2Mixin, Select2MultipleWidget, Select2Widget,
+    Select2Mixin, Select2Widget,
 )
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
-from django.forms.widgets import TextInput, CheckboxSelectMultiple
 
 from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
 from contrib.vk_utils import get_vk_id_from_page_link
 from crm.utils import VK_PAGE_REGEXP
 from .models import (
-    Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach,
-    DayOfTheWeekClass, EventClass, Location, Manager, SubscriptionsType,
-    Company, Event,
+    Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach, Company,
+    DayOfTheWeekClass, Event, EventClass, Location, Manager, SubscriptionsType,
 )
 
 
@@ -383,10 +381,11 @@ class ClientSubscriptionForm(TenantModelForm):
 
 class EventClassForm(TenantModelForm):
     one_time_price = forms.IntegerField(
-        label='Стоимость разового посещения',
+        label='Стоимость посещения',
         initial='',
         min_value=0,
-        required=False
+        required=False,
+        widget=forms.NumberInput(attrs={'placeholder': '500 ₽'})
     )
     location = forms.ModelChoiceField(
         empty_label='',
@@ -431,8 +430,18 @@ class DayOfTheWeekClassForm(TenantModelForm):
         model = DayOfTheWeekClass
         fields = ('checked', 'start_time', 'end_time')
         widgets = {
-            'start_time': TimePickerInput(attrs={'class': 'time'}),
-            'end_time': TimePickerInput(attrs={'class': 'time'})
+            'start_time': forms.TextInput(
+                attrs={
+                    'class': 'time',
+                    'placeholder': ':'
+                }
+            ),
+            'end_time': forms.TextInput(
+                attrs={
+                    'class': 'time',
+                    'placeholder': ':'
+                }
+            )
         }
 
     def clean(self):
@@ -454,6 +463,11 @@ class DayOfTheWeekClassForm(TenantModelForm):
             # выставляем лейбл для чекбокса в зависимости от дня
             self.fields['checked'].label = \
                 _(calendar.day_name[kwargs['instance'].day])
+
+        if not kwargs.get('initial', {}).get('checked', False):
+            self.fields['start_time'].widget.attrs['disabled'] = True
+            self.fields['end_time'].widget.attrs['disabled'] = True
+
         # Все поля делаем необязательными
         for key, field in self.fields.items():
             field.required = False
