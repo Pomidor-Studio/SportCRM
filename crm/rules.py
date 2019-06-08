@@ -55,8 +55,9 @@ rules.add_perm('company.edit', is_logged_manager)
 
 rules.add_perm('client-balance.add', is_logged_personnel)
 
-rules.add_perm('client', is_logged_personnel)
-rules.add_perm('client.add', is_logged_personnel)
+rules.add_perm('client', is_logged_manager)
+rules.add_perm('client.add', is_logged_manager)
+rules.add_perm('client.add_to_event', is_logged_personnel)
 rules.add_perm('client.edit', is_logged_personnel)
 rules.add_perm('client.delete', is_logged_personnel)
 rules.add_perm('client.undelete', is_logged_personnel)
