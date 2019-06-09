@@ -82,8 +82,8 @@
             Абонементы
           </a>
         {% endifhasperm %}
-        <div class="greyline"></div>
         {% ifhasperm 'report.list' user %}
+          <div class="greyline"></div>
           <a class="nav-link {% if current == 'event-report' %}active{% endif %}"
              href="{% url 'crm:manager:event:event-report' %}">
             Отчет по тренировкам

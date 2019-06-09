@@ -104,12 +104,13 @@
                 <a href="tel:{{ coach.phone_number }}"
                 >{{ coach.phone_number|phone_format }}</a>
                 <br/>
-                {% if coach.user.vk_link and not coach.deleted %}
-                  <a href="{{ coach.user.vk_link|safe }}"
-                     target="_blank"
+                {% if not coach.deleted %}
+                  <div class="copy_url">
+                  <a href="#"
                      class="btn-icon btn-copy"
-                     data-clipboard-text="{{ coach.user.vk_link|safe }}">
-                    <span></span></a><span>{{ coach.user.vk_link|safe }}</span>
+                     data-clipboard-text="{% one_time_login_link coach.user %}">
+                    <span></span></a><span>{% one_time_login_link coach.user %}</span>
+                  </div>
                 {% endif %}
               </div>
             </td>
