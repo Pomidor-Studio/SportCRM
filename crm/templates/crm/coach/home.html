@@ -33,8 +33,6 @@
   {% js 'js/fullcalendar/packages/core/locales/ru.js' %}
   {% js 'js/fullcalendar/packages/moment/main.min.js' %}
 
-  {% js 'js/enquire.min.js' %}
-
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       var calendarEl = document.getElementById('calendar');
@@ -106,7 +104,7 @@
       enquire.register("screen and (max-width: 720px)", {
 
         match: function () {
-          calendar.changeView('listMonth');
+          calendar.changeView('listDay');
           $('.fc-list_month-button').addClass('active')
         },
 
@@ -115,10 +113,6 @@
         }
       });
 
-      const md = new MobileDetect(window.navigator.userAgent);
-      if (md.mobile()) {
-        calendar.changeView('listDay');
-      }
     });
   </script>
   <!-- Full Calendar -->
