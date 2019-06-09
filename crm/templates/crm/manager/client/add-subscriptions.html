@@ -101,7 +101,11 @@
           </li>
         {% endif %}
         <li>
-          Ученик
+          {% if event %}
+            Ученик
+          {% else %}
+            <a href="{% url 'crm:manager:client:list' %}">Ученики</a>
+          {% endif %}
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
@@ -110,6 +114,7 @@
                   stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
         </li>
+        <li>{{ client.name }}</li>
       </ul>
     </div>
     <div class="greyline"></div>
@@ -365,15 +370,13 @@
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% if sub.is_active %}
-                      {% ifhasperm 'client_subscription.extend' user %}
-                        <a class="btn btn-icon btn-extend"
-                           href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
-                          <span></span>
-                          <abbr>Продлить</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% endif %}
+                    {% ifhasperm 'client_subscription.extend' user %}
+                      <a class="btn btn-icon btn-extend"
+                         href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
+                        <span></span>
+                        <abbr>Продлить</abbr>
+                      </a>
+                    {% endifhasperm %}
                   </td>
                   <td class="d-none d-md-block">
                       {% ifhasperm 'client_subscription.delete' user %}
