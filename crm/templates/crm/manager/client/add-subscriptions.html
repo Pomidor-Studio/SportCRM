@@ -365,7 +365,7 @@
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% if  sub.is_active %}
+                    {% if sub.is_active %}
                       {% ifhasperm 'client_subscription.extend' user %}
                         <a class="btn btn-icon btn-extend"
                            href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
@@ -376,9 +376,8 @@
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% if  sub.is_active %}
                       {% ifhasperm 'client_subscription.delete' user %}
-                        {% if sub.visits_on_by_time == sub.visits_left %}
+                        {% if sub.attendance_set.count == 0 %}
                           <a class="btn btn-icon btn-delete"
                          href="#confirm_popup"
                          data-action-text="Удалить"
@@ -391,7 +390,6 @@
                       </a>
                         {% endif %}
                       {% endifhasperm %}
-                    {% endif %}
                   </td>
                   <td class="d-md-none" width="1">
                    {% if  sub.is_active %}
