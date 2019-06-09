@@ -43,10 +43,10 @@
               {{ row.cells.event_class }}
             </td>
             <td>
-              <div class="d-none d-md-block">
+              <div class="d-none d-md-block text-center">
                 {{ row.cells.clients_count }}
               </div>
-              <div class="d-block d-md-none">
+              <div class="d-block d-md-none text-center">
                 <small>Ученики:{{ row.cells.clients_count }}</small>
                 <br>
                 <small>По разовому абонементу: {{ row.cells.clients_count_one_time }}</small>
@@ -54,13 +54,13 @@
                 <small>Продано абонементов: {{ row.cells.subs_sales }}</small>
               </div>
             </td>
-            <td class="d-none d-md-block">
+            <td class="d-none d-md-block text-center">
               {{ row.cells.clients_count_one_time }}
             </td>
-            <td class="d-none d-md-block">
+            <td class="d-none d-md-block text-center">
               {{ row.cells.subs_sales }}
             </td>
-            <td>
+            <td class="text-right">
               {{ row.cells.profit|floatformat:"-2"|intcomma }}&nbsp;₽
             </td>
           </tr>
