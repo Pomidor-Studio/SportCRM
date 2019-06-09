@@ -310,13 +310,13 @@
                 <th class="d-none d-md-block">
                   Продано
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Начало
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Окончание
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Посл. посещение
                 </th>
                 <th class="d-none d-md-block">
@@ -345,10 +345,10 @@
                     <br/>
                     <small>{{ sub.sold_by|default_if_none:'' }}</small>
                   </td>
-                  <td class="d-none d-md-block">
+                  <td class="d-none d-md-block text-center">
                     {{ sub.start_date|date:"SHORT_DATE_FORMAT" }}
                   </td>
-                  <td>
+                  <td class="text-center">
                     <div class="date_end">
                       <div class="d-block d-md-none">
                         <small>Действует до:</small>
@@ -356,10 +356,10 @@
                       {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
                     </div>
                   </td>
-                  <td class="d-none d-md-block">
+                  <td class="d-none d-md-block text-center">
                     {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}
                   </td>
-                  <td class="d-none d-md-block">
+                  <td class="d-none d-md-block text-right">
                     {% if sub.price %}
                       {{ sub.price | floatformat:"-2" | intcomma }} ₽
                     {% endif %}
