@@ -3,7 +3,8 @@ import datetime
 import pytest
 from hamcrest import assert_that, is_
 
-from bot.api.messages.event import CancelledEvent, FutureEvent
+from bot.api.messages.event import CancelledEvent
+from bot.api.messages.event_class import FutureEvent
 from crm.enums import GRANULARITY
 
 
