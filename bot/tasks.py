@@ -1,4 +1,5 @@
 from django.db.models import Prefetch
+from django_multitenant.utils import set_current_tenant
 
 from bot.api import messages
 from crm.models import Client, ClientSubscriptions, Event, Manager, EventClass
@@ -76,6 +77,7 @@ def notify_clients_about_future_event(dt):
     cs = ClientSubscriptions.objects.active_subscriptions_to_date(dt)
 
     for event_class in event_classes:
+        set_current_tenant(event_class.company)
         client_ids = cs.filter(
             subscription__event_class=event_class,
             visits_left__gt=1

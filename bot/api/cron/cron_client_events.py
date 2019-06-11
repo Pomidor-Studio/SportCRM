@@ -3,16 +3,19 @@ from datetime import (
     timedelta,
 )
 
+from django_multitenant.utils import set_current_tenant
+
 from bot.api.messages import (
-    ClientHaveNegativeBalance, UsersToManagerBirthday, UserToUserBirthday, FutureEvent,
+    ClientHaveNegativeBalance, UsersToManagerBirthday, UserToUserBirthday,
 )
 from bot.tasks import notify_clients_about_future_event
-from crm.models import Client, Company, INTERNAL_COMPANY, Manager, EventClass
+from crm.models import Client, Company, INTERNAL_COMPANY, Manager
 
 
 def receivables():
 
     for client in Client.objects.filter(balance__lt=0):
+        set_current_tenant(client.company)
         ClientHaveNegativeBalance(client, personalized=False).send_message()
 
 
@@ -24,6 +27,7 @@ def birthday():
     companies = Company.objects.exclude(display_name=INTERNAL_COMPANY)
 
     for company in companies:
+        set_current_tenant(company)
         clients = Client.objects.filter(
             birthday__month=month, birthday__day=day, company_id=company.id
         )
