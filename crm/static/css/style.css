@@ -121,7 +121,7 @@ tr.active .btn-down span { background: url(../img/icons.png) 0 -235px no-repeat;
 
 .form-check { padding-left: 0; }
 
-.form-check:hover { cursor: pointer; }
+.form-check input[type=checkbox]:hover { cursor: pointer; }
 
 .form-check .form-check-label { font-size: 14px; }
 
