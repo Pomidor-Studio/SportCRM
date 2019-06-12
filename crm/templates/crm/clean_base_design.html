@@ -81,9 +81,6 @@
   <title>
     {% block title %}SportAdmin{% endblock %}
   </title>
-
-  {% yandex_metrica %}
-  {% google_analytics_js %}
 </head>
 
 <body>
@@ -137,21 +134,11 @@
         }
       }
     });
-
-    enquire.register("screen and (max-width: 720px)", {
-
-      match: function () {
-        calendar.changeView('listMonth');
-        $('.fc-list_month-button').addClass('active')
-      },
-
-      unmatch: function () {
-        calendar.changeView('dayGridMonth');
-      }
-
-    });
   </script>
   {% block extra %}{% endblock %}
+
+  {% yandex_metrica %}
+  {% google_analytics_js %}
 </body>
 
 {% block extrajs %}{% endblock %}

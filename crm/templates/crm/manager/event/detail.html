@@ -21,7 +21,7 @@
     </div>
     <div class="workout_actions desktop_workout_actions d-none d-md-block">
       <ul class="d-flex justify-content-end">
-        {% ifhasperm 'client.add' user %}
+        {% ifhasperm 'client.add_to_event' user %}
           <li class="new_student">
             <a href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day  %}" class="d-flex">
               <span class="icon align-self-center"></span>
@@ -50,13 +50,18 @@
                 занятие</a>
               <a class="dropdown-item" href="{% url 'crm:manager:event-class:detail' event.event_class.pk %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Подробнее о занятии</a>
               {% if not event.is_overpast %}
-                <div class="greyline"></div>
                 {% if not event.is_canceled %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить с продлением</a>
+                  {% ifhasperm 'event.cancel' user event %}
+                    <div class="greyline"></div>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-without-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить текущее занятие</a>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:cancel-with-extending' event.event_class.id event.date.year event.date.month event.date.day %}">Отменить с продлением</a>
+                  {% endifhasperm %}
                 {% else %}
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
-                  <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
+                  {% ifhasperm 'event.activate' user event %}
+                    <div class="greyline"></div>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-without-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие</a>
+                    <a class="dropdown-item" href="{% url 'crm:manager:event-class:event:activate-with-revoke' event.event_class.id event.date.year event.date.month event.date.day %}">Вернуть занятие и отменить проделния</a>
+                  {% endifhasperm %}
                 {% endif %}
               {% endif %}
             </div>
@@ -68,7 +73,7 @@
     <div class="bredcams clearfix">
       <ul>
         <li>
-          <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
+          <a href="{% url 'crm:manager:event:calendar' %}">Расписание</a>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
                xmlns="http://www.w3.org/2000/svg">
             <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
@@ -76,7 +81,7 @@
           </svg>
         </li>
         <li>
-          {{ event.event_class.name }}
+          {{ event.event_class.name }} {{ event.date|date:"d.m.Y" }} {{ event.event_class.coach }}
         </li>
       </ul>
     </div>
@@ -133,13 +138,13 @@
                   <th class="d-none d-md-block">
                     Продано
                   </th>
-                  <th class="d-none d-md-block">
+                  <th class="d-none d-md-block text-center">
                     Начало
                   </th>
-                  <th class="d-none d-md-block">
+                  <th class="d-none d-md-block text-center">
                     Окончание
                   </th>
-                  <th class="d-none d-md-block">
+                  <th class="d-none d-md-block text-center">
                     Посл. посещение
                   </th>
                   <th class="d-none d-md-block">
@@ -165,12 +170,12 @@
                         <td
                           class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
                         <td
-                          class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
+                          class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
                         <td
-                          class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
+                          class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
                         <td
-                          class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
-                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
+                          class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+                        <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_buttons.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                       </tr>
@@ -192,12 +197,12 @@
                         <td
                           class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
                         <td
-                          class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
+                          class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
                         <td
-                          class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
+                          class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
                         <td
-                          class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
-                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
+                          class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+                        <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_buttons.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                       </tr>
@@ -226,13 +231,13 @@
                   <th class="d-none d-md-block">
                     Продано
                   </th>
-                  <th class="d-none d-md-block">
+                  <th class="d-none d-md-block text-center">
                     Начало
                   </th>
-                  <th class="d-none d-md-block">
+                  <th class="d-none d-md-block text-center">
                     Окончание
                   </th>
-                  <th class="d-none d-md-block">
+                  <th class="d-none d-md-block text-center">
                     Посл. посещение
                   </th>
                   <th class="d-none d-md-block">
@@ -250,10 +255,10 @@
                       <td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' with client=attendance.client %}</td>
-                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' with client=attendance.client %}</td>
-                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' with client=attendance.client %}</td>
-                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' with client=attendance.client %}</td>
-                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' with client=attendance.client %}</td>
                       <td>{% include 'crm/manager/_client_list_item_button.html' with client=attendance.client action='unmark' %}</td>
                       <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
                     </tr>

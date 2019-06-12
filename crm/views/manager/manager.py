@@ -47,6 +47,7 @@ class Create(
     model = Manager
     form_class = ManagerMultiForm
     permission_required = 'manager.add'
+    success_url = 'crm:manager:manager:list'
     add_another_url = 'crm:manager:manager:new'
     message_info = 'Менеджер успешно создан'
 

@@ -19,9 +19,9 @@
   </div>
 {% endblock content %}
 
-{% block title %}Тренировки{% endblock %}
+{% block title %}Расписание{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Тренировки" back_link=False  current='event' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Расписание" back_link=False  current='event' %}
 {% endblock %}
 
 {% block extrajs %}
@@ -32,8 +32,6 @@
   {% js 'js/fullcalendar/packages/bootstrap/main.js' %}
   {% js 'js/fullcalendar/packages/core/locales/ru.js' %}
   {% js 'js/fullcalendar/packages/moment/main.min.js' %}
-
-  {% js 'js/enquire.min.js' %}
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -48,13 +46,16 @@
           hour: '2-digit',
           minute: '2-digit'
         },
+        eventTextColor: '#484F57',
         customButtons: {
+          {% ifhasperm 'event_class.add' user %}
           new_workout: {
             text: 'Новая',
             click: function () {
               open("{% url 'crm:manager:event-class:new' %}", '_self')
             }
           },
+          {% endifhasperm %}
           list_month: {
             text: 'Месяц',
             click: function () {
@@ -103,15 +104,15 @@
       enquire.register("screen and (max-width: 720px)", {
 
         match: function () {
-          calendar.changeView('listMonth');
-          $('.fc-list_month-button').addClass('active')
+          calendar.changeView('listDay');
+          $('.fc-listDay-button').addClass('active')
         },
 
         unmatch: function () {
           calendar.changeView('dayGridMonth');
         }
-
       });
+
     });
   </script>
   <!-- Full Calendar -->

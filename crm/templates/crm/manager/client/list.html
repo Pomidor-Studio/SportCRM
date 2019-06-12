@@ -99,16 +99,16 @@
                 <th class="d-none d-md-block">
                   Продано
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Начало
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Окончание
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Посл. посещение
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-right">
                   Баланс
                 </th>
                 <th width="1"></th>
@@ -124,10 +124,10 @@
                     <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
                     <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
                     <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
+                    <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
+                    <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
+                    <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+                    <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                     <td width="1">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                   </tr>
                 {% endwith %}

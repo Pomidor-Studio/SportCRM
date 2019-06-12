@@ -25,22 +25,42 @@ class EventReportTable(tables.Table):
     clients_count = tables.Column(
         accessor='get_present_clients_count',
         verbose_name='Ученики',
-        orderable=False
+        orderable=False,
+        attrs={
+            'th': {
+                'class': 'text-center'
+            }
+        }
     )
     clients_count_one_time = tables.Column(
         accessor='get_clients_count_one_time_sub',
         verbose_name='По разовому',
-        orderable=False
+        orderable=False,
+        attrs={
+            'th': {
+                'class': 'text-center'
+            }
+        }
     )
     subs_sales = tables.Column(
         accessor='get_subs_sales',
         verbose_name='Продано абонементов',
-        orderable=False
+        orderable=False,
+        attrs={
+            'th': {
+                'class': 'text-center'
+            }
+        }
     )
     profit = tables.Column(
         accessor='get_profit',
         verbose_name='Собрано денег',
-        orderable=False
+        orderable=False,
+        attrs={
+            'th': {
+                'class': 'text-right'
+            }
+        }
     )
 
     class Meta:

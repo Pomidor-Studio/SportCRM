@@ -51,12 +51,14 @@
            href="{% url "crm:coach:home" %}"
           {% endifhasperm %}
         >
-          Тренировки
+          Расписание
         </a>
+        {% ifhasperm 'client' user %}
         <a class="nav-link {% if current == 'client' %}active{% endif %}"
            href="{% url 'crm:manager:client:list' %}">
           Ученики
         </a>
+        {% endifhasperm %}
         <div class="greyline"></div>
         <a class="nav-link {% if current == 'coach' %}active{% endif %}"
            href="{% url 'crm:manager:coach:list' %}">
@@ -80,8 +82,8 @@
             Абонементы
           </a>
         {% endifhasperm %}
-        <div class="greyline"></div>
         {% ifhasperm 'report.list' user %}
+          <div class="greyline"></div>
           <a class="nav-link {% if current == 'event-report' %}active{% endif %}"
              href="{% url 'crm:manager:event:event-report' %}">
             Отчет по тренировкам

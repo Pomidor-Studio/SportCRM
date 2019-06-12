@@ -49,6 +49,7 @@ class Create(
     model = Coach
     form_class = CoachMultiForm
     permission_required = 'coach.add'
+    success_url = 'crm:manager:coach:list'
     add_another_url = 'crm:manager:coach:new'
     message_info = 'Тренер успешно создан'
 

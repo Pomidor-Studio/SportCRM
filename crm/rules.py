@@ -45,7 +45,8 @@ is_logged_coach = rules.is_authenticated & is_coach
 is_logged_personnel = rules.is_authenticated & (is_manager | is_coach)
 
 is_editable_by_coach = is_logged_coach & is_coach_event
-is_editable_event = (is_logged_manager | is_editable_by_coach) & is_open_event
+# is_editable_by_coach removed https://trello.com/c/7KojFudi
+is_editable_event = is_logged_manager & is_open_event
 
 # Generic permission, can be used, until detailed are needed
 rules.add_perm('is_manager', is_logged_manager)
@@ -55,8 +56,9 @@ rules.add_perm('company.edit', is_logged_manager)
 
 rules.add_perm('client-balance.add', is_logged_personnel)
 
-rules.add_perm('client', is_logged_personnel)
-rules.add_perm('client.add', is_logged_personnel)
+rules.add_perm('client', is_logged_manager)
+rules.add_perm('client.add', is_logged_manager)
+rules.add_perm('client.add_to_event', is_logged_personnel)
 rules.add_perm('client.edit', is_logged_personnel)
 rules.add_perm('client.delete', is_logged_personnel)
 rules.add_perm('client.undelete', is_logged_personnel)

@@ -85,7 +85,7 @@
       <ul>
         {% if event %}
           <li>
-            <a href="{% url 'crm:manager:event:calendar' %}">Тренировки</a>
+            <a href="{% url 'crm:manager:event:calendar' %}">Расписание</a>
             <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round"></path>
@@ -101,7 +101,11 @@
           </li>
         {% endif %}
         <li>
-          Ученик
+          {% if event %}
+            Ученик
+          {% else %}
+            <a href="{% url 'crm:manager:client:list' %}">Ученики</a>
+          {% endif %}
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
@@ -110,6 +114,7 @@
                   stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
         </li>
+        <li>{{ client.name }}</li>
       </ul>
     </div>
     <div class="greyline"></div>
@@ -310,13 +315,13 @@
                 <th class="d-none d-md-block">
                   Продано
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Начало
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Окончание
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-center">
                   Посл. посещение
                 </th>
                 <th class="d-none d-md-block">
@@ -335,11 +340,7 @@
                        href="#"><span></span></a>
                   </td>
                   <td>
-                    {% if  sub.is_active %}
-                      {{ sub.subscription.name }}
-                    {% else %}
-                       {{ sub.subscription.name }}
-                    {% endif %}
+                    <span class="fio_name">{{ sub.subscription.name }}</span>
                     <div>
                       <small>Посещения: {{ sub.visits_left }} из {{ sub.visits_on_by_time }}</small>
                     </div>
@@ -349,10 +350,10 @@
                     <br/>
                     <small>{{ sub.sold_by|default_if_none:'' }}</small>
                   </td>
-                  <td class="d-none d-md-block">
+                  <td class="d-none d-md-block text-center">
                     {{ sub.start_date|date:"SHORT_DATE_FORMAT" }}
                   </td>
-                  <td>
+                  <td class="text-center">
                     <div class="date_end">
                       <div class="d-block d-md-none">
                         <small>Действует до:</small>
@@ -360,29 +361,26 @@
                       {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
                     </div>
                   </td>
-                  <td class="d-none d-md-block">
+                  <td class="d-none d-md-block text-center">
                     {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}
                   </td>
-                  <td class="d-none d-md-block">
+                  <td class="d-none d-md-block text-right">
                     {% if sub.price %}
                       {{ sub.price | floatformat:"-2" | intcomma }} ₽
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% if  sub.is_active %}
-                      {% ifhasperm 'client_subscription.extend' user %}
-                        <a class="btn btn-icon btn-extend"
-                           href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
-                          <span></span>
-                          <abbr>Продлить</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% endif %}
+                    {% ifhasperm 'client_subscription.extend' user %}
+                      <a class="btn btn-icon btn-extend"
+                         href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
+                        <span></span>
+                        <abbr>Продлить</abbr>
+                      </a>
+                    {% endifhasperm %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% if  sub.is_active %}
                       {% ifhasperm 'client_subscription.delete' user %}
-                        {% if sub.visits_on_by_time == sub.visits_left %}
+                        {% if sub.attendance_set.count == 0 %}
                           <a class="btn btn-icon btn-delete"
                          href="#confirm_popup"
                          data-action-text="Удалить"
@@ -395,7 +393,6 @@
                       </a>
                         {% endif %}
                       {% endifhasperm %}
-                    {% endif %}
                   </td>
                   <td class="d-md-none" width="1">
                    {% if  sub.is_active %}
