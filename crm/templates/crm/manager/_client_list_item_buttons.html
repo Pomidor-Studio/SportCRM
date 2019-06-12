@@ -10,6 +10,8 @@
             {% endif %}
           {% endif %}
         {% endif %}
+      {% empty %}
+        {% include 'crm/manager/_client_list_item_button.html' %}
       {% endfor %}
     {% endwith %}
   {% else %}
