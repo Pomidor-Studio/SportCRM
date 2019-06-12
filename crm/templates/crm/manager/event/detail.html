@@ -5,7 +5,11 @@
 {% block title %}Тренировка{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:event:calendar' as back_link %}
-  {% include 'crm/bars/_sidebar_design.html' with name=event.event_class.name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}
+  {% with dt=event.date|date:"d.m.Y" coach=event.event_class.coach|escape %}
+    {% with crumb_name=""|add:event.event_class.name|add:" "|add:dt|add:" "|add:coach %}
+      {% include 'crm/bars/_sidebar_design.html' with name=crumb_name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}
+    {% endwith %}
+  {% endwith %}
 {% endblock %}
 
 {% block content %}
