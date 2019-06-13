@@ -52,15 +52,15 @@
       {% csrf_token %}
 
       <div class="row">
-        <div class="col-12 col-md-10 col-xl-6 form-group">
+        <div class="col-12 col-md-10 col-xl-6">
           {% bootstrap_field form.name %}
         </div>
       </div>
       <div class="row">
-        <div class="col-6 col-md-5 col-xl-3 form-group">
+        <div class="col-12 col-md-5 col-xl-3">
           {% bootstrap_field form.price %}
         </div>
-        <div class="col-6 col-md-5 col-xl-3 form-group">
+        <div class="col-12 col-md-5 col-xl-3">
           {% bootstrap_field form.visit_limit %}
         </div>
       </div>
@@ -68,10 +68,10 @@
         <div class="col-12">
           <label for="id_duration">Продолжительность</label>
           <div class="row align-items-center">
-            <div class="col-6 col-md-2 form-group">
+            <div class="col-6 col-md-2">
               {% bootstrap_field form.duration show_label=False %}
             </div>
-            <div class="col-6 col-md-4 form-group">
+            <div class="col-6 col-md-4">
               {% bootstrap_field form.duration_type show_label=False %}
             </div>
             <div class="col-12 col-md-6 form-group">
@@ -114,6 +114,8 @@
         {% endif %}
 
       </div>
+
+      <div class="greyline"></div>
 
       <div class="form-group save_buttons">
         <input class="btn btn-primary" type="submit" value="Сохранить"/>
