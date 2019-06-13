@@ -48,15 +48,17 @@
     <form method="POST">
       {% csrf_token %}
       <div class="row">
-        <div class="col-12 col-md-10 col-xl-6 form-group">
+        <div class="col-12 col-md-10 col-xl-6">
           {% bootstrap_field form.name %}
         </div>
       </div>
       <div class="row">
-        <div class="col-12 col-md-10 col-xl-6 form-group">
+        <div class="col-12 col-md-10 col-xl-6">
           {% bootstrap_field form.address %}
         </div>
       </div>
+
+      <div class="greyline"></div>
 
       <div class="form-group save_buttons">
         <input class="btn btn-primary" type="submit" value="Сохранить">

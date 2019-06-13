@@ -1,0 +1,1661 @@
+@charset "UTF-8";
+/* Цвета */
+
+$black: #000;
+$grey: #484F57;
+$lightgrey: #EEEEEE;
+$footer_grey: #636363;
+
+$green: #76BD1B;
+$green_dark: #5F9914;
+$red: #CA2929;
+$red_dark: #9F1717;
+$lightgreen: #eff8e5;
+$yellow: #EAB701;
+$orange: #EE5F0F;
+$blue: #2B8CBB;
+
+$lines: #EEEEEE;
+$bordergrey: #DEE2E6;
+
+$lightred: #fdefe7;
+
+
+
+/* Шрифты */
+$thin: 100;
+$light: 300;
+
+
+
+
+
+
+body {
+	font-family: 'Roboto', sans-serif;
+	font-size: 12px;
+	color: $black;
+	height: 100vh;
+}
+@media (max-width: 992px) {
+	body {
+		height: calc(100vh - 60px);
+	}
+}
+
+a {
+	color: $grey;
+
+	&:hover {
+		color: $green;
+		text-decoration: underline;
+	}
+}
+
+#overlay {
+	background: rgba(0, 0, 0, 0.4);
+	position: fixed;
+	z-index: 5;
+	width: 100%;
+	height: 100%;
+	display: none;
+}
+
+.green {color: $green;}
+.yellow {color: $yellow;}
+.orange {color: $orange;}
+
+small {
+	font-size: 12px;
+}
+
+.alert-box {
+	position: absolute;
+	z-index: 10;
+	padding-right: 15px;
+	.alert {
+		font-size: 14px;
+		box-shadow: 0px 8px 18px 0px rgba(50, 50, 50, 0.2);
+	}
+	a {
+		color: $green;
+	}
+}
+.dropdown-menu {
+	border: 1px solid $lines;
+	box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.25);
+	border-radius: 6px;
+	padding: 18px 0;
+
+	&:before, &:after {
+		content: '';
+		position: absolute;
+		right: 11px; top: -16px;
+		border: 8px solid transparent;
+		border-bottom: 8px solid $lines;
+	}
+	&:after {
+		top: -15px;
+		border-bottom: 10px solid #fff;
+	}
+	.dropdown-item:focus {
+		background: $green;
+		color: #fff;
+	}
+	a {
+		font-size: 14px;
+		color: $grey;
+	}
+}
+
+
+
+
+
+/* Формы, общее */
+.form-control {
+	font-size: 14px;
+	color: $grey;
+	border: 1px solid $bordergrey;
+	border-radius: 4px;
+
+	&:focus {
+	    outline: inherit;
+	    box-shadow: inherit;
+	    border: 1px solid $green;
+	}
+}
+
+.form-group {
+	margin-bottom: 16px;
+	font-size: 14px;
+
+	.btn {
+		margin-right: 8px;
+	}
+
+	img {
+		border-radius: 100px;
+		margin-bottom: 10px;
+	}
+}
+
+.save_buttons {
+	margin-top: 24px;
+	margin-bottom: 30px;
+	.btn {
+		margin-bottom: 20px;
+	}
+}
+
+.btn {
+	font-size: 14px;
+	background: #fff;
+	color: $grey;
+	border: 1px solid $bordergrey;
+	padding: 10px 20px;
+
+	&:hover {
+		background: $lightgrey;
+		color: $grey;
+	}
+	&:focus, &:active {
+		outline: inherit;
+	    box-shadow: inherit;
+	    border: 1px solid $green;
+	}
+
+}
+.btn-primary {
+	background: $green;
+	border: 1px solid $green;
+	color: #fff;
+
+	&:hover , &:focus, &:active {
+		background: $green_dark !important;
+	    outline: inherit !important;
+	    box-shadow: inherit !important;
+	    border: 1px solid $green !important;
+	    color: #fff;
+	}
+	&:active {
+		background: $yellow !important;
+		border: 1px solid $yellow !important;
+	}
+}
+.btn-danger {
+	background: $red;
+	border: 1px solid $red;
+	color: #fff;
+
+	&:hover , &:focus, &:active {
+		background: $red_dark !important;
+	    outline: inherit !important;
+	    box-shadow: inherit !important;
+	    border: 1px solid $red !important;
+	    color: #fff;
+	}
+	&:active {
+		background: $yellow !important;
+		border: 1px solid $yellow !important;
+	}
+}
+.btn-new {
+	position: absolute;
+	right: 15px;
+	z-index: 4;
+}
+
+
+.btn-icon {
+	min-width: 38px;
+	height: 38px;
+	line-height: 38px;
+	padding: 0 8px !important;
+	position: relative;
+	span {
+		position: relative;
+		display: inline-block;
+	}
+	abbr {
+		margin-left: 8px;
+	}
+	&.btn-edit span {
+		background: url(../img/icons.png) 0 0 no-repeat;
+		top: 1px;
+		left: 3px;
+		width: 16px;
+		height: 14px;
+	}
+	&.btn-mark {
+		padding: 0 12px !important;
+		span {
+			background: url(../img/icons.png) 0 -17px no-repeat;
+			top: 2px;
+			left: 0;
+			width: 15px;
+			height: 15px;
+
+		}
+	}
+	&.btn-pay {
+		padding: 0 12px !important;
+		span {
+			background: url(../img/icons.png) 0 -33px no-repeat;
+			top: 1px;
+			left: 0;
+			width: 15px;
+			height: 15px;
+		}
+	}
+	&.btn-more {
+		border: none;
+		padding: 0 4px !important;
+		min-width: 20px;
+		background: none;
+		left: -5px;
+		span {
+			top: 3px;
+			left: 4px;
+			width: 3px;
+			height: 15px;
+			margin-right: 8px;
+		}
+		&[aria-expanded="false"] span {background: url(../img/icons.png) 0 -72px no-repeat;}
+		&[aria-expanded="true"] span {background: url(../img/icons.png) -8px -72px no-repeat;}
+	}
+	&.btn-delete {
+		padding: 0 12px !important;
+		span {
+			background: url(../img/icons.png) 0 -53px no-repeat;
+			top: 1px;
+			left: 0;
+			width: 11px;
+			height: 14px;
+		}
+	}
+	&.btn-copy {
+		span {
+			background: url(../img/icons.png) 0 -190px no-repeat;
+			top: 2px;
+			left: 0;
+			width: 13px;
+			height: 13px;
+		}
+	}
+	&.btn-extend {
+		padding: 0 12px !important;
+		span {
+			background: url(../img/icons.png) 0 -208px no-repeat;
+			top: 1px;
+			left: 1px;
+			width: 14px;
+			height: 14px;
+		}
+	}
+	&.btn-down {
+		padding: 0 12px !important;
+		border: none;
+		padding: 0 !important;
+		background: transparent;
+		min-width: inherit;
+		left: 3px;
+		span {
+			background: url(../img/icons.png) 0 -226px no-repeat;
+			top: 1px;
+			left: 1px;
+			width: 11px;
+			height: 7px;
+		}
+	}
+	&.btn-undo {
+		padding: 0 12px !important;
+		span {
+			background: url(../img/icons.png) 0 -246px no-repeat;
+			top: 1px;
+			left: 0;
+			width: 14px;
+			height: 14px;
+		}
+	}
+}
+tr.active .btn-down span {
+	background: url(../img/icons.png) 0 -235px no-repeat;
+}
+
+.datepick, .timepick {
+	.btn {
+		margin: 0 0 0 1px;
+
+		svg {
+			position: absolute;
+			top: 12px;
+			right: 15px;
+		}
+	}
+}
+.gj-picker-bootstrap table tr td.selected.gj-cursor-pointer div {
+	background-color: $green !important;
+	border-color: $green !important;
+	color: #fff !important;
+}
+.timepick {
+	.form-control {
+		text-align: center;
+	}
+}
+
+.gj-picker-bootstrap table tr td.today div {
+	color: $green !important;
+}
+
+.form-check {
+	padding-left: 0;
+
+	&:hover {
+		cursor: pointer;
+	}
+
+	.form-check-label {
+		font-size: 14px;
+	}
+	.form-check-input {
+		position: absolute;
+		left: 0;
+		z-index: 3;
+		margin: 5px 0 0 2px;
+		opacity: 0;
+	}
+	.form-check-input-div {
+		height: 16px;
+		width: 16px;
+		border-radius: 2px;
+		background: #DEE2E6;
+		border: 1px solid #DEE2E6;
+		box-sizing: border-box;
+		border-radius: 4px;
+		float: left;
+		margin-right: 8px;
+		margin-top: 1px;
+	}
+	.form-check-input:hover ~ .form-check-input-div {
+		/*background: $green_dark;
+		border: 1px solid $green;*/
+	}
+	.form-check-input:checked ~ .form-check-input-div {
+		background-color: $green;
+	}
+	.form-check-input-div:after {
+		content: "";
+		position: absolute;
+		display: none;
+	}
+	.form-check-input:checked ~ .form-check-input-div:after {
+	display: block;
+	}
+	.form-check-input-div:after {
+		position: absolute;
+		z-index: 2;
+		margin-top: 1px;
+		margin-left: 5px;
+		width: 5px;
+		height: 10px;
+		border: solid white;
+		border-width: 0 2px 2px 0;
+		-webkit-transform: rotate(45deg);
+		-ms-transform: rotate(45deg);
+		transform: rotate(45deg);
+	}
+	.form-check-input-div-radio {
+		border-radius: 8px !important;
+	}
+	.form-check-input-div-radio:after {
+		margin-top: 4px;
+		margin-left: 4px;
+		width: 4px;
+		height: 4px;
+		border: solid white;
+		border-width: 3px;
+		border-radius: 3px;
+	}
+}
+
+.input-group-append .btn {
+	margin-right: 0;
+	padding: .375rem .75rem;
+	&:hover, &:active, &:focus {
+		outline: inherit !important;
+	    box-shadow: inherit !important;
+	    border: 1px solid $green !important;
+	    background: #fff;
+	    color: $grey;
+	}
+	&:active {
+		background: $lightgrey !important;
+		color: $grey !important;
+	}
+	&.btn-primary:hover {
+		color: #fff !important;
+	}
+}
+
+.dropdown-item.active, .dropdown-item:active {
+	background: $green;
+}
+
+#some_reason {
+	display: none;
+}
+
+
+@media (max-width: 1024px) {
+	.btn {
+		padding: 5px 10px;
+	}
+	.btn-icon abbr {
+		display: none;
+	}
+}
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  select,
+  textarea,
+  input {
+    font-size: 16px !important;
+  }
+}
+/* Формы, общее */
+
+
+
+
+/* Таблицы */
+.table {
+	font-size: 14px;
+	line-height: 19px;
+	position: relative;
+	top: -10px;
+	color: $grey;
+
+	thead th {
+		background: #fff;
+		position: -webkit-sticky;
+	    position: sticky;
+	    top: 0;
+	    z-index: 2;
+	}
+	tbody {
+		tr:hover {
+			background: $lightgreen !important;
+		}
+		tr.otbivka {
+			background: #F4F4F4 !important;
+			td {
+				height: 0;
+			}
+		}
+		tr.minus_balance {
+			background: $lightred !important;
+		}
+	}
+	td, th {
+		padding: 8px;
+		vertical-align: middle;
+		border: none;
+		border-bottom: 1px solid $lines !important;
+		min-height: 55px;
+	}
+	th {
+		font-weight: bold;
+		font-size: 10px;
+		line-height: 12px;
+		text-transform: uppercase;
+		white-space: nowrap;
+		color: $grey;
+	}
+	td {
+		height: 55px;
+	}
+
+	.fio_name {
+		font-size: 16px;
+		color: #000;
+		margin-bottom: 4px;
+		display: inline-block;
+	}
+	a.fio_name:hover {
+		color: $green;
+	}
+	.active .fio_name {
+		color: $green;
+	}
+
+	.form-check-input {
+		margin-top: 3px;
+	}
+
+	.photo {
+		display: block;
+		width: 32px;
+		height: 32px;
+		border-radius: 32px;
+	}
+	.sell {
+		font-size: 12px;
+		color: $blue;
+		text-decoration: underline;
+	}
+
+
+	.td_photo {
+		width: 32px;
+	}
+
+	.dropdown-menu {
+		margin-right: -10px;
+	}
+
+
+	.archive {
+		opacity: 0.6;
+
+		&:hover {
+			opacity: 1;
+		}
+	}
+
+	&.workout_time {
+		.d-flex div {
+			padding: 8px 16px;
+		}
+	}
+
+	.several {
+		.date {
+			line-height: 35px;
+		}
+	}
+
+}
+
+.clone-head-table-wrap {
+	border-bottom: 1px solid $lines;
+	.table {
+		top: 0 !important;
+	}
+}
+
+.bottom_sidebar {
+	width: 100%;
+	max-width: inherit;
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	background: #fff;
+	.row {
+		padding: 18px 0;
+		margin: 0;
+		border-top: 1px solid $lines;
+	}
+	#show_archive {
+		text-align: right;
+	}
+	.pagination {
+		margin-bottom: 0;
+		font-size: 14px;
+		.active a {
+			background: $green;
+			border-color: $green;
+		}
+		a {color: $grey;}
+		a:hover {color: $green;}
+	}
+}
+.tab-content, .freeze_table {
+	margin-bottom: 60px;
+}
+
+@media (max-width: 320px) { .table .fio_name {width: 180px;} }
+@media (min-width:321px) and (max-width: 375px) { .table .fio_name {width: 220px;} }
+@media (min-width:376px) and (max-width: 414px) { .table .fio_name {width: 260px;} }
+@media (max-width: 767px) {
+	.table {
+		top: 0;
+		td {
+			height: 80px;
+			vertical-align: top;
+		}
+		.btn-group {
+			margin-top: 12px;
+		}
+		.td_photo {
+			padding-top: 15px;
+		}
+	}
+	.buy_subscriptions {
+		td {
+			height: auto !important;
+		}
+		.btn-down {
+			top: -8px;
+		}
+	}
+}
+@media (min-width: 768px) {
+	thead.d-md-block {
+		display: table-header-group !important;
+	}
+	th.d-md-block, td.d-md-block {
+		display: table-cell !important;
+	}
+}
+/* Таблицы */
+
+
+
+
+
+/* Вкладки и поиск по таблице */
+.nav-pills {
+	.nav-item {
+
+		.nav-link {
+			font-size: 16px;
+			padding: 8px 0 8px 13px;
+			font-weight: $light;
+			padding-right: 16px;
+			border-right: 1px solid $lines;
+
+			&.active, &.active:hover {
+				background: none;
+				color: $green !important;
+				font-weight: normal;
+				cursor: pointer;
+			}
+		}
+		&:first-child .nav-link {
+			padding-left: 0;
+		}
+		&:last-child .nav-link {
+			border-right: none;
+			padding-right: 0;
+			margin-right: 0;
+		}
+	}
+
+}
+
+.page {
+	.nav-pills {
+		margin-bottom: 0;
+	}
+	.live_search {
+		margin-top: 2px;
+		margin-bottom: 0;
+		position: relative;
+		input {
+			padding-left: 30px;
+		}
+		span {
+			background: url(../img/icons.png) 0 -173px no-repeat;
+			position: absolute;
+			z-index: 5;
+			width: 12px;
+			height: 12px;
+			top: 11px;
+			left: 11px;
+		}
+	}
+}
+@media (max-width: 768px) {
+	.page {
+		.nav-pills {
+			margin-bottom: 8px;
+		}
+	}
+}
+
+/* Вкладки и поиск по таблице */
+
+
+
+/* Страница */
+.page {
+	position: relative;
+	top: 20px;
+	height: calc(100vh - 20px);
+	overflow-y: scroll;
+
+	.bredcams {
+		padding-bottom: 8px;
+
+		ul, li {
+			list-style: none;
+			margin: 0;
+			padding: 0;
+		}
+		li {
+			float: left;
+			font-size: 18px;
+			padding-right: 15px;
+			line-height: 35px;
+
+			a {
+				margin-right: 15px;
+				display: block;
+				float: left;
+			}
+		}
+		li a, li:last-child {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			max-width: 250px;
+		}
+		li:last-child {
+			max-width: 45%;
+		}
+	}
+}
+.greyline {
+	width: 100%;
+    height: 1px;
+    background: $lines;
+    border: none;
+    margin: 10px 0;
+}
+.greylineV {
+	width: 1px;
+    height: 100%;
+    background: $lines;
+    border: none;
+    margin: 0;
+}
+@media (max-width: 992px) {
+	.mobile_sidebar .workout_actions {
+		display: none;
+	}
+	.page {
+		height: 100vh;
+		overflow-y: unset;
+
+		.bredcams {
+			height: 48px;
+			* {
+				display: none;
+			}
+		}
+	}
+}
+@media (max-width: 767px) {
+	.mobile_sidebar .workout_actions {
+		display: block;
+	}
+	.page {
+		.bredcams {
+			height: 45px;
+
+			ul {
+				display: none;
+			}
+		}
+	}
+}
+/* Страница */
+
+
+
+
+
+
+/* Страница 404 и страница входа */
+.wrapper-404,
+.wrapper-sing-in {
+    min-height: 100%;
+    text-align: center;
+	padding-top: 30px;
+    padding-bottom: 80px;
+    position: relative;
+}
+
+.wrapper-404 {
+
+	.logo {
+		margin-bottom: 50px;
+	}
+
+	.title {
+		font-weight: $thin;
+		font-size: 200px;
+		line-height: 1;
+		display: block;
+	}
+
+	.text {
+		font-weight: $light;
+		font-size: 24px;
+	}
+
+	.link {
+		ul,li {
+			list-style: none;
+		}
+		li:nth-child(2){
+			border-left: 1px solid #E5E5E5;
+			border-right: 1px solid #E5E5E5;
+		}
+	}
+
+	@media (max-width: 992px) {
+		.logo {
+			margin-bottom: 30px;
+		}
+		.title {
+			font-size: 150px;
+		}
+		.text {
+			font-size: 20px;
+		}
+	}
+
+}
+
+.wrapper-sing-in {
+
+	.logo {
+		margin-bottom: 40px;
+	}
+
+	.form_sing-in {
+		width: 268px;
+		font-size: 14px;
+
+		.form-group {
+			margin-bottom: 8px;
+		}
+		.form-control {
+			text-align: center;
+		}
+		.btn-primary {
+			margin: 16px 0 8px;
+		}
+		#recall_password {
+			margin-bottom: 50px;
+			display: inline-block;
+		}
+
+
+	}
+
+	#form_recall {
+		display: none;
+	}
+
+	.vk {
+		color: #6182AB;
+		border: 1px solid #6182AB;
+
+		svg {
+			position: relative;
+			top: 4px;
+		}
+	}
+}
+
+/* Страница 404 и страница входа */
+
+
+
+
+
+/* Ссылки - подвал */
+footer {
+	position: absolute;
+	bottom: 24px;
+	width: 100%;
+	text-align: center;
+
+	a, a:hover {
+		color: $footer_grey;
+	}
+
+	.vk_link {
+		border-left: 1px solid #E5E5E5;
+		border-right: 1px solid #E5E5E5;
+		padding: 0 6px;
+		margin: 0 6px;
+
+		&:hover {
+			text-decoration: none;
+		}
+
+		svg {
+			position: relative;
+			top: 4px;
+			left: 2px;
+		}
+	}
+	.email_link svg {
+		position: relative;
+		top: 2px;
+	}
+
+}
+footer , .bottom {
+	color: $footer_grey;
+}
+/* Ссылки - подвал */
+
+
+
+
+/* Сайдбар */
+.sidebar {
+	position: relative;
+	padding-right: 0;
+	z-index: 3;
+
+	&.open {
+		z-index: 10;
+	}
+
+	.logo {
+		padding: 20px 0 7px ;
+	}
+
+	.sidebar-wrapper {
+		padding-left: 9px;
+		padding-right: 14px;
+		border-right: 1px solid $lines;
+		min-height: 100vh;
+		width: 100%;
+	}
+
+	.nav-link {
+		font-size: 16px;
+		padding: 8px 0;
+		font-weight: $light;
+
+		&.active, &.active:hover {
+			background: none;
+			color: $green !important;
+			font-weight: normal;
+			cursor: pointer;
+		}
+	}
+
+	.bottom {
+		position: absolute;
+		left: 24px;
+		right: 15px;
+		bottom: 24px;
+		text-align: left;
+
+		p {
+			margin-bottom: 0;
+		}
+
+		.nav-link {
+			padding: 8px 0 0;
+		}
+
+		footer {
+			position: relative;
+			bottom: 0;
+			text-align: left;
+			margin-top: 16px;
+		}
+
+	}
+
+}
+@media (max-width: 992px) {
+	.sidebar {
+		position: absolute;
+		background: #fff;
+
+		.sidebar-wrapper {
+			display: none;
+			min-height: auto;
+			padding-left: 0;
+			position: relative;
+			top: -10px;
+
+			.logo {
+				display: none;
+			}
+			.bottom {
+				position: relative;
+				top: -30px;
+				left: 0;
+				right: 0;
+				bottom: 0;
+			}
+			.nav-link {
+				font-size: 16px;
+			}
+		}
+	}
+}
+
+.mobile_sidebar {
+	width: 100%;
+	height: 76px;
+	background: #fff;
+
+	#mobile_logo {
+		padding: 29px 18px 0 8px;
+		display: block;
+		float: left;
+		.close_b {
+			display: none;
+		}
+	}
+	.logo_name {
+		display: none;
+		position: relative;
+		top: 22px;
+	}
+	.bredcams {
+		font-size: 18px;
+		line-height: 40px;
+		padding: 19px 0;
+
+		ul, li {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+		}
+		li {
+			float: left;
+			border-left: 1px solid $lightgrey;
+			padding: 0 16px;
+		}
+		li:last-child {
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			width: 214px;
+		}
+	}
+	.workout_actions {
+		position: absolute;
+		top: 16px;
+		right: 10px;
+		background: #fff;
+	}
+}
+/* Сайдбар */
+
+
+
+
+
+
+
+
+/* Календарь занятий */
+.page_with_calendar {
+	top: 16px;
+}
+#calendar {
+	position: relative;
+	height: calc(100vh - 35px);
+
+	.fc-toolbar {
+		margin-bottom: 15px;
+
+		h2 {
+		font-size: 18px;
+		line-height: 35px;
+
+			&:before {
+				content: "Тренировки: ";
+			}
+		}
+		.btn {
+			background: #fff !important;
+			color: $grey  !important;
+			border: 1px solid $bordergrey !important;
+
+			&.active {
+				background: $lightgrey !important;
+
+			}
+
+			&:hover {
+				cursor: pointer;
+			}
+		}
+		.fc-new_workout-button {
+			background: $green !important;
+			border-color: $green !important;
+			color: #fff !important;
+			&:hover , &:focus, &:active {
+				background: $green_dark !important;
+			    outline: inherit !important;
+			    box-shadow: inherit !important;
+			    border: 1px solid $green !important;
+			    color: #fff;
+			}
+			&:active {
+				background: $yellow !important;
+				border: 1px solid $yellow !important;
+			}
+		}
+		.fc-list_month-button, .fc-list_week-button {
+			display: none;
+		}
+		.fc-dayGridMonth-button {
+			border-top-left-radius: .25rem !important;
+			border-bottom-left-radius:  .25rem !important;
+		}
+		.fc-listDay-button {
+			margin-right: 18px;
+		}
+		.fc-prev-button {
+			margin-left: 0;
+
+			&:before {
+				content: "<";
+			}
+		}
+		.fc-next-button span:before {
+			content: ">";
+		}
+	}
+	.table-bordered thead td {
+		border-bottom-width: 1px;
+	}
+	.fc-day-header {
+		font-size: 12px;
+		color: $grey;
+		padding: 3px;
+	}
+	.fc-day-number {
+		color: $grey;
+		padding: 8px 8px 2px 2px;
+	}
+	.fc-day-grid-event {
+		margin: 4px 8px;
+		border: none;
+		color: $grey;
+
+		.fc-time {
+
+		}
+	}
+	.fc-time-grid-event {
+		border: none;
+	}
+	.fc-content {
+		padding: 2px;
+		font-size: 12px;
+	}
+
+	.alert-info {
+		background: $lightgreen;
+	}
+	.fc-more-cell {
+		text-align: right;
+		position: relative;
+		right: 8px;
+	}
+}
+
+.fc-list-table {
+	top: 0;
+
+	td {
+		height: 20px;
+	}
+}
+.fc-day-grid-event .fc-content {
+	white-space: inherit !important;
+}
+.fc-close:after {
+	content: "×";
+	font-weight: bold;
+	font-size: 14px;
+}
+
+@media (max-width: 374px) {
+	.fc-prev-button, .fc-next-button {
+		position: relative !important;
+		top: 0 !important;
+		right: 0 !important;
+		margin-left: 8px !important;
+	}
+	.fc-prev-button {
+		margin-left: 13px !important;
+	}
+}
+@media (max-width: 767px) {
+	.fc-list_month-button, .fc-list_week-button {
+		display: block !important;
+	}
+	.fc-dayGridMonth-button, .fc-dayGridWeek-button {
+		display: none !important;
+	}
+}
+@media (max-width: 992px) {
+	#calendar {
+		height: calc(100vh - 80px);
+		top: 51px;
+
+		.fc-day-grid-event {
+			margin: 2px 2px;
+		}
+		.fc-content {
+			font-size: 10px;
+		}
+		.fc-toolbar {
+			padding-top: 8px;
+			margin-bottom: 10px;
+
+			.fc-listDay-button {
+				margin-right: 0;
+			}
+			.fc-prev-button, .fc-next-button, .fc-new_workout-button {
+				position: absolute;
+				z-index: 4;
+				top: -45px;
+			}
+			.fc-prev-button {
+				right: 106px;
+			}
+			.fc-next-button {
+				margin-right: 0;
+				right: 70px;
+			}
+			.fc-new_workout-button {
+				right: 0;
+			}
+		}
+
+		.fc-left {
+			display: none;
+		}
+	}
+
+}
+/* Календарь занятий */
+
+
+
+
+
+
+/* Новая тренировка */
+.days {
+	padding: 24px 0 0;
+	text-align: center;
+	border-top: 1px solid $lightgrey;
+	border-bottom: 1px solid $lightgrey;
+	position: relative;
+
+	.day {
+		padding-bottom: 24px;
+		position: relative;
+
+		.greylineV {
+			position: absolute;
+			top: 0;
+			left: 1px;
+			height: 145px;
+		}
+	}
+
+	.form-check {
+		.form-check-label {
+			margin-bottom: 8px;
+		}
+		.form-check-input {
+			left: 50%;
+			margin: 2px 0 0 -6px;
+		}
+		.form-check-input-div {
+			margin: 0 auto 8px;
+			float: none;
+		}
+		.form-check-input-div:after {
+			left: 50%;
+			margin-top: 1px;
+			margin-left: -2px;
+		}
+	}
+
+}
+/* Новая тренировка */
+
+
+
+/* Тренировка и  */
+.workout_actions {
+	font-size: 14px;
+
+	ul {margin-bottom: 0; padding: 0; float: right;}
+	li {
+		list-style: none;
+		float: left;
+		border-left: 1px solid $lines;
+	}
+
+	li>a, .btn-group>a {
+		padding: 0 18px;
+		line-height: 16px;
+		height: 38px;
+	}
+
+	.icon {
+		position: relative;
+		display: inline-block;
+		margin-right: 18px;
+	}
+	.new_student .icon {
+		width: 22px;
+		height: 22px;
+		background: url(../img/icons.png) 0 -92px no-repeat;
+	}
+	.QR .icon {
+		width: 20px;
+		height: 20px;
+		background: url(../img/icons.png) 0 -119px no-repeat;
+	}
+	.close_workout .icon {
+		width: 21px;
+		height: 24px;
+		background: url(../img/icons.png) 0 -144px no-repeat;
+	}
+	.more .icon {
+		width: 3px;
+		height: 15px;
+		margin: 0;
+	}
+	.more a[aria-expanded="false"] .icon {background: url(../img/icons.png) 0 -72px no-repeat;}
+	.more a[aria-expanded="true"] .icon {background: url(../img/icons.png) -8px -72px no-repeat;}
+}
+.mobile_workout_actions {
+	padding-top: 10px;
+	ul {
+		float: none;
+		li:first-child {border-left: none;}
+		a {
+			display: block;
+			height: auto;
+			text-align: center;
+		}
+		.icon {
+			margin: 0 auto 8px;
+			display: block;
+		}
+	}
+}
+/* Тренировка */
+
+
+/* Тренировка, ученики и тренеры */
+.copy_url {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 150px;
+}
+
+@media (max-width: 1139px) {
+	.desktop_workout_actions {
+		font-size: 12px;
+		li>a, .btn-group>a {
+			padding: 0 12px;
+		}
+		.icon {
+			margin-right: 12px;
+		}
+	}
+}
+@media (max-width: 767px) {
+	.workout_page, .students_page {
+		.table {
+			.balance {
+				position: absolute;
+				right: 10px;
+			}
+			.btn {
+				top: 23px;
+			}
+			.btn-group .btn {
+				top: 10px;
+			}
+			.several .btn {
+				margin: 12px 0;
+			}
+			.several .btn + .greyline {
+				position: relative;
+				top: 12px;
+			}
+		}
+	}
+}
+/* Тренировка, ученики и тренеры */
+
+
+
+/* Абонементы */
+.skip_line {
+	position: relative;
+	top: -6px;
+}
+.subscription_check {
+	.form-check {
+		margin-bottom: 8px;
+	}
+}
+
+@media (max-width: 767px) {
+	.skip_line {
+		top: 0;
+	}
+}
+#pills-subscriptions {
+
+	tr.active {
+		background-color: #F4F4F4 !important;
+		p {
+			color: $black;
+			small {
+				color: $grey;
+			}
+		}
+	}
+	tr.active_info {
+		display: none;
+	}
+
+	.buy_subscriptions .fio_name {
+		position: relative;
+		top: 4px;
+		color: $green;
+	}
+	.buy_subscriptions tr:hover {
+		background: #F4F4F4 !important;
+	}
+
+	.save_buttons {
+		margin-bottom: 8px;
+	}
+
+}
+#qr_scaner {
+	width: 100%;
+	max-width: 500px;
+	margin: 0 auto;
+}
+/* Абонементы */
+
+
+
+
+
+
+
+/* Ученик */
+.user_info {
+	margin-bottom: 8px;
+	.user_pic {
+		margin-right: 18px;
+		img {
+			display: block;
+			width: 100px;
+			height: 100px;
+			border-radius: 100px;
+		}
+	}
+	.big_name {
+		font-size: 24px;
+		font-weight: bold;
+	}
+	.save_buttons {
+		margin: 8px 0;
+		a {
+			margin-bottom: 0;
+		}
+	}
+	.balance {
+		border: 1px solid $grey;
+		color: $grey;
+		border-radius: 4px;
+		font-size: 14px;
+		padding: 0 8px;
+		display: inline-block;
+		line-height: 20px;
+		margin: 8px 8px 8px 0;
+
+		&.green {
+			border: 1px solid $green;
+			color: $green;
+		}
+		&.yellow {
+			border: 1px solid $yellow;
+			color: $yellow;
+		}
+		&.orange {
+			border: 1px solid $orange;
+			color: $orange;
+		}
+
+	}
+}
+
+.student_page {
+
+	#pills-journal {
+		table tr {
+			td:first-child {
+				text-align: right;
+				width: 100px;
+			}
+			td:nth-child(2) {
+				max-width: 300px;
+			}
+
+		}
+	}
+	#pills-qr img {
+		display: block;
+	}
+	#pills-comment {
+		padding-top: 18px;
+		p {
+			margin-bottom: 10px;
+			font-size: 14px;
+		}
+	}
+	.date_end small {
+		white-space: nowrap;
+	}
+}
+@media (max-width: 767px) {
+	.student_page {
+		 .nav-pills {
+			.nav-item:nth-child(2) .nav-link {
+				border-right: none !important;
+				padding-right: 0;
+			}
+			.nav-item:nth-child(4) .nav-link {
+				padding-left: 0;
+			}
+		}
+	}
+}
+/* Ученик */
+
+
+
+
+/* Отчёты */
+.report_filter {
+	.date {
+		width: 135px;
+		margin-right: 8px;
+		input {
+			padding: 8px 0 8px 8px;
+		}
+	}
+	.select {
+		margin-right: 8px;
+	}
+	.input-group-append .btn {
+		padding: .375rem;
+		width: 28px !important;
+	}
+}
+.report_page {
+	th {
+		position: inherit !important;
+	}
+	.red, .green, .grey {
+		min-width: 55px;
+		width: 55px;
+		border: 1px solid $lines;
+	}
+	.red {
+		background: #F5D7C5;
+	}
+	.green {
+		background: #D5EFB7;
+	}
+	.grey {
+		background: $lines;
+	}
+	.btn-primary {
+		margin-right: 0;
+		padding: 9px 20px 8px;
+	}
+}
+.instruction_report_2 {
+	div {
+		width: auto !important;
+		padding: 5px;
+		color: $grey;
+		float: left;
+		margin: 8px 0 10px 8px;
+		text-align: center;
+		white-space: nowrap;
+	}
+}
+@media (max-width: 1024px) {
+	.report_filter .date {
+		input {
+			padding: 5px 0 5px 10px;
+		}
+		.btn {
+			padding: 5px !important;
+		}
+	}
+}
+/* Отчеты */
+
+
+/* Помощь */
+.video {
+	padding: 8px 0;
+}
