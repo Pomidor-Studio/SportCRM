@@ -1048,7 +1048,7 @@ footer, .bottom {
     color: #484F57;
     border-radius: 4px;
     font-size: 14px;
-    padding: 0 8px;
+    padding: 4px 16px;
     display: inline-block;
     line-height: 20px;
     margin: 8px 8px 8px 0; }
@@ -1061,6 +1061,9 @@ footer, .bottom {
     .user_info .balance.orange {
       border: 1px solid #EE5F0F;
       color: #EE5F0F; }
+  .user_info .icon {
+    position: relative;
+    top: 1px; }
 
 .student_page #pills-journal table tr td:first-child {
   text-align: right;

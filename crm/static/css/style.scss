@@ -1521,7 +1521,7 @@ footer , .bottom {
 		color: $grey;
 		border-radius: 4px;
 		font-size: 14px;
-		padding: 0 8px;
+		padding: 4px 16px;
 		display: inline-block;
 		line-height: 20px;
 		margin: 8px 8px 8px 0;
@@ -1538,7 +1538,10 @@ footer , .bottom {
 			border: 1px solid $orange;
 			color: $orange;
 		}
-
+	}
+	.icon {
+		position: relative;
+		top: 1px;
 	}
 }
 

@@ -88,6 +88,8 @@ class ClientForm(TenantModelForm):
             'additional_info': forms.Textarea(
                 attrs={
                     "class": "form-control",
+                    "rows": "4",
+                    "placeholder": "Здесь вы можете указать информацию о клиенте и дополнительные номера телефонов",
                 }
             )
         }
