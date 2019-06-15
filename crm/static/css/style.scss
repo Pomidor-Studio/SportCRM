@@ -614,9 +614,6 @@ tr.active .btn-down span {
 	margin-bottom: 60px;
 }
 
-@media (max-width: 320px) { .table .fio_name {width: 180px;} }
-@media (min-width:321px) and (max-width: 375px) { .table .fio_name {width: 220px;} }
-@media (min-width:376px) and (max-width: 414px) { .table .fio_name {width: 260px;} }
 @media (max-width: 767px) {
 	.table {
 		top: 0;
