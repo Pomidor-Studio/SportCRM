@@ -4,7 +4,7 @@
 {% block title %}Добавить ученика{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Добавить ученика" back_link=back_link  current='event' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Записать ученика" back_link=back_link  current='event' %}
 {% endblock %}
 
 
@@ -38,7 +38,7 @@
           </svg>
         </li>
         <li>
-          Добавить ученика
+          Записать ученика
         </li>
       </ul>
     </div>

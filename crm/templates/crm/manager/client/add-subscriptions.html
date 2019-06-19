@@ -110,18 +110,32 @@
     <div class="greyline"></div>
     <div class="user_info d-flex">
       <div class="user_pic">
-        {% include 'crm/manager/_client_list_item_photo.html' %}
+        {% ifhasperm 'client.edit' user %}
+            {% if client.vk_user_id %}
+              <a href="{% url 'crm:manager:client:update' client.id %}">
+                <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+              </a>
+            {% else %}
+                <a href="{% url 'crm:manager:client:update' client.id %}"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
+            {% endif %}
+        {% else %}
+            {% if client.vk_user_id %}
+                <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+            {% else %}
+                <img src="{% static "img/no-photo.png" %}" class="photo">
+            {% endif %}
+        {% endifhasperm %}
       </div>
       <div class="user_login flex-grow-1">
-							<span class="big_name">
-                {% ifhasperm 'client.edit' user %}
-                  <a href="{% url 'crm:manager:client:update' client.id %}">
-                    {{ client.name }}
-                  </a>
-                {% else %}
-                  <a href="#">{{ client.name }}</a>
-                {% endifhasperm %}
-              </span>
+		<span class="big_name">
+            {% ifhasperm 'client.edit' user %}
+              <a href="{% url 'crm:manager:client:update' client.id %}">
+                {{ client.name }}
+              </a>
+            {% else %}
+              <a>{{ client.name }}</a>
+            {% endifhasperm %}
+         </span>
         <div class="contacts">
           <a href="tel:{{ client.phone_number }}">{{ client.phone_number|phone_format }}</a>
         </div>
@@ -356,7 +370,7 @@
                   </td>
                   <td class="d-none d-md-block text-right">
                     {% if sub.price %}
-                      {{ sub.price | floatformat:"-2" | intcomma }} ₽
+                      {{ sub.price | floatformat:"-2" | intcomma }}&nbsp;₽
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">

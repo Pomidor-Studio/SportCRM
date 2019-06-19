@@ -38,107 +38,109 @@
 
     <div class="greyline"></div>
 
-    <table class="table table-hover">
-      <thead class="d-none d-md-block">
-      <tr>
-        <th>
-          Наименование
-        </th>
-        <th>
-          Допустимые тренировки
-        </th>
-        <th>
-          Продолжительность
-        </th>
-        <th>
-          Кол-во посещений
-        </th>
-        <th>
-          Стоимость
-        </th>
-        <th width="1"></th>
-      </tr>
-      </thead>
-      <tbody>
-      {% for subscription in subscriptions %}
-        <tr {% if subscription.deleted %}class="archive"{% endif %}>
-          <td>
-           {% if not subscription.deleted %}
-                {% ifhasperm 'location.edit' user %}
-                <a href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                     class="fio_name"> {{ subscription.name }}</a>
+    <div class="tab-content">
+        <table class="table table-hover">
+          <thead class="d-none d-md-block">
+          <tr>
+            <th>
+              Наименование
+            </th>
+            <th>
+              Допустимые тренировки
+            </th>
+            <th>
+              Продолжительность
+            </th>
+            <th>
+              Кол-во посещений
+            </th>
+            <th>
+              Стоимость
+            </th>
+            <th width="1"></th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for subscription in subscriptions %}
+            <tr {% if subscription.deleted %}class="archive"{% endif %}>
+              <td>
+               {% if not subscription.deleted %}
+                    {% ifhasperm 'location.edit' user %}
+                    <a href="{% url 'crm:manager:subscription:update' subscription.id %}"
+                         class="fio_name"> {{ subscription.name }}</a>
+                    {% else %}
+                      <a href="#" class="fio_name"> {{ subscription.name }}</a>
+                    {% endifhasperm %}
+                  {% else %}
+                    {{ subscription.name }}
+               {% endif %}
+                <div class="balance d-md-none">
+                  {% for eventclass in subscription.event_class.all %}
+                    <small>{{ eventclass }}</small>
+                    {% if not forloop.last %}
+                      ,
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </td>
+              <td class="d-none d-md-block">
+                {% for eventclass in subscription.event_class.all %}
+                  {{ eventclass }}
+                  {% if not forloop.last %}
+                    ,
+                  {% endif %}
+                {% endfor %}
+              </td>
+              <td>
+                <div class="d-none d-md-block">
+                  {{ subscription.duration }} {{ subscription.duration_postfix }}
+                </div>
+                <div class="d-block d-md-none">
+                  <small> {{ subscription.duration }} {{ subscription.duration_postfix }}</small>
+                  <br>
+                  <small>Посещений: {{ subscription.visit_limit }}</small>
+                </div>
+              </td>
+              <td class="d-none d-md-block">
+                {{ subscription.visit_limit }}
+              </td>
+              <td>
+                {{ subscription.price|floatformat:"-2"|intcomma }} ₽
+              </td>
+              <td>
+                {% if subscription.deleted %}
+                  {% ifhasperm 'subscription.undelete' user %}
+                    <a class="btn btn-icon btn-undo"
+                       href="#confirm_popup"
+                       data-action-text="Вернуть"
+                       data-body-text="Вернуть из архива?"
+                       data-title="Возврат из архива"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:subscription:undelete" subscription.id %}">
+                      <span></span>
+                      <abbr>Вернуть</abbr>
+                    </a>
+                  {% endifhasperm %}
                 {% else %}
-                  <a href="#" class="fio_name"> {{ subscription.name }}</a>
-                {% endifhasperm %}
-              {% else %}
-                {{ subscription.name }}
-           {% endif %}
-            <div class="balance d-md-none">
-              {% for eventclass in subscription.event_class.all %}
-                <small>{{ eventclass }}</small>
-                {% if not forloop.last %}
-                  ,
+                  {% ifhasperm 'location.delete' user %}
+                    <a class="btn btn-icon btn-delete"
+                       href="#confirm_popup"
+                       data-action-text="В архив"
+                       data-title="Перемещение в архив"
+                       data-body-text="Переместить в архив?"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:subscription:delete" subscription.id %}">
+                      <span></span>
+                      <abbr>Удалить</abbr>
+                    </a>
+                  {% endifhasperm %}
                 {% endif %}
-              {% endfor %}
-            </div>
-          </td>
-          <td class="d-none d-md-block">
-            {% for eventclass in subscription.event_class.all %}
-              {{ eventclass }}
-              {% if not forloop.last %}
-                ,
-              {% endif %}
-            {% endfor %}
-          </td>
-          <td>
-            <div class="d-none d-md-block">
-              {{ subscription.duration }} {{ subscription.duration_postfix }}
-            </div>
-            <div class="d-block d-md-none">
-              <small> {{ subscription.duration }} {{ subscription.duration_postfix }}</small>
-              <br>
-              <small>Посещений: {{ subscription.visit_limit }}</small>
-            </div>
-          </td>
-          <td class="d-none d-md-block">
-            {{ subscription.visit_limit }}
-          </td>
-          <td>
-            {{ subscription.price|floatformat:"-2"|intcomma }} ₽
-          </td>
-          <td>
-            {% if subscription.deleted %}
-              {% ifhasperm 'subscription.undelete' user %}
-                <a class="btn btn-icon btn-undo"
-                   href="#confirm_popup"
-                   data-action-text="Вернуть"
-                   data-body-text="Вернуть из архива?"
-                   data-title="Возврат из архива"
-                   data-toggle="modal"
-                   data-url="{% url "crm:manager:subscription:undelete" subscription.id %}">
-                  <span></span>
-                  <abbr>Вернуть</abbr>
-                </a>
-              {% endifhasperm %}
-            {% else %}
-              {% ifhasperm 'location.delete' user %}
-                <a class="btn btn-icon btn-delete"
-                   href="#confirm_popup"
-                   data-action-text="В архив"
-                   data-title="Перемещение в архив"
-                   data-body-text="Переместить в архив?"
-                   data-toggle="modal"
-                   data-url="{% url "crm:manager:subscription:delete" subscription.id %}">
-                  <span></span>
-                  <abbr>Удалить</abbr>
-                </a>
-              {% endifhasperm %}
-            {% endif %}
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+    </div>
     {% include "crm/bars/_bottom_sidebar.html" %}
   </div>
 {% endblock content %}
