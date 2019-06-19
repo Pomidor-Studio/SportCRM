@@ -86,18 +86,12 @@
         {% if event %}
           <li>
             <a href="{% url 'crm:manager:event:calendar' %}">Расписание</a>
-            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round"></path>
-            </svg>
+            {% include 'crm/bars/_img_bredcams_str.html' %}
           </li>
           <li>
             <a
               href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">{{  event.event_class.name }}</a>
-            <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round"></path>
-            </svg>
+            {% include 'crm/bars/_img_bredcams_str.html' %}
           </li>
         {% endif %}
         <li>
@@ -105,41 +99,51 @@
             Ученик
           {% else %}
             <a href="{% url 'crm:manager:client:list' %}">Ученики</a>
+            {% include 'crm/bars/_img_bredcams_str.html' %}
           {% endif %}
         </li>
         <li>
-          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-               xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
+            {{ client.name }}
         </li>
-        <li>{{ client.name }}</li>
       </ul>
     </div>
     <div class="greyline"></div>
     <div class="user_info d-flex">
       <div class="user_pic">
-        {% include 'crm/manager/_client_list_item_photo.html' %}
+        {% ifhasperm 'client.edit' user %}
+            {% if client.vk_user_id %}
+              <a href="{% url 'crm:manager:client:update' client.id %}">
+                <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+              </a>
+            {% else %}
+                <a href="{% url 'crm:manager:client:update' client.id %}"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
+            {% endif %}
+        {% else %}
+            {% if client.vk_user_id %}
+                <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+            {% else %}
+                <img src="{% static "img/no-photo.png" %}" class="photo">
+            {% endif %}
+        {% endifhasperm %}
       </div>
       <div class="user_login flex-grow-1">
-							<span class="big_name">
-                {% ifhasperm 'client.edit' user %}
-                  <a href="{% url 'crm:manager:client:update' client.id %}">
-                    {{ client.name }}
-                  </a>
-                {% else %}
-                  <a href="#">{{ client.name }}</a>
-                {% endifhasperm %}
-              </span>
+		<span class="big_name">
+            {% ifhasperm 'client.edit' user %}
+              <a href="{% url 'crm:manager:client:update' client.id %}">
+                {{ client.name }}
+              </a>
+            {% else %}
+              <a>{{ client.name }}</a>
+            {% endifhasperm %}
+         </span>
         <div class="contacts">
           <a href="tel:{{ client.phone_number }}">{{ client.phone_number|phone_format }}</a>
         </div>
-        <div class="balance green">
-          {{ client.balance | floatformat:"-2" | intcomma }} ₽
-        </div>
-        <a href="{% url 'crm:manager:client:balance:new' client.id %}">
-          Изменить баланс
+        <a href="{% url 'crm:manager:client:balance:new' client.id %}" class="balance green">
+            {{ client.balance | floatformat:"-2" | intcomma }} ₽
+        </a>
+        <a href="{% url 'crm:manager:client:balance:new' client.id %}" class="icon">
+            {% include 'crm/manager/client/_image_edit_icon.html' %}
         </a>
 
       </div>
@@ -324,7 +328,7 @@
                 <th class="d-none d-md-block text-center">
                   Посл. посещение
                 </th>
-                <th class="d-none d-md-block">
+                <th class="d-none d-md-block text-right">
                   Цена
                 </th>
                 <th width="1"></th>
@@ -344,6 +348,9 @@
                     <div>
                       <small>Посещения: {{ sub.visits_left }} из {{ sub.visits_on_by_time }}</small>
                     </div>
+                    <div class="d-block d-md-none">
+                      <small>Действует до: {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
+                    </div>
                   </td>
                   <td class="d-none d-md-block">
                     {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
@@ -353,11 +360,8 @@
                   <td class="d-none d-md-block text-center">
                     {{ sub.start_date|date:"SHORT_DATE_FORMAT" }}
                   </td>
-                  <td class="text-center">
+                  <td class="d-none d-md-block text-center">
                     <div class="date_end">
-                      <div class="d-block d-md-none">
-                        <small>Действует до:</small>
-                      </div>
                       {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
                     </div>
                   </td>
@@ -366,7 +370,7 @@
                   </td>
                   <td class="d-none d-md-block text-right">
                     {% if sub.price %}
-                      {{ sub.price | floatformat:"-2" | intcomma }} ₽
+                      {{ sub.price | floatformat:"-2" | intcomma }}&nbsp;₽
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">

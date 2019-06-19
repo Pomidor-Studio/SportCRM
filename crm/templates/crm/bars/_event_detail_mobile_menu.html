@@ -8,6 +8,9 @@
           class="icon align-self-center"></span></a>
         <div class="dropdown-menu dropdown-menu-right">
           <a class="dropdown-item"
+           href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}">Сканер QR-кода</a>
+          <div class="greyline"></div>
+          <a class="dropdown-item"
              href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать
             занятие</a>
           <a class="dropdown-item"

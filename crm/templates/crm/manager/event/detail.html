@@ -6,8 +6,8 @@
 {% block sidbar %}
   {% url 'crm:manager:event:calendar' as back_link %}
   {% with dt=event.date|date:"d.m.Y" coach=event.event_class.coach|escape %}
-    {% with crumb_name=""|add:event.event_class.name|add:" "|add:dt|add:" "|add:coach %}
-      {% include 'crm/bars/_sidebar_design.html' with name=crumb_name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}
+        {% with crumb_name="<small class=grey>"|add:dt|add:" | "|add:coach|add:"</small><span>"|add:event.event_class.name|add:"</span>" %}
+        {% include 'crm/bars/_sidebar_design.html' with name=crumb_name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}
     {% endwith %}
   {% endwith %}
 {% endblock %}
@@ -29,7 +29,7 @@
           <li class="new_student">
             <a href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day  %}" class="d-flex">
               <span class="icon align-self-center"></span>
-              <span class="align-self-center">Добавить<br/>ученика</span>
+              <span class="align-self-center">Записать<br/>ученика</span>
             </a>
           </li>
         {% endifhasperm %}
@@ -85,17 +85,18 @@
           </svg>
         </li>
         <li>
-          {{ event.event_class.name }} {{ event.date|date:"d.m.Y" }} {{ event.event_class.coach }}
+            <small>{{ event.date|date:"d.m.Y" }} | {{ event.event_class.coach }}</small>
+            {{ event.event_class.name }}
         </li>
       </ul>
     </div>
-    <div class="workout_actions mobile_workout_actions d-md-none">
+    <!--<div class="workout_actions mobile_workout_actions d-md-none">
       <ul class="row">
         {% ifhasperm 'client.add' user %}
           <li class="new_student col-6">
             <a href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day  %}">
               <span class="icon"></span>
-              <span>Добавить<br/>ученика</span>
+              <span>Записать<br/>ученика</span>
             </a>
           </li>
         {% endifhasperm %}
@@ -108,21 +109,28 @@
           </li>
         {% endif %}
       </ul>
-    </div>
+    </div>-->
     <div class="greyline"></div>
     <div class="row">
       <div class="col-12">
         <ul class="nav nav-pills row no-gutters" id="pills-tab" role="tablist">
-          <li class="nav-item col-6 col-md-auto text-center text-md-left">
+          <li class="nav-item col-4 col-md-auto text-center text-md-left">
             <a class="nav-link active" id="pills-all-tab" data-toggle="pill"
                href="#pills-all" role="tab" aria-controls="pills-all"
-               aria-selected="true">Ученики</a>
+               aria-selected="true">Записаны</a>
           </li>
-          <li class="nav-item col-6 col-md-auto text-center text-md-left">
+
+          <li class="nav-item col-4 col-md-auto text-center text-md-left">
             <a class="nav-link" id="pills-marked-tab" data-toggle="pill"
                href="#pills-marked" role="tab" aria-controls="pills-marked"
-               aria-selected="false">Отмеченные</a>
+               aria-selected="false">Отмечены</a>
           </li>
+          <li class="nav-item new_student col-4 d-md-none text-center">
+            <a class="nav-link" href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day  %}">
+              <span class="icon"></span> <span class="text">Записать</span>
+            </a>
+          </li>
+
         </ul>
         <div class="greyline"></div>
         <div class="tab-content" id="pills-tabContent">
@@ -155,7 +163,7 @@
                     Баланс
                   </th>
                   <th width="1"></th>
-                  <th width="1"></th>
+                  <th class="d-none d-md-block" width="1"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -181,7 +189,7 @@
                           class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                         <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_buttons.html' %}</td>
-                        <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
+                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                       </tr>
                     {% endwith %}
                   {% endfor %}
@@ -208,7 +216,7 @@
                           class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                         <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_buttons.html' %}</td>
-                        <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
+                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                       </tr>
                     {% endwith %}
                   {% endfor %}
@@ -216,7 +224,7 @@
                 </tbody>
               </table>
             {% else %}
-              Не отмеченных учеников нет
+              Записанных учеников нет
             {% endif %}
           </div>
           <div class="tab-pane fade" id="pills-marked" role="tabpanel"
@@ -264,7 +272,7 @@
                       <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' with client=attendance.client %}</td>
                       <td>{% include 'crm/manager/_client_list_item_button.html' with client=attendance.client action='unmark' %}</td>
-                      <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
                     </tr>
                   {% endwith %}
                 {% endfor %}

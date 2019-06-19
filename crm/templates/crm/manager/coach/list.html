@@ -38,139 +38,141 @@
     </div>
     <div class="greyline"></div>
     {% if coachs %}
-      <table class="table table-hover">
-        <thead class="d-none d-md-block">
-        <tr>
-          <th width="1"></th>
-          <th>
-            ФИО
-          </th>
-          <th>
-            Телефон
-          </th>
-          <th>
-            VK
-          </th>
-          {% ifhasperm 'coach.add' user %}
-          <th>
-            Ссылка для входа
-          </th>
-          {% endifhasperm %}
-          <th width="1"></th>
-        </tr>
-        </thead>
-        <tbody>
+        <div class="tab-content">
+          <table class="table table-hover">
+            <thead class="d-none d-md-block">
+            <tr>
+              <th width="1"></th>
+              <th>
+                ФИО
+              </th>
+              <th>
+                Телефон
+              </th>
+              <th>
+                VK
+              </th>
+              {% ifhasperm 'coach.add' user %}
+              <th>
+                Ссылка для входа
+              </th>
+              {% endifhasperm %}
+              <th width="1"></th>
+            </tr>
+            </thead>
+            <tbody>
 
-        {% for coach in coachs %}
-          <tr {% if coach.deleted %}class="archive"{% endif %}>
-            <td class="td_photo" width="1">
-              {% if coach.user.vk_id %}
-                {% if vk_group_id %}
-                  <a
-                    href="https://vk.com/gim{{ vk_group_id }}?sel={{ coach.user.vk_id }}">
-                    <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
-                  </a>
-                {% else %}
-                  <a href="https://vk.com/?sel={{ coach.user.vk_id }}">
-                    <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
-                  </a>
-                {% endif %}
-              {% else %}
-                <a href="#"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
-              {% endif %}
-            </td>
-            <td>
-              {% if not coach.deleted %}
-                {% if coach.user_id == user.id %}
-                  <a href="{% url "crm:accounts:profile" %}"
-                     class="fio_name">{{ coach }}</a>
-                {% else %}
-                  {% ifhasperm 'coach.edit' user %}
-                    <a href="{% url "crm:manager:coach:update" coach.id %}"
-                       class="fio_name">{{ coach }}</a>
+            {% for coach in coachs %}
+              <tr {% if coach.deleted %}class="archive"{% endif %}>
+                <td class="td_photo" width="1">
+                  {% if coach.user.vk_id %}
+                    {% if vk_group_id %}
+                      <a
+                        href="https://vk.com/gim{{ vk_group_id }}?sel={{ coach.user.vk_id }}">
+                        <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
+                      </a>
+                    {% else %}
+                      <a href="https://vk.com/?sel={{ coach.user.vk_id }}">
+                        <img src="{% vk_small_avatar coach.user.vk_id %}" class="photo">
+                      </a>
+                    {% endif %}
                   {% else %}
-                    <a href="#" class="fio_name">{{ coach }}</a>
-                  {% endifhasperm %}
-                {% endif %}
-              {% else %}
-                {{ coach }}
-              {% endif %}
-              {% if coach.user_id == user.id %}
-                <div>
-                  <small class="yellow">Это вы</small>
-                </div>
-              {% endif %}
-              <div class="d-md-none">
-                <a href="tel:{{ coach.phone_number }}"
-                >{{ coach.phone_number|phone_format }}</a>
-                <br/>
-                {% if not coach.deleted %}
-                  <div class="copy_url">
-                  <a href="#"
-                     class="btn-icon btn-copy"
-                     data-clipboard-text="{% one_time_login_link coach.user %}">
-                    <span></span></a><span>{% one_time_login_link coach.user %}</span>
+                    <a href="#"><img src="{% static "img/no-photo.png" %}" class="photo"></a>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if not coach.deleted %}
+                    {% if coach.user_id == user.id %}
+                      <a href="{% url "crm:accounts:profile" %}"
+                         class="fio_name">{{ coach }}</a>
+                    {% else %}
+                      {% ifhasperm 'coach.edit' user %}
+                        <a href="{% url "crm:manager:coach:update" coach.id %}"
+                           class="fio_name">{{ coach }}</a>
+                      {% else %}
+                        <a href="#" class="fio_name">{{ coach }}</a>
+                      {% endifhasperm %}
+                    {% endif %}
+                  {% else %}
+                    {{ coach }}
+                  {% endif %}
+                  {% if coach.user_id == user.id %}
+                    <div>
+                      <small class="yellow">Это вы</small>
+                    </div>
+                  {% endif %}
+                  <div class="d-md-none">
+                    <a href="tel:{{ coach.phone_number }}"
+                    >{{ coach.phone_number|phone_format }}</a>
+                    <br/>
+                    {% if not coach.deleted %}
+                      <div class="copy_url">
+                      <a href="#"
+                         class="btn-icon btn-copy"
+                         data-clipboard-text="{% one_time_login_link coach.user %}">
+                        <span></span></a><span>{% one_time_login_link coach.user %}</span>
+                      </div>
+                    {% endif %}
                   </div>
-                {% endif %}
-              </div>
-            </td>
-            <td class="d-none d-md-block">
-              <a
-                href="tel:{{ coach.phone_number }}">{{ coach.phone_number|phone_format }}</a>
-            </td>
-            <td class="d-none d-md-block">
-              {% if coach.user.vk_link %}
-                <a href="{{ coach.user.vk_link|safe }}"
-                   target="_blank">{{ coach.user.vk_link|safe }}</a>
-              {% else %}
-                Не привязано
-              {% endif %}
-            </td>
-            {% ifhasperm 'coach.add' user %}
-            <td class="d-none d-md-block">
-                {% if not coach.deleted %}
-                  <div class="copy_url">
-                    <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link coach.user %}"><span></span></a>
-                    <span>{% one_time_login_link coach.user %}</span>
-                  </div>
-                {% endif %}
-            </td>
-            {% endifhasperm %}
-            <td width="1">
-              {% if manager.user_id != user.id %}
-                {% if coach.deleted %}
-                  {% ifhasperm 'coach.undelete' user %}
-                    <a class="btn btn-icon btn-undo"
-                       href="#confirm_popup"
-                       data-action-text="Вернуть"
-                       data-body-text="Вернуть из архива?"
-                       data-title="Возврат из архива"
-                       data-toggle="modal"
-                       data-url="{% url "crm:manager:coach:undelete" coach.id %}">
-                      <span></span>
-                      <abbr>Вернуть</abbr>
-                    </a>
-                  {% endifhasperm %}
-                {% else %}
-                  {% ifhasperm 'coach.delete' user %}
-                    <a class="btn btn-icon btn-delete"
-                       href="#confirm_popup"
-                       data-action-text="В архив"
-                       data-title="Перемещение в архив"
-                       data-body-text="Переместить в архив?"
-                       data-toggle="modal"
-                       data-url="{% url "crm:manager:coach:delete" coach.id %}">
-                      <span></span>
-                      <abbr>Удалить</abbr>
-                    </a>
-                  {% endifhasperm %}
-                {% endif %}
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+                </td>
+                <td class="d-none d-md-block">
+                  <a
+                    href="tel:{{ coach.phone_number }}">{{ coach.phone_number|phone_format }}</a>
+                </td>
+                <td class="d-none d-md-block">
+                  {% if coach.user.vk_link %}
+                    <a href="{{ coach.user.vk_link|safe }}"
+                       target="_blank">{{ coach.user.vk_link|safe }}</a>
+                  {% else %}
+                    Не привязано
+                  {% endif %}
+                </td>
+                {% ifhasperm 'coach.add' user %}
+                <td class="d-none d-md-block">
+                    {% if not coach.deleted %}
+                      <div class="copy_url">
+                        <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link coach.user %}"><span></span></a>
+                        <span>{% one_time_login_link coach.user %}</span>
+                      </div>
+                    {% endif %}
+                </td>
+                {% endifhasperm %}
+                <td width="1">
+                  {% if manager.user_id != user.id %}
+                    {% if coach.deleted %}
+                      {% ifhasperm 'coach.undelete' user %}
+                        <a class="btn btn-icon btn-undo"
+                           href="#confirm_popup"
+                           data-action-text="Вернуть"
+                           data-body-text="Вернуть из архива?"
+                           data-title="Возврат из архива"
+                           data-toggle="modal"
+                           data-url="{% url "crm:manager:coach:undelete" coach.id %}">
+                          <span></span>
+                          <abbr>Вернуть</abbr>
+                        </a>
+                      {% endifhasperm %}
+                    {% else %}
+                      {% ifhasperm 'coach.delete' user %}
+                        <a class="btn btn-icon btn-delete"
+                           href="#confirm_popup"
+                           data-action-text="В архив"
+                           data-title="Перемещение в архив"
+                           data-body-text="Переместить в архив?"
+                           data-toggle="modal"
+                           data-url="{% url "crm:manager:coach:delete" coach.id %}">
+                          <span></span>
+                          <abbr>Удалить</abbr>
+                        </a>
+                      {% endifhasperm %}
+                    {% endif %}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
     {% else %}
       <p>Ваш список тренеров пуст</p>
     {% endif %}
