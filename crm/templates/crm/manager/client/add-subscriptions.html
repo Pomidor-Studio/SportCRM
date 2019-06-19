@@ -370,13 +370,15 @@
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
-                    {% ifhasperm 'client_subscription.extend' user %}
-                      <a class="btn btn-icon btn-extend"
-                         href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
-                        <span></span>
-                        <abbr>Продлить</abbr>
-                      </a>
-                    {% endifhasperm %}
+                    {% if not sub.subscription.one_time %}
+                      {% ifhasperm 'client_subscription.extend' user %}
+                        <a class="btn btn-icon btn-extend"
+                           href="{% url 'crm:manager:client:subscription:extend' sub.id %}">
+                          <span></span>
+                          <abbr>Продлить</abbr>
+                        </a>
+                      {% endifhasperm %}
+                    {% endif %}
                   </td>
                   <td class="d-none d-md-block">
                       {% ifhasperm 'client_subscription.delete' user %}
@@ -400,13 +402,15 @@
                       <a class="btn btn-icon btn-more" data-toggle="dropdown"
                          aria-haspopup="true" aria-expanded="false"><span></span></a>
                       <div class="dropdown-menu dropdown-menu-right">
-                        {% ifhasperm 'client_subscription.extend' user %}
-                          <a class="dropdown-item"
-                             href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
-                             data-client-id="{{ client.id }}">
-                            Продлить
-                          </a>
-                        {% endifhasperm %}
+                        {% if not sub.subscription.one_time %}
+                          {% ifhasperm 'client_subscription.extend' user %}
+                            <a class="dropdown-item"
+                               href="{% url 'crm:manager:client:subscription:extend' sub.id %}"
+                               data-client-id="{{ client.id }}">
+                              Продлить
+                            </a>
+                          {% endifhasperm %}
+                        {% endif %}
                         {% ifhasperm 'client_subscription.delete' user %}
                           {% if sub.visits_on_by_time == sub.visits_left %}
                             <a class="dropdown-item"
