@@ -33,7 +33,7 @@ from safedelete.models import SafeDeleteModel
 from transliterate import translit
 
 from crm.enums import GRANULARITY
-from crm.events import get_nearest_to, next_day, Weekdays
+from crm.events import get_nearest_to, next_day, Weekdays, extend_range_distance
 from contrib.text_utils import pluralize
 
 INTERNAL_COMPANY = 'INTERNAL'
@@ -934,8 +934,74 @@ class ClientSubscriptions(CompanyObjectModel):
 
         super().save(*args, **kwargs)
 
+    def next_event_date(
+        self,
+        start_date: date,
+        visits_to_add: int
+    ):
+        days = list(
+            DayOfTheWeekClass.objects
+            .filter(
+                event_id__in=self.subscription.event_class.only('id')
+            )
+            .order_by('day', 'start_time', 'end_time')
+            .values_list('day', flat=True)
+        )
+        if len(days) == 0:
+            return start_date
+
+        last_day = start_date.weekday()
+        # Reorder days, to find next event in full list
+        # if start date is sunday = don't do reorder, as it already prepared
+        if last_day != 6:
+            for idx, day in enumerate(days):
+                if day > last_day:
+                    break
+
+            days = days[idx:] + days[:idx]
+
+        deltas = extend_range_distance(days)
+
+        add_days = 0
+        # Если посещений добавлено больше чем всего занятий в неделю,
+        # значит абонемент продляется на Х недель
+        if visits_to_add > len(days):
+            add_days = 7 * (visits_to_add // len(days))
+
+        # Ищем дистанцю между последним занятием и наименьшим возможным
+        # и добавляем это к дате продления абонемента
+        d_idx = (visits_to_add % len(days)) - 1
+        d_idx = d_idx if d_idx >= 0 else len(days) - 1
+        add_days += deltas[d_idx]
+
+        return start_date + timedelta(days=add_days)
+
     def extend_duration(self, added_visits: int, reason: str = ''):
-        new_end_date = self.nearest_extended_end_date()
+        # Нельза продлять разовые абонементы
+        if self.subscription.one_time:
+            return
+
+        today = date.today()
+        # Если при добавлении в абонемент занятий, происходит выход за пределы
+        # абонемента - то необхдимо добавить дополнительные дни
+        if self.is_overlapping_with_amount(
+            self.visits_left + added_visits,
+            start_date=today + timedelta(days=1)
+        ):
+            # Дата от которой отсчитываем продления нужно брать
+            # либо от последний даты абонемента, если он ещё не просрочен
+            # либо от текущий даты - если абонемент просрочен.
+            # Вариант с текущей датой - это случаи когда абонементы
+            # продляют по болезни
+            last_visit_date = max(self.end_date, today)
+            new_end_date = self.next_event_date(
+                last_visit_date, self.overlapping_count(
+                    self.visits_left + added_visits,
+                    start_date=today + timedelta(days=1)
+                )
+            )
+        else:
+            new_end_date = self.end_date
 
         if new_end_date == self.end_date and added_visits == 0:
             return
@@ -1066,6 +1132,51 @@ class ClientSubscriptions(CompanyObjectModel):
                 .events_to_date(to_date=self.end_date)[:self.visits_left]
         )
 
+    def is_overlapping_with_amount(
+        self,
+        visits_amount: int,
+        start_date: Optional[date] = None
+    ) -> bool:
+        """
+        Return information that client subscription allows visit more events
+        than are planned
+
+        :param visits_amount: Amount of visits that can be used
+        :param start_date: Дата, от которой надо проверить выход посещений
+        за пределы абонемента
+        :return: True if after visiting all events from calendar will remain
+        some visits on this subscription
+        """
+        from_date = self.start_date if start_date is None else start_date
+        try:
+            return len(self.subscription.events_to_date(
+                from_date=from_date, to_date=self.end_date
+            )) < visits_amount
+        except ValueError:
+            return False
+
+    def overlapping_count(
+        self,
+        visits_amount: int,
+        start_date: Optional[date] = None
+    ) -> int:
+        """
+        Получить количество занятий, которое останется на абонементе, после
+        окончания срока действия
+
+        :param visits_amount: Количесто текущих доступных посещений
+        :param start_date: Дата, от которой надо проверить выход посещений
+        за пределы абонемента
+        :return: Остаток занятий, если ходить на каждое доступное занятие
+        """
+        from_date = self.start_date if start_date is None else start_date
+
+        return visits_amount - (
+            len(self.subscription.events_to_date(
+                from_date=from_date, to_date=self.end_date
+            ))
+        )
+
     def is_overlapping(self) -> bool:
         """
         Return information that client subscription allows visit more events
@@ -1074,12 +1185,7 @@ class ClientSubscriptions(CompanyObjectModel):
         :return: True if after visiting all events from calendar will remain
         some visits on this subscription
         """
-        try:
-            return len(self.subscription.events_to_date(
-                from_date=self.start_date, to_date=self.end_date
-            )) < self.visits_left
-        except ValueError:
-            return False
+        return self.is_overlapping_with_amount(self.visits_left)
 
     def is_overlapping_with_cancelled(self) -> bool:
         """
