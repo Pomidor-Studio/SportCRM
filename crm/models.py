@@ -924,6 +924,26 @@ class ClientSubscriptions(CompanyObjectModel):
 
     objects = ClientSubscriptionsManager()
 
+    @property
+    def normalized_visits_left(self):
+        """
+        Нормальзованное значение оставщихся визитов. Суть нормализации
+        заключается в последовательном уменьшении оставшихся визитов,
+        при истичении срока абонеента.
+
+        Если на абонементе осталось 10 занятий, а исходя из календаря
+        можно отходить только 8, то нормализованное значение и будет 8.
+        Если же а абонементе осталось 10 занятий, а по расписанию можно отходить
+        12, то нормализованное значение будет равно текущему остатку - 10
+        :return:
+        """
+        return min(
+            self.visits_left,
+            len(self.subscription.events_to_date(
+                from_date=date.today(), to_date=self.end_date
+            ))
+        )
+
     def save(self, *args, **kwargs):
         # Prevent change end date for extended client subscription
         if not self.id:
@@ -982,26 +1002,37 @@ class ClientSubscriptions(CompanyObjectModel):
             return
 
         today = date.today()
-        # Если при добавлении в абонемент занятий, происходит выход за пределы
-        # абонемента - то необхдимо добавить дополнительные дни
-        if self.is_overlapping_with_amount(
-            self.visits_left + added_visits,
-            start_date=today + timedelta(days=1)
-        ):
-            # Дата от которой отсчитываем продления нужно брать
-            # либо от последний даты абонемента, если он ещё не просрочен
-            # либо от текущий даты - если абонемент просрочен.
-            # Вариант с текущей датой - это случаи когда абонементы
-            # продляют по болезни
-            last_visit_date = max(self.end_date, today)
+        # Если абонемент закончился - то просто растягиваем абонемент на
+        # добавляемое количество дней
+        if self.end_date < today:
             new_end_date = self.next_event_date(
-                last_visit_date, self.overlapping_count(
-                    self.visits_left + added_visits,
-                    start_date=today + timedelta(days=1)
+                today, self.overlapping_count(
+                    added_visits, start_date=today + timedelta(days=1)
                 )
             )
+        # Если при добавлении в абонемент занятий, происходит выход за пределы
+        # абонемента - то необхдимо добавить дополнительные дни
         else:
-            new_end_date = self.end_date
+            # Пересчитываем
+            recalc_visits_left = self.normalized_visits_left
+            if self.is_overlapping_with_amount(
+                recalc_visits_left + added_visits,
+                start_date=today + timedelta(days=1)
+            ):
+                # Дата от которой отсчитываем продления нужно брать
+                # либо от последний даты абонемента, если он ещё не просрочен
+                # либо от текущий даты - если абонемент просрочен.
+                # Вариант с текущей датой - это случаи когда абонементы
+                # продляют по болезни
+                last_visit_date = max(self.end_date, today)
+                new_end_date = self.next_event_date(
+                    last_visit_date, self.overlapping_count(
+                        recalc_visits_left + added_visits,
+                        start_date=today + timedelta(days=1)
+                    )
+                )
+            else:
+                new_end_date = self.end_date
 
         if new_end_date == self.end_date and added_visits == 0:
             return
@@ -1018,7 +1049,10 @@ class ClientSubscriptions(CompanyObjectModel):
                     new_end_date if new_end_date != self.end_date else None
                 )
             )
-            self.visits_left += added_visits
+            if self.end_date < today:
+                self.visits_left = added_visits
+            else:
+                self.visits_left = recalc_visits_left + added_visits
             self.end_date = new_end_date
             self.save()
             from gcp.tasks import enqueue
