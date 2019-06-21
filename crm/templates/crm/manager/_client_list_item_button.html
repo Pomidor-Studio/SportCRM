@@ -3,44 +3,54 @@
 {% if not client.deleted %}
   {% if action == 'balance_add' %}
     {% ifhasperm 'client-balance.add' user %}
-      <a class="btn btn-icon btn-pay"
-         href="{% url 'crm:manager:client:balance:new' client.id %}">
-        <span></span>
-        <abbr>Пополнить</abbr>
-      </a>
+        <div class="btn_box d-flex align-items-center">
+          <a class="btn btn-icon btn-pay"
+             href="{% url 'crm:manager:client:balance:new' client.id %}">
+            <span></span>
+            <abbr>Пополнить</abbr>
+          </a>
+        </div>
     {% endifhasperm %}
   {% endif %}
   {% if action == 'mark' %}
-    <a class="btn btn-icon btn-mark"
-       href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id sub.id %}">
-      <span></span>
-      <abbr>Отметить</abbr>
-    </a>
+    <div class="btn_box d-flex align-items-center">
+        <div>
+        <a class="btn btn-icon btn-mark"
+        href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id sub.id %}">
+            <span></span>
+            <abbr>Отметить</abbr>
+        </a>
+        </div>
+    </div>
   {% endif %}
   {% if action == 'unmark' %}
-    <a class="btn btn-icon btn-delete"
-       href="
-          {% if attendance.signed_up %}
-            {% url 'crm:manager:event-class:event:unmark-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}
-          {% else %}
-            {% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day client.id %}
-          {% endif %}
-          ">
-      <span></span>
-      <abbr>Удалить</abbr>
-    </a>
+    <div class="btn_box d-flex align-items-center">
+        <a class="btn btn-icon btn-delete"
+           href="
+              {% if attendance.signed_up %}
+                {% url 'crm:manager:event-class:event:unmark-client' event.event_class.id event.date.year event.date.month event.date.day client.id %}
+              {% else %}
+                {% url 'crm:manager:event-class:event:cancel-att' event.event_class.id event.date.year event.date.month event.date.day client.id %}
+              {% endif %}
+              ">
+          <span></span>
+          <abbr>Удалить</abbr>
+        </a>
+    </div>
   {% endif %}
   {% if action == 'new_subscription' %}
     {% ifhasperm 'client_subscription.sale' user %}
-      <a class="btn btn-icon btn-pay"
-          {% if event %}
-             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day  %}">
-      {% else %}
-           href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
-      {% endif %}
-        <span></span>
-        <abbr>Оплатить</abbr>
-      </a>
+        <div class="btn_box d-flex align-items-center">
+          <a class="btn btn-icon btn-pay"
+              {% if event %}
+                 href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day  %}">
+          {% else %}
+               href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+          {% endif %}
+            <span></span>
+            <abbr>Оплатить</abbr>
+          </a>
+        </div>
     {% endifhasperm %}
   {% endif %}
 {% endif %}

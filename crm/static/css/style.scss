@@ -2,7 +2,7 @@
 /* Цвета */
 
 $black: #000;
-$grey: #484F57;
+$grey: #000;
 $lightgrey: #EEEEEE;
 $footer_grey: #636363;
 
@@ -572,7 +572,7 @@ tr.active .btn-down span {
 
 	.several {
 		.date {
-			line-height: 35px;
+			//line-height: 35px;
 		}
 	}
 
@@ -935,6 +935,7 @@ footer {
 	bottom: 24px;
 	width: 100%;
 	text-align: center;
+	color: $footer_grey;
 
 	a, a:hover {
 		color: $footer_grey;
@@ -961,9 +962,6 @@ footer {
 		top: 2px;
 	}
 
-}
-footer , .bottom {
-	color: $footer_grey;
 }
 /* Ссылки - подвал */
 
@@ -1093,7 +1091,7 @@ footer , .bottom {
 			padding: 0 16px;
 			small {
 				position: absolute;
-				top: 0;
+				top: -3px;
 			}
 			span {
 				display: block;
@@ -1462,14 +1460,8 @@ footer , .bottom {
 				position: absolute;
 				right: 10px;
 			}
-			.btn {
-				top: 23px;
-			}
 			.btn-group .btn {
 				top: 10px;
-			}
-			.several .btn {
-				margin: 12px 0;
 			}
 			.several .btn + .greyline {
 				position: relative;

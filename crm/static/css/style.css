@@ -11,7 +11,7 @@ body {
   body {
     height: calc(100vh - 60px); } }
 a {
-  color: #484F57; }
+  color: #000; }
   a:hover {
     color: #76BD1B;
     text-decoration: underline; }
@@ -34,7 +34,7 @@ a {
   color: #EE5F0F; }
 
 .grey {
-  color: #484F57; }
+  color: #000; }
 
 small {
   font-size: 12px; }
@@ -69,12 +69,12 @@ small {
     color: #fff; }
   .dropdown-menu a {
     font-size: 14px;
-    color: #484F57; }
+    color: #000; }
 
 /* Формы, общее */
 .form-control {
   font-size: 14px;
-  color: #484F57;
+  color: #000;
   border: 1px solid #DEE2E6;
   border-radius: 4px; }
   .form-control:focus {
@@ -100,12 +100,12 @@ small {
 .btn {
   font-size: 14px;
   background: #fff;
-  color: #484F57;
+  color: #000;
   border: 1px solid #DEE2E6;
   padding: 10px 20px; }
   .btn:hover {
     background: #EEEEEE;
-    color: #484F57; }
+    color: #000; }
   .btn:focus, .btn:active {
     outline: inherit;
     box-shadow: inherit;
@@ -323,10 +323,10 @@ tr.active .btn-down span {
     box-shadow: inherit !important;
     border: 1px solid #76BD1B !important;
     background: #fff;
-    color: #484F57; }
+    color: #000; }
   .input-group-append .btn:active {
     background: #EEEEEE !important;
-    color: #484F57 !important; }
+    color: #000 !important; }
   .input-group-append .btn.btn-primary:hover {
     color: #fff !important; }
 
@@ -351,7 +351,7 @@ tr.active .btn-down span {
   line-height: 19px;
   position: relative;
   top: -10px;
-  color: #484F57; }
+  color: #000; }
   .table thead th {
     background: #fff;
     position: -webkit-sticky;
@@ -378,7 +378,7 @@ tr.active .btn-down span {
     line-height: 12px;
     text-transform: uppercase;
     white-space: nowrap;
-    color: #484F57; }
+    color: #000; }
   .table td {
     height: 55px; }
   .table .fio_name {
@@ -411,8 +411,6 @@ tr.active .btn-down span {
       opacity: 1; }
   .table.workout_time .d-flex div {
     padding: 8px 16px; }
-  .table .several .date {
-    line-height: 35px; }
 
 .clone-head-table-wrap {
   border-bottom: 1px solid #EEEEEE; }
@@ -439,7 +437,7 @@ tr.active .btn-down span {
       background: #76BD1B;
       border-color: #76BD1B; }
     .bottom_sidebar .pagination a {
-      color: #484F57; }
+      color: #000; }
     .bottom_sidebar .pagination a:hover {
       color: #76BD1B; }
 
@@ -650,7 +648,8 @@ footer {
   position: absolute;
   bottom: 24px;
   width: 100%;
-  text-align: center; }
+  text-align: center;
+  color: #636363; }
   footer a, footer a:hover {
     color: #636363; }
   footer .vk_link {
@@ -667,9 +666,6 @@ footer {
   footer .email_link svg {
     position: relative;
     top: 2px; }
-
-footer, .bottom {
-  color: #636363; }
 
 /* Ссылки - подвал */
 /* Сайдбар */
@@ -760,7 +756,7 @@ footer, .bottom {
       padding: 0 16px; }
       .mobile_sidebar .bredcams li small {
         position: absolute;
-        top: 0; }
+        top: -3px; }
       .mobile_sidebar .bredcams li span {
         display: block;
         white-space: nowrap;
@@ -799,7 +795,7 @@ footer, .bottom {
         content: "Тренировки: "; }
     #calendar .fc-toolbar .btn {
       background: #fff !important;
-      color: #484F57 !important;
+      color: #000 !important;
       border: 1px solid #DEE2E6 !important; }
       #calendar .fc-toolbar .btn.active {
         background: #EEEEEE !important; }
@@ -835,15 +831,15 @@ footer, .bottom {
     border-bottom-width: 1px; }
   #calendar .fc-day-header {
     font-size: 12px;
-    color: #484F57;
+    color: #000;
     padding: 3px; }
   #calendar .fc-day-number {
-    color: #484F57;
+    color: #000;
     padding: 8px 8px 2px 2px; }
   #calendar .fc-day-grid-event {
     margin: 4px 8px;
     border: none;
-    color: #484F57; }
+    color: #000; }
   #calendar .fc-time-grid-event {
     border: none; }
   #calendar .fc-content {
@@ -1013,12 +1009,8 @@ footer, .bottom {
   .workout_page .table .balance, .students_page .table .balance {
     position: absolute;
     right: 10px; }
-  .workout_page .table .btn, .students_page .table .btn {
-    top: 23px; }
   .workout_page .table .btn-group .btn, .students_page .table .btn-group .btn {
     top: 10px; }
-  .workout_page .table .several .btn, .students_page .table .several .btn {
-    margin: 12px 0; }
   .workout_page .table .several .btn + .greyline, .students_page .table .several .btn + .greyline {
     position: relative;
     top: 12px; } }
@@ -1039,7 +1031,7 @@ footer, .bottom {
   #pills-subscriptions tr.active p {
     color: #000; }
     #pills-subscriptions tr.active p small {
-      color: #484F57; }
+      color: #000; }
 #pills-subscriptions tr.active_info {
   display: none; }
 #pills-subscriptions .buy_subscriptions .fio_name {
@@ -1075,8 +1067,8 @@ footer, .bottom {
     .user_info .save_buttons a {
       margin-bottom: 0; }
   .user_info .balance {
-    border: 1px solid #484F57;
-    color: #484F57;
+    border: 1px solid #000;
+    color: #000;
     border-radius: 4px;
     font-size: 14px;
     padding: 4px 16px;
@@ -1149,7 +1141,7 @@ footer, .bottom {
 .instruction_report_2 div {
   width: auto !important;
   padding: 5px;
-  color: #484F57;
+  color: #000;
   float: left;
   margin: 8px 0 10px 8px;
   text-align: center;
