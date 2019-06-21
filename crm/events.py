@@ -90,7 +90,7 @@ def days_delta_2(days) -> List[int]:
         deltas[x] = dt
 
 
-def extend_range_distance(days: List[int]) -> List[int]:
+def extend_range_distance(days: List[int], base_day: int) -> List[int]:
     """
     Получить расстояние, в днях, между последним доступным занятием, и
     возможными занятиями из календаря.
@@ -105,9 +105,8 @@ def extend_range_distance(days: List[int]) -> List[int]:
     if not(len(days)):
         return deltas
 
-    last_day = days[-1]
     for x in range(len(days)):
-        dt = days[x] - last_day
+        dt = days[x] - base_day
         if dt <= 0:
             dt += 7
         deltas[x] = dt

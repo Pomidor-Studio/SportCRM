@@ -940,7 +940,8 @@ class ClientSubscriptions(CompanyObjectModel):
         return min(
             self.visits_left,
             len(self.subscription.events_to_date(
-                from_date=date.today(), to_date=self.end_date
+                from_date=date.today() + timedelta(days=1),
+                to_date=self.end_date
             ))
         )
 
@@ -971,16 +972,16 @@ class ClientSubscriptions(CompanyObjectModel):
             return start_date
 
         last_day = start_date.weekday()
-        # Reorder days, to find next event in full list
-        # if start date is sunday = don't do reorder, as it already prepared
-        if last_day != 6:
+        # Персортировываем дни занятий, так чтоб день текущего последнего
+        # занятия был в конце списка.
+        if days[-1] != last_day:
             for idx, day in enumerate(days):
                 if day > last_day:
                     break
 
             days = days[idx:] + days[:idx]
 
-        deltas = extend_range_distance(days)
+        deltas = extend_range_distance(days, last_day)
 
         add_days = 0
         # Если посещений добавлено больше чем всего занятий в неделю,
@@ -996,8 +997,8 @@ class ClientSubscriptions(CompanyObjectModel):
 
         return start_date + timedelta(days=add_days)
 
-    def extend_duration(self, added_visits: int, reason: str = ''):
-        # Нельза продлять разовые абонементы
+    def extend_duration(self, visits_limit: int, reason: str = ''):
+        # Нельзя продлять разовые абонементы
         if self.subscription.one_time:
             return
 
@@ -1007,7 +1008,7 @@ class ClientSubscriptions(CompanyObjectModel):
         if self.end_date < today:
             new_end_date = self.next_event_date(
                 today, self.overlapping_count(
-                    added_visits, start_date=today + timedelta(days=1)
+                    visits_limit, start_date=today + timedelta(days=1)
                 )
             )
         # Если при добавлении в абонемент занятий, происходит выход за пределы
@@ -1016,7 +1017,7 @@ class ClientSubscriptions(CompanyObjectModel):
             # Пересчитываем
             recalc_visits_left = self.normalized_visits_left
             if self.is_overlapping_with_amount(
-                recalc_visits_left + added_visits,
+                visits_limit,
                 start_date=today + timedelta(days=1)
             ):
                 # Дата от которой отсчитываем продления нужно брать
@@ -1027,21 +1028,24 @@ class ClientSubscriptions(CompanyObjectModel):
                 last_visit_date = max(self.end_date, today)
                 new_end_date = self.next_event_date(
                     last_visit_date, self.overlapping_count(
-                        recalc_visits_left + added_visits,
+                        visits_limit,
                         start_date=today + timedelta(days=1)
                     )
                 )
             else:
                 new_end_date = self.end_date
 
-        if new_end_date == self.end_date and added_visits == 0:
+        # Дата окончания не менялась, и количество продляемых занятий меньше
+        # чем реально можно отходить по остатку то ничего не делаем
+        if new_end_date == self.end_date \
+                and visits_limit < self.normalized_visits_left:
             return
 
         with transaction.atomic():
             ExtensionHistory.objects.create(
                 client_subscription=self,
                 reason=reason,
-                added_visits=added_visits,
+                added_visits=visits_limit,
                 extended_from=(
                     self.end_date if new_end_date != self.end_date else None
                 ),
@@ -1049,10 +1053,7 @@ class ClientSubscriptions(CompanyObjectModel):
                     new_end_date if new_end_date != self.end_date else None
                 )
             )
-            if self.end_date < today:
-                self.visits_left = added_visits
-            else:
-                self.visits_left = recalc_visits_left + added_visits
+            self.visits_left = visits_limit
             self.end_date = new_end_date
             self.save()
             from gcp.tasks import enqueue
