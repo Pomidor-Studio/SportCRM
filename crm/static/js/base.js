@@ -28,11 +28,26 @@ $('.day :checkbox').click(function(){
 $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 
 
-/* Живой поиск 
-$('#table_search').on('keyup', function() {
+/* Для кнопки отметить */
+$('.info_for_button').each(function() {
+    var ifb_height = $(this).height()
+    if (ifb_height < '40') {var ifb_height = 40}
+    var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4
+    var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height()
+    if (ifb_height_s < '40') {var ifb_height_s = 40}
+
+    if (ifb_height > ifb_height_s) {
+  	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
+    } else {
+  	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
+    }
+})
+
+/* Живой поиск */
+$('#table_live_search').on('keyup', function() {
 	var value = $(this).val();
 	var patt = new RegExp(value, "i");
-	
+
 	$('.table tbody').find('tr').each(function() {
 		if (!($(this).find('td').text().search(patt) >= 0)) {
 			$(this).not('.myHead').hide();
@@ -40,12 +55,12 @@ $('#table_search').on('keyup', function() {
 			if (($(this).find('td').text().search(patt) >= 0)) {
 			$(this).show();
 		}
-	
+
 	});
 });
-*/
 
-/* Выбор абонемента на занятие 
+
+/* Выбор абонемента на занятие
 $('.subscription_select input').click(function() {
 	var data = $(this).attr('data-subscription')
 	$(this).parents('tr').find('input[data-subscription='+data+']').prop('checked', true)
@@ -53,7 +68,7 @@ $('.subscription_select input').click(function() {
 })
 */
 
-/* Показать архив 
+/* Показать архив
 $('#show_archive .form-check-input').click(function() {
 	$('.table .archive').fadeToggle();
 })
@@ -120,10 +135,10 @@ var sell = $.urlParam('sell');
 if (sell == 'yes') {
 	$('.buy_subscriptions .cancel').parents('tr').prev('tr').toggleClass('active')
 	$('.buy_subscriptions .cancel').parents('tr').toggleClass('active').toggle();
-} 
+}
 
 
-/* Другая причина в селекте 
+/* Другая причина в селекте
 $('#id_reason').change(function() {
   var option = $(this).find('option:selected').val();
   if (option == 'Другая') {

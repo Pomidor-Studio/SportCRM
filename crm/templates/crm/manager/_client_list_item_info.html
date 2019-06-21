@@ -21,27 +21,33 @@
 <div class="d-md-none">
   {% if active_sub|length == 1 %}
     {% with active_sub.first as sub %}
-      {{ sub.subscription.name }}
-      <br/>
-        <small>Посещений: {{ sub.visits_left }} из
-          {{ sub.visits_on_by_time }}</small>
-      <br/>
-      <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
+        <div class="info_for_button">
+          {{ sub.subscription.name }}
+          <br/>
+            <small>Посещений: {{ sub.visits_left }} из
+              {{ sub.visits_on_by_time }}</small>
+          <br/>
+          <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
+        </div>
     {% endwith %}
   {% elif client.get_active_sub|length > 1 %}
       {% for sub in active_sub %}
-        <small>{{ sub.subscription.name }}</small>
-        <br/>
-          <small>Доступно посещений: {{ sub.visits_left }} из
-            {{ sub.visits_on_by_time }}</small>
-        <br/>
-        <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
+        <div class="info_for_button">
+            <small>{{ sub.subscription.name }}</small>
+            <br/>
+              <small>Посещений: {{ sub.visits_left }} из
+                {{ sub.visits_on_by_time }}</small>
+            <br/>
+            <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
+        </div>
         {% if not forloop.last %}
           <div class="greyline"></div>
         {% endif %}
       {% endfor %}
   {% else %}
-    <span class="yellow">Без абонемента</span>
+      <div class="info_for_button">
+        <span class="yellow">Без абонемента</span>
+      </div>
   {% endif %}
   <br>
 </div>
