@@ -141,6 +141,7 @@ small {
 
 .btn-new {
   position: absolute;
+  top: 17px;
   right: 15px;
   z-index: 4; }
 
@@ -338,7 +339,10 @@ tr.active .btn-down span {
 
 @media (max-width: 1024px) {
   .btn {
-    padding: 5px 10px; } }
+    padding: 5px 10px; }
+
+  .btn-new {
+    top: 20px; } }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   select,
   textarea,
@@ -566,6 +570,9 @@ tr.active .btn-down span {
   background: #EEEEEE;
   border: none;
   margin: 0; }
+
+.students_page .btn-new {
+  right: 75px; }
 
 @media (max-width: 992px) {
   .mobile_sidebar .workout_actions {

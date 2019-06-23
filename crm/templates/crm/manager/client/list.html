@@ -19,6 +19,21 @@
     </div>
     {% ifhasperm 'client.add' user %}
       <a class="btn btn-primary btn-new" href="{% url 'crm:manager:client:new' %}">Новый</a>
+      <div class="workout_actions">
+          <ul class="d-flex">
+              <li class="more">
+                  <div class="btn-group">
+                      <a href="#" class="d-flex" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span class="icon align-self-center"></span></a>
+                      <div class="dropdown-menu dropdown-menu-right">
+                          {# TODO: Ссылку надо сделать правильную #}
+                          <a class="dropdown-item" href="/manager/clients/upload-excel/">
+                              Добавить учеников из файла
+                          </a>
+                      </div>
+                  </div>
+              </li>
+          </ul>
+      </div>
     {% endifhasperm %}
     <div class="bredcams clearfix">
       <ul>
