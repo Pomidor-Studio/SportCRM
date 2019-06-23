@@ -182,8 +182,9 @@ class SignUpClientMultiForm(MultiModelForm):
 
 class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(
-        label='Количество оставшихся посещений',
-        initial=1
+        label='Добавить посещений',
+        initial=1,
+        min_value=1
     )
     reason = forms.CharField(label='Причина продления', widget=forms.TextInput)
     go_back = forms.CharField(
@@ -196,10 +197,17 @@ class ExtendClientSubscriptionForm(TenantForm):
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
 
     def clean_visit_limit(self):
-        if self.cleaned_data['visit_limit'] > self.subscription.visits_left:
+        max_add = self.subscription.max_visits_to_add
+        if max_add <= 0:
             raise ValidationError(
-                'Нельзя указывать больще визитов чем есть на '
-                'абонементе ({})'.format(self.subscription.visits_left),
+                'Этот абонемент нельзя продлить, так как клиент может '
+                'посетить все оставшиеся у него занятия, до даты окончания '
+                'абонемента.', code='invalid-visits-limit')
+
+        if self.cleaned_data['visit_limit'] > max_add:
+            raise ValidationError(
+                'Нельзя указывать больше визитов, чем клиент пропустил '
+                '({})'.format(max_add),
                 code='invalid-visits-limit'
             )
         return self.cleaned_data['visit_limit']
