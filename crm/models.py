@@ -924,6 +924,38 @@ class ClientSubscriptions(CompanyObjectModel):
 
     objects = ClientSubscriptionsManager()
 
+    def visits_to_date(self, to_date: date):
+        """
+        Получить остаток посещений на указанную дату.
+
+        Данные формируются исходя из реального количества посещений, на
+        указанную дату, включая её. Если проверка идет до 01.06.2019, то
+        посещения за эту дату, также будут включены в расчет.
+
+        Если запрашиваемая даты - указана раньше чем начало абонемента, то
+        остаток будет равен нулю.
+
+        :param to_date: Дата, включительно до котрой нужно рассчитать остаток
+        :return: Количество оставщихся посещений
+        """
+        if to_date < self.start_date:
+            return 0
+
+        return self.visits_on_by_time - self.attendance_set.filter(
+            event__date__lte=to_date
+        ).count()
+
+    @property
+    def max_visits_to_add(self):
+        """
+        Максимальное количество посещений, которое можно использовать при
+        продлении
+
+        :return: Число посещений на текущую дату.
+        """
+        today = date.today()
+        return self.visits_to_date(today) - self.normalized_visits_left
+
     @property
     def normalized_visits_left(self):
         """
@@ -935,12 +967,14 @@ class ClientSubscriptions(CompanyObjectModel):
         можно отходить только 8, то нормализованное значение и будет 8.
         Если же а абонементе осталось 10 занятий, а по расписанию можно отходить
         12, то нормализованное значение будет равно текущему остатку - 10
-        :return:
+
+        :return: Число посещений
         """
+        today = date.today()
         return min(
-            self.visits_left,
+            self.visits_to_date(today),
             len(self.subscription.events_to_date(
-                from_date=date.today() + timedelta(days=1),
+                from_date=today + timedelta(days=1),
                 to_date=self.end_date
             ))
         )
@@ -1011,13 +1045,15 @@ class ClientSubscriptions(CompanyObjectModel):
                     visits_limit, start_date=today + timedelta(days=1)
                 )
             )
+            new_visits_limit = visits_limit
         # Если при добавлении в абонемент занятий, происходит выход за пределы
         # абонемента - то необхдимо добавить дополнительные дни
         else:
             # Пересчитываем
             recalc_visits_left = self.normalized_visits_left
+            new_visits_limit = recalc_visits_left + visits_limit
             if self.is_overlapping_with_amount(
-                visits_limit,
+                recalc_visits_left + visits_limit,
                 start_date=today + timedelta(days=1)
             ):
                 # Дата от которой отсчитываем продления нужно брать
@@ -1028,7 +1064,7 @@ class ClientSubscriptions(CompanyObjectModel):
                 last_visit_date = max(self.end_date, today)
                 new_end_date = self.next_event_date(
                     last_visit_date, self.overlapping_count(
-                        visits_limit,
+                        recalc_visits_left + visits_limit,
                         start_date=today + timedelta(days=1)
                     )
                 )
@@ -1037,8 +1073,7 @@ class ClientSubscriptions(CompanyObjectModel):
 
         # Дата окончания не менялась, и количество продляемых занятий меньше
         # чем реально можно отходить по остатку то ничего не делаем
-        if new_end_date == self.end_date \
-                and visits_limit < self.normalized_visits_left:
+        if new_end_date == self.end_date and visits_limit == 0:
             return
 
         with transaction.atomic():
@@ -1053,7 +1088,7 @@ class ClientSubscriptions(CompanyObjectModel):
                     new_end_date if new_end_date != self.end_date else None
                 )
             )
-            self.visits_left = visits_limit
+            self.visits_left = new_visits_limit
             self.end_date = new_end_date
             self.save()
             from gcp.tasks import enqueue
