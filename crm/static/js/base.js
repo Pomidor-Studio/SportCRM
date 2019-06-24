@@ -29,19 +29,24 @@ $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 
 
 /* Для кнопки отметить */
-$('.info_for_button').each(function() {
-    var ifb_height = $(this).height()
-    if (ifb_height < '40') {var ifb_height = 40}
-    var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4
-    var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height()
-    if (ifb_height_s < '40') {var ifb_height_s = 40}
+function buttons_middle () {
+    $('.info_for_button').each(function() {
+        var ifb_height = $(this).height()
+        if (ifb_height < '40') {var ifb_height = 40}
 
-    if (ifb_height > ifb_height_s) {
-  	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
-    } else {
-  	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
-    }
-})
+        var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4
+        var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height()
+        if (ifb_height_s < '40') {var ifb_height_s = 40}
+
+        if (ifb_height > ifb_height_s) {
+      	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
+        } else {
+      	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
+        }
+    })
+}
+buttons_middle ()
+$('#pills-tab a').on('shown.bs.tab',buttons_middle)
 
 /* Живой поиск */
 $('#table_live_search').on('keyup', function() {
