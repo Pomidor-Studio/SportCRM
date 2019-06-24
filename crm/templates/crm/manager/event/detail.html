@@ -307,7 +307,7 @@
                     <tr class="{% if attendance.client.balance < 0 %}minus_balance{% endif %} {% if attendance.client.deleted %}archive{% endif %} several">
                       <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' with client=attendance.client %}</td>
                       <td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
-                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client marked=True %}</td>
                       <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' with client=attendance.client %}</td>
