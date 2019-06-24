@@ -1,6 +1,6 @@
 {% load html_helper crm_block %}
 
-{% if event and event.is_overpast %}
+{% if event and event.is_overpast and not marked %}
   <div class="info_for_button_s">
   {% for sub in subscriptions %}
     {% subscription_info sub %}
