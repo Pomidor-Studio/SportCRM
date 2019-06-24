@@ -1,3 +1,4 @@
+from collections import Iterable
 from datetime import datetime, date
 
 import phonenumbers
@@ -280,3 +281,11 @@ def phone_format(number):
         return phonenumbers.format_number(number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
     except Exception:
         return number
+
+
+@register.filter(is_safe=False)
+def make_list_from_any(value):
+    if isinstance(value, Iterable):
+        return list(value)
+
+    return [value]

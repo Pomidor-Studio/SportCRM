@@ -690,7 +690,7 @@ class ClientManager(ScrmSafeDeleteManager):
             ClientSubscriptions.objects
                 .active_subscriptions_to_event(event)
                 .order_by('client_id')
-                .distinct('client_id')
+                # .distinct('client_id')
                 .values_list('client_id', flat=True)
         )
         return self.get_queryset().filter(id__in=cs)
@@ -811,11 +811,17 @@ class Client(ScrmSafeDeleteModel, CompanyObjectModel):
 class ClientSubscriptionQuerySet(TenantQuerySet):
     def active_subscriptions_to_event(self, event: Event):
         """Get all active subscriptions for selected event"""
-        return self.filter(
+        return self.annotate(
+            counted_visits_left=F('visits_on_by_time') - Count(
+                'attendance',
+                filter=Q(attendance__event__date__lt=event.date) &
+                       Q(attendance__subscription_id=F('id'))
+            )
+        ).filter(
             subscription__event_class=event.event_class,
             start_date__lte=event.date,
             end_date__gte=event.date,
-            visits_left__gt=0
+            counted_visits_left__gt=0
         )
 
     def active_subscriptions_to_date(self, to_date: date):

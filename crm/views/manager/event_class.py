@@ -136,6 +136,7 @@ class EventByDate(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # Записанные клиенты. У них может и не быть абонементов
         signed_up_clients_qs = Client.objects.filter(
             id__in=self.object.attendance_set
             .filter(marked=False, signed_up=True)
@@ -143,6 +144,9 @@ class EventByDate(
             .values_list('client', flat=True)
         )
         signed_up_clients = self.get_clients_subscriptions(signed_up_clients_qs)
+
+        # Неотмеченные клиент. Они не записывались, но у них есть абонементы
+        # которые позволяют сходить на это занятие
         unmarked_clients_qs = (
             Client.objects
             .with_active_subscription_to_event(self.object)
@@ -154,6 +158,8 @@ class EventByDate(
             .order_by('name')
         )
         unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs)
+
+        # Отмеченные клиенты. Они сходили на занятие и у них есть абонементы
         attendance_list_marked = (
             self.object.attendance_set
             .filter(marked=True)
