@@ -453,8 +453,10 @@ tr.active .btn-down span {
 	.btn {
 		padding: 5px 10px;
 	}
+}
+@media (max-width: 374px) {
 	.btn-icon abbr {
-		//display: none;
+		display: none;
 	}
 }
 @media screen and (-webkit-min-device-pixel-ratio:0) {
@@ -1440,6 +1442,17 @@ footer {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	width: 150px;
+}
+.student_page .visit_report {
+	.box {
+		padding: 10px;
+	}
+	.red_box {
+		background-color: #F5D7C5;
+	}
+	.green_box {
+		background-color: #D5EFB7;
+	}
 }
 
 @media (max-width: 1139px) {

@@ -127,7 +127,6 @@ $('.subscription_check').find('input:not(#subscription_all)').click(function() {
 $('.btn-down, .buy_subscriptions .fio_name').click(function() {
 	$(this).parents('tr').toggleClass('active')
 	$(this).parents('tr').next('tr').toggleClass('active').toggle();
-	$(this).parents('tr').find('.date_end').toggle();
 	return(false)
 })
 $('.buy_subscriptions .cancel').click(function() {

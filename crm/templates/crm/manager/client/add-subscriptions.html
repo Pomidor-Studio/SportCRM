@@ -340,7 +340,7 @@
               {% for sub in client.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
                 <tr {% if not sub.is_active %}class="archive"{% endif %}>
                   <td width="27">
-                    <a class="btn btn-icon btn-down d-md-none"
+                    <a class="btn btn-icon btn-down"
                        href="#"><span></span></a>
                   </td>
                   <td>
@@ -434,8 +434,8 @@
                 </tr>
                 <tr class="active_info">
                   <td></td>
-                  <td colspan="7">
-                    <div class="row">
+                  <td colspan="8">
+                    <div class="row d-md-none">
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
                           <small>Продажа</small>
@@ -451,7 +451,7 @@
                         </p>
                       </div>
                     </div>
-                    <div class="row">
+                    <div class="row d-md-none">
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
                           <small>Начало действия</small>
@@ -466,6 +466,18 @@
                           {{ sub.end_date|date:"d M Y" }}
                         </p>
                       </div>
+                    </div>
+                    <div class="row visit_report">
+                        <div class="col-12 d-flex flex-wrap">
+                            {# TODO: Здесь выводим посещения по этому абонементу #}
+                            <div class="box red_box">16</div>
+                            <div class="box green_box">17</div>
+                            <div class="box green_box">20</div>
+                            <div class="box green_box">23</div>
+                            <div class="box green_box">24</div>
+                            <div class="box ">27</div>
+                            <div class="box ">30</div>
+                        </div>
                     </div>
                   </td>
                 </tr>

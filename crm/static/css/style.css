@@ -339,6 +339,9 @@ tr.active .btn-down span {
 @media (max-width: 1024px) {
   .btn {
     padding: 5px 10px; } }
+@media (max-width: 374px) {
+  .btn-icon abbr {
+    display: none; } }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   select,
   textarea,
@@ -997,6 +1000,13 @@ footer {
   overflow: hidden;
   text-overflow: ellipsis;
   width: 150px; }
+
+.student_page .visit_report .box {
+  padding: 10px; }
+.student_page .visit_report .red_box {
+  background-color: #F5D7C5; }
+.student_page .visit_report .green_box {
+  background-color: #D5EFB7; }
 
 @media (max-width: 1139px) {
   .desktop_workout_actions {
