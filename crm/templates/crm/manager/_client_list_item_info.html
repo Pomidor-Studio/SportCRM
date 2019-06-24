@@ -20,7 +20,7 @@
 </div>
 <div class="d-md-none">
   {% if active_sub|length == 1 %}
-    {% with active_sub.first as sub %}
+    {% with active_sub|first as sub %}
         <div class="info_for_button">
           {{ sub.subscription.name }}
           <br/>
