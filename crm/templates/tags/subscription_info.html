@@ -1,0 +1,7 @@
+{% if subscription.is_expiring %}
+  <span class="yellow">{{ subscription.subscription.name }}</span>
+{% else %}
+  {{ subscription.subscription.name }}
+{% endif %}
+<br/>
+<small>Доступно посещений: {{ subscription.visits_left }} из {{ subscription.visits_on_by_time }}</small>
