@@ -2,9 +2,9 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
-{% block title %}Места проведения{% endblock %}
+{% block title %}Площадки{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Места проведения" back_link=False current='location' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Площадки" back_link=False current='location' %}
 {% endblock %}
 
 {% block content %}
@@ -20,12 +20,12 @@
     </div>
       {% ifhasperm 'location.add' user %}
       <a class="btn btn-primary btn-new"
-         href="{% url 'crm:manager:locations:new' %}">Новый</a>
+         href="{% url 'crm:manager:locations:new' %}">Новая</a>
     {% endifhasperm %}
     <div class="bredcams clearfix">
       <ul>
         <li>
-          Места проведения
+          Площадки
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
