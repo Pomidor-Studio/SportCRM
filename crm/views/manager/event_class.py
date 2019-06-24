@@ -167,6 +167,18 @@ class EventByDate(
             .order_by('client__name')
         )
 
+        selected_id = [
+            x.id for x, _ in signed_up_clients.items()
+        ]
+        selected_id.extend([
+            x.id for x, _ in unmarked_clients.items()
+        ])
+        selected_id.extend([
+            x.client_id for x in attendance_list_marked
+        ])
+
+        rest_clients = Client.objects.exclude(id__in=selected_id)
+
         self.object.save()
 
         context.update({
@@ -182,7 +194,8 @@ class EventByDate(
                 EventClass.objects
                 .active()
                 .filter(id=self.object.event_class_id).exists()
-            )
+            ),
+            'rest_clients': rest_clients
         })
 
         context.update(
