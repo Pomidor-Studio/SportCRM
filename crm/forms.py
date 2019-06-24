@@ -412,7 +412,7 @@ class EventClassForm(TenantModelForm):
     location = forms.ModelChoiceField(
         empty_label='',
         queryset=Location.objects.all(),
-        label='Место проведения',
+        label='Площадка',
         widget=Select2WidgetAttributed(
             attr_getter=subcription_type_attrs)
     )
