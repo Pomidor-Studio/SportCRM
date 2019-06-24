@@ -57,7 +57,7 @@
             </ul>
           </div>
           <div class="col-12 col-md-4">
-            <div class="form-group live_search">
+            <div id="table_search" class="form-group live_search">
               <span class="icon"></span>
               <form action="?{{ filter.data.urlencode }}">
                 {% if filter.form.with_archive.value %}
@@ -70,13 +70,15 @@
                   {{ filter.form.long_time_not_go.as_hidden }}
                 {% endif %}
                 <div class="form-group input-group live_search">
-                  <input type="text" id="table_search" name="name"
+                  <input type="text" id="table_live_search" name="name"
                          value="{{ filter.form.name.value|default_if_none:'' }}" class="form-control"
                          placeholder="Найти"/>
+                  <!--
                   <span class="icon"></span>
                   <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Найти</button>
                   </div>
+                  -->
                 </div>
               </form>
             </div>
