@@ -29,11 +29,18 @@ $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 
 
 /* Для кнопки отметить */
+$('.info_for_button').each(function() {
+    $(this).parents('tr').find('td:nth-child(1), td:nth-child(2)').on('click',function() {
+        window.location = $(this).find('a').attr('href');
+    })
+    $(this).parents('.workout_page tr').find('td:nth-child(9), td:nth-child(2)').on('click',function() {
+        window.location = $(this).find('a').attr('href');
+    })
+})
 function buttons_middle () {
     $('.info_for_button').each(function() {
         var ifb_height = $(this).height()
         if (ifb_height < '40') {var ifb_height = 40}
-
         var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4
         var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height()
         if (ifb_height_s < '40') {var ifb_height_s = 40}
