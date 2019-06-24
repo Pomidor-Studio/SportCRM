@@ -71,7 +71,7 @@
         {% ifhasperm 'location' user %}
           <a class="nav-link {% if current == 'location' %}active{% endif %}"
              href="{% url 'crm:manager:locations:list' %}">
-            Места проведения
+            Площадки
           </a>
         {% endifhasperm %}
         {% ifhasperm 'subscription' user %}
