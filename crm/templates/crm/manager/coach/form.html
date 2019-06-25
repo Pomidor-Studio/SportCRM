@@ -31,7 +31,11 @@
           {% include 'crm/bars/_img_bredcams_str.html' %}
         </li>
         <li>
-          Новый тренер
+            {% if form.user.fullname.value %}
+              {{ form.user.fullname.value }}
+            {% else %}
+              Новый тренер
+            {% endif %}
         </li>
       </ul>
     </div>
