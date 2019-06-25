@@ -339,7 +339,10 @@ tr.active .btn-down span {
 
 @media (max-width: 1024px) {
   .btn {
-    padding: 5px 10px; } }
+    padding: 5px 10px; }
+
+  .btn-new {
+    top: 22px; } }
 @media (max-width: 340px) {
   .btn-icon abbr {
     display: none; } }
