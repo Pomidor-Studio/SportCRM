@@ -113,15 +113,12 @@
                 <th class="d-none d-md-block text-right">
                   Баланс
                 </th>
-                <th width="1"></th>
-                <th width="1"></th>
               </tr>
               </thead>
               <tbody>
               {% for client in clients %}
                 {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
-                  <tr
-                    class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
+                  <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %}">
                     <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
                     <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
                     <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
@@ -130,7 +127,6 @@
                     <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
                     <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                     <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
-                    <td width="1">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                   </tr>
                 {% endwith %}
               {% endfor %}
