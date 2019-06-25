@@ -1472,11 +1472,7 @@ footer {
 }
 @media (max-width: 767px) {
 	.workout_page, .students_page {
-		.table {
-			.balance {
-				position: absolute;
-				right: 10px;
-			}
+		.table { 
 			.btn-group .btn {
 				top: 10px;
 			}
@@ -1485,6 +1481,10 @@ footer {
 				top: 12px;
 			}
 		}
+	}
+	.workout_page .balance {
+		position: absolute;
+		right: 10px;
 	}
 }
 /* Тренировка, ученики и тренеры */

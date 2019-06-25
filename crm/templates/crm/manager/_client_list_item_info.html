@@ -16,7 +16,7 @@
             <a href="{% url 'crm:manager:client:detail' client.id %}" class="fio_name">{{ client.name }}</a>
         </div>
         <div>
-            <span class="{% if client.balance < 0 %}orange{% endif %} d-md-none">
+            <span class="balance {% if client.balance < 0 %}orange{% elif client.balance > 0 %}green{% endif %} d-md-none">
             {{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽
             </span>
         </div>
@@ -34,8 +34,8 @@
         <div class="info_for_button">
           {{ sub.subscription.name }}
           <br/>
-            <small>Посещений: {{ sub.visits_left }} из
-              {{ sub.visits_on_by_time }}</small>
+            <small>Посещений: <b class="green">{{ sub.visits_left }} из
+              {{ sub.visits_on_by_time }}</b></small>
           <br/>
           <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
         </div>
@@ -45,8 +45,8 @@
         <div class="info_for_button">
             <small>{{ sub.subscription.name }}</small>
             <br/>
-              <small>Посещений: {{ sub.visits_left }} из
-                {{ sub.visits_on_by_time }}</small>
+              <small>Посещений: <b class="green">{{ sub.visits_left }} из
+                {{ sub.visits_on_by_time }}</b></small>
             <br/>
             <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
         </div>

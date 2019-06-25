@@ -1020,14 +1020,15 @@ footer {
     .desktop_workout_actions .icon {
       margin-right: 12px; } }
 @media (max-width: 767px) {
-  .workout_page .table .balance, .students_page .table .balance {
-    position: absolute;
-    right: 10px; }
   .workout_page .table .btn-group .btn, .students_page .table .btn-group .btn {
     top: 10px; }
   .workout_page .table .several .btn + .greyline, .students_page .table .several .btn + .greyline {
     position: relative;
-    top: 12px; } }
+    top: 12px; }
+
+  .workout_page .balance {
+    position: absolute;
+    right: 10px; } }
 /* Тренировка, ученики и тренеры */
 /* Абонементы */
 .skip_line {
