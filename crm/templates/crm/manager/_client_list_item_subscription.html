@@ -1,14 +1,14 @@
 {% load html_helper crm_block %}
 
 {% if event and event.is_overpast and not marked %}
-  <div class="info_for_button_s">
   {% for sub in subscriptions %}
-    {% subscription_info sub %}
+    <div class="info_for_button_s">{% subscription_info sub %}</div>
     {% if not forloop.last %}
       <div class="greyline"></div>
     {% endif %}
   {% empty %}
-    <span class="yellow">Без абонемента</span>
+  <div class="info_for_button_s">
+    <span>Без абонемента</span>
 
     {% if not client.deleted %}
       {% ifhasperm 'client_subscription.sale' user %}
@@ -22,9 +22,10 @@
              href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
         {% endif %}
       {% endifhasperm %}
+      </div>
     {% endif %}
   {% endfor %}
-  </div>
+
 {% else %}
 
   {% for sub in active_sub %}
@@ -33,7 +34,7 @@
       <div class="greyline"></div>
     {% endif %}
   {% empty %}
-    <span class="yellow">Без абонемента</span>
+    <span>Без абонемента</span>
 
     {% if not client.deleted %}
       {% ifhasperm 'client_subscription.sale' user %}

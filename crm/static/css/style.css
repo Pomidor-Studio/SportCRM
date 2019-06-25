@@ -141,6 +141,7 @@ small {
 
 .btn-new {
   position: absolute;
+  top: 15px;
   right: 15px;
   z-index: 4; }
 
@@ -339,7 +340,7 @@ tr.active .btn-down span {
 @media (max-width: 1024px) {
   .btn {
     padding: 5px 10px; } }
-@media (max-width: 374px) {
+@media (max-width: 340px) {
   .btn-icon abbr {
     display: none; } }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
@@ -359,7 +360,7 @@ tr.active .btn-down span {
     background: #fff;
     position: -webkit-sticky;
     position: sticky;
-    top: 0;
+    top: -20px;
     z-index: 2; }
   .table tbody tr:hover {
     background: #eff8e5 !important; }
@@ -445,7 +446,7 @@ tr.active .btn-down span {
       color: #76BD1B; }
 
 .tab-content, .freeze_table {
-  margin-bottom: 60px; }
+  margin-bottom: 120px; }
 
 @media (max-width: 767px) {
   .table {
@@ -1134,6 +1135,10 @@ footer {
 
 .report_page th {
   position: inherit !important; }
+.report_page td span {
+  padding: 2px 4px;
+  position: relative;
+  left: -4px; }
 .report_page .red, .report_page .green, .report_page .grey {
   min-width: 55px;
   width: 55px;

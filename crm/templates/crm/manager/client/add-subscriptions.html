@@ -340,7 +340,7 @@
               {% for sub in client.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
                 <tr {% if not sub.is_active %}class="archive"{% endif %}>
                   <td width="27">
-                    <a class="btn btn-icon btn-down"
+                    <a class="btn btn-icon btn-down d-block d-md-none"
                        href="#"><span></span></a>
                   </td>
                   <td>
@@ -467,6 +467,7 @@
                         </p>
                       </div>
                     </div>
+                    <!--
                     <div class="row visit_report">
                         <div class="col-12 d-flex flex-wrap">
                             {# TODO: Здесь выводим посещения по этому абонементу #}
@@ -479,6 +480,7 @@
                             <div class="box ">30</div>
                         </div>
                     </div>
+                    -->
                   </td>
                 </tr>
               {% endfor %}

@@ -32,23 +32,40 @@ $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 $('.info_for_button').each(function() {
     $(this).parents('tr').find('td:nth-child(1), td:nth-child(2)').on('click',function() {
         window.location = $(this).find('a').attr('href');
+        var href_in = $(this).find('a').attr('href');
     })
     $(this).parents('.workout_page tr').find('td:nth-child(9), td:nth-child(2)').on('click',function() {
         window.location = $(this).find('a').attr('href');
     })
 })
+$('.students_page .fio_name').each(function() {
+    var fio_name_a = $(this).attr('href');
+    $(this).parents('.students_page tr').find('td').on('click',function() {
+        window.location = fio_name_a;
+    })
+})
+$('.students_page .sell').each(function() {
+    $(this).parents('.students_page tr td:nth-child(3)').on('click',function() {
+        window.location = $(this).find('a').attr('href');
+    })
+})
+$('.report_page tr').each(function() {
+    $(this).on('click',function() {
+        window.location = $(this).find('a').attr('href');
+    })
+})
 function buttons_middle () {
     $('.info_for_button').each(function() {
-        var ifb_height = $(this).height()
-        if (ifb_height < '40') {var ifb_height = 40}
-        var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4
-        var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height()
-        if (ifb_height_s < '40') {var ifb_height_s = 40}
+        var ifb_height = $(this).height();
+        var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4;
+        var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height();
 
-        if (ifb_height > ifb_height_s) {
-      	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
+        if (ifb_height_s == '0') {
+            if (ifb_height < '40') {var ifb_height = 40};
+            $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
         } else {
-      	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
+            if (ifb_height_s < '40') {var ifb_height_s = 40};
+            $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
         }
     })
 }
