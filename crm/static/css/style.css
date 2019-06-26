@@ -454,7 +454,6 @@ tr.active .btn-down span {
   .table {
     top: 0; }
     .table td {
-      height: 80px;
       vertical-align: top; }
     .table .btn-group {
       margin-top: 12px; }

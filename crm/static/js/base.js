@@ -62,7 +62,8 @@ function buttons_middle () {
 
         if (ifb_height_s == '0') {
             if (ifb_height < '40') {var ifb_height = 40};
-            $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
+            $(this).parents('tr').find('.btn_box:first-child').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
+            $(this).parents('tr').find('.btn_box').not('.btn_box:first-child').attr('style','height:'+ifb_height+'px;');
         } else {
             if (ifb_height_s < '40') {var ifb_height_s = 40};
             $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
