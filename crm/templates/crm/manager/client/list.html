@@ -9,7 +9,7 @@
 {% block content %}
   <div class="page students_page col-md-12 col-lg-9 col-xl-10" xmlns="http://www.w3.org/1999/html">
    <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -57,7 +57,7 @@
             </ul>
           </div>
           <div class="col-12 col-md-4">
-            <div class="form-group live_search">
+            <div id="table_search" class="form-group live_search">
               <span class="icon"></span>
               <form action="?{{ filter.data.urlencode }}">
                 {% if filter.form.with_archive.value %}
@@ -70,13 +70,15 @@
                   {{ filter.form.long_time_not_go.as_hidden }}
                 {% endif %}
                 <div class="form-group input-group live_search">
-                  <input type="text" id="table_search" name="name"
+                  <input type="text" id="table_live_search" name="name"
                          value="{{ filter.form.name.value|default_if_none:'' }}" class="form-control"
                          placeholder="Найти"/>
+                  <!--
                   <span class="icon"></span>
                   <div class="input-group-append">
                     <button class="btn btn-outline-secondary" type="submit" id="button-addon2">Найти</button>
                   </div>
+                  -->
                 </div>
               </form>
             </div>
@@ -111,15 +113,12 @@
                 <th class="d-none d-md-block text-right">
                   Баланс
                 </th>
-                <th width="1"></th>
-                <th width="1"></th>
               </tr>
               </thead>
               <tbody>
               {% for client in clients %}
                 {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
-                  <tr
-                    class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
+                  <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %}">
                     <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
                     <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
                     <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
@@ -128,7 +127,6 @@
                     <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
                     <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                     <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
-                    <td width="1">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                   </tr>
                 {% endwith %}
               {% endfor %}

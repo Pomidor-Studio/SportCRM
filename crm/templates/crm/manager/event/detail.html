@@ -6,8 +6,8 @@
 {% block sidbar %}
   {% url 'crm:manager:event:calendar' as back_link %}
   {% with dt=event.date|date:"d.m.Y" coach=event.event_class.coach|escape %}
-    {% with crumb_name=""|add:event.event_class.name|add:" "|add:dt|add:" "|add:coach %}
-      {% include 'crm/bars/_sidebar_design.html' with name=crumb_name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}
+        {% with crumb_name="<small>"|add:event.event_class.name|add:":</small><span>"|add:dt|add:" | "|add:coach|add:"</span>" %}
+        {% include 'crm/bars/_sidebar_design.html' with name=crumb_name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}
     {% endwith %}
   {% endwith %}
 {% endblock %}
@@ -15,7 +15,7 @@
 {% block content %}
   <div class="page workout_page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -29,11 +29,12 @@
           <li class="new_student">
             <a href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day  %}" class="d-flex">
               <span class="icon align-self-center"></span>
-              <span class="align-self-center">Добавить<br/>ученика</span>
+              <span class="align-self-center">Создать<br/>ученика</span>
             </a>
           </li>
         {% endifhasperm %}
         {% if not event.is_closed %}
+          <!--
           <li class="QR">
             <a
               href="{% url 'crm:manager:event-class:event:scanner' event.event_class.id event.date.year event.date.month event.date.day %}"
@@ -42,6 +43,7 @@
               <span class="align-self-center">Сканер<br/>QR-кода</span>
             </a>
           </li>
+          -->
         {% endif %}
         <li class="more">
           <div class="btn-group">
@@ -49,10 +51,13 @@
                aria-haspopup="true" aria-expanded="false"><span
               class="icon align-self-center"></span></a>
             <div class="dropdown-menu dropdown-menu-right">
-              <a class="dropdown-item"
-                 href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать
-                занятие</a>
+              {% ifhasperm 'event_class.add' user %}
+                <a class="dropdown-item"
+                   href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать занятие</a>
+              {% endifhasperm %}
+              {% ifhasperm 'event_class.detail' user %}
               <a class="dropdown-item" href="{% url 'crm:manager:event-class:detail' event.event_class.pk %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Подробнее о занятии</a>
+              {% endifhasperm %}
               {% if not event.is_overpast %}
                 {% if not event.is_canceled %}
                   {% ifhasperm 'event.cancel' user event %}
@@ -85,17 +90,17 @@
           </svg>
         </li>
         <li>
-          {{ event.event_class.name }} {{ event.date|date:"d.m.Y" }} {{ event.event_class.coach }}
+            {{ event.event_class.name }}: {{ event.date|date:"d.m.Y" }} | {{ event.event_class.coach }}
         </li>
       </ul>
     </div>
-    <div class="workout_actions mobile_workout_actions d-md-none">
+    <!--<div class="workout_actions mobile_workout_actions d-md-none">
       <ul class="row">
         {% ifhasperm 'client.add' user %}
           <li class="new_student col-6">
             <a href="{% url 'crm:manager:event-class:event:mark-client-without-subscription' event.event_class.id event.date.year event.date.month event.date.day  %}">
               <span class="icon"></span>
-              <span>Добавить<br/>ученика</span>
+              <span>Записать<br/>ученика</span>
             </a>
           </li>
         {% endifhasperm %}
@@ -108,27 +113,52 @@
           </li>
         {% endif %}
       </ul>
-    </div>
+    </div>-->
     <div class="greyline"></div>
     <div class="row">
       <div class="col-12">
-        <ul class="nav nav-pills row no-gutters" id="pills-tab" role="tablist">
-          <li class="nav-item col-6 col-md-auto text-center text-md-left">
-            <a class="nav-link active" id="pills-all-tab" data-toggle="pill"
-               href="#pills-all" role="tab" aria-controls="pills-all"
-               aria-selected="true">Ученики</a>
-          </li>
-          <li class="nav-item col-6 col-md-auto text-center text-md-left">
-            <a class="nav-link" id="pills-marked-tab" data-toggle="pill"
-               href="#pills-marked" role="tab" aria-controls="pills-marked"
-               aria-selected="false">Отмеченные</a>
-          </li>
-        </ul>
+          <div class="row">
+              <div class="col-12 col-md-8">
+                <ul class="nav nav-pills row no-gutters" id="pills-tab" role="tablist">
+                  <li class="nav-item col-6 col-md-auto text-center text-md-left">
+                    <a class="nav-link active" id="pills-all-tab" data-toggle="pill"
+                       href="#pills-all" role="tab" aria-controls="pills-all"
+                       aria-selected="true">Ученики</a>
+                  </li>
+                  <li class="nav-item col-6 col-md-auto text-center text-md-left">
+                    <a class="nav-link" id="pills-marked-tab" data-toggle="pill"
+                       href="#pills-marked" role="tab" aria-controls="pills-marked"
+                       aria-selected="false">Отмечены</a>
+                  </li>
+                </ul>
+                </div>
+                <div class="col-12 col-md-4">
+                  <div id="table_search" class="form-group live_search">
+                    <span class="icon"></span>
+                    <form action="?{{ filter.data.urlencode }}">
+                      {% if filter.form.with_archive.value %}
+                        {{ filter.form.with_archive.as_hidden }}
+                      {% endif %}
+                      {% if filter.form.debtor.value %}
+                        {{ filter.form.debtor.as_hidden }}
+                      {% endif %}
+                      {% if filter.form.long_time_not_go.value %}
+                        {{ filter.form.long_time_not_go.as_hidden }}
+                      {% endif %}
+                      <div class="form-group input-group live_search">
+                        <input type="text" id="table_live_search" name="name"
+                               value="{{ filter.form.name.value|default_if_none:'' }}" class="form-control"
+                               placeholder="Найти"/>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+            </div>
         <div class="greyline"></div>
         <div class="tab-content" id="pills-tabContent">
           <div class="tab-pane fade show active" id="pills-all" role="tabpanel"
                aria-labelledby="pills-all-tab">
-            {% if signed_up_clients or unmarked_clients %}
+            {% if signed_up_clients or unmarked_clients or rest_clients %}
               <table class="table table-hover">
                 <thead class="d-none d-md-block">
                 <tr>
@@ -155,7 +185,7 @@
                     Баланс
                   </th>
                   <th width="1"></th>
-                  <th width="1"></th>
+                  <th class="d-none d-md-block" width="1"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -164,9 +194,8 @@
                     <td colspan="10">Записанные</td>
                   </tr>
                   {% for client, subscriptions in signed_up_clients.items %}
-                    {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
-                      <tr
-                        class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
+                    {% with active_sub=subscriptions last_sub=client.last_sub %}
+                      <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
                         <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
                         <td
@@ -181,7 +210,7 @@
                           class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                         <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_buttons.html' %}</td>
-                        <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
+                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                       </tr>
                     {% endwith %}
                   {% endfor %}
@@ -191,7 +220,7 @@
                     <td colspan="10">Доступные по абонементу</td>
                   </tr>
                   {% for client, subscriptions in unmarked_clients.items %}
-                    {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
+                    {% with active_sub=subscriptions last_sub=client.last_sub %}
                       <tr
                         class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} several">
                         <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
@@ -208,15 +237,40 @@
                           class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
                         <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                         <td>{% include 'crm/manager/_client_list_item_buttons.html' %}</td>
-                        <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
+                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
                       </tr>
                     {% endwith %}
                   {% endfor %}
                 {% endif %}
+
+                {% if rest_clients %}
+                  {# Выводим список учеников, не записанных и без абонемента с кнопкой «Продать» #}
+                  <tr class="otbivka">
+                    <td colspan="10">Прочие</td>
+                  </tr>
+                  {% for client in rest_clients %}
+                    {% with active_sub=""|empty_list last_sub=client.last_sub %}
+                      <tr
+                        class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
+                        <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
+                        <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
+                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
+                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
+                        <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
+                        <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
+                        <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+                        <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
+                        <td>{% include 'crm/manager/_client_list_item_buttons.html' %}</td>
+                        <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' %}</td>
+                      </tr>
+                    {% endwith %}
+                  {% endfor %}
+                {% endif %}
+
                 </tbody>
               </table>
             {% else %}
-              Не отмеченных учеников нет
+              Записанных учеников нет
             {% endif %}
           </div>
           <div class="tab-pane fade" id="pills-marked" role="tabpanel"
@@ -253,18 +307,18 @@
                 </thead>
                 <tbody>
                 {% for attendance in attendance_list_marked %}
-                  {% with active_sub=attendance.client.get_active_sub last_sub=attendance.client.last_sub %}
+                  {% with active_sub=attendance.subscription|make_list_from_any last_sub=attendance.client.last_sub %}
                     <tr class="{% if attendance.client.balance < 0 %}minus_balance{% endif %} {% if attendance.client.deleted %}archive{% endif %} several">
                       <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' with client=attendance.client %}</td>
                       <td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
-                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client marked=True %}</td>
                       <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' with client=attendance.client %}</td>
                       <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' with client=attendance.client %}</td>
                       <td>{% include 'crm/manager/_client_list_item_button.html' with client=attendance.client action='unmark' %}</td>
-                      <td>{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
+                      <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
                     </tr>
                   {% endwith %}
                 {% endfor %}

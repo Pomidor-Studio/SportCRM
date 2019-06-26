@@ -88,6 +88,8 @@ class ClientForm(TenantModelForm):
             'additional_info': forms.Textarea(
                 attrs={
                     "class": "form-control",
+                    "rows": "4",
+                    "placeholder": "Здесь вы можете указать информацию о клиенте и дополнительные номера телефонов",
                 }
             )
         }
@@ -179,7 +181,11 @@ class SignUpClientMultiForm(MultiModelForm):
 
 
 class ExtendClientSubscriptionForm(TenantForm):
-    visit_limit = forms.IntegerField(label='Добавить посещений', initial=1)
+    visit_limit = forms.IntegerField(
+        label='Добавить посещений',
+        initial=1,
+        min_value=1
+    )
     reason = forms.CharField(label='Причина продления', widget=forms.TextInput)
     go_back = forms.CharField(
         required=False,
@@ -189,6 +195,22 @@ class ExtendClientSubscriptionForm(TenantForm):
     def __init__(self, *args, **kwargs):
         self.subscription = kwargs.pop('subscription')
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
+
+    def clean_visit_limit(self):
+        max_add = self.subscription.max_visits_to_add
+        if max_add <= 0:
+            raise ValidationError(
+                'Этот абонемент нельзя продлить, так как клиент может '
+                'посетить все оставшиеся у него занятия, до даты окончания '
+                'абонемента.', code='invalid-visits-limit')
+
+        if self.cleaned_data['visit_limit'] > max_add:
+            raise ValidationError(
+                'Нельзя указывать больше визитов, чем клиент пропустил '
+                '({})'.format(max_add),
+                code='invalid-visits-limit'
+            )
+        return self.cleaned_data['visit_limit']
 
 
 class Select2ThemedMixin:
@@ -390,7 +412,7 @@ class EventClassForm(TenantModelForm):
     location = forms.ModelChoiceField(
         empty_label='',
         queryset=Location.objects.all(),
-        label='Место проведения',
+        label='Площадка',
         widget=Select2WidgetAttributed(
             attr_getter=subcription_type_attrs)
     )

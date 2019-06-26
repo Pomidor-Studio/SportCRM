@@ -16,7 +16,7 @@
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -28,19 +28,14 @@
       <ul>
         <li>
           <a href="{% url "crm:manager:coach:list" %}">Тренеры</a>
-          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round"></path>
-          </svg>
+          {% include 'crm/bars/_img_bredcams_str.html' %}
         </li>
         <li>
-          Новый тренер
-        </li>
-        <li>
-          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
-                  stroke-linejoin="round"></path>
-          </svg>
+            {% if form.user.fullname.value %}
+              {{ form.user.fullname.value }}
+            {% else %}
+              Новый тренер
+            {% endif %}
         </li>
       </ul>
     </div>
@@ -51,7 +46,7 @@
       {% csrf_token %}
       {% bootstrap_form form.user exclude="fullname,email" %}
 
-      <div class="form-group row align-items-center">
+      <div class="row align-items-center">
         <div class="col-12 col-md-10 col-xl-6 order-2 order-md-1">
           {% bootstrap_field form.coach.vk_page %}
         </div>
@@ -70,12 +65,12 @@
           <div class="greyline"></div>
         </div>
       </div>
-      <div class="form-group row">
+      <div class="row">
         <div class="col-12 col-md-10 col-xl-6">
           {% bootstrap_field form.user.fullname %}
         </div>
       </div>
-      <div class="form-group row">
+      <div class="row">
         <div class="col-12 col-md-5 col-xl-3">
           {% bootstrap_field form.coach.phone_number %}
         </div>
@@ -89,7 +84,7 @@
         </div>
       </div>
       {% if object.id %}
-        <div class="form-group row">
+        <div class="row">
           <div class="col-12 col-md-10 col-xl-6">
             <label for="login_link">Ссылка для входа</label>
             <div class="form-group input-group">

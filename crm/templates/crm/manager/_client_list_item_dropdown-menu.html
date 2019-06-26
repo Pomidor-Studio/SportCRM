@@ -9,6 +9,7 @@
   </a>
   <div class="dropdown-menu dropdown-menu-right">
     {% if not client.deleted %}
+      {# Часть меню в случае если генерация меню вызывается из события #}
       {% if event %}
         {% ifhasperm 'client_subscription.sale' user %}
           <a class="dropdown-item"
@@ -19,7 +20,7 @@
         {% endifhasperm %}
         {% if active_sub|length == 1 %}
           {% ifhasperm 'client_subscription.extend' user %}
-            {% with active_sub.first as sub %}
+            {% with active_sub|first as sub %}
               <a class="dropdown-item"
                  href="{% url 'crm:manager:client:subscription:extend' sub.id %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day  %}"
                  data-client-id="{{ client.id }}">

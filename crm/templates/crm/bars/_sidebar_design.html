@@ -1,40 +1,38 @@
 {% load html_helper %}
 
 <div class="sidebar col-md-5 col-lg-3 col-xl-2">
-  <!- For mobile -!>
-  <div class="mobile_sidebar d-md-block d-lg-none">
-    <a id="mobile_logo" class="logo">
-      {% include 'crm/bars/_image_mobile_logo-33x34.html' %}
-    </a>
-    <span class="logo_name">
-    {% include 'crm/bars/_image_mobile_logo_name-97x28.html' %}
-  </span>
+    <!- For mobile -!>
+    <div class="mobile_sidebar d-md-block d-lg-none">
+        <a id="mobile_logo" class="logo">
+            {% include 'crm/bars/_image_mobile_logo-33x34.html' %}
+        </a>
+        <span class="logo_name">
+            {% include 'crm/bars/_image_mobile_logo_name-97x28.html' %}
+        </span>
 
-    <div class="bredcams">
-      <ul>
-        {% if back_link %}
-          <li>
-            <a href="{{ back_link }}">
-              <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-                   xmlns="http://www.w3.org/2000/svg">
-                <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </a>
-          </li>
+        <div class="bredcams">
+          <ul>
+            {% if back_link %}
+              <!--<li>
+                <a href="{{ back_link }}">
+                  <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
+                       xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+              </li>-->
+            {% endif %}
+            <li>
+              {{ name|default_if_none:'Новая тренировка' | safe }}
+            </li>
+          </ul>
+        </div>
+        {% if mobile_menu %}
+          {% include mobile_menu %}
         {% endif %}
-        <li>
-          {{ name|default_if_none:'Новая тренировка' }}
-        </li>
-      </ul>
-    </div>
-    {% if mobile_menu %}
-      {% include mobile_menu %}
+      </div>
 
-    {% endif %}
-
-
-  </div>
   <!- Sidebar -!>
   <div class="sidebar-wrapper">
     <div class="logo">
@@ -73,7 +71,7 @@
         {% ifhasperm 'location' user %}
           <a class="nav-link {% if current == 'location' %}active{% endif %}"
              href="{% url 'crm:manager:locations:list' %}">
-            Места проведения
+            Площадки
           </a>
         {% endifhasperm %}
         {% ifhasperm 'subscription' user %}

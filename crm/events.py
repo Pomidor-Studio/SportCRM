@@ -67,6 +67,53 @@ def days_delta(days) -> List[int]:
     return deltas
 
 
+def days_delta_2(days) -> List[int]:
+    """
+    Обновлённый алгорится вычесления дельты между днями.
+
+    TODO: Проверить на скорость по сравнению с оригинальным
+    TODO: Проверить - если ли у него проблемы с неотсортированными днями
+    """
+    deltas = [0] * len(days)
+
+    if not(len(days)):
+        return deltas
+
+    for x in range(len(days)):
+        a = days[0 if x == len(days) - 1 else x + 1]
+        b = days[x]
+
+        dt = a - b
+        if a < b:
+            dt = 7 + dt
+
+        deltas[x] = dt
+
+
+def extend_range_distance(days: List[int], base_day: int) -> List[int]:
+    """
+    Получить расстояние, в днях, между последним доступным занятием, и
+    возможными занятиями из календаря.
+    Список дней уже должен быть отсортирован по принципу - день последнего
+    реального занятия - последний в списке
+
+    :param days: Список дней, по которым возможны занятия
+    :return: Список расстояний
+    """
+    deltas = [0] * len(days)
+
+    if not(len(days)):
+        return deltas
+
+    for x in range(len(days)):
+        dt = days[x] - base_day
+        if dt <= 0:
+            dt += 7
+        deltas[x] = dt
+
+    return deltas
+
+
 def next_day(
     start: date,
     stop: date,

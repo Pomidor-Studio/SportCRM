@@ -1,35 +1,14 @@
-{% load html_helper %}
+{% load html_helper crm_block %}
 
-{% if event and event.is_overpast %}
-  {% if subscriptions|length == 1 %}
-    {% with subscriptions.0 as sub %}
-      {% if sub.is_expiring %}
-        <span class="yellow">{{ sub.subscription.name }}</span>
-      {% else %}
-        {{ sub.subscription.name }}
-      {% endif %}
-      <br/>
-      <small>Доступно посещений: {{ sub.visits_left }} из
-        {{ sub.visits_on_by_time }}</small>
-    {% endwith %}
-  {% elif subscriptions|length > 1%}
-    <form class="subscription_select">
-      {% for sub in subscriptions %}
-        {% if sub.is_expiring %}
-          <span class="yellow">{{ sub.subscription.name }}</span>
-        {% else %}
-          {{ sub.subscription.name }}
-        {% endif %}
-        <br/>
-        <small>Доступно посещений: {{ sub.visits_left }} из
-          {{ sub.visits_on_by_time }}</small>
-        {% if not forloop.last %}
-          <div class="greyline"></div>
-        {% endif %}
-      {% endfor %}
-    </form>
-  {% else %}
-    <span class="yellow">Без абонемента</span>
+{% if event and event.is_overpast and not marked %}
+  {% for sub in subscriptions %}
+    <div class="info_for_button_s">{% subscription_info sub %}</div>
+    {% if not forloop.last %}
+      <div class="greyline"></div>
+    {% endif %}
+  {% empty %}
+  <div class="info_for_button_s">
+    <span>Без абонемента</span>
 
     {% if not client.deleted %}
       {% ifhasperm 'client_subscription.sale' user %}
@@ -43,38 +22,19 @@
              href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
         {% endif %}
       {% endifhasperm %}
+      </div>
     {% endif %}
-  {% endif %}
+  {% endfor %}
+
 {% else %}
-  {% if active_sub|length == 1 %}
-    {% with active_sub.first as sub %}
-      {% if sub.is_expiring %}
-        <span class="yellow">{{ sub.subscription.name }}</span>
-      {% else %}
-        {{ sub.subscription.name }}
-      {% endif %}
-      <br/>
-      <small>Доступно посещений: {{ sub.visits_left }} из
-        {{ sub.visits_on_by_time }}</small>
-    {% endwith %}
-  {% elif active_sub|length > 1 %}
-    <form class="subscription_select">
-      {% for sub in active_sub %}
-        {% if sub.is_expiring %}
-          <span class="yellow">{{ sub.subscription.name }}</span>
-        {% else %}
-          {{ sub.subscription.name }}
-        {% endif %}
-        <br/>
-        <small>Доступно посещений: {{ sub.visits_left }} из
-          {{ sub.visits_on_by_time }}</small>
-        {% if not forloop.last %}
-          <div class="greyline"></div>
-        {% endif %}
-      {% endfor %}
-    </form>
-  {% else %}
-    <span class="yellow">Без абонемента</span>
+
+  {% for sub in active_sub %}
+    {% subscription_info sub %}
+    {% if not forloop.last %}
+      <div class="greyline"></div>
+    {% endif %}
+  {% empty %}
+    <span>Без абонемента</span>
 
     {% if not client.deleted %}
       {% ifhasperm 'client_subscription.sale' user %}
@@ -89,5 +49,5 @@
         {% endif %}
       {% endifhasperm %}
     {% endif %}
-  {% endif %}
+  {% endfor %}
 {% endif %}

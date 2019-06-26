@@ -71,3 +71,27 @@ class BootstrapDateRangeField(RangeField):
 
 class BootstrapDateFromToRangeFilter(django_filters.RangeFilter):
     field_class = BootstrapDateRangeField
+
+
+EVENT_COLORS = [
+    '#D9F3FB',
+    '#ECE5CB',
+    '#EADCF5',
+    '#CBFFEC',
+    '#FFE9F2',
+    '#FFCACA',
+    '#FFE5D2',
+    '#FFF5C0',
+    '#D6F2B6'
+]
+EVENT_COLORS_LEN = len(EVENT_COLORS)
+
+
+def event_color(event_class_id: int) -> str:
+    """
+    Генерация цвета для тренировки, на базе кода тренировки
+
+    :param event_class_id: Первичный ключ класса тренировки
+    :return: Цвет, в html hex форме
+    """
+    return EVENT_COLORS[event_class_id % EVENT_COLORS_LEN]

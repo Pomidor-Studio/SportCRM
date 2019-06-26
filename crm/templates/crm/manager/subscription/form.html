@@ -17,7 +17,7 @@
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -52,26 +52,37 @@
       {% csrf_token %}
 
       <div class="row">
-        <div class="col-12 col-md-10 col-xl-6 form-group">
+        <div class="col-12 col-md-10 col-xl-6">
           {% bootstrap_field form.name %}
         </div>
       </div>
       <div class="row">
-        <div class="col-6 col-md-5 col-xl-3 form-group">
+        <div class="col-12 col-md-5 col-xl-3">
           {% bootstrap_field form.price %}
         </div>
-        <div class="col-6 col-md-5 col-xl-3 form-group">
+        <div class="col-12 col-md-5 col-xl-3">
           {% bootstrap_field form.visit_limit %}
+        </div>
+        <div class="col-6 col-md-2 col-xl-2 offset-6 offset-md-0 d-flex align-items-end form-group">
+            <!--
+            <div class="form-check d-flex skip_line">
+                <label class="form-check-label" for="no_visit_limit">
+                    <input id="no_visit_limit" name="no_visit_limit" type="checkbox" class="form-check-input">
+                    <div class="form-check-input-div"></div>
+                </label>
+                <label class="form-check-label" for="no_visit_limit">Безлимит</label>
+            </div>
+            -->
         </div>
       </div>
       <div class="row">
         <div class="col-12">
           <label for="id_duration">Продолжительность</label>
           <div class="row align-items-center">
-            <div class="col-6 col-md-2 form-group">
+            <div class="col-6 col-md-2">
               {% bootstrap_field form.duration show_label=False %}
             </div>
-            <div class="col-6 col-md-4 form-group">
+            <div class="col-6 col-md-4">
               {% bootstrap_field form.duration_type show_label=False %}
             </div>
             <div class="col-12 col-md-6 form-group">
@@ -94,6 +105,15 @@
       </div>
       <div class="form-group subscription_check">
         <p>Допустимые тренировки</p>
+        <!--
+        <div class="form-check d-flex">
+            <label class="form-check-label" for="subscription_all">
+                <input id="subscription_all" name="rounding" type="checkbox" class="form-check-input" data-subscription="subscription_all">
+                <div class="form-check-input-div"></div>
+            </label>
+            <label class="form-check-label" for="subscription_all">Все</label>
+        </div>
+        -->
         {% for field in form.event_class %}
           <div class="form-check d-flex">
             <label class="form-check-label" for="{{ field.id_for_label }}">
@@ -114,6 +134,8 @@
         {% endif %}
 
       </div>
+
+      <div class="greyline"></div>
 
       <div class="form-group save_buttons">
         <input class="btn btn-primary" type="submit" value="Сохранить"/>

@@ -2,15 +2,15 @@
 
 {% load bootstrap4 html_helper humanize static %}
 
-{% block title %}Места проведения{% endblock %}
+{% block title %}Площадки{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Места проведения" back_link=False current='location' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Площадки" back_link=False current='location' %}
 {% endblock %}
 
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -20,12 +20,12 @@
     </div>
       {% ifhasperm 'location.add' user %}
       <a class="btn btn-primary btn-new"
-         href="{% url 'crm:manager:locations:new' %}">Новый</a>
+         href="{% url 'crm:manager:locations:new' %}">Новая</a>
     {% endifhasperm %}
     <div class="bredcams clearfix">
       <ul>
         <li>
-          Места проведения
+          Площадки
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
@@ -38,72 +38,74 @@
     </div>
     <div class="greyline"></div>
     {% if locations %}
-      <table class="table table-hover">
-        <thead class="d-none d-md-block">
-        <tr>
-          <th>
-            Название
-          </th>
-          <th>
-            Адрес
-          </th>
-          <th width="1"></th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for location in locations %}
-          <tr {% if location.deleted %}class="archive"{% endif %}>
-            <td>
-              {% if not location.deleted %}
-                {% ifhasperm 'location.edit' user %}
-                  <a href="{% url "crm:manager:locations:update" location.id %}"
-                     class="fio_name"> {{ location.name }}</a>
-                {% else %}
-                  <a href="#" class="fio_name"> {{ location.name }}</a>
-                {% endifhasperm %}
-              {% else %}
-                {{ location.name }}
-              {% endif %}
-              <div class="d-md-none">
-                <small>{{ location.address }}</small>
-              </div>
-            </td>
-            <td class="d-none d-md-block">
-              {{ location.address }}
-            </td>
-            <td>
-              {% if location.deleted %}
-                {% ifhasperm 'location.undelete' user %}
-                  <a class="btn btn-icon btn-undo"
-                     href="#confirm_popup"
-                     data-action-text="Вернуть"
-                     data-body-text="Вернуть из архива?"
-                     data-title="Возврат из архива"
-                     data-toggle="modal"
-                     data-url="{% url "crm:manager:locations:undelete" location.id %}">
-                    <span></span>
-                    <abbr>Вернуть</abbr>
-                  </a>
-                {% endifhasperm %}
-              {% else %}
-                {% ifhasperm 'location.delete' user %}
-                  <a class="btn btn-icon btn-delete"
-                     href="#confirm_popup"
-                     data-action-text="В архив"
-                     data-title="Перемещение в архив"
-                     data-body-text="Переместить в архив?"
-                     data-toggle="modal"
-                     data-url="{% url "crm:manager:locations:delete" location.id %}">
-                    <span></span>
-                    <abbr>Удалить</abbr>
-                  </a>
-                {% endifhasperm %}
-              {% endif %}
-            </td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+        <div class="tab-content">
+          <table class="table table-hover">
+            <thead class="d-none d-md-block">
+            <tr>
+              <th>
+                Название
+              </th>
+              <th>
+                Адрес
+              </th>
+              <th width="1"></th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for location in locations %}
+              <tr {% if location.deleted %}class="archive"{% endif %}>
+                <td>
+                  {% if not location.deleted %}
+                    {% ifhasperm 'location.edit' user %}
+                      <a href="{% url "crm:manager:locations:update" location.id %}"
+                         class="fio_name"> {{ location.name }}</a>
+                    {% else %}
+                      <a href="#" class="fio_name"> {{ location.name }}</a>
+                    {% endifhasperm %}
+                  {% else %}
+                    {{ location.name }}
+                  {% endif %}
+                  <div class="d-md-none">
+                    <small>{{ location.address }}</small>
+                  </div>
+                </td>
+                <td class="d-none d-md-block">
+                  {{ location.address }}
+                </td>
+                <td>
+                  {% if location.deleted %}
+                    {% ifhasperm 'location.undelete' user %}
+                      <a class="btn btn-icon btn-undo"
+                         href="#confirm_popup"
+                         data-action-text="Вернуть"
+                         data-body-text="Вернуть из архива?"
+                         data-title="Возврат из архива"
+                         data-toggle="modal"
+                         data-url="{% url "crm:manager:locations:undelete" location.id %}">
+                        <span></span>
+                        <abbr>Вернуть</abbr>
+                      </a>
+                    {% endifhasperm %}
+                  {% else %}
+                    {% ifhasperm 'location.delete' user %}
+                      <a class="btn btn-icon btn-delete"
+                         href="#confirm_popup"
+                         data-action-text="В архив"
+                         data-title="Перемещение в архив"
+                         data-body-text="Переместить в архив?"
+                         data-toggle="modal"
+                         data-url="{% url "crm:manager:locations:delete" location.id %}">
+                        <span></span>
+                        <abbr>Удалить</abbr>
+                      </a>
+                    {% endifhasperm %}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+      </div>
     {% else %}
       <p>Ваш список Места проведения пуст</p>
     {% endif %}
