@@ -465,9 +465,7 @@ tr.active .btn-down span {
 	}
 }
 @media screen and (-webkit-min-device-pixel-ratio:0) {
-  select,
-  textarea,
-  input {
+  select, textarea, input[type="text"] {
     font-size: 16px !important;
   }
 }
@@ -1719,4 +1717,7 @@ footer {
 /* Помощь */
 .video {
 	padding: 8px 0;
+}
+.modal-footer .btn {
+	margin-left: 16px;
 }
