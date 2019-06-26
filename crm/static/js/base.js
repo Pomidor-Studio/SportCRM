@@ -29,13 +29,13 @@ $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 
 
 /* Для кнопки отметить */
-$('.info_for_button').each(function() {
-    $(this).parents('tr').find('td:nth-child(1), td:nth-child(2)').on('click',function() {
-        window.location = $(this).find('a').attr('href');
-        var href_in = $(this).find('a').attr('href');
+$('.workout_page .fio_name').each(function() {
+    var fio_name_a = $(this).attr('href');
+    $(this).parents('.workout_page tr').find('td').not('td:nth-child(9),td:nth-child(10)').on('click',function() {
+        window.location = fio_name_a;
     })
-    $(this).parents('.workout_page tr').find('td:nth-child(9), td:nth-child(2)').on('click',function() {
-        window.location = $(this).find('a').attr('href');
+    $(this).parents('.workout_page tr').find('td:nth-child(9)').on('click',function() {
+        window.location = $(this).find('a').attr('href');;
     })
 })
 $('.students_page .fio_name').each(function() {
@@ -44,8 +44,8 @@ $('.students_page .fio_name').each(function() {
         window.location = fio_name_a;
     })
 })
-$('.students_page .sell').each(function() {
-    $(this).parents('.students_page tr td:nth-child(3)').on('click',function() {
+$('.sell').each(function() {
+    $(this).parents('tr td:nth-child(3)').on('click',function() {
         window.location = $(this).find('a').attr('href');
     })
 })

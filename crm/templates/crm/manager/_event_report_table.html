@@ -35,7 +35,7 @@
                     <br>
                     {{ row.cells.coach }}
                     <br>
-                    <span style="background-color:{% comment %}{% event_color event.id %}{% endcomment %}">{{ row.cells.event_class }}</span>
+                    <span style="background-color:{% event_color row.record.event_class.id %}">{{ row.cells.event_class }}</span>
                     <br>
                     Ученики: {{ row.cells.clients_count }}
                     <br>

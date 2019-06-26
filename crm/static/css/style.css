@@ -448,7 +448,7 @@ tr.active .btn-down span {
       color: #76BD1B; }
 
 .tab-content, .freeze_table {
-  margin-bottom: 120px; }
+  margin-bottom: 80px; }
 
 @media (max-width: 767px) {
   .table {
