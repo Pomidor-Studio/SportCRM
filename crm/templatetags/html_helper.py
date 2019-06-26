@@ -289,3 +289,8 @@ def make_list_from_any(value):
         return list(value)
 
     return [value]
+
+
+@register.filter(is_safe=False)
+def empty_list(value):
+    return []

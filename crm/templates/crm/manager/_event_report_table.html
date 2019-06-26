@@ -1,4 +1,5 @@
-{% load django_tables2 i18n html_helper humanize bootstrap4 %}
+{% load django_tables2 i18n html_helper humanize bootstrap4 crm_block %}
+
 {% block table-wrapper %}
   <table class="table table-hover">
     {% block table.thead %}
@@ -46,7 +47,7 @@
             <td class="d-none d-md-block">
               {{ row.cells.coach }}
               <br>
-              <span style="background-color:{% comment %}{% event_color event.id %}{% endcomment %}">{{ row.cells.event_class }}</span>
+              <span style="background-color:{% event_color row.record.event_class.id %}">{{ row.cells.event_class }}</span>
             </td>
             <td class="d-none d-md-block">
               <div class="d-none d-md-block text-center">

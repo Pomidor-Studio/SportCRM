@@ -186,20 +186,20 @@ class UnDelete(PermissionRequiredMixin, RevisionMixin, UnDeleteView):
     permission_required = 'client.undelete'
 
 
-class ClientMixin:
-    def get_client(self) -> Client:
-        return get_object_or_404(Client, id=self.kwargs['client_id'])
-
-
 class AddSubscription(
     PermissionRequiredMixin,
-    ClientMixin,
     RevisionMixin,
     CreateView
 ):
     form_class = ClientSubscriptionForm
     template_name = "crm/manager/client/add-subscriptions.html"
     permission_required = 'client_subscription.sale'
+
+    def get_client(self) -> Client:
+        try:
+            return Client.all_objects.get(id=self.kwargs['client_id'])
+        except Client.DoesNotExist:
+            raise Http404('No client matches the given query.')
 
     def get_event(self) -> Event:
         try:
