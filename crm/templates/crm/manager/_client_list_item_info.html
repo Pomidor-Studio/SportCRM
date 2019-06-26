@@ -7,24 +7,20 @@
   </span>
 </div>
 -->
-{% if client.deleted %}
-  {{ client.name }}
+{% ifhasperm 'client_subscription.edit' user %}
+  <div class="d-flex">
+      <div class="mr-auto">
+          <a href="{% url 'crm:manager:client:detail' client.id %}" class="fio_name">{{ client.name }}</a>
+      </div>
+      <div>
+          <span class="balance {% if client.balance < 0 %}orange{% elif client.balance > 0 %}green{% endif %} d-md-none">
+          {{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽
+          </span>
+      </div>
+  </div>
 {% else %}
-  {% ifhasperm 'client_subscription.edit' user %}
-    <div class="d-flex">
-        <div class="mr-auto">
-            <a href="{% url 'crm:manager:client:detail' client.id %}" class="fio_name">{{ client.name }}</a>
-        </div>
-        <div>
-            <span class="balance {% if client.balance < 0 %}orange{% elif client.balance > 0 %}green{% endif %} d-md-none">
-            {{ client.balance|floatformat:"-2"|intcomma }}&nbsp;₽
-            </span>
-        </div>
-    </div>
-  {% else %}
-    {{ client.name }}
-  {% endifhasperm %}
-{% endif %}
+  {{ client.name }}
+{% endifhasperm %}
 <div class="d-none d-md-block">
   <small>{{ client.phone_number|phone_format }}</small>
 </div>
