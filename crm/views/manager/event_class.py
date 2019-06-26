@@ -43,7 +43,7 @@ class Detail(PermissionRequiredMixin, DetailView):
     model = EventClass
     context_object_name = 'event_class'
     template_name = 'crm/manager/event_class/detail.html'
-    permission_required = 'event_class'
+    permission_required = 'event_class.detail'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

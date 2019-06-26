@@ -19,7 +19,11 @@
       </div>
   </div>
 {% else %}
-  {{ client.name }}
+  <div class="d-flex">
+      <div class="mr-auto">
+          <a href="{% if event %}{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day  %}{% else %}{% url 'crm:manager:client:new-subscription' client.id %}{% endif %}" class="fio_name">{{ client.name }}</a>
+      </div>
+  </div>
 {% endifhasperm %}
 <div class="d-none d-md-block">
   <small>{{ client.phone_number|phone_format }}</small>

@@ -51,9 +51,13 @@
                aria-haspopup="true" aria-expanded="false"><span
               class="icon align-self-center"></span></a>
             <div class="dropdown-menu dropdown-menu-right">
-              <a class="dropdown-item"
-                 href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать занятие</a>
+              {% ifhasperm 'event_class.add' user %}
+                <a class="dropdown-item"
+                   href="{% url 'crm:manager:event-class:update' event.event_class.pk %}">Редактировать занятие</a>
+              {% endifhasperm %}
+              {% ifhasperm 'event_class.detail' user %}
               <a class="dropdown-item" href="{% url 'crm:manager:event-class:detail' event.event_class.pk %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">Подробнее о занятии</a>
+              {% endifhasperm %}
               {% if not event.is_overpast %}
                 {% if not event.is_canceled %}
                   {% ifhasperm 'event.cancel' user event %}
