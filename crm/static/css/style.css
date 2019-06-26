@@ -448,13 +448,12 @@ tr.active .btn-down span {
       color: #76BD1B; }
 
 .tab-content, .freeze_table {
-  margin-bottom: 120px; }
+  margin-bottom: 80px; }
 
 @media (max-width: 767px) {
   .table {
     top: 0; }
     .table td {
-      height: 80px;
       vertical-align: top; }
     .table .btn-group {
       margin-top: 12px; }
