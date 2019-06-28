@@ -50,7 +50,7 @@ steps:
       entrypoint: sh
       args:
           - '-c'
-          - 'apt-get update && apt-get install -y gettext libgettextpo-dev && python3 ./manage.py makemessages'
+          - 'apt-get update && apt-get install -y gettext libgettextpo-dev && python3 ./manage.py makemessages -l ru -i venv'
       env:
           - 'PYTHONPATH=./venv'
           - 'DJANGO_SETTINGS_MODULE=sportcrm.settings.gcp_${_ENV}'
