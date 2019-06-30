@@ -133,7 +133,9 @@ class Company(models.Model):
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         # Generate translit name only if display name is changed by someone
-        if self._orig_display_name != self.display_name:
+        if self._orig_display_name != self.display_name or \
+                self.name is None or \
+                self.name == '':
             for idx in count(start=1):
                 trans_name = translit(
                     self.display_name, language_code='ru', reversed=True)
@@ -177,6 +179,23 @@ class CustomUserManager(TenantManagerMixin, UserManager):
             self.generate_uniq_username(first_name, last_name, prefix='coach'),
             first_name=first_name, last_name=last_name,
             company=get_current_tenant()
+        )
+
+    def create_crm_user(
+        self,
+        first_name,
+        last_name,
+        company,
+        email=None,
+        password=None,
+        prefix='user'
+    ):
+        return self.create_user(
+            self.generate_uniq_username(first_name, last_name, prefix=prefix),
+            first_name=first_name, last_name=last_name,
+            company=company,
+            email=email,
+            password=password
         )
 
 
@@ -304,6 +323,20 @@ class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
         ).exists()
 
 
+class ManagerManager(ScrmSafeDeleteManager):
+    def create_with_company(self, company_name: str, email: str, phone: str):
+        company = Company(display_name=company_name)
+        company.save()
+        user = User.objects.create_crm_user(
+            first_name='Менеджер',
+            last_name='',
+            company=company,
+            email=email,
+            password='123qwe!!!'
+        )
+        return self.create(user=user, phone_number=phone, company=company)
+
+
 @reversion.register()
 class Manager(ScrmSafeDeleteModel, CompanyObjectModel):
     """
@@ -311,6 +344,8 @@ class Manager(ScrmSafeDeleteModel, CompanyObjectModel):
     """
     user = models.OneToOneField(get_user_model(), on_delete=models.PROTECT)
     phone_number = PhoneNumberField("Телефон", blank=True)
+
+    objects = ManagerManager()
 
     def __str__(self):
         return self.user.get_full_name() or 'Имя не указано'

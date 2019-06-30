@@ -261,9 +261,10 @@
           <div class="form">
 
             <form
-              action="email.php" id="form" class="absolut_mobile_bottom"
+              action="{% url "api-v1:landing:register" %}" id="form" class="absolut_mobile_bottom"
               method="POST"
             >
+              {% csrf_token %}
               <input
                 type="text" id="name" name="name" placeholder="Название клуба"
                 required
@@ -328,55 +329,94 @@
 {% js "js/jquery.form.min.js" %}
 
 <script type="text/javascript">
-  $("#button_test, #overlay, #close").click(function () {
-    $("#overlay").fadeToggle(300);
-    $("#zayavka").toggle();
-    $("#zayavka").animate({
-      top: "0"
-    }, 500)
-  });
+  $(function() {
+    $("#button_test, #overlay, #close").click(function () {
+      $("#overlay").fadeToggle(300);
+      $("#zayavka").toggle();
+      $("#zayavka").animate({
+        top: "0"
+      }, 500)
+    });
 
-  $(".button a, .button button").hover(function () {
-    $(this).animate({
-      top: "-2px"
-    }, 100)
-  }, function () {
-    $(this).animate({
-      top: "0"
-    }, 200)
-  });
-  $("#zayavka #oferta").click(function () {
-    var $submit = $('#submit');
-    if ($submit.attr('disabled')) {
-      $submit.removeAttr('disabled').animate({
-        opacity: "1"
-      }, 100);
-    } else {
-      $submit.attr('disabled', '').animate({
-        opacity: "0.5"
-      }, 100);
-    }
-  });
-  $("#form").validate({
-    submitHandler: function (form) {
-      $(form).ajaxSubmit();
-      $("#zayavka .not_send").hide();
-      $("#zayavka .ok_send").fadeIn();
-    }
-  });
+    $(".button a, .button button").hover(function () {
+      $(this).animate({
+        top: "-2px"
+      }, 100)
+    }, function () {
+      $(this).animate({
+        top: "0"
+      }, 200)
+    });
+    $("#zayavka #oferta").click(function () {
+      var $submit = $('#submit');
+      if ($submit.attr('disabled')) {
+        $submit.removeAttr('disabled').animate({
+          opacity: "1"
+        }, 100);
+      } else {
+        $submit.attr('disabled', '').animate({
+          opacity: "0.5"
+        }, 100);
+      }
+    });
+    $("#form").validate({
+      submitHandler: function (form) {
+        $(form).ajaxSubmit({
+          dataType: 'json',
+          success: function(data) {
+            if (data.success) {
+              $("#zayavka .not_send").hide();
+              $("#zayavka .ok_send").fadeIn();
+            } else if (data.non_field_errors) {
+              $("#zayavka .not_send").hide();
+              $("#zayavka .white_text").html(data.non_field_errors[0]);
+              $("#zayavka .ok_send").fadeIn();
+            } else {
+              if (data.email) {
+                //TODO: show email error
+              }
+              if (data.name) {
+                //TODO: show name error
+              }
+              if (data.phone) {
+                //TODO: show phone error
+              }
+            }
+          },
+          error: function(data) {
+            if (data.responseJSON.non_field_errors) {
+              $("#zayavka .not_send").hide();
+              $("#zayavka .white_text").html(data.responseJSON.non_field_errors[0]);
+              $("#zayavka .ok_send").fadeIn();
+            } else {
+              if (data.responseJSON.email) {
+                //TODO: show email error
+              }
+              if (data.responseJSON.name) {
+                //TODO: show name error
+              }
+              if (data.responseJSON.phone) {
+                //TODO: show phone error
+              }
+            }
+          }
+        });
+      }
+    });
 
 
-  $('#fullpage').fullpage({
-    css3: 'true',
-    navigation: 'true',
-    navigationPosition: 'right',
-    lazyLoading: 'true',
-    sectionSelector: 'section',
-  });
+    $('#fullpage').fullpage({
+      css3: 'true',
+      navigation: 'true',
+      navigationPosition: 'right',
+      lazyLoading: 'true',
+      sectionSelector: 'section',
+    });
 
-  var cleave = new Cleave('#phone', {
-    phone: true,
-    phoneRegionCode: 'RU'
+    var cleave = new Cleave('#phone', {
+      phone: true,
+      phoneRegionCode: 'RU'
+    });
   });
 
 </script>

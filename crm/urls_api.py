@@ -3,7 +3,10 @@ from django.urls import path, include
 from crm.views.manager.event_class import ApiCalendar
 from crm.views.manager import event as manager_event_views
 from crm.views.manager import subscription as manager_subscription_views
-from crm.views import coach as coach_views
+from crm.views import (
+    coach as coach_views,
+    landing as landing_views,
+)
 
 
 manager_event_class_urls = ([
@@ -32,7 +35,19 @@ coach_api_urls = ([
     path('calendar/', coach_views.ApiCalendar.as_view(), name='calendar')
 ], 'coach')
 
+landing_api_urls = (
+    [
+        path(
+            'register/',
+            landing_views.RegisterCompanyView.as_view(),
+            name='register'
+        )
+    ], 'landing'
+)
+
+
 urlpatterns = [
     path('manager/', include(manager_api_urls)),
     path('coach/', include(coach_api_urls)),
+    path('landing/', include(landing_api_urls)),
 ]

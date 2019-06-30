@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import (
-    FormView, RedirectView, TemplateView, UpdateView,
+    FormView, TemplateView, UpdateView,
 )
 
 from crm.forms import ProfileCoachForm, ProfileManagerForm
