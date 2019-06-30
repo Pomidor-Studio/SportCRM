@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+from django.core.mail import send_mail
 from django.db.models import Prefetch
 from django_multitenant.utils import set_current_tenant
 
@@ -150,3 +152,17 @@ def notify_manager_about_unsignup(event_id: int, client_id: int):
 
     managers = list(Manager.objects.all())
     messages.UnsignupClient(managers, event=event, client=client).send_message()
+
+
+def send_registration_notification(user_id: int, password: str):
+    user = get_user_model().objects.get(id=user_id)
+    send_mail(
+        'Регистрация заявки',
+        f'Уважаемый клиент, вы зарегистрировались на сайте '
+        f'"Твой спортивный клуб", на пробный месяц использования.\n'
+        f'Ваш логин {user.username}\n'
+        f'Ваш пароль {password}',
+        'yourclubdev@gmail.com',
+        [user.email],
+        fail_silently=False,
+    )
