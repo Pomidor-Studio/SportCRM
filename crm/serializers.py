@@ -9,7 +9,10 @@ from django.urls import reverse
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
 
-from crm.models import Event, ClientSubscriptions, SubscriptionsType, Manager
+from crm.models import (
+    Event, ClientSubscriptions, SubscriptionsType, Manager,
+    User,
+)
 
 
 class CalendarEventSerializer(serializers.Serializer):
@@ -103,11 +106,15 @@ class RegisterCompanySerializer(serializers.Serializer):
     agree_oferta = serializers.BooleanField(required=True)
 
     def create(self, validated_data):
+        password = get_user_model().objects.make_random_password()
         manager = Manager.objects.create_with_company(
             company_name=validated_data['name'],
             email=validated_data['email'],
-            phone=validated_data['phone']
+            phone=validated_data['phone'],
+            password=password
         )
+        from gcp.tasks import enqueue
+        enqueue('send_registration_notification', manager.user_id, password)
         return manager
 
     def validate(self, attrs):

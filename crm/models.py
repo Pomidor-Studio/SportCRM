@@ -324,15 +324,25 @@ class Coach(ScrmSafeDeleteModel, CompanyObjectModel):
 
 
 class ManagerManager(ScrmSafeDeleteManager):
-    def create_with_company(self, company_name: str, email: str, phone: str):
-        company = Company(display_name=company_name)
+    def create_with_company(
+        self,
+        company_name: str,
+        email: str,
+        phone: str,
+        password: str = None,
+        expiration_delta: timedelta = timedelta(days=30)
+    ):
+        company = Company(
+            display_name=company_name,
+            active_to=date.today() + expiration_delta
+        )
         company.save()
         user = User.objects.create_crm_user(
             first_name='Менеджер',
             last_name='',
             company=company,
             email=email,
-            password='123qwe!!!'
+            password=password
         )
         return self.create(user=user, phone_number=phone, company=company)
 
