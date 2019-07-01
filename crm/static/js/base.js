@@ -193,3 +193,24 @@ $('#confirm_popup').on('show.bs.modal', function (event) {
     modal.find('input[type=submit]').attr('value', action_text);
     modal.find('form').attr('action', url);
 });
+
+$('div.btn_box a.btn').click(function(event) {
+    let $target = $(event.currentTarget);
+    if ($target.attr('pressed')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+    }
+    $target.find('span').first().addClass('wait');
+    $target.attr('pressed', 1);
+});
+
+$('div.save_buttons button#add, div.save_buttons button#add-with-autoextend').click(function(event) {
+    let $target = $(event.currentTarget);
+    if ($target.attr('pressed')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+    }
+    $target.attr('pressed', 1);
+});
