@@ -104,7 +104,7 @@ header { padding-top: 30px; height: 85px; position: relative; z-index: 2; }
 
 header .button a { font-size: 14px; }
 
-.hero { height: 100%; background: url(../img/gravity.jpg) 105% 50% no-repeat; background-size: 50%; position: relative; top: -85px; z-index: 1; }
+.hero { height: 100%; background: url(../img/landing/gravity.jpg) 105% 50% no-repeat; background-size: 50%; position: relative; top: -85px; z-index: 1; }
 
 .hero .subtitle { margin-bottom: 40px; }
 
