@@ -114,7 +114,7 @@ header .button a { font-size: 14px; }
 
 .hero .button_box .button_right { font-size: 14px; }
 
-/*.mobile_gravity  { width: 100%; background: url(../img/gravity.jpg) 50% 50% no-repeat; background-size: auto 70%; } .onepage-pagination li:last-child {display: none;}*/
+/*.mobile_gravity  { width: 100%; background: url(../img/landing/gravity.jpg) 50% 50% no-repeat; background-size: auto 70%; } .onepage-pagination li:last-child {display: none;}*/
 /* Главная */
 /* Возможности */
 .row_100 .col-md-6, .row_100 .col-md-5 { position: relative; top: -5vh; }
