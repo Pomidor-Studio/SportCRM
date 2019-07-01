@@ -1,24 +1,33 @@
 import datetime
 
+import pendulum
+from django_multitenant.utils import set_current_tenant
+
 from bot.api.messages import ClosedEvent
 from crm.models import DayOfTheWeekClass, Event, Manager, ClientSubscriptions
 
+DIFF_START = datetime.timedelta(minutes=39, seconds=59)
+DIFF_END = datetime.timedelta(minutes=30)
+
 
 def event_closing():
-    now = datetime.datetime.now()
+    p_now: pendulum.DateTime = pendulum.DateTime.now()
+    p_start = p_now - DIFF_START
+    day_to_check = p_start.weekday()
 
     dws = DayOfTheWeekClass.objects.filter(
-        day=now.day,
+        day=day_to_check,
         end_time__range=(
-            now.time() - datetime.timedelta(minutes=40),
-            now.time() - datetime.timedelta(minutes=30),
+            p_start.time(),
+            (p_now - DIFF_END).time()
         )
     )
 
     for dw_event in dws:
+        set_current_tenant(dw_event.company)
         qs = Event.objects.filter(
             event_class=dw_event.event,
-            date=now.date()
+            date=p_start.date()
         )
         if qs.exists():
             for event in qs:

@@ -18,3 +18,7 @@ cron:
       url: /bot/tasks?param=future_event
       schedule: every day 15:00 #GMT
       target: background
+    - description: "check every ten minutes for finished events"
+      url: /bot/tasks?param=event_closing
+      schedule: every 10 minutes
+      target: background
