@@ -58,6 +58,16 @@
         </a>
         {% endifhasperm %}
         <div class="greyline"></div>
+        <a class="nav-link {% if current == 'groups' %}active{% endif %}"
+           href="{% url 'crm:manager:event-class:list' %}">
+          Группы
+        </a>
+        {% ifhasperm 'subscription' user %}
+          <a class="nav-link {% if current == 'subscription' %}active{% endif %}"
+             href="{% url 'crm:manager:subscription:list' %}">
+            Абонементы
+          </a>
+        {% endifhasperm %}
         <a class="nav-link {% if current == 'coach' %}active{% endif %}"
            href="{% url 'crm:manager:coach:list' %}">
           Тренеры
@@ -66,12 +76,6 @@
           <a class="nav-link {% if current == 'location' %}active{% endif %}"
              href="{% url 'crm:manager:locations:list' %}">
             Площадки
-          </a>
-        {% endifhasperm %}
-        {% ifhasperm 'subscription' user %}
-          <a class="nav-link {% if current == 'subscription' %}active{% endif %}"
-             href="{% url 'crm:manager:subscription:list' %}">
-            Абонементы
           </a>
         {% endifhasperm %}
         {% ifhasperm 'report.list' user %}

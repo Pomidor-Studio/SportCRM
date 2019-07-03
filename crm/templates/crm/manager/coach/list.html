@@ -140,34 +140,36 @@
                 </td>
                 {% endifhasperm %}
                 <td width="1">
-                  {% if manager.user_id != user.id %}
-                    {% if coach.deleted %}
-                      {% ifhasperm 'coach.undelete' user %}
-                        <a class="btn btn-icon btn-undo"
-                           href="#confirm_popup"
-                           data-action-text="Вернуть"
-                           data-body-text="Вернуть из архива?"
-                           data-title="{{ coach }}"
-                           data-toggle="modal"
-                           data-url="{% url "crm:manager:coach:undelete" coach.id %}">
-                          <span></span>
-                          <abbr>Вернуть</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% else %}
-                      {% ifhasperm 'coach.delete' user %}
-                        <a class="btn btn-icon btn-delete"
-                           href="#confirm_popup"
-                           data-action-text="В архив"
-                           data-title="{{ coach }}"
-                           data-body-text="Переместить в архив?"
-                           data-toggle="modal"
-                           data-url="{% url "crm:manager:coach:delete" coach.id %}">
-                          <span></span>
-                          <abbr>Удалить</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% endif %}
+                    <div class="btn_box d-flex align-items-center justify-content-end">
+                      {% if manager.user_id != user.id %}
+                        {% if coach.deleted %}
+                          {% ifhasperm 'coach.undelete' user %}
+                            <a class="btn btn-icon btn-undo"
+                               href="#confirm_popup"
+                               data-action-text="Вернуть"
+                               data-body-text="Вернуть из архива?"
+                               data-title="{{ coach }}"
+                               data-toggle="modal"
+                               data-url="{% url "crm:manager:coach:undelete" coach.id %}">
+                              <span></span>
+                              <abbr>Вернуть</abbr>
+                            </a>
+                          {% endifhasperm %}
+                        {% else %}
+                          {% ifhasperm 'coach.delete' user %}
+                            <a class="btn btn-icon btn-delete"
+                               href="#confirm_popup"
+                               data-action-text="В архив"
+                               data-title="{{ coach }}"
+                               data-body-text="Переместить в архив?"
+                               data-toggle="modal"
+                               data-url="{% url "crm:manager:coach:delete" coach.id %}">
+                              <span></span>
+                              <abbr>Удалить</abbr>
+                            </a>
+                          {% endifhasperm %}
+                        {% endif %}
+                       </div>
                   {% endif %}
                 </td>
               </tr>
