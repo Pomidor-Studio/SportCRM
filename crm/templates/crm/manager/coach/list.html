@@ -102,9 +102,11 @@
                     </div>
                   {% endif %}
                   <div class="d-md-none">
-                    <a href="tel:{{ coach.phone_number }}"
-                    >{{ coach.phone_number|phone_format }}</a>
-                    <br/>
+                    {% if coach.phone_number %}
+                        <a href="tel:{{ coach.phone_number }}"
+                        >{{ coach.phone_number|phone_format }}</a>
+                        <br/>
+                    {% endif %}
                     {% if not coach.deleted %}
                       <div class="copy_url">
                       <a href="#"

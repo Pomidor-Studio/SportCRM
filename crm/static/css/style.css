@@ -157,12 +157,6 @@ small {
     display: inline-block; }
   .btn-icon abbr {
     margin-left: 8px; }
-  .btn-icon span.wait {
-      background: url(../img/ring.gif) 0 0 no-repeat !important;
-      top: 2px;
-      left: 0;
-      width: 15px;
-      height: 15px; }
   .btn-icon.btn-edit span {
     background: url(../img/icons.png) 0 0 no-repeat;
     top: 1px;
@@ -346,7 +340,8 @@ tr.active .btn-down span {
 
 @media (max-width: 1024px) {
   .btn {
-    padding: 5px 10px; }
+    padding: 5px 10px;
+    float: right; }
 
   .btn-new {
     top: 22px; } }
