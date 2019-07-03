@@ -209,6 +209,9 @@ small {
 	z-index: 4;
 }
 
+.btn_box {
+	height: 100%;
+}
 
 .btn-icon {
 	min-width: 38px;
@@ -454,7 +457,6 @@ tr.active .btn-down span {
 @media (max-width: 1024px) {
 	.btn {
 		padding: 5px 10px;
-		float: right;
 	}
 	.btn-new {
 		top: 22px;
@@ -819,7 +821,7 @@ tr.active .btn-down span {
 	}
 	.page {
 		.bredcams {
-			height: 45px;
+			height: 46px;
 
 			ul {
 				display: none;

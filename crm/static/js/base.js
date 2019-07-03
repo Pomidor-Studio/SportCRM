@@ -55,19 +55,25 @@ $('.report_page tr').each(function() {
     })
 })
 function buttons_middle () {
-    $('.info_for_button').each(function() {
-        var ifb_height = $(this).height();
-        var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4;
-        var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height();
+    $('.workout_page tr').each(function() {
+        $(this).find('.info_for_button').each(function(index) {
+            var ifb_height = $(this).height();
+            var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4;
+            var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height();
 
-        if (ifb_height_s == '0') {
-            if (ifb_height < '40') {var ifb_height = 40};
-            $(this).parents('tr').find('.btn_box:first-child').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
-            $(this).parents('tr').find('.btn_box').not('.btn_box:first-child').attr('style','height:'+ifb_height+'px;');
-        } else {
-            if (ifb_height_s < '40') {var ifb_height_s = 40};
-            $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
-        }
+            if (ifb_height_s == '0') {
+                if (ifb_height < '40') {var ifb_height = 40};
+                if (index == '0') {
+                    $(this).parents('tr').find('.btn_box:eq(0)').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
+                } else {
+                    $(this).parents('tr').find('.btn_box:eq('+index+')').attr('style','height:'+ifb_height+'px;');
+                }
+                //$(this).parents('tr').find('.btn_box').not('.btn_box:first-child').attr('style','height:'+ifb_height+'px;');
+            } else {
+                if (ifb_height_s < '40') {var ifb_height_s = 40};
+                $(this).parents('tr').find('.btn_box:eq('+index+')').attr('style','height:'+ifb_height_s+'px;');
+            }
+        })
     })
 }
 buttons_middle ()
