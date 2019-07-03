@@ -62,12 +62,6 @@
            href="{% url 'crm:manager:coach:list' %}">
           Тренеры
         </a>
-        {% ifhasperm 'manager' user %}
-          <a class="nav-link {% if current == 'manager' %}active{% endif %}"
-             href="{% url 'crm:manager:manager:list' %}">
-            Менеджеры
-          </a>
-        {% endifhasperm %}
         {% ifhasperm 'location' user %}
           <a class="nav-link {% if current == 'location' %}active{% endif %}"
              href="{% url 'crm:manager:locations:list' %}">
@@ -110,7 +104,7 @@
           {% endif %}
         {% endif %}
         {% ifhasperm 'company.edit' user %}
-          <a class="nav-link  {% if current == 'company' %}active{% endif %}"
+          <a class="nav-link  {% if current == 'company' or current == 'manager' %}active{% endif %}"
              href="{% url 'crm:manager:company' %}">
             Моя компания
           </a>
