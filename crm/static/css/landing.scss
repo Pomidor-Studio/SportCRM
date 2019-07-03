@@ -1,5 +1,3 @@
-@charset "UTF-8";
-
 $green: #76BD1B;
 $grey: #8C8C8C;
 $dark-grey: #4B4B4B;
@@ -19,20 +17,9 @@ body, html {
   background-color: rgba(0,0,0,0.6);
   display: none;
 }
-.close {
-	position: absolute;
-	cursor: pointer;
-	top: 25px;
-	right: 25px;
-	color: $dark_grey;
-	font-size: 36px;
-	overflow: hidden;
-	height: 25px;
-	line-height: 25px;
-}
 #zayavka {
 	position: fixed;
-	top: -1000px;
+	top: -50%;
 	left: 50%;
 	width: 600px;
 	height: 500px;
@@ -41,6 +28,18 @@ body, html {
 	border-radius: 10px;
 	margin: 10% 0 0 -300px;
 	display: none;
+
+	#close {
+		position: absolute;
+		cursor: pointer;
+		top: 25px;
+		right: 25px;
+		color: $dark_grey;
+		font-size: 36px;
+		overflow: hidden;
+		height: 25px;
+		line-height: 25px;
+	}
 
 	.title {
 		font-size: 36px;
@@ -97,58 +96,6 @@ body, html {
 	}
 	.ok_send {
 		display: none;
-	}
-}
-#oferta_page {
-	width: 100%;
-	height: 100%;
-	position: absolute;
-	z-index: 102;
-	bottom: -1000px;
-	left: 0;
-	overflow-y: scroll;
-	line-height: 170%;
-	color: $dark-grey;
-
-	h2 {
-		margin-top: 50px;
-	}
-	.button {
-		margin-top: 100px;
-	}
-
-	.paper {
-		padding: 30px 50px;
-	}
-	.paper-shadow {
-		position: relative;
-		background: #fff;
-		margin: 50px auto 200px;
-		box-shadow: 0px 2px 38px rgba(0, 0, 0, 0.2);
-	}
-	.paper-shadow:after, .paper-shadow:before{
-		content: '';
-		position: absolute;
-		left: auto;
-		background:none;
-		z-index: -1;
-	}
-	.paper-shadow:after{
-		width: 90%;
-		height: 10px;
-		top: 30px;
-		right:8px;
-		transform: rotate(-3deg);
-		box-shadow: 0px -25px 35px 0px rgba(0,0,0,0.5);
-	}
-
-	.paper-shadow:before{
-		width: 10px;
-		height: 95%;
-		top: -5px;
-		right: 100px;
-		transform: rotate(3deg);
-		box-shadow: 22px 0px 35px 0px rgba(0,0,0,0.5);
 	}
 }
 .page {
@@ -258,7 +205,7 @@ header {
 }
 .hero {
 	height: 100%;
-	background: url(/static/img/landing/gravity.jpg) 105% 50% no-repeat;
+	background: url(../img/gravity.jpg) 105% 50% no-repeat;
 	background-size: 50%;
 	position: relative;
 	top: -85px;
@@ -561,24 +508,6 @@ footer {
 			right: 36px;
 			left: 36px;
 			width: auto;
-		}
-	}
-	#oferta_page {
-		h1 {
-			font-size: 1.5em;
-		}
-		h2 {
-			font-size: 1em;
-			margin-top: 40px;
-		}
-		.button {
-			margin-top: 50px;
-		}
-		.paper {
-			padding: 20px 20px 40px;
-		}
-		.paper-shadow {
-			margin: 0;
 		}
 	}
 

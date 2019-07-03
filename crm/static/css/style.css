@@ -359,7 +359,7 @@ tr.active .btn-down span {
   font-size: 14px;
   line-height: 19px;
   position: relative;
-  top: -5px;
+  top: -10px;
   color: #000; }
   .table thead th {
     background: #fff;
@@ -795,14 +795,12 @@ footer {
   position: relative;
   height: calc(100vh - 35px); }
   #calendar .fc-toolbar {
-    margin-bottom: 15px;
-    text-transform: uppercase; }
+    margin-bottom: 15px; }
     #calendar .fc-toolbar h2 {
       font-size: 18px;
-      line-height: 35px;
-      /*&:before {
-      	content: "Тренировки: ";
-      }*/ }
+      line-height: 35px; }
+      #calendar .fc-toolbar h2:before {
+        content: "Тренировки: "; }
     #calendar .fc-toolbar .btn {
       background: #fff !important;
       color: #000 !important;
@@ -1126,14 +1124,7 @@ footer {
     border-right: none !important;
     padding-right: 0; }
   .student_page .nav-pills .nav-item:nth-child(4) .nav-link {
-    padding-left: 0; }
-
-  .user_info .big_name {
-    font-size: 18px;
-    font-weight: bold; }
-  .user_info .user_pic img {
-    width: 50px;
-    height: 50px; } }
+    padding-left: 0; } }
 /* Ученик */
 /* Отчёты */
 .report_filter .date {
