@@ -2,13 +2,13 @@
 
 {% load bootstrap4 html_helper %}
 
-{% block title %}Абонимент{% endblock %}
+{% block title %}Абонемент{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:subscription:list' as back_link %}
   {% if object.id %}
     {% include 'crm/bars/_sidebar_design.html'  with name=object.name back_link=back_link current='subscription' %}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Новый абонимент" back_link=back_link current='subscription' %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новый абонемент" back_link=back_link current='subscription' %}
   {% endif %}
 {% endblock %}
 
@@ -35,7 +35,7 @@
           </svg>
         </li>
         <li>
-          {% if object.id %}{{ object.name }} {% else %}Новый абонимент{% endif %}
+          {% if object.id %}{{ object.name }} {% else %}Новый абонемент{% endif %}
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
