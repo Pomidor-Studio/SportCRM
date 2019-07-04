@@ -60,6 +60,17 @@ class List(PermissionRequiredMixin, FilterView):
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context['has_active_event_class'] = EventClass.objects.active().exists()
+        all_clients = Client.objects.all()
+        context['all_clients_count'] = all_clients.count
+        debtor_count = 0
+        long_time_not_go_count = 0
+        for client in all_clients:
+            if ClientFilter.filter_debtor(self, queryset=Client.objects.filter(name=client.name), name=None, value=None):
+                debtor_count = debtor_count + 1
+            if ClientFilter.filter_long_time_not_go(self, queryset=Client.objects.filter(name=client.name), name=None, value=None):
+                long_time_not_go_count += long_time_not_go_count + 1
+        context['debtor_count'] = debtor_count
+        context['long_time_not_go_count'] = long_time_not_go_count
         context['vk_group_id'] = get_current_tenant().vk_group_id
         return context
 

@@ -123,12 +123,12 @@
                   <li class="nav-item col-6 col-md-auto text-center text-md-left">
                     <a class="nav-link active" id="pills-all-tab" data-toggle="pill"
                        href="#pills-all" role="tab" aria-controls="pills-all"
-                       aria-selected="true">Ученики</a>
+                       aria-selected="true">Ученики {% if all_clients_count %}{{ all_clients_count }}{% endif %}</a>
                   </li>
                   <li class="nav-item col-6 col-md-auto text-center text-md-left">
                     <a class="nav-link" id="pills-marked-tab" data-toggle="pill"
                        href="#pills-marked" role="tab" aria-controls="pills-marked"
-                       aria-selected="false">Отмечены</a>
+                       aria-selected="false">Отмечены {% if attendance_list_marked_count %}{{ attendance_list_marked_count }}{% endif %}</a>
                   </li>
                 </ul>
                 </div>
@@ -191,7 +191,7 @@
                 <tbody>
                 {% if signed_up_clients %}
                   <tr class="otbivka">
-                    <td colspan="10">Записанные</td>
+                    <td colspan="10">Записанные {% if signed_up_clients_qs_count %}{{ signed_up_clients_qs_count }}{% endif %}</td>
                   </tr>
                   {% for client, subscriptions in signed_up_clients.items %}
                     {% with active_sub=subscriptions last_sub=client.last_sub %}
@@ -217,7 +217,7 @@
                 {% endif %}
                 {% if unmarked_clients %}
                   <tr class="otbivka">
-                    <td colspan="10">Доступные по абонементу</td>
+                    <td colspan="10">Доступные по абонементу {% if unmarked_clients_qs_count %}{{ unmarked_clients_qs_count }}{% endif %}</td>
                   </tr>
                   {% for client, subscriptions in unmarked_clients.items %}
                     {% with active_sub=subscriptions last_sub=client.last_sub %}
@@ -246,9 +246,9 @@
                 {% if rest_clients %}
                   {# Выводим список учеников, не записанных и без абонемента с кнопкой «Продать» #}
                   <tr class="otbivka">
-                    <td colspan="10">Прочие</td>
+                    <td colspan="10">Прочие {% if rest_clients_count %}{{ rest_clients_count }}{% endif %}</td>
                   </tr>
-                  {% for client in rest_clients %}
+                  {% for client in rest_clients|dictsort:"name" %}
                     {% with active_sub=""|empty_list last_sub=client.last_sub %}
                       <tr
                         class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
