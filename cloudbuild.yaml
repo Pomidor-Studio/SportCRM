@@ -45,16 +45,14 @@ steps:
       waitFor: ['pip-install']
 
     # Make messages
-    - id: 'make-messages'
-      name: 'python:3.7'
-      entrypoint: sh
-      args:
-          - '-c'
-          - 'apt-get update && apt-get install -y gettext libgettextpo-dev && python3 ./manage.py makemessages -l ru -i venv'
-      env:
-          - 'PYTHONPATH=./venv'
-          - 'DJANGO_SETTINGS_MODULE=sportcrm.settings.gcp_${_ENV}'
-      waitFor: ['pip-install', 'background deploy']
+#    - id: 'make-messages'
+#      name: 'python:3.7'
+#      entrypoint: python3
+#      args: ['./manage.py', 'makemessages', '--noinput']
+#      env:
+#          - 'PYTHONPATH=./venv'
+#          - 'DJANGO_SETTINGS_MODULE=sportcrm.settings.gcp_${_ENV}'
+#      waitFor: ['pip-install', 'background deploy']
 
     # Collect static
     - id: 'collect-static'
@@ -71,6 +69,6 @@ steps:
     - id: 'deploy'
       name: 'gcr.io/cloud-builders/gcloud'
       args: ['app', 'deploy', 'app-${_ENV}.yaml', '--version=production1']
-      waitFor: ['collect-static', 'make-messages']
+      waitFor: ['collect-static']
 
 timeout: "1600s"

@@ -4,8 +4,7 @@
 
 {% block title %}Менеджеры{% endblock %}
 {% block sidbar %}
-  {% url 'crm:manager:company' as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Менеджеры" back_link=back_link current='manager' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Менеджеры" back_link=False current='manager' %}
 {% endblock %}
 
 {% block content %}
@@ -20,21 +19,11 @@
       </div>
     </div>
       {% ifhasperm 'manager.add' user %}
-        <a class="btn btn-primary btn-new"
+      <a class="btn btn-primary btn-new"
          href="{% url 'crm:manager:manager:new' %}">Новый</a>
-      {% endifhasperm %}
+    {% endifhasperm %}
     <div class="bredcams clearfix">
       <ul>
-        <li>
-          <a href="{% url 'crm:manager:company' %}">Моя компания</a>
-        </li>
-        <li>
-          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-               xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"></path>
-          </svg>
-        </li>
         <li>
           Менеджеры
         </li>
@@ -112,16 +101,15 @@
                     </div>
                   {% endif %}
                   <div class="d-md-none">
-                    {% if manager.phone_number %}
-                        <a href="tel:{{ manager.phone_number }}"
-                        >{{ manager.phone_number|phone_format }}</a>
-                        <br/>
-                    {% endif %}
-                    {% if not manager.deleted %}
-                      <div class="copy_url">
-                        <a href="#" class="btn-icon btn-copy" data-clipboard-text="{% one_time_login_link manager.user %}"><span></span></a>
-                        <span>{% one_time_login_link manager.user %}</span>
-                      </div>
+                    <a href="tel:{{ manager.phone_number }}"
+                    >{{ manager.phone_number|phone_format }}</a>
+                    <br/>
+                    {% if manager.user.vk_link %}
+                      <a href="{{ manager.user.vk_link|safe }}"
+                         target="_blank"
+                         class="btn-icon btn-copy"
+                         data-clipboard-text="{{ manager.user.vk_link|safe }}">
+                        <span></span></a><span>{{ manager.user.vk_link|safe }}</span>
                     {% endif %}
                   </div>
                 </td>
@@ -156,7 +144,7 @@
                            href="#confirm_popup"
                            data-action-text="Вернуть"
                            data-body-text="Вернуть из архива?"
-                           data-title="{{ manager }}"
+                           data-title="Возврат из архива"
                            data-toggle="modal"
                            data-url="{% url "crm:manager:manager:undelete" manager.id %}">
                           <span></span>
@@ -168,7 +156,7 @@
                         <a class="btn btn-icon btn-delete"
                            href="#confirm_popup"
                            data-action-text="В архив"
-                           data-title="{{ manager }}"
+                           data-title="Перемещение в архив"
                            data-body-text="Переместить в архив?"
                            data-toggle="modal"
                            data-url="{% url "crm:manager:manager:delete" manager.id %}">

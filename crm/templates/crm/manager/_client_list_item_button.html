@@ -3,7 +3,7 @@
 {% if not client.deleted %}
   {% if action == 'balance_add' %}
     {% ifhasperm 'client-balance.add' user %}
-        <div class="btn_box d-flex align-items-center justify-content-end">
+        <div class="btn_box d-flex align-items-center">
           <a class="btn btn-icon btn-pay"
              href="{% url 'crm:manager:client:balance:new' client.id %}">
             <span></span>
@@ -13,7 +13,7 @@
     {% endifhasperm %}
   {% endif %}
   {% if action == 'mark' %}
-    <div class="btn_box d-flex align-items-center justify-content-end">
+    <div class="btn_box d-flex align-items-center">
         <div>
         <a class="btn btn-icon btn-mark"
         href="{% url 'crm:manager:event-class:event:mark-client' event.event_class.id event.date.year event.date.month event.date.day client.id sub.id %}">
@@ -24,7 +24,7 @@
     </div>
   {% endif %}
   {% if action == 'unmark' %}
-    <div class="btn_box d-flex align-items-center justify-content-end">
+    <div class="btn_box d-flex align-items-center">
         <a class="btn btn-icon btn-delete"
            href="
               {% if attendance.signed_up %}
@@ -40,7 +40,7 @@
   {% endif %}
   {% if action == 'new_subscription' %}
     {% ifhasperm 'client_subscription.sale' user %}
-        <div class="btn_box d-flex align-items-center justify-content-end">
+        <div class="btn_box d-flex align-items-center">
           <a class="btn btn-icon btn-pay"
               {% if event %}
                  href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day  %}">
