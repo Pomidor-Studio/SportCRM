@@ -24,7 +24,7 @@
               </li>-->
             {% endif %}
             <li>
-              {{ name|default_if_none:'Новая тренировка' | safe }}
+              <span>{{ name|default_if_none:'Новая тренировка' | safe }}</span>
             </li>
           </ul>
         </div>
@@ -110,7 +110,7 @@
         {% ifhasperm 'company.edit' user %}
           <a class="nav-link  {% if current == 'company' or current == 'manager' %}active{% endif %}"
              href="{% url 'crm:manager:company' %}">
-            Моя компания
+            Мой клуб
           </a>
         {% endifhasperm %}
         <a class="nav-link  {% if current == 'profile' %}active{% endif %}"
@@ -122,7 +122,7 @@
           Выход
         </a>
         <footer>
-          © {% now "Y" %} <a href="https://sportadmin.ru">Sportadmin.ru</a>
+          © 2018 — {% now "Y" %} <a href="https://yoursport.club">Yoursport.club</a>
           <a href="https://vk.com/sportadm" class="vk_link">
             {% include 'crm/_image_vk-18x16.html' %}
           </a>
