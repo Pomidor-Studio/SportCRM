@@ -1,10 +1,15 @@
 from django.http import HttpResponse
-import bot.api.cron.cron_client_events
 from django.utils.datastructures import MultiValueDictKeyError
+
+import bot.api.cron.cron_client_events
+import bot.api.cron.manager_events
 
 
 def tasks(request):
-    modules = {bot.api.cron.cron_client_events}
+    modules = {
+        bot.api.cron.cron_client_events,
+        bot.api.cron.manager_events
+    }
     method_to_call = None
 
     try:

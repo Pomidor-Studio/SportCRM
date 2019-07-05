@@ -2,11 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime
 from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
+from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 
 from django.urls import reverse
+from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
 
-from crm.models import Event, ClientSubscriptions, SubscriptionsType
+from crm.models import (
+    Event, ClientSubscriptions, SubscriptionsType, Manager,
+    User,
+)
 
 
 class CalendarEventSerializer(serializers.Serializer):
@@ -91,3 +97,40 @@ class SubscriptionRangeSerializer(serializers.Serializer):
             .end_date(self.context['requested_date'])
             .strftime('%d.%m.%Y')
         )
+
+
+class RegisterCompanySerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100, required=True)
+    phone = PhoneNumberField(required=True)
+    email = serializers.EmailField(required=True)
+    agree_oferta = serializers.BooleanField(required=True)
+
+    def create(self, validated_data):
+        password = get_user_model().objects.make_random_password()
+        manager = Manager.objects.create_with_company(
+            company_name=validated_data['name'],
+            email=validated_data['email'],
+            phone=validated_data['phone'],
+            password=password
+        )
+        from gcp.tasks import enqueue
+        enqueue('send_registration_notification', manager.user_id, password)
+        return manager
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if get_user_model().objects.filter(email=attrs['email']).exists():
+            raise ValidationError(
+                'Заявка с такой почтой уже была отправлена!',
+                code='email-error'
+            )
+        if Manager.objects.filter(phone_number=attrs['phone']).exists():
+            raise ValidationError(
+                'Заявка с таким телефонм уже была отправленна!',
+                code='email-error'
+            )
+        return attrs
+
+    def to_representation(self, instance):
+        return {'success': True}
+

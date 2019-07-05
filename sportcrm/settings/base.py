@@ -142,6 +142,7 @@ DATE_INPUT_FORMATS = ['%d.%m.%Y']
 
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
+    os.path.join(BASE_DIR, 'locale_override'),
 )
 
 
@@ -229,3 +230,7 @@ DISABLE_MANAGER_PERMISSION_FOR_COMPANIES = ()
 MAX_REPORT_PERIOD_IN_MONTHS = 3
 
 SUPPORT_GROUP_ID = '-178479449'
+
+EMAIL_BACKEND = 'django_mailjet.backends.MailjetBackend'
+MAILJET_API_KEY = 'API-KEY'
+MAILJET_API_SECRET = 'API-SECRET'
