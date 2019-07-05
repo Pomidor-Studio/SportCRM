@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-06-29 20:13+0500\n"
+"POT-Creation-Date: 2019-05-28 10:22+0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -37,6 +37,9 @@ msgstr ""
 "Ваш пароль не может быть только из одного типа символов (прописные, "
 "заглавные буквы, цифры и спец. символы)"
 
-#: crm/templatetags/html_helper.py:252
+#: crm/templatetags/html_helper.py:251
 msgid "close"
 msgstr "закрыть"
+
+#~ msgid "Change my password"
+#~ msgstr "Сменить мой пароль"

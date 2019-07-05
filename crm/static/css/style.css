@@ -146,9 +146,6 @@ small {
   right: 15px;
   z-index: 4; }
 
-.btn_box {
-  height: 100%; }
-
 .btn-icon {
   min-width: 38px;
   height: 38px;
@@ -359,7 +356,7 @@ tr.active .btn-down span {
   font-size: 14px;
   line-height: 19px;
   position: relative;
-  top: -5px;
+  top: -10px;
   color: #000; }
   .table thead th {
     background: #fff;
@@ -451,12 +448,13 @@ tr.active .btn-down span {
       color: #76BD1B; }
 
 .tab-content, .freeze_table {
-  margin-bottom: 80px; }
+  margin-bottom: 120px; }
 
 @media (max-width: 767px) {
   .table {
     top: 0; }
     .table td {
+      height: 80px;
       vertical-align: top; }
     .table .btn-group {
       margin-top: 12px; }
@@ -591,7 +589,7 @@ tr.active .btn-down span {
     display: block; }
 
   .page .bredcams {
-    height: 46px; }
+    height: 45px; }
     .page .bredcams ul {
       display: none; } }
 /* Страница */
@@ -795,14 +793,12 @@ footer {
   position: relative;
   height: calc(100vh - 35px); }
   #calendar .fc-toolbar {
-    margin-bottom: 15px;
-    text-transform: uppercase; }
+    margin-bottom: 15px; }
     #calendar .fc-toolbar h2 {
       font-size: 18px;
-      line-height: 35px;
-      /*&:before {
-      	content: "Тренировки: ";
-      }*/ }
+      line-height: 35px; }
+      #calendar .fc-toolbar h2:before {
+        content: "Тренировки: "; }
     #calendar .fc-toolbar .btn {
       background: #fff !important;
       color: #000 !important;
@@ -1126,14 +1122,7 @@ footer {
     border-right: none !important;
     padding-right: 0; }
   .student_page .nav-pills .nav-item:nth-child(4) .nav-link {
-    padding-left: 0; }
-
-  .user_info .big_name {
-    font-size: 18px;
-    font-weight: bold; }
-  .user_info .user_pic img {
-    width: 50px;
-    height: 50px; } }
+    padding-left: 0; } }
 /* Ученик */
 /* Отчёты */
 .report_filter .date {

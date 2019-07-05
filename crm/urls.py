@@ -1,11 +1,7 @@
 from django.contrib.auth import views as auth_views
 from django.urls import include, path
 
-from crm.views import (
-    auth as scrm_auth_views,
-    coach as coach_views,
-    landing as landing_views
-)
+from crm.views import auth as scrm_auth_views, coach as coach_views
 from crm.views.manager import (
     attendance as manager_attendance_views,
     balance as manager_balance_views,
@@ -396,7 +392,6 @@ manager_urlpatterns = ([
         name='reports'
     )
 ], 'manager')
-
 
 urlpatterns = [
     path('', scrm_auth_views.SportCrmLoginRedirectView.as_view()),

@@ -13,15 +13,11 @@ from crm.models import Company
 
 def enqueue(method: str, *args, **kwargs):
 
-    payload = {
-        'method': method,
-        'args': args,
-        'kwargs': kwargs,
-    }
-    try:
-        payload['company_id'] = get_current_tenant().id
-    except AttributeError:
-        payload['company_id'] = None
+    payload = {'method': method,
+               'args': args,
+               'kwargs': kwargs,
+               'company_id': get_current_tenant().id
+               }
 
     # The API expects a payload of type bytes.
     json_payload = json.dumps(payload)

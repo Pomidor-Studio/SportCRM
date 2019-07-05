@@ -45,16 +45,16 @@
             <th>
               Наименование
             </th>
-            <th class="d-none d-md-block">
+            <th>
               Допустимые тренировки
             </th>
-            <th class="d-none d-md-block">
+            <th>
               Продолжительность
             </th>
-            <th class="d-none d-md-block">
+            <th>
               Кол-во посещений
             </th>
-            <th class="d-none d-md-block">
+            <th>
               Стоимость
             </th>
             <th width="1"></th>
@@ -66,12 +66,12 @@
               <td>
                {% if not subscription.deleted %}
                     {% ifhasperm 'location.edit' user %}
-                        <a href="{% url 'crm:manager:subscription:update' subscription.id %}"
-                        class="fio_name"> {{ subscription.name }}</a>
+                    <a href="{% url 'crm:manager:subscription:update' subscription.id %}"
+                         class="fio_name"> {{ subscription.name }}</a>
                     {% else %}
-                        <a href="#" class="fio_name"> {{ subscription.name }}</a>
+                      <a href="#" class="fio_name"> {{ subscription.name }}</a>
                     {% endifhasperm %}
-                    {% else %}
+                  {% else %}
                     {{ subscription.name }}
                {% endif %}
                 <div class="balance d-md-none">
@@ -81,10 +81,6 @@
                       ,
                     {% endif %}
                   {% endfor %}
-                  <br>
-                  <small>Продолжительность: {{ subscription.duration }} {{ subscription.duration_postfix }}</small><br>
-                  <small>Посещений: {{ subscription.visit_limit }}</small><br>
-                  <small>{{ subscription.price|floatformat:"-2"|intcomma }}&nbsp;₽</small>
                 </div>
               </td>
               <td class="d-none d-md-block">
@@ -95,45 +91,50 @@
                   {% endif %}
                 {% endfor %}
               </td>
-              <td class="d-none d-md-block">
+              <td>
+                <div class="d-none d-md-block">
                   {{ subscription.duration }} {{ subscription.duration_postfix }}
+                </div>
+                <div class="d-block d-md-none">
+                  <small> {{ subscription.duration }} {{ subscription.duration_postfix }}</small>
+                  <br>
+                  <small>Посещений: {{ subscription.visit_limit }}</small>
+                </div>
               </td>
               <td class="d-none d-md-block">
                 {{ subscription.visit_limit }}
               </td>
-              <td class="d-none d-md-block">
-                {{ subscription.price|floatformat:"-2"|intcomma }}&nbsp;₽
+              <td>
+                {{ subscription.price|floatformat:"-2"|intcomma }} ₽
               </td>
               <td>
-                  <div class="btn_box d-flex align-items-center justify-content-end">
-                    {% if subscription.deleted %}
-                      {% ifhasperm 'subscription.undelete' user %}
-                        <a class="btn btn-icon btn-undo"
-                           href="#confirm_popup"
-                           data-action-text="Вернуть"
-                           data-body-text="Вернуть из архива?"
-                           data-title="Возврат из архива"
-                           data-toggle="modal"
-                           data-url="{% url "crm:manager:subscription:undelete" subscription.id %}">
-                          <span></span>
-                          <abbr>Вернуть</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% else %}
-                      {% ifhasperm 'location.delete' user %}
-                        <a class="btn btn-icon btn-delete"
-                           href="#confirm_popup"
-                           data-action-text="В архив"
-                           data-title="Перемещение в архив"
-                           data-body-text="Переместить в архив?"
-                           data-toggle="modal"
-                           data-url="{% url "crm:manager:subscription:delete" subscription.id %}">
-                          <span></span>
-                          <abbr>Удалить</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% endif %}
-                  </div>
+                {% if subscription.deleted %}
+                  {% ifhasperm 'subscription.undelete' user %}
+                    <a class="btn btn-icon btn-undo"
+                       href="#confirm_popup"
+                       data-action-text="Вернуть"
+                       data-body-text="Вернуть из архива?"
+                       data-title="Возврат из архива"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:subscription:undelete" subscription.id %}">
+                      <span></span>
+                      <abbr>Вернуть</abbr>
+                    </a>
+                  {% endifhasperm %}
+                {% else %}
+                  {% ifhasperm 'location.delete' user %}
+                    <a class="btn btn-icon btn-delete"
+                       href="#confirm_popup"
+                       data-action-text="В архив"
+                       data-title="Перемещение в архив"
+                       data-body-text="Переместить в архив?"
+                       data-toggle="modal"
+                       data-url="{% url "crm:manager:subscription:delete" subscription.id %}">
+                      <span></span>
+                      <abbr>Удалить</abbr>
+                    </a>
+                  {% endifhasperm %}
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

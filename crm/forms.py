@@ -12,7 +12,6 @@ from django.utils.translation import gettext as _
 from django_select2.forms import (
     Select2Mixin, Select2Widget,
 )
-from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
@@ -694,6 +693,3 @@ class CompanyForm(forms.ModelForm):
             f'{instance.active_to:%d.%m.%Y}' if instance and instance.active_to
             else 'без ограничений'
         )
-
-
-

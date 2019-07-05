@@ -24,7 +24,7 @@
               </li>-->
             {% endif %}
             <li>
-              <span>{{ name|default_if_none:'Новая тренировка' | safe }}</span>
+              {{ name|default_if_none:'Новая тренировка' | safe }}
             </li>
           </ul>
         </div>
@@ -58,24 +58,26 @@
         </a>
         {% endifhasperm %}
         <div class="greyline"></div>
-        <a class="nav-link {% if current == 'groups' %}active{% endif %}"
-           href="{% url 'crm:manager:event-class:list' %}">
-          Группы
-        </a>
-        {% ifhasperm 'subscription' user %}
-          <a class="nav-link {% if current == 'subscription' %}active{% endif %}"
-             href="{% url 'crm:manager:subscription:list' %}">
-            Абонементы
-          </a>
-        {% endifhasperm %}
         <a class="nav-link {% if current == 'coach' %}active{% endif %}"
            href="{% url 'crm:manager:coach:list' %}">
           Тренеры
         </a>
+        {% ifhasperm 'manager' user %}
+          <a class="nav-link {% if current == 'manager' %}active{% endif %}"
+             href="{% url 'crm:manager:manager:list' %}">
+            Менеджеры
+          </a>
+        {% endifhasperm %}
         {% ifhasperm 'location' user %}
           <a class="nav-link {% if current == 'location' %}active{% endif %}"
              href="{% url 'crm:manager:locations:list' %}">
             Площадки
+          </a>
+        {% endifhasperm %}
+        {% ifhasperm 'subscription' user %}
+          <a class="nav-link {% if current == 'subscription' %}active{% endif %}"
+             href="{% url 'crm:manager:subscription:list' %}">
+            Абонементы
           </a>
         {% endifhasperm %}
         {% ifhasperm 'report.list' user %}
@@ -108,9 +110,9 @@
           {% endif %}
         {% endif %}
         {% ifhasperm 'company.edit' user %}
-          <a class="nav-link  {% if current == 'company' or current == 'manager' %}active{% endif %}"
+          <a class="nav-link  {% if current == 'company' %}active{% endif %}"
              href="{% url 'crm:manager:company' %}">
-            Мой клуб
+            Моя компания
           </a>
         {% endifhasperm %}
         <a class="nav-link  {% if current == 'profile' %}active{% endif %}"
@@ -122,7 +124,7 @@
           Выход
         </a>
         <footer>
-          © 2018 — {% now "Y" %} <a href="https://yoursport.club">Yoursport.club</a>
+          © {% now "Y" %} <a href="https://sportadmin.ru">Sportadmin.ru</a>
           <a href="https://vk.com/sportadm" class="vk_link">
             {% include 'crm/_image_vk-18x16.html' %}
           </a>

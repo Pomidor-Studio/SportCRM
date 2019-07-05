@@ -9,28 +9,18 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import (
-    FormView, TemplateView, UpdateView,
+    FormView, RedirectView, TemplateView, UpdateView,
 )
 
 from crm.forms import ProfileCoachForm, ProfileManagerForm
 from crm.views.mixin import SocialAuthMixin
 
 
-class SportCrmLoginRedirectView(TemplateView):
-    template_name = 'crm/landing.html'
+class SportCrmLoginRedirectView(RedirectView):
 
-    def get(self, request, *args, **kwargs):
-        context = self.get_context_data(**kwargs)
-        redirect_url = self.get_redirect_url()
-
-        if redirect_url:
-            return HttpResponseRedirect(redirect_url)
-
-        return self.render_to_response(context)
-
-    def get_redirect_url(self):
+    def get_redirect_url(self, *args, **kwargs):
         if self.request.user.is_anonymous:
-            return None
+            return reverse('crm:accounts:login')
         elif self.request.user.is_superuser:
             return reverse('admin:index')
         elif self.request.user.is_coach:
@@ -38,7 +28,7 @@ class SportCrmLoginRedirectView(TemplateView):
         elif self.request.user.is_manager:
             return reverse('crm:manager:event:calendar')
         else:
-            return None
+            return reverse('crm:accounts:login')
 
 
 class SportCrmPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
