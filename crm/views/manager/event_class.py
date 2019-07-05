@@ -135,6 +135,7 @@ class EventByDate(
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['all_clients_count'] = Client.objects.all().count
 
         # Записанные клиенты. У них может и не быть абонементов
         signed_up_clients_qs = Client.objects.filter(
@@ -144,6 +145,7 @@ class EventByDate(
             .values_list('client', flat=True)
         )
         signed_up_clients = self.get_clients_subscriptions(signed_up_clients_qs)
+        context['signed_up_clients_qs_count'] = signed_up_clients_qs.count
 
         # Неотмеченные клиент. Они не записывались, но у них есть абонементы
         # которые позволяют сходить на это занятие
@@ -158,6 +160,7 @@ class EventByDate(
             .order_by('name')
         )
         unmarked_clients = self.get_clients_subscriptions(unmarked_clients_qs)
+        context['unmarked_clients_qs_count'] = unmarked_clients_qs.count
 
         # Отмеченные клиенты. Они сходили на занятие и у них есть абонементы
         attendance_list_marked = (
@@ -166,6 +169,7 @@ class EventByDate(
             .select_related('client')
             .order_by('client__name')
         )
+        context['attendance_list_marked_count'] = attendance_list_marked.count
 
         selected_id = [
             x.id for x, _ in signed_up_clients.items()
@@ -178,6 +182,7 @@ class EventByDate(
         ])
 
         rest_clients = Client.objects.exclude(id__in=selected_id)
+        context['rest_clients_count'] = rest_clients.count()
 
         self.object.save()
 
