@@ -29,25 +29,27 @@
 {% else %}
 
   {% for sub in active_sub %}
-    {% subscription_info sub %}
+    <div class="info_for_button_s">{% subscription_info sub %}</div>
     {% if not forloop.last %}
       <div class="greyline"></div>
     {% endif %}
   {% empty %}
-    <span>Без абонемента</span>
+      <div class="info_for_button_s">
+        <span>Без абонемента</span>
 
-    {% if not client.deleted %}
-      {% ifhasperm 'client_subscription.sale' user %}
-        <br/>
-        {% if event %}
-          <a class="sell"
-             href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day  %}">
-            Продать</a>
-        {% else %}
-          <a class="sell"
-             href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+        {% if not client.deleted %}
+          {% ifhasperm 'client_subscription.sale' user %}
+            <br/>
+            {% if event %}
+              <a class="sell"
+                 href="{% url 'crm:manager:client:new-subscription-with-event-by-date' client.id event.event_class.id event.date.year event.date.month event.date.day %}?gb={% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day  %}">
+                Продать</a>
+            {% else %}
+              <a class="sell"
+                 href="{% url 'crm:manager:client:new-subscription' client.id %}">Продать</a>
+            {% endif %}
+          {% endifhasperm %}
         {% endif %}
-      {% endifhasperm %}
-    {% endif %}
+      </div>
   {% endfor %}
 {% endif %}
