@@ -209,6 +209,9 @@ small {
 	z-index: 4;
 }
 
+.btn_box {
+	height: 100%;
+}
 
 .btn-icon {
 	min-width: 38px;
@@ -479,7 +482,7 @@ tr.active .btn-down span {
 	font-size: 14px;
 	line-height: 19px;
 	position: relative;
-	top: -10px;
+	top: -5px;
 	color: $grey;
 
 	thead th {
@@ -818,7 +821,7 @@ tr.active .btn-down span {
 	}
 	.page {
 		.bredcams {
-			height: 45px;
+			height: 46px;
 
 			ul {
 				display: none;
@@ -1148,14 +1151,15 @@ footer {
 
 	.fc-toolbar {
 		margin-bottom: 15px;
+		text-transform: uppercase;
 
 		h2 {
 		font-size: 18px;
 		line-height: 35px;
 
-			&:before {
+			/*&:before {
 				content: "Тренировки: ";
-			}
+			}*/
 		}
 		.btn {
 			background: #fff !important;
@@ -1636,6 +1640,16 @@ footer {
 			.nav-item:nth-child(4) .nav-link {
 				padding-left: 0;
 			}
+		}
+	}
+	.user_info  {
+		.big_name {
+			font-size: 18px;
+			font-weight: bold;
+		}
+		.user_pic img {
+			width: 50px;
+			height: 50px;
 		}
 	}
 }
