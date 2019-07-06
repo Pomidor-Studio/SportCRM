@@ -39,20 +39,25 @@
                   href="{% url 'crm:manager:client:list' %}"
                   role="tab"
                   aria-controls="pills-all"
-                  aria-selected="{% if not filter.form.debtor.data %}true{% else %}false{% endif %}">Все</a>
+                  aria-selected="{% if not filter.form.debtor.data %}true{% else %}false{% endif %}">Все
+                  {% if all_clients_count %}{{ all_clients_count }}{% endif %}
+                </a>
               </li>
               <li class="nav-item col-auto text-center text-md-left">
                 <a class="nav-link {% if filter.form.debtor.data %}active{% endif %}"
                    href="{% url 'crm:manager:client:list' %}?debtor=True" role="tab"
                    aria-controls="pills-debtor"
-                   aria-selected="{% if filter.form.debtor.data %}true{% else %}false{% endif %}">Должники</a>
+                   aria-selected="{% if filter.form.debtor.data %}true{% else %}false{% endif %}">Должники
+                  {% if debtor_count %}{{ debtor_count }}{% endif %}
+                </a>
               </li>
               <li class="nav-item col-auto text-center text-md-left">
                 <a class="nav-link {% if filter.form.long_time_not_go.data %}active{% endif %}"
                    href="{% url 'crm:manager:client:list' %}?long_time_not_go=True" role="tab"
                    aria-controls="pills-long"
                    aria-selected="{% if filter.form.long_time_not_go.data %}true{% else %}false{% endif %}">Давно не
-                  были</a>
+                  были {% if long_time_not_go_count %}{{ long_time_not_go_count }}{% endif %}
+                </a>
               </li>
             </ul>
           </div>
@@ -116,7 +121,7 @@
               </tr>
               </thead>
               <tbody>
-              {% for client in clients %}
+              {% for client in clients|dictsort:"name" %}
                 {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
                   <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %}">
                     <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>

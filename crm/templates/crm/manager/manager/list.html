@@ -72,7 +72,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for manager in managers %}
+            {% for manager in managers|dictsort:"user.get_full_name" %}
               <tr {% if manager.deleted %}class="archive"{% endif %}>
                 <td class="td_photo" width="1">
                   {% if manager.user.vk_id %}
