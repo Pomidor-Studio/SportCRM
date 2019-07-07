@@ -75,7 +75,7 @@ class List(PermissionRequiredMixin, FilterView):
                                                     queryset=Client.objects.filter(name=client.name),
                                                     name=None,
                                                     value=None):
-                long_time_not_go_count += long_time_not_go_count + 1
+                long_time_not_go_count = long_time_not_go_count + 1
         context['debtor_count'] = debtor_count
         context['long_time_not_go_count'] = long_time_not_go_count
         return context
