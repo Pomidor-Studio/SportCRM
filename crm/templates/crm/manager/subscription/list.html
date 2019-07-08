@@ -61,7 +61,7 @@
           </tr>
           </thead>
           <tbody>
-          {% for subscription in subscriptions|dictsort:"name" %}
+          {% for subscription in subscriptions|dictsort:"name.lower" %}
             <tr {% if subscription.deleted %}class="archive"{% endif %}>
               <td>
                {% if not subscription.deleted %}

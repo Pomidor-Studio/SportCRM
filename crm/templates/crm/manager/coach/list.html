@@ -62,7 +62,7 @@
             </thead>
             <tbody>
 
-            {% for coach in coachs|dictsort:"user.get_full_name" %}
+            {% for coach in coachs|dictsort:"user.get_full_name.lower" %}
               <tr {% if coach.deleted %}class="archive"{% endif %}>
                 <td class="td_photo" width="1">
                   {% if coach.user.vk_id %}

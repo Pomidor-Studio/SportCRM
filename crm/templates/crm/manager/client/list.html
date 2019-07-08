@@ -121,7 +121,7 @@
               </tr>
               </thead>
               <tbody>
-              {% for client in clients|dictsort:"name" %}
+              {% for client in clients|dictsort:"name.lower" %}
                 {% with active_sub=client.get_active_sub last_sub=client.last_sub %}
                   <tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %}">
                     <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
