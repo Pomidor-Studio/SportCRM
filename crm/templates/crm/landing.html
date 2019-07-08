@@ -60,7 +60,7 @@
           <div
             class="absolut_mobile_bottom button_box row center-xs start-md middle-xs"
           >
-            <div id="button_test" class="button">
+            <div class="button button_test">
               <a href="#" class="uppercase white_text">Хочу попробовать</a>
               <span class="shadow"></span>
             </div>
@@ -195,7 +195,7 @@
 
             <div class="col-xs-12 slideInUp button_box center-xs">
               <div class="">
-                <div id="button_test" class="button">
+                <div class="button button_test">
                   <a href="#" class="uppercase white_text">Получить бесплатный
                     доступ на&#160;месяц</a>
                   <span class="shadow"></span>
@@ -427,65 +427,72 @@
             $.fn.fullpage.setMouseWheelScrolling(q);
             $.fn.fullpage.setAllowScrolling(q);
         }
+        function openZ() {
+            $("#zayavka").fadeIn();
+            $("#zayavka").animate({
+                top: "0"
+            }, 500);
+            fullpageScroll(false)
+        }
+        function closeZ() {
+            $("#zayavka").animate({
+                top: "-1000"
+            }, 500, function() {$(this).fadeOut()});
+            fullpageScroll(true)
+        }
+        function openO() {
+            $("#oferta_page").fadeIn()
+			$("#oferta_page").animate({
+				bottom: "0"
+			}, 500)
+        }
+        function closeO() {
+            $("#oferta_page").animate({
+				bottom: "-100vh"
+			}, 500, function() {$(this).fadeOut()})
+        }
 
         $("#overlay").click(function() {
             if (o == 1) {
                 if (z != 1) {
-                    $("#overlay").fadeToggle(600);
+                    $("#overlay").fadeToggle();
                     fullpageScroll(true);
                 }
-    			$("#oferta_page").animate({
-    				bottom: "-100vh"
-    			}, 500)
+    			closeO();
                 o = 0;
             }else{
-                $("#overlay").fadeToggle(600);
-                $("#zayavka").animate({
-                    top: "-1000"
-                }, 500);
-                fullpageScroll(true)
+                $("#overlay").fadeToggle();
+                closeZ();
                 z = 0;
             }
         });
-
-		$("#button_test, #close_zayavka").click(function() {
-			$("#overlay").fadeToggle(600);
+		$(".button_test").click(function() {
+			$("#overlay").fadeToggle();
             z++;
-            if (z == 1) {
-                $("#zayavka").fadeIn()
-                $("#zayavka").animate({
-                    top: "0"
-                }, 500);
-                fullpageScroll(false)
-            } else {
-                $("#zayavka").animate({
-                    top: "-1000"
-                }, 500);
-                fullpageScroll(true)
-                z = 0;
-            }
+            openZ();
             return (false);
 		});
-
+        $("#close_zayavka").click(function() {
+            closeZ();
+            $("#overlay").fadeToggle();
+            z = 0;
+            return (false);
+        });
 		$(".open_oferta").click(function() {
             o++;
             if (z != 1) {
-                $("#overlay").fadeToggle(600);
+                $("#overlay").fadeToggle();
                 fullpageScroll(false);
             }
-			$("#oferta_page").animate({
-				bottom: "0"
-			}, 500)
+            openO();
             return (false);
 		});
 		$(".close_oferta").click(function() {
             if (z != 1) {
-                $("#overlay").fadeToggle(600);
+                $("#overlay").fadeToggle();
                 fullpageScroll(true);
             }
-			$("#oferta_page").animate({
-				bottom: "-100vh"
-			}, 500)
+            closeO();
             return (false);
             o = 0;
 		});

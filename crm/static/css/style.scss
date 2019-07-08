@@ -1117,6 +1117,11 @@ footer {
 		background: #fff;
 	}
 }
+@media (max-width: 768px) {
+	.mobile_sidebar .bredcams li span {
+		width: 225px;
+	}
+}
 @media (max-width: 414px) {
 	.mobile_sidebar .bredcams li span {
 		width: 270px;

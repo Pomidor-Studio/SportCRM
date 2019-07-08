@@ -111,6 +111,7 @@ body, html {
 	overflow-y: scroll;
 	line-height: 170%;
 	color: $dark-grey;
+	display: none;
 
 	h2 {
 		margin-top: 50px;
@@ -234,7 +235,7 @@ header {
 }
 .hero {
 	height: 100%;
-	background: url(../img/landing/gravity.jpg) 105% 50% no-repeat;
+	background: url(../img/landing/gravity.jpg) 100% 50% no-repeat;
 	background-size: 50%;
 	position: relative;
 	top: -85px;
