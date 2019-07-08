@@ -182,7 +182,7 @@ class EventByDate(
 
         rest_clients = Client.objects.exclude(id__in=selected_id)
         context['rest_clients_count'] = rest_clients.count()
-        context['all_clients_count'] = unmarked_clients_qs.count() + rest_clients.count()
+        context['all_clients_count'] = unmarked_clients_qs.count() + signed_up_clients_qs.count()
         self.object.save()
 
         context.update({
