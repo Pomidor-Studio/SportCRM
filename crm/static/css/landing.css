@@ -30,12 +30,13 @@ body, html {
   top: -1000px;
   left: 50%;
   width: 600px;
-  height: 500px;
+  height: 510px;
   z-index: 11;
   background: radial-gradient(471.16px at 50% 84.2%, #76BD1B 0%, #57920B 100%);
   border-radius: 10px;
   margin: 10% 0 0 -300px;
-  display: none; }
+  display: none;
+  box-shadow: 0px 2px 50px rgba(0, 0, 0, 0.5); }
   #zayavka .title {
     font-size: 36px;
     height: 150px;
@@ -132,12 +133,13 @@ body, html {
     display: none; }
 
 #oferta_page {
-  width: 100%;
   height: 100%;
   position: absolute;
   z-index: 102;
-  bottom: -1000px;
-  left: 0;
+  bottom: -100vh;
+  left: 10%;
+  right: 10%;
+  padding: 0 55px;
   overflow-y: scroll;
   line-height: 170%;
   color: #4B4B4B; }
@@ -146,32 +148,11 @@ body, html {
   #oferta_page .button {
     margin-top: 100px; }
   #oferta_page .paper {
-    padding: 30px 50px; }
-  #oferta_page .paper-shadow {
     position: relative;
     background: #fff;
-    margin: 50px auto 200px;
-    box-shadow: 0px 2px 38px rgba(0, 0, 0, 0.2); }
-  #oferta_page .paper-shadow:after, #oferta_page .paper-shadow:before {
-    content: '';
-    position: absolute;
-    left: auto;
-    background: none;
-    z-index: -1; }
-  #oferta_page .paper-shadow:after {
-    width: 90%;
-    height: 10px;
-    top: 30px;
-    right: 8px;
-    transform: rotate(-3deg);
-    box-shadow: 0px -25px 35px 0px rgba(0, 0, 0, 0.5); }
-  #oferta_page .paper-shadow:before {
-    width: 10px;
-    height: 95%;
-    top: -5px;
-    right: 100px;
-    transform: rotate(3deg);
-    box-shadow: 22px 0px 35px 0px rgba(0, 0, 0, 0.5); }
+    padding: 30px 50px;
+    box-shadow: 0px 2px 50px rgba(0, 0, 0, 0.5);
+    margin: 50px auto 150px; }
 
 .page {
   max-width: 1440px;
@@ -489,17 +470,20 @@ footer {
       left: 36px;
       width: auto; }
 
-  #oferta_page h1 {
-    font-size: 1.5em; }
-  #oferta_page h2 {
-    font-size: 1em;
-    margin-top: 40px; }
-  #oferta_page .button {
-    margin-top: 50px; }
-  #oferta_page .paper {
-    padding: 20px 20px 40px; }
-  #oferta_page .paper-shadow {
-    margin: 0; } }
+  #oferta_page {
+    left: 0;
+    right: 0;
+    padding: 0; }
+    #oferta_page h1 {
+      font-size: 1.5em; }
+    #oferta_page h2 {
+      font-size: 1em;
+      margin-top: 40px; }
+    #oferta_page .button {
+      margin-top: 50px; }
+    #oferta_page .paper {
+      padding: 20px 20px 40px;
+      margin: 0; } }
 @media screen and (orientation: landscape) and (max-width: 900px) {
   #zayavka .title {
     height: auto; }
