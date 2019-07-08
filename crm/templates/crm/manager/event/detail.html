@@ -249,9 +249,9 @@
                 {% if rest_clients %}
                   {# Выводим список учеников, не записанных и без абонемента с кнопкой «Продать» #}
                   <tr class="otbivka">
-                    <td colspan="10">Прочие {% if rest_clients_count %}{{ rest_clients_count }}{% endif %}</td>
+                    <td colspan="10">Без абонемента {% if rest_clients_count %}{{ rest_clients_count }}{% endif %}</td>
                   </tr>
-                  {% for client in rest_clients|dictsort:"name" %}
+                  {% for client in rest_clients|dictsort:"name.lower" %}
                     {% with active_sub=""|empty_list last_sub=client.last_sub %}
                       <tr
                         class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
