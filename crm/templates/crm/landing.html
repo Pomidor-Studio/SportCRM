@@ -419,7 +419,11 @@
 {% js "js/jquery.validate.min.js" %}
 {% js "js/jquery.form.min.js" %}
 
-<script type = "text/javascript" >
+<script type="text/javascript">
+    $(document).ready(function(){
+        $('body').fadeIn(1000);
+    });
+
 	$(function() {
         var z = 0;
         var o = 0;
