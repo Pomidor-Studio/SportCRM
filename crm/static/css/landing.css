@@ -1,4 +1,7 @@
 @charset "UTF-8";
+body {
+  display: none; }
+
 body, html {
   font-family: 'Roboto', sans-serif;
   font-size: 18px;
