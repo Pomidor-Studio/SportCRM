@@ -507,7 +507,7 @@ tr.active .btn-down span {
 		}
 	}
 	td, th {
-		padding: 8px;
+		padding: 16px 8px;
 		vertical-align: middle;
 		border: none;
 		border-bottom: 1px solid $lines !important;
@@ -633,7 +633,7 @@ tr.active .btn-down span {
 			margin-top: 12px;
 		}
 		.td_photo {
-			padding-top: 15px;
+			padding-top: 18px;
 		}
 	}
 	.buy_subscriptions {
@@ -1733,6 +1733,12 @@ footer {
 
 
 /* Помощь */
+.help_page {
+	font-size: 16px;
+	.card-link {
+		color: $green;
+	}
+}
 .video {
 	padding: 8px 0;
 }
