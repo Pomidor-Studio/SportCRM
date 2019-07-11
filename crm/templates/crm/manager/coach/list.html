@@ -10,7 +10,7 @@
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -62,7 +62,7 @@
             </thead>
             <tbody>
 
-            {% for coach in coachs %}
+            {% for coach in coachs|dictsort:"user.get_full_name.lower" %}
               <tr {% if coach.deleted %}class="archive"{% endif %}>
                 <td class="td_photo" width="1">
                   {% if coach.user.vk_id %}
@@ -102,9 +102,11 @@
                     </div>
                   {% endif %}
                   <div class="d-md-none">
-                    <a href="tel:{{ coach.phone_number }}"
-                    >{{ coach.phone_number|phone_format }}</a>
-                    <br/>
+                    {% if coach.phone_number %}
+                        <a href="tel:{{ coach.phone_number }}"
+                        >{{ coach.phone_number|phone_format }}</a>
+                        <br/>
+                    {% endif %}
                     {% if not coach.deleted %}
                       <div class="copy_url">
                       <a href="#"
@@ -138,34 +140,36 @@
                 </td>
                 {% endifhasperm %}
                 <td width="1">
-                  {% if manager.user_id != user.id %}
-                    {% if coach.deleted %}
-                      {% ifhasperm 'coach.undelete' user %}
-                        <a class="btn btn-icon btn-undo"
-                           href="#confirm_popup"
-                           data-action-text="Вернуть"
-                           data-body-text="Вернуть из архива?"
-                           data-title="Возврат из архива"
-                           data-toggle="modal"
-                           data-url="{% url "crm:manager:coach:undelete" coach.id %}">
-                          <span></span>
-                          <abbr>Вернуть</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% else %}
-                      {% ifhasperm 'coach.delete' user %}
-                        <a class="btn btn-icon btn-delete"
-                           href="#confirm_popup"
-                           data-action-text="В архив"
-                           data-title="Перемещение в архив"
-                           data-body-text="Переместить в архив?"
-                           data-toggle="modal"
-                           data-url="{% url "crm:manager:coach:delete" coach.id %}">
-                          <span></span>
-                          <abbr>Удалить</abbr>
-                        </a>
-                      {% endifhasperm %}
-                    {% endif %}
+                    <div class="btn_box d-flex align-items-center justify-content-end">
+                      {% if manager.user_id != user.id %}
+                        {% if coach.deleted %}
+                          {% ifhasperm 'coach.undelete' user %}
+                            <a class="btn btn-icon btn-undo"
+                               href="#confirm_popup"
+                               data-action-text="Вернуть"
+                               data-body-text="Вернуть из архива?"
+                               data-title="{{ coach }}"
+                               data-toggle="modal"
+                               data-url="{% url "crm:manager:coach:undelete" coach.id %}">
+                              <span></span>
+                              <abbr>Вернуть</abbr>
+                            </a>
+                          {% endifhasperm %}
+                        {% else %}
+                          {% ifhasperm 'coach.delete' user %}
+                            <a class="btn btn-icon btn-delete"
+                               href="#confirm_popup"
+                               data-action-text="В архив"
+                               data-title="{{ coach }}"
+                               data-body-text="Переместить в архив?"
+                               data-toggle="modal"
+                               data-url="{% url "crm:manager:coach:delete" coach.id %}">
+                              <span></span>
+                              <abbr>Удалить</abbr>
+                            </a>
+                          {% endifhasperm %}
+                        {% endif %}
+                       </div>
                   {% endif %}
                 </td>
               </tr>

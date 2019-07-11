@@ -61,6 +61,23 @@ class List(PermissionRequiredMixin, FilterView):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context['has_active_event_class'] = EventClass.objects.active().exists()
         context['vk_group_id'] = get_current_tenant().vk_group_id
+        all_clients = Client.objects.all()
+        context['all_clients_count'] = all_clients.count
+        debtor_count = 0
+        long_time_not_go_count = 0
+        for client in all_clients:
+            if ClientFilter.filter_debtor(self,
+                                          queryset=Client.objects.filter(name=client.name),
+                                          name=None,
+                                          value=None):
+                debtor_count = debtor_count + 1
+            if ClientFilter.filter_long_time_not_go(self,
+                                                    queryset=Client.objects.filter(name=client.name),
+                                                    name=None,
+                                                    value=None):
+                long_time_not_go_count = long_time_not_go_count + 1
+        context['debtor_count'] = debtor_count
+        context['long_time_not_go_count'] = long_time_not_go_count
         return context
 
 
@@ -186,20 +203,20 @@ class UnDelete(PermissionRequiredMixin, RevisionMixin, UnDeleteView):
     permission_required = 'client.undelete'
 
 
-class ClientMixin:
-    def get_client(self) -> Client:
-        return get_object_or_404(Client, id=self.kwargs['client_id'])
-
-
 class AddSubscription(
     PermissionRequiredMixin,
-    ClientMixin,
     RevisionMixin,
     CreateView
 ):
     form_class = ClientSubscriptionForm
     template_name = "crm/manager/client/add-subscriptions.html"
     permission_required = 'client_subscription.sale'
+
+    def get_client(self) -> Client:
+        try:
+            return Client.all_objects.get(id=self.kwargs['client_id'])
+        except Client.DoesNotExist:
+            raise Http404('No client matches the given query.')
 
     def get_event(self) -> Event:
         try:

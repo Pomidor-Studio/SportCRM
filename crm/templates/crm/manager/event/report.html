@@ -13,7 +13,7 @@
   <!- Отчет -!>
   <div class="page report_page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -106,4 +106,3 @@
     });
   </script>
 {% endblock %}
-

@@ -90,6 +90,7 @@ rules.add_perm('event_class', is_logged_manager)
 rules.add_perm('event_class.add', is_logged_manager)
 rules.add_perm('event_class.edit', is_logged_manager)
 rules.add_perm('event_class.delete', is_logged_manager)
+rules.add_perm('event_class.detail', is_logged_personnel)
 
 rules.add_perm('event', is_logged_personnel)
 rules.add_perm('event.manipulate', is_editable_event | is_editable_by_coach)

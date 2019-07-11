@@ -12,6 +12,7 @@ from django.utils.translation import gettext as _
 from django_select2.forms import (
     Select2Mixin, Select2Widget,
 )
+from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
@@ -182,8 +183,9 @@ class SignUpClientMultiForm(MultiModelForm):
 
 class ExtendClientSubscriptionForm(TenantForm):
     visit_limit = forms.IntegerField(
-        label='Количество оставшихся посещений',
-        initial=1
+        label='Добавить посещений',
+        initial=1,
+        min_value=1
     )
     reason = forms.CharField(label='Причина продления', widget=forms.TextInput)
     go_back = forms.CharField(
@@ -196,10 +198,17 @@ class ExtendClientSubscriptionForm(TenantForm):
         super(ExtendClientSubscriptionForm, self).__init__(*args, **kwargs)
 
     def clean_visit_limit(self):
-        if self.cleaned_data['visit_limit'] > self.subscription.visits_left:
+        max_add = self.subscription.max_visits_to_add
+        if max_add <= 0:
             raise ValidationError(
-                'Нельзя указывать больще визитов чем есть на '
-                'абонементе ({})'.format(self.subscription.visits_left),
+                'Этот абонемент нельзя продлить, так как клиент может '
+                'посетить все оставшиеся у него занятия, до даты окончания '
+                'абонемента.', code='invalid-visits-limit')
+
+        if self.cleaned_data['visit_limit'] > max_add:
+            raise ValidationError(
+                'Нельзя указывать больше визитов, чем клиент пропустил '
+                '({})'.format(max_add),
                 code='invalid-visits-limit'
             )
         return self.cleaned_data['visit_limit']
@@ -404,7 +413,7 @@ class EventClassForm(TenantModelForm):
     location = forms.ModelChoiceField(
         empty_label='',
         queryset=Location.objects.all(),
-        label='Место проведения',
+        label='Площадка',
         widget=Select2WidgetAttributed(
             attr_getter=subcription_type_attrs)
     )
@@ -685,3 +694,6 @@ class CompanyForm(forms.ModelForm):
             f'{instance.active_to:%d.%m.%Y}' if instance and instance.active_to
             else 'без ограничений'
         )
+
+
+

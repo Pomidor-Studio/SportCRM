@@ -118,6 +118,7 @@ class VisitReport(PermissionRequiredMixin, FormView):
         result = []
 
         for subs in active_subs:
+            from_date, to_date = dates[0], dates[-1]
 
             attendances = {}
             for dt in dates:

@@ -29,19 +29,55 @@ $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 
 
 /* Для кнопки отметить */
-$('.info_for_button').each(function() {
-    var ifb_height = $(this).height()
-    if (ifb_height < '40') {var ifb_height = 40}
-    var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4
-    var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height()
-    if (ifb_height_s < '40') {var ifb_height_s = 40}
-
-    if (ifb_height > ifb_height_s) {
-  	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
-    } else {
-  	  $(this).parents('tr').find('.btn_box').attr('style','height:'+ifb_height_s+'px;');
-    }
+$('.workout_page .fio_name').each(function() {
+    var fio_name_a = $(this).attr('href');
+    $(this).parents('.workout_page tr').find('td').not('td:nth-child(9),td:nth-child(10)').on('click',function() {
+        window.location = fio_name_a;
+    })
+    $(this).parents('.workout_page tr').find('td:nth-child(9)').on('click',function() {
+        window.location = $(this).find('a').attr('href');;
+    })
 })
+$('.students_page .fio_name').each(function() {
+    var fio_name_a = $(this).attr('href');
+    $(this).parents('.students_page tr').find('td').on('click',function() {
+        window.location = fio_name_a;
+    })
+})
+$('.sell').each(function() {
+    $(this).parents('tr td:nth-child(3)').on('click',function() {
+        window.location = $(this).find('a').attr('href');
+    })
+})
+$('.report_page tr').each(function() {
+    $(this).on('click',function() {
+        window.location = $(this).find('a').attr('href');
+    })
+})
+function buttons_middle () {
+    $('.workout_page tr').each(function() {
+        $(this).find('.info_for_button').each(function(index) {
+            var ifb_height = $(this).height();
+            var fio_name_height = $(this).parents('tr').find('.fio_name').height() + 4;
+            var ifb_height_s = $(this).parents('tr').find('.info_for_button_s').height();
+
+            if (ifb_height_s == '0') {
+                if (ifb_height < '40') {var ifb_height = 40};
+                if (index == '0') {
+                    $(this).parents('tr').find('.btn_box:eq(0)').attr('style','height:'+ifb_height+'px; margin-top:'+fio_name_height+'px;');
+                } else {
+                    $(this).parents('tr').find('.btn_box:eq('+index+')').attr('style','height:'+ifb_height+'px;');
+                }
+                //$(this).parents('tr').find('.btn_box').not('.btn_box:first-child').attr('style','height:'+ifb_height+'px;');
+            } else {
+                if (ifb_height_s < '40') {var ifb_height_s = 40};
+                $(this).parents('tr').find('.btn_box:eq('+index+')').attr('style','height:'+ifb_height_s+'px;');
+            }
+        })
+    })
+}
+buttons_middle ()
+$('#pills-tab a').on('shown.bs.tab',buttons_middle)
 
 /* Живой поиск */
 $('#table_live_search').on('keyup', function() {
@@ -115,7 +151,6 @@ $('.subscription_check').find('input:not(#subscription_all)').click(function() {
 $('.btn-down, .buy_subscriptions .fio_name').click(function() {
 	$(this).parents('tr').toggleClass('active')
 	$(this).parents('tr').next('tr').toggleClass('active').toggle();
-	$(this).parents('tr').find('.date_end').toggle();
 	return(false)
 })
 $('.buy_subscriptions .cancel').click(function() {
@@ -163,4 +198,25 @@ $('#confirm_popup').on('show.bs.modal', function (event) {
     modal.find('.modal-title').text(title);
     modal.find('input[type=submit]').attr('value', action_text);
     modal.find('form').attr('action', url);
+});
+
+$('div.btn_box a.btn').click(function(event) {
+    let $target = $(event.currentTarget);
+    if ($target.attr('pressed')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+    }
+    $target.find('span').first().addClass('wait');
+    $target.attr('pressed', 1);
+});
+
+$('div.save_buttons button#add, div.save_buttons button#add-with-autoextend').click(function(event) {
+    let $target = $(event.currentTarget);
+    if ($target.attr('pressed')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+    }
+    $target.attr('pressed', 1);
 });

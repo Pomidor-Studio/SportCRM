@@ -42,6 +42,7 @@ small {
 .alert-box {
   position: absolute;
   z-index: 10;
+  top: 15px;
   padding-right: 15px; }
   .alert-box .alert {
     font-size: 14px;
@@ -141,9 +142,12 @@ small {
 
 .btn-new {
   position: absolute;
-  top: 17px;
+  top: 15px;
   right: 15px;
   z-index: 4; }
+
+.btn_box {
+  height: 100%; }
 
 .btn-icon {
   min-width: 38px;
@@ -342,11 +346,12 @@ tr.active .btn-down span {
     padding: 5px 10px; }
 
   .btn-new {
-    top: 20px; } }
+    top: 22px; } }
+@media (max-width: 340px) {
+  .btn-icon abbr {
+    display: none; } }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
-  select,
-  textarea,
-  input {
+  select, textarea, input[type="text"] {
     font-size: 16px !important; } }
 /* Формы, общее */
 /* Таблицы */
@@ -354,13 +359,13 @@ tr.active .btn-down span {
   font-size: 14px;
   line-height: 19px;
   position: relative;
-  top: -10px;
+  top: -5px;
   color: #000; }
   .table thead th {
     background: #fff;
     position: -webkit-sticky;
     position: sticky;
-    top: 0;
+    top: -20px;
     z-index: 2; }
   .table tbody tr:hover {
     background: #eff8e5 !important; }
@@ -371,7 +376,7 @@ tr.active .btn-down span {
   .table tbody tr.minus_balance {
     background: #fdefe7 !important; }
   .table td, .table th {
-    padding: 8px;
+    padding: 16px 8px;
     vertical-align: middle;
     border: none;
     border-bottom: 1px solid #EEEEEE !important;
@@ -446,18 +451,17 @@ tr.active .btn-down span {
       color: #76BD1B; }
 
 .tab-content, .freeze_table {
-  margin-bottom: 60px; }
+  margin-bottom: 80px; }
 
 @media (max-width: 767px) {
   .table {
     top: 0; }
     .table td {
-      height: 80px;
       vertical-align: top; }
     .table .btn-group {
       margin-top: 12px; }
     .table .td_photo {
-      padding-top: 15px; }
+      padding-top: 18px; }
 
   .buy_subscriptions td {
     height: auto !important; }
@@ -555,7 +559,7 @@ tr.active .btn-down span {
       text-overflow: ellipsis;
       max-width: 250px; }
     .page .bredcams li:last-child {
-      max-width: 45%; }
+      max-width: 60%; }
 
 .greyline {
   width: 100%;
@@ -590,7 +594,7 @@ tr.active .btn-down span {
     display: block; }
 
   .page .bredcams {
-    height: 45px; }
+    height: 46px; }
     .page .bredcams ul {
       display: none; } }
 /* Страница */
@@ -776,6 +780,9 @@ footer {
     right: 10px;
     background: #fff; }
 
+@media (max-width: 768px) {
+  .mobile_sidebar .bredcams li span {
+    width: 225px; } }
 @media (max-width: 414px) {
   .mobile_sidebar .bredcams li span {
     width: 270px; } }
@@ -794,12 +801,14 @@ footer {
   position: relative;
   height: calc(100vh - 35px); }
   #calendar .fc-toolbar {
-    margin-bottom: 15px; }
+    margin-bottom: 15px;
+    text-transform: uppercase; }
     #calendar .fc-toolbar h2 {
       font-size: 18px;
-      line-height: 35px; }
-      #calendar .fc-toolbar h2:before {
-        content: "Тренировки: "; }
+      line-height: 35px;
+      /*&:before {
+      	content: "Тренировки: ";
+      }*/ }
     #calendar .fc-toolbar .btn {
       background: #fff !important;
       color: #000 !important;
@@ -1005,6 +1014,13 @@ footer {
   text-overflow: ellipsis;
   width: 150px; }
 
+.student_page .visit_report .box {
+  padding: 10px; }
+.student_page .visit_report .red_box {
+  background-color: #F5D7C5; }
+.student_page .visit_report .green_box {
+  background-color: #D5EFB7; }
+
 @media (max-width: 1139px) {
   .desktop_workout_actions {
     font-size: 12px; }
@@ -1013,14 +1029,15 @@ footer {
     .desktop_workout_actions .icon {
       margin-right: 12px; } }
 @media (max-width: 767px) {
-  .workout_page .table .balance, .students_page .table .balance {
-    position: absolute;
-    right: 10px; }
   .workout_page .table .btn-group .btn, .students_page .table .btn-group .btn {
     top: 10px; }
   .workout_page .table .several .btn + .greyline, .students_page .table .several .btn + .greyline {
     position: relative;
-    top: 12px; } }
+    top: 12px; }
+
+  .workout_page .balance {
+    position: absolute;
+    right: 10px; } }
 /* Тренировка, ученики и тренеры */
 /* Абонементы */
 .skip_line {
@@ -1115,7 +1132,14 @@ footer {
     border-right: none !important;
     padding-right: 0; }
   .student_page .nav-pills .nav-item:nth-child(4) .nav-link {
-    padding-left: 0; } }
+    padding-left: 0; }
+
+  .user_info .big_name {
+    font-size: 18px;
+    font-weight: bold; }
+  .user_info .user_pic img {
+    width: 50px;
+    height: 50px; } }
 /* Ученик */
 /* Отчёты */
 .report_filter .date {
@@ -1131,6 +1155,10 @@ footer {
 
 .report_page th {
   position: inherit !important; }
+.report_page td span {
+  padding: 2px 4px;
+  position: relative;
+  left: -4px; }
 .report_page .red, .report_page .green, .report_page .grey {
   min-width: 55px;
   width: 55px;
@@ -1161,7 +1189,15 @@ footer {
     padding: 5px !important; } }
 /* Отчеты */
 /* Помощь */
+.help_page {
+  font-size: 16px; }
+  .help_page .card-link {
+    color: #76BD1B; }
+
 .video {
   padding: 8px 0; }
+
+.modal-footer .btn {
+  margin-left: 16px; }
 
 /*# sourceMappingURL=style.css.map */

@@ -73,6 +73,7 @@ small {
 .alert-box {
 	position: absolute;
 	z-index: 10;
+	top: 15px;
 	padding-right: 15px;
 	.alert {
 		font-size: 14px;
@@ -203,11 +204,14 @@ small {
 }
 .btn-new {
 	position: absolute;
-	top: 17px;
+	top: 15px;
 	right: 15px;
 	z-index: 4;
 }
 
+.btn_box {
+	height: 100%;
+}
 
 .btn-icon {
 	min-width: 38px;
@@ -454,17 +458,20 @@ tr.active .btn-down span {
 	.btn {
 		padding: 5px 10px;
 	}
+	.btn-new {
+		top: 22px;
+	}
+}
+@media (max-width: 340px) {
 	.btn-icon abbr {
-		//display: none;
+		display: none;
 	}
 	.btn-new {
 		top: 22px;
 	}
 }
 @media screen and (-webkit-min-device-pixel-ratio:0) {
-  select,
-  textarea,
-  input {
+  select, textarea, input[type="text"] {
     font-size: 16px !important;
   }
 }
@@ -478,14 +485,14 @@ tr.active .btn-down span {
 	font-size: 14px;
 	line-height: 19px;
 	position: relative;
-	top: -10px;
+	top: -5px;
 	color: $grey;
 
 	thead th {
 		background: #fff;
 		position: -webkit-sticky;
 	    position: sticky;
-	    top: 0;
+	    top: -20px;
 	    z-index: 2;
 	}
 	tbody {
@@ -503,7 +510,7 @@ tr.active .btn-down span {
 		}
 	}
 	td, th {
-		padding: 8px;
+		padding: 16px 8px;
 		vertical-align: middle;
 		border: none;
 		border-bottom: 1px solid $lines !important;
@@ -616,21 +623,20 @@ tr.active .btn-down span {
 	}
 }
 .tab-content, .freeze_table {
-	margin-bottom: 60px;
+	margin-bottom: 80px;
 }
 
 @media (max-width: 767px) {
 	.table {
 		top: 0;
 		td {
-			height: 80px;
 			vertical-align: top;
 		}
 		.btn-group {
 			margin-top: 12px;
 		}
 		.td_photo {
-			padding-top: 15px;
+			padding-top: 18px;
 		}
 	}
 	.buy_subscriptions {
@@ -778,7 +784,7 @@ tr.active .btn-down span {
 			max-width: 250px;
 		}
 		li:last-child {
-			max-width: 45%;
+			max-width: 60%;
 		}
 	}
 }
@@ -823,7 +829,7 @@ tr.active .btn-down span {
 	}
 	.page {
 		.bredcams {
-			height: 45px;
+			height: 46px;
 
 			ul {
 				display: none;
@@ -1119,6 +1125,11 @@ footer {
 		background: #fff;
 	}
 }
+@media (max-width: 768px) {
+	.mobile_sidebar .bredcams li span {
+		width: 225px;
+	}
+}
 @media (max-width: 414px) {
 	.mobile_sidebar .bredcams li span {
 		width: 270px;
@@ -1153,14 +1164,15 @@ footer {
 
 	.fc-toolbar {
 		margin-bottom: 15px;
+		text-transform: uppercase;
 
 		h2 {
 		font-size: 18px;
 		line-height: 35px;
 
-			&:before {
+			/*&:before {
 				content: "Тренировки: ";
-			}
+			}*/
 		}
 		.btn {
 			background: #fff !important;
@@ -1450,6 +1462,17 @@ footer {
 	text-overflow: ellipsis;
 	width: 150px;
 }
+.student_page .visit_report {
+	.box {
+		padding: 10px;
+	}
+	.red_box {
+		background-color: #F5D7C5;
+	}
+	.green_box {
+		background-color: #D5EFB7;
+	}
+}
 
 @media (max-width: 1139px) {
 	.desktop_workout_actions {
@@ -1465,10 +1488,6 @@ footer {
 @media (max-width: 767px) {
 	.workout_page, .students_page {
 		.table {
-			.balance {
-				position: absolute;
-				right: 10px;
-			}
 			.btn-group .btn {
 				top: 10px;
 			}
@@ -1477,6 +1496,10 @@ footer {
 				top: 12px;
 			}
 		}
+	}
+	.workout_page .balance {
+		position: absolute;
+		right: 10px;
 	}
 }
 /* Тренировка, ученики и тренеры */
@@ -1632,6 +1655,16 @@ footer {
 			}
 		}
 	}
+	.user_info  {
+		.big_name {
+			font-size: 18px;
+			font-weight: bold;
+		}
+		.user_pic img {
+			width: 50px;
+			height: 50px;
+		}
+	}
 }
 /* Ученик */
 
@@ -1658,6 +1691,11 @@ footer {
 .report_page {
 	th {
 		position: inherit !important;
+	}
+	td span {
+		padding: 2px 4px;
+		position: relative;
+		left: -4px;
 	}
 	.red, .green, .grey {
 		min-width: 55px;
@@ -1703,6 +1741,15 @@ footer {
 
 
 /* Помощь */
+.help_page {
+	font-size: 16px;
+	.card-link {
+		color: $green;
+	}
+}
 .video {
 	padding: 8px 0;
+}
+.modal-footer .btn {
+	margin-left: 16px;
 }

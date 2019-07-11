@@ -15,7 +15,7 @@
 {% block content %}
   <div class="page student_page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -58,23 +58,37 @@
               {% endif %}
 
               {% ifhasperm 'client.delete' user %}
-                <a class="dropdown-item"
-                   href="#confirm_popup"
-                   data-action-text="В архив"
-                   data-title="Перемещение в архив"
-                   data-body-text="Переместить в архив?"
-                   data-toggle="modal"
-                   data-url="{% url "crm:manager:client:delete" client.id %}">
-                 Переместить в архив
-                </a>
+                {% if client.deleted %}
+                  <a class="dropdown-item"
+                     href="#confirm_popup"
+                     data-action-text="Из архива"
+                     data-title="Возвращенеи из архива"
+                     data-body-text="Вернуть из архива?"
+                     data-toggle="modal"
+                     data-url="{% url "crm:manager:client:undelete" client.id %}">
+                   Вернуть из архива
+                  </a>
+                {% else %}
+                  <a class="dropdown-item"
+                     href="#confirm_popup"
+                     data-action-text="В архив"
+                     data-title="Перемещение в архив"
+                     data-body-text="Переместить в архив?"
+                     data-toggle="modal"
+                     data-url="{% url "crm:manager:client:delete" client.id %}">
+                   Переместить в архив
+                  </a>
+                {% endif %}
               {% endifhasperm %}
 
               {% ifhasperm 'client.edit' user %}
-                <div class="greyline"></div>
-                <a class="dropdown-item"
+                {% if not client.deleted %}
+                  <div class="greyline"></div>
+                  <a class="dropdown-item"
                    href="{% url 'crm:manager:client:update' client.id %}">
                   Редактировать
                 </a>
+                {% endif %}
               {% endifhasperm %}
             </div>
           </div>
@@ -96,20 +110,23 @@
         {% endif %}
         <li>
           {% if event %}
-            Ученик
+
           {% else %}
             <a href="{% url 'crm:manager:client:list' %}">Ученики</a>
             {% include 'crm/bars/_img_bredcams_str.html' %}
           {% endif %}
         </li>
+        <!--
         <li>
             {{ client.name }}
         </li>
+        -->
       </ul>
     </div>
     <div class="greyline"></div>
     <div class="user_info d-flex">
       <div class="user_pic">
+      {% if not client.deleted %}
         {% ifhasperm 'client.edit' user %}
             {% if client.vk_user_id %}
               <a href="{% url 'crm:manager:client:update' client.id %}">
@@ -125,9 +142,17 @@
                 <img src="{% static "img/no-photo.png" %}" class="photo">
             {% endif %}
         {% endifhasperm %}
+      {% else %}
+        {% if client.vk_user_id %}
+                <img src="{% vk_small_avatar client.vk_user_id %}" class="photo">
+            {% else %}
+                <img src="{% static "img/no-photo.png" %}" class="photo">
+            {% endif %}
+      {% endif %}
       </div>
       <div class="user_login flex-grow-1">
 		<span class="big_name">
+    {% if not client.deleted %}
             {% ifhasperm 'client.edit' user %}
               <a href="{% url 'crm:manager:client:update' client.id %}">
                 {{ client.name }}
@@ -135,17 +160,25 @@
             {% else %}
               <a>{{ client.name }}</a>
             {% endifhasperm %}
+      {% else %}
+      <a>{{ client.name }} (В архиве)</a>
+    {% endif %}
          </span>
         <div class="contacts">
           <a href="tel:{{ client.phone_number }}">{{ client.phone_number|phone_format }}</a>
         </div>
+      {% if client.deleted %}
+      <span class="balance green">
+            {{ client.balance | floatformat:"-2" | intcomma }} ₽
+        </span>
+      {% else %}
         <a href="{% url 'crm:manager:client:balance:new' client.id %}" class="balance green">
             {{ client.balance | floatformat:"-2" | intcomma }} ₽
         </a>
         <a href="{% url 'crm:manager:client:balance:new' client.id %}" class="icon">
             {% include 'crm/manager/client/_image_edit_icon.html' %}
         </a>
-
+      {% endif %}
       </div>
     </div>
     <div class="row">
@@ -186,6 +219,7 @@
           <div class="tab-pane fade show active" id="pills-subscriptions"
                role="tabpanel" aria-labelledby="pills-subscriptions-tab">
             <!- Новый абонемент ->
+          {% if not client.deleted %}
             <table class="table table-hover buy_subscriptions">
               <tbody>
               <tr class="{{ hide_form|yesno:",active" }}">
@@ -308,6 +342,7 @@
               </tr>
               </tbody>
             </table>
+          {% endif %}
             <!- Абонементы -!>
             <table class="table table-hover">
               <thead class="d-none d-md-block">
@@ -340,7 +375,7 @@
               {% for sub in client.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
                 <tr {% if not sub.is_active %}class="archive"{% endif %}>
                   <td width="27">
-                    <a class="btn btn-icon btn-down d-md-none"
+                    <a class="btn btn-icon btn-down d-block d-md-none"
                        href="#"><span></span></a>
                   </td>
                   <td>
@@ -374,6 +409,7 @@
                     {% endif %}
                   </td>
                   <td class="d-none d-md-block">
+                  {% if not client.deleted %}
                     {% if not sub.subscription.one_time %}
                       {% ifhasperm 'client_subscription.extend' user %}
                         <a class="btn btn-icon btn-extend"
@@ -383,8 +419,10 @@
                         </a>
                       {% endifhasperm %}
                     {% endif %}
+                  {% endif %}
                   </td>
                   <td class="d-none d-md-block">
+                  {% if not client.deleted %}
                       {% ifhasperm 'client_subscription.delete' user %}
                         {% if sub.attendance_set.count == 0 %}
                           <a class="btn btn-icon btn-delete"
@@ -399,6 +437,7 @@
                       </a>
                         {% endif %}
                       {% endifhasperm %}
+                  {% endif %}
                   </td>
                   <td class="d-md-none" width="1">
                     <div class="btn-group">
@@ -434,8 +473,8 @@
                 </tr>
                 <tr class="active_info">
                   <td></td>
-                  <td colspan="7">
-                    <div class="row">
+                  <td colspan="8">
+                    <div class="row d-md-none">
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
                           <small>Продажа</small>
@@ -451,7 +490,7 @@
                         </p>
                       </div>
                     </div>
-                    <div class="row">
+                    <div class="row d-md-none">
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
                           <small>Начало действия</small>
@@ -467,6 +506,20 @@
                         </p>
                       </div>
                     </div>
+                    <!--
+                    <div class="row visit_report">
+                        <div class="col-12 d-flex flex-wrap">
+                            {# TODO: Здесь выводим посещения по этому абонементу #}
+                            <div class="box red_box">16</div>
+                            <div class="box green_box">17</div>
+                            <div class="box green_box">20</div>
+                            <div class="box green_box">23</div>
+                            <div class="box green_box">24</div>
+                            <div class="box ">27</div>
+                            <div class="box ">30</div>
+                        </div>
+                    </div>
+                    -->
                   </td>
                 </tr>
               {% endfor %}

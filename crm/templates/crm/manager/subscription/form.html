@@ -2,13 +2,13 @@
 
 {% load bootstrap4 html_helper %}
 
-{% block title %}Абонимент{% endblock %}
+{% block title %}Абонемент{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:subscription:list' as back_link %}
   {% if object.id %}
     {% include 'crm/bars/_sidebar_design.html'  with name=object.name back_link=back_link current='subscription' %}
   {% else %}
-    {% include 'crm/bars/_sidebar_design.html'  with name="Новый абонимент" back_link=back_link current='subscription' %}
+    {% include 'crm/bars/_sidebar_design.html'  with name="Новый абонемент" back_link=back_link current='subscription' %}
   {% endif %}
 {% endblock %}
 
@@ -17,7 +17,7 @@
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -35,7 +35,7 @@
           </svg>
         </li>
         <li>
-          {% if object.id %}{{ object.name }} {% else %}Новый абонимент{% endif %}
+          {% if object.id %}{{ object.name }} {% else %}Новый абонемент{% endif %}
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -64,6 +64,7 @@
           {% bootstrap_field form.visit_limit %}
         </div>
         <div class="col-6 col-md-2 col-xl-2 offset-6 offset-md-0 d-flex align-items-end form-group">
+            <!--
             <div class="form-check d-flex skip_line">
                 <label class="form-check-label" for="no_visit_limit">
                     <input id="no_visit_limit" name="no_visit_limit" type="checkbox" class="form-check-input">
@@ -71,6 +72,7 @@
                 </label>
                 <label class="form-check-label" for="no_visit_limit">Безлимит</label>
             </div>
+            -->
         </div>
       </div>
       <div class="row">
@@ -103,6 +105,7 @@
       </div>
       <div class="form-group subscription_check">
         <p>Допустимые тренировки</p>
+        <!--
         <div class="form-check d-flex">
             <label class="form-check-label" for="subscription_all">
                 <input id="subscription_all" name="rounding" type="checkbox" class="form-check-input" data-subscription="subscription_all">
@@ -110,6 +113,7 @@
             </label>
             <label class="form-check-label" for="subscription_all">Все</label>
         </div>
+        -->
         {% for field in form.event_class %}
           <div class="form-check d-flex">
             <label class="form-check-label" for="{{ field.id_for_label }}">

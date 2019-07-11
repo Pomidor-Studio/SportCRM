@@ -2,7 +2,7 @@
 
 {% load bootstrap4 html_helper %}
 
-{% block title %}Место проведения{% endblock %}
+{% block title %}Площадка{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:locations:list' as back_link %}
   {% if object.id %}
@@ -15,7 +15,7 @@
 {% block content %}
   <div class="page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
-      <div class="col-12">
+      <div class="col-12 alert-box">
         {% if messages %}
           {% for message in messages %}
             {% bootstrap_alert_message message %}
@@ -26,14 +26,14 @@
     <div class="bredcams clearfix">
       <ul>
         <li>
-          <a href="{% url "crm:manager:locations:list" %}">Места проведения</a>
+          <a href="{% url "crm:manager:locations:list" %}">Площадки</a>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round"
                   stroke-linejoin="round"></path>
           </svg>
         </li>
         <li>
-          {% firstof object.name  'Новый место' %}
+          {% firstof object.name  'Новая' %}
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">

@@ -2,6 +2,7 @@ import django_tables2 as tables
 from django.urls import reverse
 
 from crm.models import Event
+from crm.utils import event_color
 
 
 def event_class_link(value, record):
@@ -17,7 +18,11 @@ def event_class_link(value, record):
 
 
 class EventReportTable(tables.Table):
-    coach = tables.Column(accessor='event_class.coach.user',  verbose_name='Сотрудник')
+    coach = tables.Column(
+        accessor='event_class.coach.user',
+        verbose_name='Сотрудник',
+        visible=False
+    )
     event_class = tables.Column(
         verbose_name='Тренировка',
         linkify=event_class_link
