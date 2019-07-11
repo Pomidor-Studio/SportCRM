@@ -466,6 +466,9 @@ tr.active .btn-down span {
 	.btn-icon abbr {
 		display: none;
 	}
+	.btn-new {
+		top: 22px;
+	}
 }
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   select, textarea, input[type="text"] {
@@ -798,6 +801,11 @@ tr.active .btn-down span {
     background: $lines;
     border: none;
     margin: 0;
+}
+.students_page {
+	.btn-new {
+		right: 75px;
+	}
 }
 @media (max-width: 992px) {
 	.mobile_sidebar .workout_actions {

@@ -575,6 +575,9 @@ tr.active .btn-down span {
   border: none;
   margin: 0; }
 
+.students_page .btn-new {
+  right: 75px; }
+
 @media (max-width: 992px) {
   .mobile_sidebar .workout_actions {
     display: none; }
