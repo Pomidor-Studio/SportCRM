@@ -4,7 +4,7 @@
 
 {% block title %}Тренировка{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Расписание" back_link=False current='event' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Группы" back_link=False current='groups' %}
 {% endblock %}
 
 
@@ -13,23 +13,190 @@
   {{ weekdays.media.css }}
 {% endblock %}
 
+{% block content %}
+  <div class="page new_class col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12 alert-box">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="bredcams clearfix">
+      <ul>
+        <li>
+          <a href="{% url 'crm:manager:event:calendar' %}">Расписание</a>
+          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </li>
+        <li>
+          {% if object %}
+          {{ object.name }}
+          {% else %}
+          Новая
+          {% endif %}
+        </li>
+      </ul>
+    </div>
+    <div class="greyline"></div>
+
+    <div class="messages"></div>
+
+    <form action="" method="POST">
+      {% csrf_token %}
+
+      <div class="form-group row">
+        <div class="col-12 col-md-10 col-xl-6">
+          {% bootstrap_field eventclass_form.name %}
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-12 col-md-10 col-xl-6">
+          {% bootstrap_field eventclass_form.location %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 col-md-10 col-xl-6">
+          {% bootstrap_field eventclass_form.coach %}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-12 col-sm-6 col-md-3">
+          {% bootstrap_field eventclass_form.one_time_price %}
+        </div>
+        <!-- TODO: Сделать поле «Плановая посещаемость» -->
+        <div class="col-12 col-sm-6 col-md-3">
+          {% bootstrap_field eventclass_form.group_plan %}
+        </div>
+      </div>
+      <div class="greyline"></div>
+      <div class="form-group save_buttons">
+        <button id="save-ec" class="btn btn-primary" type="submit">Сохранить</button>
+        <a id="cancel" class="btn" href="{% url 'crm:manager:event-class:list' %}">Отмена</a>
+      </div>
+    </form>
+
+    <div class="greyline"></div>
+    <div class="row">
+      <div class="new_event col-12 col-md-10 col-xl-6">
+        <a href="#" id="addNewEvent" class="btn btn-primary w-100">Добавить</a>
+      </div>
+    </div>
+
+    <div class="row">
+      <div id="add_new_event" class="col-12">
+        <div class="new_event_info">
+          <ul class="nav nav-pills row no-gutters" id="pills-tab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="one-tab" data-toggle="tab" href="#one" role="tab" aria-controls="home" aria-selected="true">Разовая</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="many-tab" data-toggle="tab" href="#many" role="tab" aria-controls="profile" aria-selected="false">По расписанию</a>
+            </li>
+          </ul>
+          <div class="greyline"></div>
+          <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="one" role="tabpanel" aria-labelledby="one-tab">
+              <form>
+                <div class="form-group row">
+                  <div class="col-12 col-md-4 col-xl-2 datepick">
+                    {% bootstrap_field eventclass_form.date_from_single %}
+                  </div>
+                  <div class="col-6 col-md-3 col-xl-2 timepick">
+                    {% bootstrap_field eventclass_form.start_time_single %}
+                  </div>
+                  <div class="col-6 col-md-3 col-xl-2 timepick">
+                    {% bootstrap_field eventclass_form.end_time_single %}
+                  </div>
+                </div>
+                <div class="form-group save_buttons">
+                  <button id="add-single" class="btn btn-primary" type="submit">Добавить</button>
+                  <a class="btn cancel_new" href="#">Отмена</a>
+                </div>
+              </form>
+            </div>
+            <div class="tab-pane fade" id="many" role="tabpanel" aria-labelledby="many-tab">
+              <form>
+                <div class="row">
+                  <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                    {% bootstrap_field eventclass_form.date_from %}
+                  </div>
+                  <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                    {% bootstrap_field eventclass_form.date_to %}
+                  </div>
+                </div>
+                <div class="form-group row days timepick">
+                  {% for weekday in weekdays  %}
+                  <div class="col-6 col-md-3 col-lg day">
+                    {% bootstrap_dayofweek_render weekday.checked %}
+                    {% bootstrap_field weekday.start_time show_label=False %}
+                    —
+                    {% bootstrap_field weekday.end_time show_label=False %}
+                  </div>
+                  {% endfor %}
+                </div>
+                <div class="form-group save_buttons">
+                  <button id="add-many" class="btn btn-primary" type="submit">Добавить</button>
+                  <a class="btn cancel_new" href="#">Отмена</a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="greyline"></div>
+
+    <div class="row">
+        <div class="event col-12 col-md-10 col-xl-6">
+          <a href="#" id="showEvent_1" class="btn btn-outline-primary w-100 show-event">
+            <!-- TODO: вывод дат и дней недели -->
+            Тренировки: <b>22.06.2019 - 31.08.2019</b> <span>(пн, ср, пт)</span>
+          </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="event col-12 col-md-10 col-xl-6">
+          <a href="#" id="showEvent_2" class="btn btn-outline-primary w-100 show-event">
+            <!-- TODO: вывод дат и дней недели -->
+            Тренировка: <b>30.06.2019</b> <span>(16:00 -17:30)</span>
+          </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="event col-12 col-md-10 col-xl-6">
+          <a href="#" id="showEvent_3" class="btn btn-outline-secondary w-100 show-event">
+            <!-- TODO: вывод дат и дней недели -->
+            Тренировка: <b>30.06.2019</b> <span>(16:00 -17:30)</span>
+          </a>
+        </div>
+    </div>
+
+  </div>
+
+{% endblock content %}
 
 {% block extrajs %}
   {{ eventclass_form.media.js }}
   <script type="text/javascript">
     enquire.register("screen and (max-width: 720px)", {
-      match: function () {
+      match: function() {
         $('.selectpicker').attr('data-mobile', 'true');
       }
     });
-    $(function () {
+    $(function() {
 
-        $('.time').toArray().forEach(function(field) {
-				  new Cleave(field, {
-				    time: true,
-				    timePattern: ['h', 'm']
-				  });
-			});
+      $('.time').toArray().forEach(function(field) {
+        new Cleave(field, {
+          time: true,
+          timePattern: ['h', 'm']
+        });
+      });
 
       $('#{{ eventclass_form.date_from.id_for_label}}').datepicker({
         uiLibrary: 'bootstrap4',
@@ -41,6 +208,15 @@
         }
       });
       $('#{{ eventclass_form.date_to.id_for_label }}').datepicker({
+        uiLibrary: 'bootstrap4',
+        locale: 'ru-ru',
+        format: 'dd.mm.yyyy',
+        modal: false,
+        icons: {
+          rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+        }
+      });
+      $('#id_date_from_single').datepicker({
         uiLibrary: 'bootstrap4',
         locale: 'ru-ru',
         format: 'dd.mm.yyyy',
@@ -66,85 +242,3 @@
     });
   </script>
 {% endblock extrajs %}
-
-{% block content %}
-  <div class="page new_class col-md-12 col-lg-9 col-xl-10">
-    <div class="row">
-      <div class="col-12 alert-box">
-        {% if messages %}
-          {% for message in messages %}
-            {% bootstrap_alert_message message %}
-          {% endfor %}
-        {% endif %}
-      </div>
-    </div>
-    <div class="bredcams clearfix">
-      <ul>
-        <li>
-          <a href="{% url 'crm:manager:event:calendar' %}">Расписание</a>
-          <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </li>
-        <li>
-          {% if object %}
-            {{ object.name }}
-          {% else %}
-          Новая
-          {% endif %}
-        </li>
-      </ul>
-    </div>
-    <div class="greyline"></div>
-
-    <div class="messages"></div>
-
-    <form action="" method="POST">
-      {% csrf_token %}
-
-      <div class="form-group row">
-        <div class="col-12 col-md-10 col-xl-6">
-          {% bootstrap_field eventclass_form.name %}
-        </div>
-      </div>
-      <div class="form-group row">
-        <div class="col-12 col-md-10 col-xl-6">
-          {% bootstrap_field eventclass_form.location %}
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group col-sm-6 col-md-6 col-xl-4">
-          {% bootstrap_field eventclass_form.coach %}
-        </div>
-        <div class="form-group col-sm-6 col-md-4 col-xl-2">
-          {% bootstrap_field eventclass_form.one_time_price %}
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group datepick col-12 col-sm-6 col-md-3">
-          {% bootstrap_field eventclass_form.date_from %}
-        </div>
-        <div class="form-group datepick col-12 col-sm-6 col-md-3">
-          {% bootstrap_field eventclass_form.date_to %}
-        </div>
-      </div>
-      <div class="form-group row days timepick">
-        {% for weekday in weekdays  %}
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekday.checked %}
-          {% bootstrap_field weekday.start_time show_label=False %}
-          —
-          {% bootstrap_field weekday.end_time show_label=False %}
-        </div>
-        {% endfor %}
-      </div>
-
-      <div class="form-group save_buttons">
-        <button	id="save-ec" class="btn btn-primary" type="submit">Сохранить</button>
-        <a	id="cancel" class="btn" href="{% url 'crm:manager:event:calendar' %}">Отмена</a>
-      </div>
-    </form>
-
-  </div>
-
-{% endblock content %}

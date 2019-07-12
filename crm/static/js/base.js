@@ -26,6 +26,15 @@ $('.day :checkbox').click(function(){
         .prop('disabled', !this.checked);
 });
 $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
+$('#addNewEvent').click(function() {
+  $('#save-ec').addClass('disable').attr('disable','')
+  $('.new_event').slideUp()
+  $('#add_new_event').slideDown()
+})
+$('.cancel_new').click(function() {
+  $('.new_event').slideDown()
+  $('#add_new_event').slideUp()
+})
 
 
 /* Для кнопки отметить */

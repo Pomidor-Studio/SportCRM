@@ -410,6 +410,13 @@ class EventClassForm(TenantModelForm):
         required=False,
         widget=forms.NumberInput(attrs={'placeholder': '500 ₽'})
     )
+    group_plan = forms.IntegerField(
+        label='Плановая посещаемость',
+        initial='',
+        min_value=0,
+        required=False,
+        widget=forms.NumberInput(attrs={'placeholder': ''})
+    )
     location = forms.ModelChoiceField(
         empty_label='',
         queryset=Location.objects.all(),
@@ -427,12 +434,31 @@ class EventClassForm(TenantModelForm):
     date_from = forms.DateField(
         label='Начало тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        required=False
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': ''})
     )
     date_to = forms.DateField(
         label='Окончание тренировок',
         input_formats=DATE_INPUT_FORMATS,
-        required=False
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': ''})
+    )
+    #TODO: тут надо всё оживить
+    date_from_single = forms.DateField(
+        label='День тренировки',
+        input_formats=DATE_INPUT_FORMATS,
+        required=False,
+        widget=forms.TextInput(attrs={'placeholder': ''})
+    )
+    #TODO: class="time" placeholder=":"
+    start_time_single = forms.CharField(
+        label='Начало',
+        widget=forms.TextInput(attrs={'class': 'time', 'placeholder': ':'})
+    )
+    #TODO: Оживить
+    end_time_single = forms.CharField(
+        label='Окончание',
+        widget=forms.TextInput(attrs={'class': 'time', 'placeholder': ':'})
     )
 
     class Meta:
@@ -694,6 +720,3 @@ class CompanyForm(forms.ModelForm):
             f'{instance.active_to:%d.%m.%Y}' if instance and instance.active_to
             else 'без ограничений'
         )
-
-
-
