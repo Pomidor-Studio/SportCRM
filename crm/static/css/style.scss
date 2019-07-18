@@ -1745,6 +1745,10 @@ footer {
 	font-size: 16px;
 	.card-link {
 		color: $green;
+		text-decoration: underline;
+	}
+	.card-link:hover {
+		text-decoration: none;
 	}
 }
 .video {

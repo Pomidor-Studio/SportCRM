@@ -1192,7 +1192,10 @@ footer {
 .help_page {
   font-size: 16px; }
   .help_page .card-link {
-    color: #76BD1B; }
+    color: #76BD1B;
+    text-decoration: underline; }
+  .help_page .card-link:hover {
+    text-decoration: none; }
 
 .video {
   padding: 8px 0; }
