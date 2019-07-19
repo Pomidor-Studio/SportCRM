@@ -32,20 +32,20 @@
   {% if active_sub|length == 1 %}
     {% with active_sub|first as sub %}
         <div class="info_for_button">
-          <b>{{ sub.subscription.name }}</b> до&nbsp;{{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
+          <b>{{ sub.subscription.name }}</b>
+          /&nbsp;до&nbsp;{{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
           <br/>
-            <small>Посещений: <b class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</b></small>
+          Остаток: <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
         </div>
     {% endwith %}
   {% elif client.get_active_sub|length > 1 %}
       {% for sub in active_sub %}
         <div class="info_for_button">
-            {{ sub.subscription.name }}
+            <b>{{ sub.subscription.name }}</b>
+            /&nbsp;до&nbsp;{{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
             <br/>
-              Посещений: <b class="green">{{ sub.visits_left }} из
-                {{ sub.visits_on_by_time }}</b>
+              Остаток: <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
             <br/>
-            Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
         </div>
         {% if not forloop.last %}
           <div class="greyline"></div>
