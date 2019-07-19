@@ -289,6 +289,9 @@ header {
 .title_right .title, .title_right .subtitle {
   text-align: right; }
 
+.slideInUp_phone {
+  max-width: 344px; }
+
 .active .slideInUp {
   -webkit-animation-name: slideInUp;
   animation-name: slideInUp;
@@ -367,7 +370,7 @@ footer {
     background: none; }
     .hero .title {
       width: 100% !important; } }
-@media screen and (max-width: 64em) {
+@media screen and (max-width: 60em) {
   .button a, .button button {
     font-size: 14px; }
 
