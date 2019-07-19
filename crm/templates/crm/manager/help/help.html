@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-  <div class="page col-md-12 col-lg-9 col-xl-10">
+  <div class="page help_page col-md-12 col-lg-9 col-xl-10">
     <div class="row">
       <div class="col-12 alert-box">
         {% if messages %}
@@ -25,21 +25,95 @@
           Помошь
         </li>
         <li>
-          <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-               xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"></path>
+          <svg width="7" height="11" viewbox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
           </svg>
         </li>
       </ul>
     </div>
     <div class="greyline"></div>
-    <div class="form-group save_buttons">
-      <a name="new" href="https://vk.com/im?sel={{ support_group_id }}" class="btn btn-primary">Задать вопрос в чат</a>
+
+    <h3>Начало работы:</h3>
+    <p>
+      Всё очень просто, главное — по порядку.
+    </p>
+    <div class="row">
+      <div class="col-12 card-group">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">1. Площадка</h5>
+            <p class="card-text">Создайте место, где будут проходить ваши тренировки</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'crm:manager:locations:new' %}" class="card-link">
+              Добавить площадку
+            </a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">2. Тренер</h5>
+            <p class="card-text">Введите данные тренера для первой группы</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'crm:manager:coach:new' %}" class="card-link">
+              Добавить тренера
+            </a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">3. Группа</h5>
+            <p class="card-text">Создайте первую группу с&#160;расписанием тренировок</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'crm:manager:event-class:new' %}" class="card-link">
+              Добавить группу
+            </a>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title">4. Абонемент</h5>
+            <p class="card-text">Настройте стоимость, количество посещений, продолжительность и&#160;группы для абонемента.</p>
+          </div>
+          <div class="card-footer">
+            <a href="{% url 'crm:manager:subscription:new' %}" class="card-link">
+              Добавить абонемент
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <br/>
+
+    <div class="greyline"></div>
+    <div class="form-group save_buttons">
+      <p>
+        Остались вопросы? Пишите — мы поможем вам!
+      </p>
+      <a name="new" href="https://vk.me/yoursportclub" class="btn btn-primary">Задать вопрос в чат</a>
+    </div>
+
+    <!--
+    <h3>Основные функции:</h3>
+    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+      <li class="nav-item">
+        <a class="nav-link active" id="pills-vk-tab" data-toggle="pill" href="#pills-vk" role="tab" aria-controls="pills-home" aria-selected="true">
+          Бот сообщений Вконтакте
+        </a>
+      </li>
+    </ul>
+    <div class="tab-content" id="pills-tabContent">
+      <div class="tab-pane fade show active" id="pills-vk" role="tabpanel" aria-labelledby="pills-vk-tab">...</div>
+      <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">...</div>
+      <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">...</div>
+    </div>
+     -->
+
   </div>
 {% endblock content %}
-
 
 {% block extrajs %}
   {% js "js/clipboard.min.js" %}

@@ -61,6 +61,23 @@ class List(PermissionRequiredMixin, FilterView):
         context = super().get_context_data(object_list=object_list, **kwargs)
         context['has_active_event_class'] = EventClass.objects.active().exists()
         context['vk_group_id'] = get_current_tenant().vk_group_id
+        all_clients = Client.objects.all()
+        context['all_clients_count'] = all_clients.count
+        debtor_count = 0
+        long_time_not_go_count = 0
+        for client in all_clients:
+            if ClientFilter.filter_debtor(self,
+                                          queryset=Client.objects.filter(name=client.name),
+                                          name=None,
+                                          value=None):
+                debtor_count = debtor_count + 1
+            if ClientFilter.filter_long_time_not_go(self,
+                                                    queryset=Client.objects.filter(name=client.name),
+                                                    name=None,
+                                                    value=None):
+                long_time_not_go_count = long_time_not_go_count + 1
+        context['debtor_count'] = debtor_count
+        context['long_time_not_go_count'] = long_time_not_go_count
         return context
 
 
@@ -492,7 +509,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
 
     def form_valid(self, form):
         file = form.cleaned_data['file']
-        ignore_first_row = form.cleaned_data['ignore_first_row']
+        #ignore_first_row = form.cleaned_data['ignore_first_row']
         name_col = form.cleaned_data['name_col']
         phone_col = form.cleaned_data['phone_col']
         birthday_col = form.cleaned_data['birthday_col']
@@ -509,8 +526,8 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             return self.form_invalid(form)
 
         iter_rows = iter(ws.rows)
-        if ignore_first_row:
-            next(iter_rows)
+        #if ignore_first_row:
+        next(iter_rows)
 
         skipped = 0
         added = 0

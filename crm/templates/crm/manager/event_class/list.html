@@ -65,7 +65,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for eventclass in eventclass_list %}
+            {% for eventclass in eventclass_list|dictsort:"name.lower" %}
               <tr {% if eventclass.deleted %}class="archive"{% endif %}>
                 <td>
                     <a href="{% url 'crm:manager:event-class:update' eventclass.pk %}"

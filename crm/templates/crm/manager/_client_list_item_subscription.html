@@ -29,7 +29,9 @@
 {% else %}
 
   {% for sub in active_sub %}
-    <div class="info_for_button_s">{% subscription_info sub %}</div>
+    <div class="info_for_button_s">
+      {% subscription_info sub %}
+    </div>
     {% if not forloop.last %}
       <div class="greyline"></div>
     {% endif %}

@@ -349,7 +349,10 @@ tr.active .btn-down span {
     top: 22px; } }
 @media (max-width: 340px) {
   .btn-icon abbr {
-    display: none; } }
+    display: none; }
+
+  .btn-new {
+    top: 22px; } }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   select, textarea, input[type="text"] {
     font-size: 16px !important; } }
@@ -357,7 +360,7 @@ tr.active .btn-down span {
 /* Таблицы */
 .table {
   font-size: 14px;
-  line-height: 19px;
+  line-height: 22px;
   position: relative;
   top: -5px;
   color: #000; }
@@ -372,11 +375,13 @@ tr.active .btn-down span {
   .table tbody tr.otbivka {
     background: #F4F4F4 !important; }
     .table tbody tr.otbivka td {
-      height: 0; }
+      height: 0;
+      padding-top: 5px;
+      padding-bottom: 5px; }
   .table tbody tr.minus_balance {
     background: #fdefe7 !important; }
   .table td, .table th {
-    padding: 8px;
+    padding: 16px 8px;
     vertical-align: middle;
     border: none;
     border-bottom: 1px solid #EEEEEE !important;
@@ -391,14 +396,14 @@ tr.active .btn-down span {
   .table td {
     height: 55px; }
   .table .fio_name {
-    font-size: 16px;
-    color: #000;
+    font-weight: bold;
+    color: #76BD1B;
     margin-bottom: 4px;
     display: inline-block; }
   .table a.fio_name:hover {
-    color: #76BD1B; }
+    color: #000; }
   .table .active .fio_name {
-    color: #76BD1B; }
+    color: #000; }
   .table .form-check-input {
     margin-top: 3px; }
   .table .photo {
@@ -461,7 +466,7 @@ tr.active .btn-down span {
     .table .btn-group {
       margin-top: 12px; }
     .table .td_photo {
-      padding-top: 15px; }
+      padding-top: 18px; }
 
   .buy_subscriptions td {
     height: auto !important; }
@@ -575,6 +580,9 @@ tr.active .btn-down span {
   border: none;
   margin: 0; }
 
+.students_page .btn-new {
+  right: 75px; }
+
 @media (max-width: 992px) {
   .mobile_sidebar .workout_actions {
     display: none; }
@@ -589,6 +597,9 @@ tr.active .btn-down span {
 @media (max-width: 767px) {
   .mobile_sidebar .workout_actions {
     display: block; }
+
+  .students_page .btn-new {
+    right: 15px; }
 
   .page .bredcams {
     height: 46px; }
@@ -1186,6 +1197,14 @@ footer {
     padding: 5px !important; } }
 /* Отчеты */
 /* Помощь */
+.help_page {
+  font-size: 16px; }
+  .help_page .card-link {
+    color: #76BD1B;
+    text-decoration: underline; }
+  .help_page .card-link:hover {
+    text-decoration: none; }
+
 .video {
   padding: 8px 0; }
 

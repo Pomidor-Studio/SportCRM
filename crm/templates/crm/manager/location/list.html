@@ -52,7 +52,7 @@
             </tr>
             </thead>
             <tbody>
-            {% for location in locations %}
+            {% for location in locations|dictsort:"name.lower" %}
               <tr {% if location.deleted %}class="archive"{% endif %}>
                 <td>
                   {% if not location.deleted %}

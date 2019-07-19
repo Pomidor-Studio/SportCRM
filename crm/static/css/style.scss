@@ -466,6 +466,9 @@ tr.active .btn-down span {
 	.btn-icon abbr {
 		display: none;
 	}
+	.btn-new {
+		top: 22px;
+	}
 }
 @media screen and (-webkit-min-device-pixel-ratio:0) {
   select, textarea, input[type="text"] {
@@ -480,7 +483,7 @@ tr.active .btn-down span {
 /* Таблицы */
 .table {
 	font-size: 14px;
-	line-height: 19px;
+	line-height: 22px;
 	position: relative;
 	top: -5px;
 	color: $grey;
@@ -500,6 +503,8 @@ tr.active .btn-down span {
 			background: #F4F4F4 !important;
 			td {
 				height: 0;
+				padding-top: 5px;
+				padding-bottom: 5px;
 			}
 		}
 		tr.minus_balance {
@@ -507,7 +512,7 @@ tr.active .btn-down span {
 		}
 	}
 	td, th {
-		padding: 8px;
+		padding: 16px 8px;
 		vertical-align: middle;
 		border: none;
 		border-bottom: 1px solid $lines !important;
@@ -526,16 +531,16 @@ tr.active .btn-down span {
 	}
 
 	.fio_name {
-		font-size: 16px;
-		color: #000;
+		font-weight: bold;
+		color: $green;
 		margin-bottom: 4px;
 		display: inline-block;
 	}
 	a.fio_name:hover {
-		color: $green;
+		color: $black;
 	}
 	.active .fio_name {
-		color: $green;
+		color: $black;
 	}
 
 	.form-check-input {
@@ -633,7 +638,7 @@ tr.active .btn-down span {
 			margin-top: 12px;
 		}
 		.td_photo {
-			padding-top: 15px;
+			padding-top: 18px;
 		}
 	}
 	.buy_subscriptions {
@@ -799,6 +804,11 @@ tr.active .btn-down span {
     border: none;
     margin: 0;
 }
+.students_page {
+	.btn-new {
+		right: 75px;
+	}
+}
 @media (max-width: 992px) {
 	.mobile_sidebar .workout_actions {
 		display: none;
@@ -818,6 +828,12 @@ tr.active .btn-down span {
 @media (max-width: 767px) {
 	.mobile_sidebar .workout_actions {
 		display: block;
+	}
+
+	.students_page {
+		.btn-new {
+			right: 15px;
+		}
 	}
 	.page {
 		.bredcams {
@@ -1733,6 +1749,16 @@ footer {
 
 
 /* Помощь */
+.help_page {
+	font-size: 16px;
+	.card-link {
+		color: $green;
+		text-decoration: underline;
+	}
+	.card-link:hover {
+		text-decoration: none;
+	}
+}
 .video {
 	padding: 8px 0;
 }

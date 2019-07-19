@@ -26,29 +26,26 @@
   </div>
 {% endifhasperm %}
 <div class="d-none d-md-block">
-  <small>{{ client.phone_number|phone_format }}</small>
+  {{ client.phone_number|phone_format }}
 </div>
 <div class="d-md-none">
   {% if active_sub|length == 1 %}
     {% with active_sub|first as sub %}
         <div class="info_for_button">
-          {{ sub.subscription.name }}
+          <b>{{ sub.subscription.name }}</b>
+          /&nbsp;до&nbsp;{{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
           <br/>
-            <small>Посещений: <b class="green">{{ sub.visits_left }} из
-              {{ sub.visits_on_by_time }}</b></small>
-          <br/>
-          <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
+          Остаток: <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
         </div>
     {% endwith %}
   {% elif client.get_active_sub|length > 1 %}
       {% for sub in active_sub %}
         <div class="info_for_button">
-            <small>{{ sub.subscription.name }}</small>
+            <b>{{ sub.subscription.name }}</b>
+            /&nbsp;до&nbsp;{{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
             <br/>
-              <small>Посещений: <b class="green">{{ sub.visits_left }} из
-                {{ sub.visits_on_by_time }}</b></small>
+              Остаток: <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
             <br/>
-            <small>Действует до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}</small>
         </div>
         {% if not forloop.last %}
           <div class="greyline"></div>
