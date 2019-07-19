@@ -290,7 +290,9 @@ header {
 	}
 }
 
-
+.slideInUp_phone {
+	max-width: 344px;
+}
 .active .slideInUp {
 	-webkit-animation-name: slideInUp;
 	animation-name: slideInUp;
@@ -405,7 +407,7 @@ footer {
 	}
 }
 
-@media screen and (max-width: 64em) {
+@media screen and (max-width: 60em) {
 	.button {
 		a, button {
 			font-size: 14px;
