@@ -248,8 +248,7 @@
 									</tr>
 									{% for client in rest_clients|dictsort:"name.lower" %}
 										{% with active_sub=""|empty_list last_sub=client.last_sub %}
-											<tr
-												class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
+											<tr class="{% if client.balance < 0 %}minus_balance{% endif %} {% if client.deleted %}archive{% endif %} ">
 												<td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
 												<td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
 												<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
@@ -281,32 +280,26 @@
 						{% if attendance_list_marked %}
 							<table class="table table-hover">
 								<thead class="d-none d-md-block">
-								<tr>
-									<th></th>
-									<th>
-										ФИО
-									</th>
-									<th class="d-none d-md-block">
-										Абонемент
-									</th>
-									<th class="d-none d-md-block">
-										Продано
-									</th>
-									<th class="d-none d-md-block text-center">
-										Начало
-									</th>
-									<th class="d-none d-md-block text-center">
-										Окончание
-									</th>
-									<th class="d-none d-md-block text-center">
-										Посл. посещение
-									</th>
-									<th class="d-none d-md-block">
-										Баланс
-									</th>
-									<th width="1"></th>
-									<th width="1"></th>
-								</tr>
+									<tr>
+										<th></th>
+										<th>
+											ФИО
+										</th>
+										<th class="d-none d-md-block">
+											Абонемент
+										</th>
+										<th class="d-none d-md-block text-center">
+											Посл. посещение
+										</th>
+										<th class="d-none d-md-block text-center">
+											Посещений
+										</th>
+										<th class="d-none d-md-block text-right">
+											Баланс
+										</th>
+										<th width="1"></th>
+										<th class="d-none d-md-block" width="1"></th>
+									</tr>
 								</thead>
 								<tbody>
 								{% for attendance in attendance_list_marked %}
@@ -315,10 +308,15 @@
 											<td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' with client=attendance.client %}</td>
 											<td>{% include 'crm/manager/_client_list_item_info.html' with client=attendance.client %}</td>
 											<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client marked=True %}</td>
-											<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' with client=attendance.client %}</td>
-											<td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' with client=attendance.client %}</td>
-											<td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' with client=attendance.client %}</td>
-											<td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' with client=attendance.client %}</td>
+											<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+											<td class="d-none d-md-block text-center">
+												{% for sub in active_sub %}
+													<span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
+													{% if not forloop.last %}
+														<div class="greyline"></div>
+													{% endif %}
+												{% endfor %}
+											</td>
 											<td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' with client=attendance.client %}</td>
 											<td>{% include 'crm/manager/_client_list_item_button.html' with client=attendance.client action='unmark' %}</td>
 											<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_dropdown-menu.html' with client=attendance.client %}</td>
