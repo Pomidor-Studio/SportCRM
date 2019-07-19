@@ -1,7 +1,3 @@
-{% if subscription.is_expiring %}
-  <span>{{ subscription.subscription.name }}</span>
-{% else %}
-  {{ subscription.subscription.name }}
-{% endif %}
-<br/>
-<small>Посещений: <b class="green">{{ subscription.visits_left }} из {{ subscription.visits_on_by_time }}</b></small>
+{{ subscription.subscription.name }}
+/
+до {{ subscription.end_date|date:"SHORT_DATE_FORMAT" }}

@@ -55,7 +55,7 @@
                   role="tab"
                   aria-controls="pills-all"
                   aria-selected="{% if not filter.form.debtor.data %}true{% else %}false{% endif %}">Все
-                  {% if all_clients_count %}{{ all_clients_count }}{% endif %}
+                  <sup>{% if all_clients_count %}{{ all_clients_count }}{% endif %}</sup>
                 </a>
               </li>
               <li class="nav-item col-auto text-center text-md-left">
@@ -63,15 +63,16 @@
                    href="{% url 'crm:manager:client:list' %}?debtor=True" role="tab"
                    aria-controls="pills-debtor"
                    aria-selected="{% if filter.form.debtor.data %}true{% else %}false{% endif %}">Должники
-                  {% if debtor_count %}{{ debtor_count }}{% endif %}
+                  <sup>{% if debtor_count %}{{ debtor_count }}{% endif %}</sup>
                 </a>
               </li>
               <li class="nav-item col-auto text-center text-md-left">
                 <a class="nav-link {% if filter.form.long_time_not_go.data %}active{% endif %}"
                    href="{% url 'crm:manager:client:list' %}?long_time_not_go=True" role="tab"
                    aria-controls="pills-long"
-                   aria-selected="{% if filter.form.long_time_not_go.data %}true{% else %}false{% endif %}">Давно не
-                  были {% if long_time_not_go_count %}{{ long_time_not_go_count }}{% endif %}
+                   aria-selected="{% if filter.form.long_time_not_go.data %}true{% else %}false{% endif %}">
+                   Давно не были
+                   <sup>{% if long_time_not_go_count %}{{ long_time_not_go_count }}{% endif %}</sup>
                 </a>
               </li>
             </ul>
@@ -118,17 +119,11 @@
                 <th class="d-none d-md-block">
                   Абонемент
                 </th>
-                <th class="d-none d-md-block">
-                  Продано
+                <th class="d-none d-md-block text-center">
+                  Последнее посещение
                 </th>
                 <th class="d-none d-md-block text-center">
-                  Начало
-                </th>
-                <th class="d-none d-md-block text-center">
-                  Окончание
-                </th>
-                <th class="d-none d-md-block text-center">
-                  Посл. посещение
+                  Остаток
                 </th>
                 <th class="d-none d-md-block text-right">
                   Баланс
@@ -142,10 +137,15 @@
                     <td class="td_photo">{% include 'crm/manager/_client_list_item_photo.html' %}</td>
                     <td>{% include 'crm/manager/_client_list_item_info.html' %}</td>
                     <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
-                    <td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_sub_purchase-date.html' %}</td>
-                    <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_start-date.html' %}</td>
-                    <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_end-date.html' %}</td>
                     <td class="d-none d-md-block text-center">{% include 'crm/manager/_client_list_item_sub_last-date.html' %}</td>
+                    <td class="d-none d-md-block text-center">
+                      {% for sub in active_sub %}
+                        <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
+                        {% if not forloop.last %}
+                          <div class="greyline"></div>
+                        {% endif %}
+                      {% endfor %}
+                    </td>
                     <td class="d-none d-md-block text-right">{% include 'crm/manager/_client_list_item_balance.html' %}</td>
                   </tr>
                 {% endwith %}

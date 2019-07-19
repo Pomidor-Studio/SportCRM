@@ -483,7 +483,7 @@ tr.active .btn-down span {
 /* Таблицы */
 .table {
 	font-size: 14px;
-	line-height: 19px;
+	line-height: 22px;
 	position: relative;
 	top: -5px;
 	color: $grey;
@@ -503,6 +503,8 @@ tr.active .btn-down span {
 			background: #F4F4F4 !important;
 			td {
 				height: 0;
+				padding-top: 5px;
+				padding-bottom: 5px;
 			}
 		}
 		tr.minus_balance {
@@ -826,6 +828,12 @@ tr.active .btn-down span {
 @media (max-width: 767px) {
 	.mobile_sidebar .workout_actions {
 		display: block;
+	}
+
+	.students_page {
+		.btn-new {
+			right: 15px;
+		}
 	}
 	.page {
 		.bredcams {
