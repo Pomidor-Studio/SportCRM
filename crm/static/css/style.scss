@@ -531,16 +531,16 @@ tr.active .btn-down span {
 	}
 
 	.fio_name {
-		font-size: 16px;
-		color: #000;
+		font-weight: bold;
+		color: $green;
 		margin-bottom: 4px;
 		display: inline-block;
 	}
 	a.fio_name:hover {
-		color: $green;
+		color: $black;
 	}
 	.active .fio_name {
-		color: $green;
+		color: $black;
 	}
 
 	.form-check-input {

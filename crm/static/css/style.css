@@ -396,14 +396,14 @@ tr.active .btn-down span {
   .table td {
     height: 55px; }
   .table .fio_name {
-    font-size: 16px;
-    color: #000;
+    font-weight: bold;
+    color: #76BD1B;
     margin-bottom: 4px;
     display: inline-block; }
   .table a.fio_name:hover {
-    color: #76BD1B; }
+    color: #000; }
   .table .active .fio_name {
-    color: #76BD1B; }
+    color: #000; }
   .table .form-check-input {
     margin-top: 3px; }
   .table .photo {
