@@ -349,7 +349,10 @@ tr.active .btn-down span {
     top: 22px; } }
 @media (max-width: 340px) {
   .btn-icon abbr {
-    display: none; } }
+    display: none; }
+
+  .btn-new {
+    top: 22px; } }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   select, textarea, input[type="text"] {
     font-size: 16px !important; } }
@@ -357,7 +360,7 @@ tr.active .btn-down span {
 /* Таблицы */
 .table {
   font-size: 14px;
-  line-height: 19px;
+  line-height: 22px;
   position: relative;
   top: -5px;
   color: #000; }
@@ -372,7 +375,9 @@ tr.active .btn-down span {
   .table tbody tr.otbivka {
     background: #F4F4F4 !important; }
     .table tbody tr.otbivka td {
-      height: 0; }
+      height: 0;
+      padding-top: 5px;
+      padding-bottom: 5px; }
   .table tbody tr.minus_balance {
     background: #fdefe7 !important; }
   .table td, .table th {
@@ -592,6 +597,9 @@ tr.active .btn-down span {
 @media (max-width: 767px) {
   .mobile_sidebar .workout_actions {
     display: block; }
+
+  .students_page .btn-new {
+    right: 15px; }
 
   .page .bredcams {
     height: 46px; }
