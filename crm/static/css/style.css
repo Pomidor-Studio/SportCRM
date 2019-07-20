@@ -182,6 +182,8 @@ small {
       left: 0;
       width: 15px;
       height: 15px; }
+    .btn-icon.btn-pay abbr {
+      padding-right: 8px; }
   .btn-icon.btn-more {
     border: none;
     padding: 0 4px !important;
