@@ -31,10 +31,10 @@ $('.day:not(:first-child)').append( "<div class=greylineV></div>" );
 /* Для кнопки отметить */
 $('.workout_page .fio_name').each(function() {
     var fio_name_a = $(this).attr('href');
-    $(this).parents('.workout_page tr').find('td').not('td:nth-child(9),td:nth-child(10)').on('click',function() {
+    $(this).parents('.workout_page tr').find('td').not('td:nth-child(7),td:nth-child(8)').on('click',function() {
         window.location = fio_name_a;
     })
-    $(this).parents('.workout_page tr').find('td:nth-child(9)').on('click',function() {
+    $(this).parents('.workout_page tr').find('td:nth-child(7)').on('click',function() {
         window.location = $(this).find('a').attr('href');;
     })
 })

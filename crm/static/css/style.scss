@@ -308,7 +308,6 @@ small {
 		padding: 0 !important;
 		background: transparent;
 		min-width: inherit;
-		left: 3px;
 		span {
 			background: url(../img/icons.png) 0 -226px no-repeat;
 			top: 1px;
@@ -649,8 +648,12 @@ tr.active .btn-down span {
 			height: auto !important;
 		}
 		.btn-down {
-			top: -8px;
+			top: -7px;
 		}
+	}
+	.student_page .subscriptions_list .btn-down {
+		top: -10px !important;
+		display: block !important;
 	}
 }
 @media (min-width: 768px) {
@@ -1402,7 +1405,7 @@ footer {
 
 
 
-/* Тренировка и  */
+/* Тренировка  */
 .workout_actions {
 	font-size: 14px;
 
@@ -1627,19 +1630,13 @@ footer {
 }
 
 .student_page {
-
-	#pills-journal {
-		table tr {
-			td:first-child {
-				text-align: right;
-				width: 100px;
-			}
-			td:nth-child(2) {
-				max-width: 300px;
-			}
-
+	.subscriptions_list {
+		.btn-down {
+			display: none;
 		}
 	}
+
+	
 	#pills-qr img {
 		display: block;
 	}
