@@ -231,7 +231,7 @@
                 </td>
               </tr>
               {% if hide_form %}
-                <tr class="active_info " style="display: none;">
+                <tr class="active_info" style="display: none;">
                   {% else %}
                 <tr class="active_info active" style="display: table-row;">
               {% endif %}
@@ -344,18 +344,21 @@
             </table>
           {% endif %}
             <!- Абонементы -!>
-            <table class="table table-hover">
+            <table class="table table-hover subscriptions_list">
               <thead class="d-none d-md-block">
               <tr>
                 <th></th>
                 <th>
                   Наименование
-                </th>                
-                <th class="d-none d-md-block text-center">
-                  Последнее посещение
+                </th>
+                <th class="d-none d-md-block">
+                  Продал
+                </th>
+                <th class="d-none d-md-block">
+                  Остаток
                 </th>
                 <th class="d-none d-md-block text-center">
-                  Остаток
+                  Последнее посещение
                 </th>
                 <th class="d-none d-md-block text-right">
                   Цена
@@ -369,16 +372,14 @@
               {% for sub in client.clientsubscriptions_set.all|dictsortreversed:"end_date" %}
                 <tr {% if not sub.is_active %}class="archive"{% endif %}>
                   <td width="27">
-                    <a class="btn btn-icon btn-down d-block d-md-none"
-                       href="#"><span></span></a>
+                    <a class="btn btn-icon btn-down" href="#"><span></span></a>
                   </td>
                   <td>
                     <span class="fio_name">{{ sub.subscription.name }}</span>
                     <div>
-                      Посещения: {{ sub.visits_left }} из {{ sub.visits_on_by_time }}
-                    </div>
-                    <div class="d-block d-md-none">
-                      Действует до: {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
+                      / до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
+                      <br />
+                      Посещения: <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
                     </div>
                   </td>
                   <td class="d-none d-md-block">
@@ -386,13 +387,8 @@
                     <br/>
                     {{ sub.sold_by|default_if_none:'' }}
                   </td>
-                  <td class="d-none d-md-block text-center">
-                    {{ sub.start_date|date:"SHORT_DATE_FORMAT" }}
-                  </td>
-                  <td class="d-none d-md-block text-center">
-                    <div class="date_end">
-                      {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
-                    </div>
+                  <td class="d-none d-md-block" nowrap>
+                    <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
                   </td>
                   <td class="d-none d-md-block text-center">
                     {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}
@@ -471,14 +467,16 @@
                     <div class="row d-md-none">
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
-                          Продажа
+                          <b>Продажа:</b>
                           <br/>
-                          {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }} — {{ sub.sold_by }}
+                          {{ sub.purchase_date|date:"SHORT_DATE_FORMAT" }}
+                          <br/>
+                          {{ sub.sold_by }}
                         </p>
                       </div>
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
-                          Стоимость
+                          <b>Стоимость:</b>
                           <br/>
                           {% if sub.price %}{{ sub.price | floatformat:"-2" | intcomma }} ₽{% endif %}
                         </p>
@@ -487,14 +485,14 @@
                     <div class="row d-md-none">
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
-                          Начало действия
+                          <b>Начало</b>
                           <br/>
                           {{ sub.start_date|date:"d M Y" }}
                         </p>
                       </div>
                       <div class="col-6 col-md-5 col-xl-3">
                         <p>
-                          Окончание действия
+                          <b>Окончание:</b>
                           <br/>
                           {{ sub.end_date|date:"d M Y" }}
                         </p>
@@ -503,7 +501,6 @@
                     <!--
                     <div class="row visit_report">
                         <div class="col-12 d-flex flex-wrap">
-                            {# TODO: Здесь выводим посещения по этому абонементу #}
                             <div class="box red_box">16</div>
                             <div class="box green_box">17</div>
                             <div class="box green_box">20</div>
@@ -513,7 +510,7 @@
                             <div class="box ">30</div>
                         </div>
                     </div>
-                    -->
+                     -->
                   </td>
                 </tr>
               {% endfor %}
@@ -521,31 +518,40 @@
             </table>
           </div>
 
+
+          <!-- Журнал -->
           <div class="tab-pane fade" id="pills-journal" role="tabpanel"
                aria-labelledby="pills-journal-tab">
-            <div class="col-12 col-md-10 col-xl-6">
+            <div class="col-12 col-md-10 col-xl-9">
               <table class="table">
                 {% for item in attendance_with_balance %}
                   {% if item.change_value %}
                     <tr>
-                      <td>
-                        {{ item.entry_date|time }}<br>
-                        {{ item.entry_date|date:"d M Y" }}
-                      </td>
-                      <td>
-                       Изменение счета -
-                        <a href="#" class="fio_name">
+                      <td class="text-md-right">
+                        {{ item.entry_date|date:"SHORT_DATE_FORMAT" }},
+                        <br class="d-none d-md-block">
+                        {{ item.entry_date|time }}
+                        <div class="d-block d-md-none">
+                          <b>
                           {% if item.reason %}
                             {{ item.reason }}
                           {% else %}
                             (Причина не указана)
                           {% endif %}
-                        </a>
-                        <div>
-                          {{ item.subscription.subscription.name }}
+                          </b>
                         </div>
                       </td>
-                      <td>
+                      <td class="d-none d-md-block">
+                        {% if item.reason %}
+                          {{ item.reason }}
+                        {% else %}
+                          (Причина не указана)
+                        {% endif %}
+                      </td>
+                      <td class="d-none d-md-block">
+                          {{ item.subscription.name }}
+                      </td>
+                      <td class="text-right align-middle" nowrap>
                         <span class="{% if item.change_value < 0 %}orange{% else %}green{% endif %}">
                           {{ item.change_value|floatformat:"-2"|intcomma }} ₽
                         </span>
@@ -553,51 +559,88 @@
                     </tr>
                   {% elif item.date_extended %}
                     <tr>
-                      <td>
-                        {{ item.date_extended|time }}<br>
-                        {{ item.date_extended|date:"d M Y" }}
-                      </td>
-                      <td>
-                        Продление -
-                        <a href="#" class="fio_name">
+                      <td class="text-md-right">
+                        {{ item.date_extended|date:"SHORT_DATE_FORMAT" }},
+                        <br class="d-none d-md-block">
+                        {{ item.date_extended|time }}
+                        <div class="d-block d-md-none">
+                          <b>Продление</b>
+                          <br />
                           {% if item.reason %}
                             {{ item.reason }}
                           {% else %}
                             (Причина не указана)
                           {% endif %}
-                        </a>
-                        <div>
-                          {{ item.client_subscription.name }}
+                          <br />
+                          {{ item.client_subscription }}
                         </div>
                       </td>
-                      <td>
+                      <td class="d-none d-md-block">
+                        Продление
+                      </td>
+                      <td class="d-none d-md-block">
+                          {% if item.reason %}
+                            {{ item.reason }}
+                          {% else %}
+                            (Причина не указана)
+                          {% endif %}
+                          <br />
+                          {{ item.client_subscription }}
+                      </td>
+                      <td class="text-right align-middle" nowrap>
                         <span class="{% if item.added_visits < 0 %}orange{% else %}green{% endif %}">
-                          {{ item.added_visits }}
+                          + {{ item.added_visits }}
                         </span>
                       </td>
                     </tr>
                   {% elif item.event %}
                     <tr>
-                      <td>
-                        {{ item.event.start_time }}<br>
-                        {{ item.event.date|date:"d M Y" }}
+                      <td class="text-md-right">
+                        {{ item.event.date|date:"SHORT_DATE_FORMAT" }},
+                        <br class="d-none d-md-block">
+                        {{ item.event.start_time }}
+                        <div class="d-block d-md-none">
+                          <b>
+                          {% if item.subscription %}
+                            Посещение
+                          {% else %}
+                            Пропуск
+                          {% endif %}
+                          </b>
+                          <br />
+                          <a href="{% url 'crm:manager:event-class:event:event-by-date' item.event.event_class.id item.event.date.year item.event.date.month item.event.date.day %}" class="fio_name">
+                            Группа: {{ item.event.event_class }}
+                          </a>
+                          <div {% if not item.subscription %}class="orange"{% endif %}>
+                              {% if item.subscription %}
+                                {{ item.subscription }}
+                              {% else %}
+                                Записался, но не пришел
+                              {% endif %}
+                          </div>
+                        </div>
                       </td>
-                      <td>
-                       Тренировка -
+                      <td class="d-none d-md-block">
+                        {% if item.subscription %}
+                          Посещение
+                        {% else %}
+                          Пропуск
+                        {% endif %}
+                      </td>
+                      <td class="d-none d-md-block">
                         <a href="{% url 'crm:manager:event-class:event:event-by-date' item.event.event_class.id item.event.date.year item.event.date.month item.event.date.day %}" class="fio_name">
-                          {{ item.event.event_class }}
+                          Группа: {{ item.event.event_class }}
                         </a>
                         <div {% if not item.subscription %}class="orange"{% endif %}>
-
                             {% if item.subscription %}
                               {{ item.subscription }}
                             {% else %}
                               Записался, но не пришел
                             {% endif %}
-
                         </div>
                       </td>
-                      <td>
+                      <td class="text-right align-middle" nowrap>
+                        <span class="orange">- 1</span>
                       </td>
                     </tr>
                   {% endif %}
@@ -606,6 +649,7 @@
             </div>
           </div>
 
+          <!-- Информация -->
           <div class="tab-pane fade" id="pills-comment" role="tabpanel"
                aria-labelledby="pills-comment-tab">
             <div class="row">

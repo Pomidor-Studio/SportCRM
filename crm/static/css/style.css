@@ -225,8 +225,7 @@ small {
     border: none;
     padding: 0 !important;
     background: transparent;
-    min-width: inherit;
-    left: 3px; }
+    min-width: inherit; }
     .btn-icon.btn-down span {
       background: url(../img/icons.png) 0 -226px no-repeat;
       top: 1px;
@@ -471,7 +470,11 @@ tr.active .btn-down span {
   .buy_subscriptions td {
     height: auto !important; }
   .buy_subscriptions .btn-down {
-    top: -8px; } }
+    top: -7px; }
+
+  .student_page .subscriptions_list .btn-down {
+    top: -10px !important;
+    display: block !important; } }
 @media (min-width: 768px) {
   thead.d-md-block {
     display: table-header-group !important; }
@@ -960,7 +963,7 @@ footer {
     margin-left: -2px; }
 
 /* Новая тренировка */
-/* Тренировка и  */
+/* Тренировка  */
 .workout_actions {
   font-size: 14px; }
   .workout_actions ul {
@@ -1120,11 +1123,8 @@ footer {
     position: relative;
     top: 1px; }
 
-.student_page #pills-journal table tr td:first-child {
-  text-align: right;
-  width: 100px; }
-.student_page #pills-journal table tr td:nth-child(2) {
-  max-width: 300px; }
+.student_page .subscriptions_list .btn-down {
+  display: none; }
 .student_page #pills-qr img {
   display: block; }
 .student_page #pills-comment {
