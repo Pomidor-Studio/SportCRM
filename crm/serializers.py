@@ -4,14 +4,18 @@ from datetime import datetime
 from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from django.urls import reverse
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
 
+from crm.events import next_day
 from crm.models import (
     Event, ClientSubscriptions, SubscriptionsType, Manager,
     User,
+    EventClass,
+    EventClassSection,
 )
 
 
@@ -134,3 +138,169 @@ class RegisterCompanySerializer(serializers.Serializer):
     def to_representation(self, instance):
         return {'success': True}
 
+
+class EventClassDaySerializer(serializers.Serializer):
+    # ISO weekday format, not zero based
+    day_num = serializers.IntegerField(min_value=1, max_value=7)
+    from_time = serializers.TimeField()
+    to_time = serializers.TimeField()
+
+    def create(self, validated_data):
+        return object()
+
+
+class EventClassSectionSerializer(serializers.Serializer):
+    section_id = serializers.IntegerField(allow_null=True)
+    singular_event = serializers.BooleanField(default=True)
+    from_date = serializers.DateField()
+    to_date = serializers.DateField(allow_null=True)
+    day_data = EventClassDaySerializer(many=True)
+
+    def create(self, validated_data):
+        return object()
+
+
+class EventClassEditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventClass
+        fields = ('name', 'location', 'coach', 'new', 'update', 'delete')
+
+    new = EventClassSectionSerializer(
+        allow_null=True, many=True, required=False)
+    update = EventClassSectionSerializer(
+        allow_null=True, many=True, required=False)
+    delete = EventClassSectionSerializer(
+        allow_null=True, many=True, required=False)
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        if (attrs['new'] is None or not len(attrs['new'])) and \
+                (attrs['update'] is None or not len(attrs['update'])) and \
+                (attrs['delete'] is None or not len(attrs['delete'])):
+            raise serializers.ValidationError(
+                'Not data provided', code='no-data')
+        return attrs
+
+    def create_events(
+        self,
+        period: EventClassSectionSerializer,
+        event_class: EventClass
+    ):
+        days = {
+            x['day_num']: (
+                x['from_time'], x['to_time']
+            ) for x in period['day_data']
+        }
+        section = EventClassSection.objects.create(
+            event_class=event_class, singular_event=period['singular_event'],
+            from_date=period['from_date'], to_date=period['to_date'],
+            day_data=days
+        )
+
+        if period['singular_event']:
+            self._create_singular(section)
+        else:
+            self._create_many(section)
+
+    def _delete_event(self, event: Event):
+        for marked_att in event.attendance_set.filter(marked=True):
+            marked_att.subscription.visits_left += 1
+            marked_att.subscription.save()
+
+        event.attendance_set.delete()
+        event.delete()
+
+    def _delete_singular(self, section):
+        if section.from_date > datetime.today().date():
+            for event in EventClass.objects.filter(event_class_section=section):
+                self._delete_event(event)
+
+    def _delete_many(self, section):
+        weekdays = sorted(section.day_data.keys())
+        # Convert from iso to python zero based weekday
+        weekdays = [x - 1 for x in weekdays]
+        for day in next_day(section.from_date, section.to_date, weekdays):
+            if day > datetime.today().date():
+                for event in EventClass.objects.filter(
+                        event_class_section=section):
+                    self._delete_event(event)
+
+    def delete_events(
+        self,
+        period: EventClassSectionSerializer
+    ):
+        section = EventClassSection.objects.get(id=period.section_id)
+        if section.singular_event:
+            self._delete_singular(section)
+        else:
+            self._delete_many(section)
+
+    def _create_singular(
+        self,
+        section: EventClassSection
+    ):
+        if section.from_date > datetime.today().date():
+            Event.objects.create(
+                event_class=section.event_class, event_class_section=section,
+                date=section.from_date
+            )
+
+    def _create_many(self, section: EventClassSection):
+        weekdays = sorted(section.day_data.keys())
+        # Convert from iso to python zero based weekday
+        weekdays = [x - 1 for x in weekdays]
+        self._delete_many(section)
+        for day in next_day(section.from_date, section.to_date, weekdays):
+            if day > datetime.today().date():
+                Event.objects.create(
+                    event_class=section.event_class,
+                    event_class_section=section,
+                    date=day
+                )
+
+    def update_period(
+        self,
+        period: EventClassSectionSerializer,
+    ):
+        days = {
+            x['day_num']: (
+                x['from_time'], x['to_time']
+            ) for x in period['day_data']
+        }
+        section = EventClassSection.objects.get(id=period['section_id'])
+        section.singular_event = period['singular_event']
+        section.from_date = period['from_date']
+        section.to_date = period['to_date']
+        section.day_data = days
+        section.save()
+
+        if section.singular_event:
+            self._delete_singular(section)
+            self._create_singular(section)
+        else:
+            self._delete_many(section)
+            self._create_many(section)
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            event_class = EventClass.objects.create(
+                name=validated_data['name'],
+                location=validated_data['location'],
+                coach=validated_data['coach']
+            )
+
+            for new_period in validated_data['new']:
+                self.create_events(new_period, event_class)
+
+            for update_period in validated_data['update']:
+                self.update_events(update_period, event_class)
+
+            for delete_period in validated_data['delete']:
+                self.delete_events(delete_period)
+
+            return event_class
+
+    def to_representation(self, instance):
+        return {
+            'id': instance.id
+        }

@@ -9,12 +9,17 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, ListView, RedirectView,
     TemplateView,
 )
+from rest_framework import mixins
 from rest_framework.fields import DateField
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import (
+    ListAPIView, GenericAPIView, CreateAPIView,
+    UpdateAPIView,
+)
 from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
@@ -28,7 +33,7 @@ from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
     DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
 )
-from crm.serializers import CalendarEventSerializer
+from crm.serializers import CalendarEventSerializer, EventClassEditSerializer
 from crm.views.mixin import RedirectWithActionView
 from gcp.tasks import enqueue
 
@@ -750,3 +755,11 @@ class DoOpenEvent(
         event = self.get_object()
         event.open_event()
         return
+
+
+class CreateEventClass(CreateAPIView):
+    serializer_class = EventClassEditSerializer
+
+
+class UpdateEventClass(UpdateAPIView):
+    serializer_class = EventClassEditSerializer
