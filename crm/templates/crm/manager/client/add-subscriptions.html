@@ -97,30 +97,12 @@
     </div>
     <div class="bredcams clearfix">
       <ul>
-        {% if event %}
-          <li>
-            <a href="{% url 'crm:manager:event:calendar' %}">Расписание</a>
-            {% include 'crm/bars/_img_bredcams_str.html' %}
-          </li>
-          <li>
-            <a
-              href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}">{{  event.event_class.name }}</a>
-            {% include 'crm/bars/_img_bredcams_str.html' %}
-          </li>
-        {% endif %}
         <li>
-          {% if event %}
-
-          {% else %}
-            <a href="{% url 'crm:manager:client:list' %}">Ученики</a>
-            {% include 'crm/bars/_img_bredcams_str.html' %}
-          {% endif %}
+          {% include 'crm/bars/_img_bredcams_str_back.html' %}
         </li>
-        <!--
         <li>
-            {{ client.name }}
+          <a href="#" onclick="history.back()">Назад</a>
         </li>
-        -->
       </ul>
     </div>
     <div class="greyline"></div>
@@ -326,15 +308,16 @@
                           Добавить с продлением абонемента
                         </button>
                       {% endif %}
-                      <a name="cancel"
+
                         {% if event %}
-                         href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}"
+                          <a href="{% url 'crm:manager:event-class:event:event-by-date' event.event_class.id event.date.year event.date.month event.date.day %}" class="btn">Назад</a>
                         {% else %}
-                         href="{% url 'crm:manager:client:detail' client.id %}"
+                          <a name="cancel" class="btn cancel">
+                            Отмена
+                          </a>
                         {% endif %}
-                         class="btn cancel">
-                        Назад
-                      </a>
+
+
                     </div>
                   </div>
                 </form>
