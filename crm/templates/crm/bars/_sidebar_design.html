@@ -14,10 +14,10 @@
           <ul>
             {% if back_link %}
               <li>
-                <a href="#" onclick="history.go(-1);">
+                <a href="{{ back_link }}">
                   {% include 'crm/bars/_img_bredcams_str_back.html' %}
                 </a>
-                <a href="#" class="back" onclick="history.go(-1);">Назад</a>
+                <a href="{{ back_link }}" class="back">Назад</a>
               </li>
             {% else %}
               <li>
