@@ -377,9 +377,10 @@
                   <td>
                     <span class="fio_name">{{ sub.subscription.name }}</span>
                     <div>
-                      / до {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
-                      <br />
-                      Посещения: <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
+                      {{ sub.start_date|date:"SHORT_DATE_FORMAT" }} - {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
+                      <div class="d-block d-md-none">
+                        Остаток: <b class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</b>
+                      </div>
                     </div>
                   </td>
                   <td class="d-none d-md-block">
@@ -388,7 +389,7 @@
                     {{ sub.sold_by|default_if_none:'' }}
                   </td>
                   <td class="d-none d-md-block" nowrap>
-                    <span class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</span>
+                    <b class="green">{{ sub.visits_left }} из {{ sub.visits_on_by_time }}</b>
                   </td>
                   <td class="d-none d-md-block text-center">
                     {{ sub.last_visited_event.date|date:"SHORT_DATE_FORMAT" }}
@@ -479,22 +480,6 @@
                           <b>Стоимость:</b>
                           <br/>
                           {% if sub.price %}{{ sub.price | floatformat:"-2" | intcomma }} ₽{% endif %}
-                        </p>
-                      </div>
-                    </div>
-                    <div class="row d-md-none">
-                      <div class="col-6 col-md-5 col-xl-3">
-                        <p>
-                          <b>Начало</b>
-                          <br/>
-                          {{ sub.start_date|date:"d M Y" }}
-                        </p>
-                      </div>
-                      <div class="col-6 col-md-5 col-xl-3">
-                        <p>
-                          <b>Окончание:</b>
-                          <br/>
-                          {{ sub.end_date|date:"d M Y" }}
                         </p>
                       </div>
                     </div>
@@ -704,6 +689,7 @@
         </div>
       </div>
     </div>
+    {% include "crm/bars/_bottom_sidebar.html" %}
   </div>
 {% endblock content %}
 

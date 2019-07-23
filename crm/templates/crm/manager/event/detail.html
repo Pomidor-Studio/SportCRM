@@ -197,7 +197,7 @@
 												<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
 												<td class="d-none d-md-block">
 													{% for sub in active_sub %}
-														<span class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</span>
+														<b class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</b>
 														{% if not forloop.last %}
 															<div class="greyline"></div>
 														{% endif %}
@@ -225,7 +225,7 @@
 												<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
 												<td class="d-none d-md-block">
 													{% for sub in active_sub %}
-														<span class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</span>
+														<b class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</b>
 														{% if not forloop.last %}
 															<div class="greyline"></div>
 														{% endif %}
@@ -253,7 +253,7 @@
 												<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' %}</td>
 												<td class="d-none d-md-block">
 													{% for sub in active_sub %}
-														<span class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</span>
+														<b class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</b>
 														{% if not forloop.last %}
 															<div class="greyline"></div>
 														{% endif %}
@@ -309,7 +309,7 @@
 											<td class="d-none d-md-block">{% include 'crm/manager/_client_list_item_subscription.html' with client=attendance.client marked=True %}</td>
 											<td class="d-none d-md-block">
 												{% for sub in active_sub %}
-													<span class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</span>
+													<b class="green">{{ sub.visits_left }}&nbsp;из&nbsp;{{ sub.visits_on_by_time }}</b>
 													{% if not forloop.last %}
 														<div class="greyline"></div>
 													{% endif %}
