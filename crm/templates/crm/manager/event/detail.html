@@ -4,7 +4,6 @@
 
 {% block title %}Тренировка{% endblock %}
 {% block sidbar %}
-	{% url 'crm:manager:event:calendar' as back_link %}
 	{% with dt=event.date|date:"d.m.Y" coach=event.event_class.coach|escape %}
 				{% with crumb_name="<small>"|add:event.event_class.name|add:":</small><span>"|add:dt|add:" | "|add:coach|add:"</span>" %}
 				{% include 'crm/bars/_sidebar_design.html' with name=crumb_name back_link=back_link mobile_menu='crm/bars/_event_detail_mobile_menu.html'  current='event' %}

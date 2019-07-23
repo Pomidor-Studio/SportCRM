@@ -816,8 +816,13 @@ tr.active .btn-down span {
 	}
 }
 @media (max-width: 992px) {
-	.mobile_sidebar .workout_actions {
-		display: none;
+	.mobile_sidebar {
+		.workout_actions {
+			display: none;
+		}
+		.back {
+			margin-left: 10px;
+		} 
 	}
 	.page {
 		height: 100vh;
