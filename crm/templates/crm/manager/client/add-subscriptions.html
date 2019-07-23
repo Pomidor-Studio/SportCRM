@@ -375,7 +375,11 @@
                     <a class="btn btn-icon btn-down" href="#"><span></span></a>
                   </td>
                   <td>
-                    <span class="fio_name">{{ sub.subscription.name }}</span>
+                    {% if sub.is_active %}
+                      <span class="fio_name">{{ sub.subscription.name }}</span>
+                    {% else %}
+                      {{ sub.subscription.name }}
+                    {% endif %}
                     <div>
                       {{ sub.start_date|date:"SHORT_DATE_FORMAT" }} - {{ sub.end_date|date:"SHORT_DATE_FORMAT" }}
                       <div class="d-block d-md-none">

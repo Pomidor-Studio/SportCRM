@@ -421,7 +421,7 @@ tr.active .btn-down span {
   .table .dropdown-menu {
     margin-right: -10px; }
   .table .archive {
-    opacity: 0.6; }
+    opacity: 0.4; }
     .table .archive:hover {
       opacity: 1; }
   .table.workout_time .d-flex div {
