@@ -5,7 +5,7 @@
 {% block title %}Группы{% endblock %}
 {% block sidbar %}
   {% url 'crm:manager:company' as back_link %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Группы" back_link=back_link current='groups' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Группы" back_link=False current='groups' %}
 {% endblock %}
 
 {% block content %}
