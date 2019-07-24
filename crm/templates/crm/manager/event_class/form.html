@@ -528,7 +528,7 @@
             'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
           },
           success: function() {
-            window.location("{% url 'crm:manager:event-class:list' %}");
+            window.location = "{% url 'crm:manager:event-class:list' %}";
           },
           error: function(data) {
             addAlert(data);

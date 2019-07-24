@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Optional
+
 from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -10,6 +12,7 @@ from django.urls import reverse
 from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
 
+from crm.enums import GRANULARITY
 from crm.events import next_day
 from crm.models import (
     Event, ClientSubscriptions, SubscriptionsType, Manager,
@@ -163,7 +166,10 @@ class EventClassSectionSerializer(serializers.Serializer):
 class EventClassEditSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventClass
-        fields = ('name', 'location', 'coach', 'new', 'update', 'delete')
+        fields = (
+            'name', 'location', 'coach', 'new', 'update', 'delete',
+            'oneTimePrice', 'planedAttendance'
+        )
 
     new = EventClassSectionSerializer(
         allow_null=True, many=True, required=False)
@@ -171,6 +177,8 @@ class EventClassEditSerializer(serializers.ModelSerializer):
         allow_null=True, many=True, required=False)
     delete = EventClassSectionSerializer(
         allow_null=True, many=True, required=False)
+    oneTimePrice = serializers.FloatField(allow_null=True)
+    planedAttendance = serializers.IntegerField(allow_null=True)
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
@@ -281,6 +289,33 @@ class EventClassEditSerializer(serializers.ModelSerializer):
             self._delete_many(section)
             self._create_many(section)
 
+    def modifyOneTimePrice(
+        self, event_class: EventClass, price: Optional[float]
+    ):
+        try:
+            one_time_sub = SubscriptionsType.all_objects.get(
+                one_time=True, event_class=event_class)
+            if price and price > 0:
+                if one_time_sub.deleted:
+                    one_time_sub.undelete()
+                one_time_sub.price = price
+                one_time_sub.save()
+            else:
+                one_time_sub.delete()
+        except SubscriptionsType.DoesNotExist:
+            if price and price > 0:
+                sub = SubscriptionsType(
+                    name='Разовое посещение ' + event_class.name,
+                    price=price,
+                    duration_type=GRANULARITY.DAY,
+                    duration=1,
+                    rounding=False,
+                    visit_limit=1,
+                    one_time=True
+                )
+                sub.save()
+                sub.event_class.add(event_class)
+
     def create(self, validated_data):
         with transaction.atomic():
             event_class = EventClass.objects.create(
@@ -297,6 +332,9 @@ class EventClassEditSerializer(serializers.ModelSerializer):
 
             for delete_period in validated_data['delete']:
                 self.delete_events(delete_period)
+
+            self.modifyOneTimePrice(
+                event_class, validated_data['oneTimePrice'])
 
             return event_class
 
