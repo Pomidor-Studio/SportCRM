@@ -2,6 +2,7 @@ from datetime import date, timedelta
 from typing import List, Optional
 from uuid import UUID
 
+from django.conf import settings
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import ProtectedError
@@ -32,6 +33,8 @@ from crm.forms import (
 from crm.models import (
     Client, ClientAttendanceExists, ClientSubscriptions,
     DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
+    Coach,
+    Location,
 )
 from crm.serializers import CalendarEventSerializer, EventClassEditSerializer
 from crm.views.mixin import RedirectWithActionView
@@ -519,7 +522,11 @@ class CreateEdit(
         context.update({
             'eventclass_form': self.form,
             'weekdays': self.weekdays,
-            'object': self.object
+            'object': self.object,
+            'coaches': Coach.objects.all(),
+            'locations': Location.objects.all(),
+            'select2js': settings.SELECT2_JS,
+            'select2css': settings.SELECT2_CSS
         })
         return context
 

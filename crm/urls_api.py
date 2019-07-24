@@ -13,7 +13,11 @@ from crm.views import (
 
 manager_event_class_urls = ([
     path('<int:pk>/calendar/', ApiCalendar.as_view(), name='calendar'),
-    path('', manager_event_class_views.CreateEventClass.as_view(), name='create'),
+    path(
+        '',
+        manager_event_class_views.CreateEventClass.as_view(),
+        name='create'
+    ),
     path(
         '<int:pk>/',
         manager_event_class_views.UpdateEventClass.as_view(),
