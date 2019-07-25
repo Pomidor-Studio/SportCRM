@@ -1,6 +1,6 @@
 {% extends "crm/base_design.html" %}
 
-{% load bootstrap4 html_helper %}
+{% load bootstrap4 html_helper l10n %}
 
 {% block title %}Тренировка{% endblock %}
 {% block sidbar %}
@@ -44,7 +44,10 @@
 
     <div class="form-group row">
       <div class="col-12 col-md-10 col-xl-6">
-        <div class="form-group"><label for="id_name">Наименование</label><input type="text" name="name" maxlength="100" class="form-control" placeholder="Наименование" title="" required id="id_name"></div>
+        <div class="form-group">
+          <label for="id_name">Наименование</label>
+          <input type="text" name="name" maxlength="100" class="form-control" placeholder="Наименование" title="" required id="id_name" value="{% if object %}{{ object.name }}{% endif %}">
+        </div>
       </div>
     </div>
     <div class="form-group row">
@@ -52,9 +55,9 @@
         <div class="form-group">
           <label for="id_location">Площадка</label>
           <select name="location" class="form-control django-select2" title="" required id="id_location" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap">
-            <option value="" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" selected></option>
+            <option value="" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if not object %}selected{% endif %}></option>
             {% for location in locations %}
-              <option value="{{ location.id }}" class="form-control django-select2" title=""  data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap">{{ location.name }}</option>
+              <option value="{{ location.id }}" class="form-control django-select2" title=""  data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if object and object.location_id == location.id%}selected{% endif %}>{{ location.name }}</option>
             {% endfor %}
           </select>
         </div>
@@ -65,9 +68,9 @@
         <div class="form-group">
           <label for="id_coach">Тренер</label>
           <select name="coach" class="form-control django-select2" title="" required id="id_coach" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap">
-            <option value="" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" selected></option>
+            <option value="" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if not object %}selected{% endif %}></option>
             {% for coach in coaches %}
-              <option value="{{ coach.id }}" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap">{{ coach }}</option>
+              <option value="{{ coach.id }}" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if object and object.coach_id == coach.id %}selected{% endif %}>{{ coach }}</option>
             {% endfor %}
           </select>
         </div>
@@ -75,7 +78,7 @@
     </div>
     <div class="row">
       <div class="col-12 col-sm-6 col-md-3">
-        <div class="form-group"><label for="id_one_time_price">Стоимость посещения</label><input type="number" name="one_time_price" placeholder="500 ₽" min="0" class="form-control" title="" id="id_one_time_price"></div>
+        <div class="form-group"><label for="id_one_time_price">Стоимость посещения</label><input type="number" name="one_time_price" placeholder="500 ₽" min="0" class="form-control" title="" id="id_one_time_price" value="{% if object and one_time_price %}{{ one_time_price|unlocalize }}{% endif %}"></div>
       </div>
       <!-- TODO: Сделать поле «Плановая посещаемость» -->
       <div class="col-12 col-sm-6 col-md-3">

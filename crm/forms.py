@@ -1,5 +1,3 @@
-import calendar
-
 from betterforms.multiform import MultiModelForm
 from django import forms
 from django.conf.locale.ru.formats import DATE_INPUT_FORMATS
@@ -8,11 +6,9 @@ from django.core.exceptions import ValidationError
 from django.forms.widgets import CheckboxSelectMultiple, TextInput
 from django.utils import timezone
 from django.utils.deconstruct import deconstructible
-from django.utils.translation import gettext as _
 from django_select2.forms import (
     Select2Mixin, Select2Widget,
 )
-from phonenumber_field.formfields import PhoneNumberField
 from phonenumber_field.widgets import PhoneNumberInternationalFallbackWidget
 
 from contrib.forms import NonTenantUsernameMixin, TenantForm, TenantModelForm
@@ -20,7 +16,7 @@ from contrib.vk_utils import get_vk_id_from_page_link
 from crm.utils import VK_PAGE_REGEXP
 from .models import (
     Client, ClientBalanceChangeHistory, ClientSubscriptions, Coach, Company,
-    DayOfTheWeekClass, Event, EventClass, Location, Manager, SubscriptionsType,
+    Event, Manager, SubscriptionsType,
 )
 
 
@@ -402,126 +398,6 @@ class ClientSubscriptionForm(TenantModelForm):
         if activated_subscription:
             for __, field in self.fields.items():
                 field.disabled = True
-
-
-class EventClassForm(TenantModelForm):
-    one_time_price = forms.IntegerField(
-        label='Стоимость посещения',
-        initial='',
-        min_value=0,
-        required=False,
-        widget=forms.NumberInput(attrs={'placeholder': '500 ₽'})
-    )
-    group_plan = forms.IntegerField(
-        label='Плановая посещаемость',
-        initial='',
-        min_value=0,
-        required=False,
-        widget=forms.NumberInput(attrs={'placeholder': ''})
-    )
-    location = forms.ModelChoiceField(
-        empty_label='',
-        queryset=Location.objects.all(),
-        label='Площадка',
-        widget=Select2WidgetAttributed(
-            attr_getter=subcription_type_attrs)
-    )
-    coach = forms.ModelChoiceField(
-        empty_label='',
-        queryset=Coach.objects.all(),
-        label='Тренер',
-        widget=Select2WidgetAttributed(
-            attr_getter=subcription_type_attrs)
-    )
-    date_from = forms.DateField(
-        label='Начало тренировок',
-        input_formats=DATE_INPUT_FORMATS,
-        required=False,
-        widget=forms.TextInput(attrs={'placeholder': ''})
-    )
-    date_to = forms.DateField(
-        label='Окончание тренировок',
-        input_formats=DATE_INPUT_FORMATS,
-        required=False,
-        widget=forms.TextInput(attrs={'placeholder': ''})
-    )
-    #TODO: тут надо всё оживить
-    date_from_single = forms.DateField(
-        label='День тренировки',
-        input_formats=DATE_INPUT_FORMATS,
-        required=False,
-        widget=forms.TextInput(attrs={'placeholder': ''})
-    )
-    #TODO: class="time" placeholder=":"
-    start_time_single = forms.CharField(
-        label='Начало',
-        widget=forms.TextInput(attrs={'class': 'time', 'placeholder': ':'})
-    )
-    #TODO: Оживить
-    end_time_single = forms.CharField(
-        label='Окончание',
-        widget=forms.TextInput(attrs={'class': 'time', 'placeholder': ':'})
-    )
-
-    class Meta:
-        model = EventClass
-        fields = [
-            'name', 'location', 'coach', 'date_from', 'date_to',
-            'one_time_price'
-        ]
-        exclude = ('client',)
-
-
-class DayOfTheWeekClassForm(TenantModelForm):
-    checked = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={'class': 'day-of-week'})
-    )
-
-    class Meta:
-        model = DayOfTheWeekClass
-        fields = ('checked', 'start_time', 'end_time')
-        widgets = {
-            'start_time': forms.TextInput(
-                attrs={
-                    'class': 'time',
-                    'placeholder': ':'
-                }
-            ),
-            'end_time': forms.TextInput(
-                attrs={
-                    'class': 'time',
-                    'placeholder': ':'
-                }
-            )
-        }
-
-    def clean(self):
-        if self.cleaned_data['checked']:
-            if not self.cleaned_data['start_time']:
-                msg = forms.ValidationError(
-                    'Время начала тренировки должно быть заполнено')
-                self.add_error('start_time', msg)
-            if not self.cleaned_data['end_time']:
-                msg = forms.ValidationError(
-                    'Время завершения тренировки должно быть заполнено')
-                self.add_error('end_time', msg)
-
-        return super().clean()
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if 'instance' in kwargs:
-            # выставляем лейбл для чекбокса в зависимости от дня
-            self.fields['checked'].label = \
-                _(calendar.day_name[kwargs['instance'].day])
-
-        if not kwargs.get('initial', {}).get('checked', False):
-            self.fields['start_time'].widget.attrs['disabled'] = True
-            self.fields['end_time'].widget.attrs['disabled'] = True
-
-        # Все поля делаем необязательными
-        for key, field in self.fields.items():
-            field.required = False
 
 
 @deconstructible

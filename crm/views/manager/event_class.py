@@ -1,5 +1,6 @@
+import json
 from datetime import date, timedelta
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
 
 from django.conf import settings
@@ -10,31 +11,22 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import (
     CreateView, DeleteView, DetailView, FormView, ListView, RedirectView,
     TemplateView,
 )
-from rest_framework import mixins
 from rest_framework.fields import DateField
-from rest_framework.generics import (
-    ListAPIView, GenericAPIView, CreateAPIView,
-    UpdateAPIView,
-)
+from rest_framework.generics import (CreateAPIView, ListAPIView, UpdateAPIView)
 from rest_framework.permissions import IsAuthenticated
 from reversion.views import RevisionMixin
 from rules.contrib.views import PermissionRequiredMixin
 
-from crm.enums import GRANULARITY
 from crm.forms import (
-    DayOfTheWeekClassForm, EventClassForm, InplaceSellSubscriptionForm,
-    ClientForm, SignUpClientMultiForm
+    ClientForm, InplaceSellSubscriptionForm, SignUpClientMultiForm,
 )
 from crm.models import (
-    Client, ClientAttendanceExists, ClientSubscriptions,
-    DayOfTheWeekClass, Event, EventClass, SubscriptionsType,
-    Coach,
-    Location,
+    Client, ClientAttendanceExists, ClientSubscriptions, Coach, Event,
+    EventClass, Location, SubscriptionsType,
 )
 from crm.serializers import CalendarEventSerializer, EventClassEditSerializer
 from crm.views.mixin import RedirectWithActionView
@@ -190,7 +182,8 @@ class EventByDate(
 
         rest_clients = Client.objects.exclude(id__in=selected_id)
         context['rest_clients_count'] = rest_clients.count()
-        context['all_clients_count'] = unmarked_clients_qs.count() + signed_up_clients_qs.count()
+        context['all_clients_count'] = (
+            unmarked_clients_qs.count() + signed_up_clients_qs.count())
         self.object.save()
 
         context.update({
@@ -388,10 +381,12 @@ class SellAndMark(
         default_reason = 'Покупка абонемента'
         current_user = self.request.user
         with transaction.atomic():
-            client.add_balance_in_history(-abon_price, default_reason, changed_by=current_user)
+            client.add_balance_in_history(
+                -abon_price, default_reason, changed_by=current_user)
             if cash_earned:
                 default_reason = 'Перечесление средств за абонемент'
-                client.add_balance_in_history(abon_price, default_reason, changed_by=current_user)
+                client.add_balance_in_history(
+                    abon_price, default_reason, changed_by=current_user)
             client.save()
             subscription = form.save()
             subscription.event = self.get_object()
@@ -401,6 +396,7 @@ class SellAndMark(
                 client.mark_visit(self.get_object(), subscription)
             except ValueError:
                 messages.warning(
+                    self.request,
                     'Не получилось отметить визит - возможно абонемент был '
                     'продан на будущую дату'
                 )
@@ -463,7 +459,7 @@ class SignUpClientWithoutSubscription (
         client.signup_for_event(event)
 
     def form_valid(self, form):
-        if form['exists'].is_valid() and  "exists" in self.request.POST:
+        if form['exists'].is_valid() and "exists" in self.request.POST:
             self.add_exists(form['exists'])
         if form['new'].is_valid() and "new" in self.request.POST:
             self.add_new(form['new'])
@@ -506,12 +502,11 @@ class CreateEdit(
 
     template_name = 'crm/manager/event_class/form.html'
     permission_required = 'event_class.add'
+    object: Optional[EventClass] = ...
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.object = None
-        self.weekdays: List[Optional[DayOfTheWeekClassForm]] = [None] * 7
-        self.form: EventClassForm = None
 
     def get_object(self):
         if 'pk' in self.kwargs:
@@ -520,139 +515,44 @@ class CreateEdit(
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update({
-            'eventclass_form': self.form,
-            'weekdays': self.weekdays,
             'object': self.object,
             'coaches': Coach.objects.all(),
             'locations': Location.objects.all(),
             'select2js': settings.SELECT2_JS,
             'select2css': settings.SELECT2_CSS
         })
-        return context
 
-    def get(self, request, *args, **kwargs):
-        self.get_object()
-        prefiled_days = {}
         if self.object:
-            # Получаем уже записанные дни для тип тренировки
-            prefiled_days = {
-                x.day: x for x in self.object.dayoftheweekclass_set.all()
+            existing_sections = {
+                x.id: {
+                    'section_id': x.id,
+                    'singular_event': x.singular_event,
+                    'from_date': x.from_date,
+                    'to_date': x.to_date,
+                    'day_data': {
+                        day_num: {
+                            'day_num': day_num,
+                            'from_time': data[0],
+                            'to_time': data[1]
+                        } for day_num, data in x.day_data.items()
+                    }
+                } for x in self.object.eventclasssection_set.all()
             }
-
-        self.form = EventClassForm(instance=self.object)
-
-        # Заполняем форму дней тренировки
-        for i in range(7):
-            sub_form_obj = prefiled_days.get(
-                i, DayOfTheWeekClass(event=self.object, day=i))
-            self.weekdays[i] = DayOfTheWeekClassForm(
-                instance=sub_form_obj,
-                prefix=f'weekday{i}',
-                initial={'checked': bool(sub_form_obj.id)}
-            )
-
-        # Заполняем стоимость одноразового посещения
-        try:
-            one_time_sub = SubscriptionsType.objects.get(
-                one_time=True, event_class=self.object)
-            self.form.fields['one_time_price'].initial = one_time_sub.price
-        except (
-            SubscriptionsType.DoesNotExist,
-            SubscriptionsType.MultipleObjectsReturned
-        ):
-            pass
-
-        return super().get(request, *args, **kwargs)
-
-    def post(self, request, *args, **kwargs):
-        self.get_object()
-
-        self.form = EventClassForm(request.POST, instance=self.object)
-        # Validate that there is at least one selected day for event
-        has_errors = False
-        has_some_day = False
-        for i in range(7):
-            weekday = DayOfTheWeekClass(day=i)
-            weekdayform = DayOfTheWeekClassForm(
-                request.POST, prefix=f'weekday{i}', instance=weekday)
-            # Set empty weekday, in case of errors
-            self.weekdays[i] = weekdayform
-            if weekdayform.is_valid():
-                if weekdayform.cleaned_data['checked']:
-                    has_some_day = True
-            else:
-                has_errors = True
-                has_some_day = True
-
-        if has_errors:
-            if not has_some_day:
-                messages.error(
-                    self.request,
-                    'Не выбрано ни одного дня проведения тренировки!'
-                )
-            return self.render_to_response(self.get_context_data())
+            context['existing_sections'] = json.dumps(existing_sections)
         else:
-            # Reset weekdays
-            self.weekdays = [None] * 7
+            context['existing_sections'] = json.dumps([])
 
-        with transaction.atomic():
-            self.object = self.form.save()
-            # Добавляем абонемент на разовое посещение, если цена указана
-            # и не равна нулю
-            one_time_price = self.form.cleaned_data['one_time_price']
-            name = self.object.name
             try:
-                one_time_sub = SubscriptionsType.all_objects.get(
+                one_time_sub = SubscriptionsType.objects.get(
                     one_time=True, event_class=self.object)
-                if one_time_price and one_time_price > 0:
-                    if one_time_sub.deleted:
-                        one_time_sub.undelete()
-                    one_time_sub.price = one_time_price
-                    one_time_sub.save()
-                else:
-                    one_time_sub.delete()
-            except SubscriptionsType.DoesNotExist:
-                if one_time_price and one_time_price > 0:
-                    sub = SubscriptionsType(
-                        name='Разовое посещение ' + name,
-                        price=one_time_price,
-                        duration_type=GRANULARITY.DAY,
-                        duration=1,
-                        rounding=False,
-                        visit_limit=1,
-                        one_time=True
-                    )
-                    sub.save()
-                    sub.event_class.add(self.object)
+                context['one_time_price'] = one_time_sub.price
+            except (
+                SubscriptionsType.DoesNotExist,
+                SubscriptionsType.MultipleObjectsReturned
+            ):
+                context['one_time_price'] = None
 
-            # сохраняем или удаляем дни недели, которые уже
-            # были у тренировки ранее
-            for weekday in self.object.dayoftheweekclass_set.all():
-                weekdayform = DayOfTheWeekClassForm(
-                    request.POST,
-                    prefix=f'weekday{weekday.day}',
-                    instance=weekday)
-                if weekdayform.is_valid():
-                    if weekdayform.cleaned_data['checked']:
-                        weekdayform.save()
-                    else:
-                        weekday.delete()
-                self.weekdays[weekday.day] = weekdayform
-
-            # Проверяем все остальные дни
-            for i in range(7):
-                if not self.weekdays[i]:
-                    weekday = DayOfTheWeekClass(day=i)
-                    weekdayform = DayOfTheWeekClassForm(
-                        request.POST, prefix=f'weekday{i}', instance=weekday)
-                    if weekdayform.is_valid():
-                        if weekdayform.cleaned_data['checked']:
-                            weekdayform.instance.event = self.object
-                            weekdayform.save()
-                    self.weekdays[i] = weekdayform
-
-        return HttpResponseRedirect(reverse(
-            'crm:manager:event:calendar'))
+        return context
 
 
 class Scanner(
