@@ -4,7 +4,7 @@
 
 {% block title %}Тренировка{% endblock %}
 {% block sidbar %}
-
+  {% include 'crm/bars/_sidebar_design.html'  with name="Группы" back_link=False current='groups' %}
   {% comment %}
   {% url 'crm:manager:event-class:list' as back_link %}
   {% include 'crm/bars/_sidebar_design.html'  with name="Расписание" back_link=back_link current='event' %}
