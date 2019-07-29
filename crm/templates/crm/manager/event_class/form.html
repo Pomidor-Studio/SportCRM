@@ -145,16 +145,20 @@
       }
     });
     $(function() {
+        $.views.settings.delimiters("<%", "%>");
+        $.views.settings.debugMode(true);
+
+      let existingSections = {{ existing_sections|safe }};
 
       let eventClassData = {
-        name: null,
-        location: null,
-        coach: null,
-        oneTimePrice: null,
+        name: {% if object %}'{{ object.name }}'{% else %}null{% endif %},
+        location: {% if object %}{{ object.location_id }}{% else %}null{% endif %},
+        coach: {% if object %}{{ object.coach_id }}{% else %}null{% endif %},
+        oneTimePrice: {% if object and one_time_price %}{{ one_time_price|unlocalize }}{% else %}null{% endif %},
         planedAttendance: null,
         new: {},
-        update: {},
-        delete: {}
+        updated: {},
+        deleted: {}
       };
 
       const ISOWEEKDAYS = [
@@ -207,16 +211,19 @@
             onChange = function() {
               const uid = ouid;
               return function(e) {
-                eventClassData.new[uid].from_date = e.target.value;
+                if (uid < isUidForNew) {
+                  return;
+                }
+
                 let fromTime = $('input[type="text"][data-timepicker][data-from-timer][data-uid="' + uid + '"]').val();
                 let toTime = $('input[type="text"][data-timepicker][data-to-timer][data-uid="' + uid + '"]').val();
                 let day = moment(e.target.value, 'DD.MM.YYYY').isoWeekday();
-                console.log(day);
+                eventClassData.new[uid].from_date = e.target.value;
                 eventClassData.new[uid].day_data = {};
                 eventClassData.new[uid].day_data[day] = {
-                  day_num: day,
-                  from_time: fromTime,
-                  to_time: toTime
+                    day_num: day,
+                    from_time: fromTime,
+                    to_time: toTime
                 };
               }
             }();
@@ -224,6 +231,9 @@
             onChange = function() {
               const uid = ouid;
               return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
                 eventClassData.new[uid].from_date = e.target.value;
               }
             }();
@@ -231,6 +241,9 @@
             onChange = function() {
               const uid = ouid;
               return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
                 eventClassData.new[uid].to_date = e.target.value;
               }
             }();
@@ -255,6 +268,9 @@
             onValueChanged = function() {
               const uid = ouid;
               return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
                 if (eventClassData.new[uid].from_date) {
                   let day = moment(eventClassData.new[uid].from_date, 'DD.MM.YYYY').isoWeekday();
                   let dayData = eventClassData.new[uid].day_data[day];
@@ -274,6 +290,9 @@
             onValueChanged = function() {
               const uid = ouid;
               return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
                 if (eventClassData.new[uid].from_date) {
                   let day = moment(eventClassData.new[uid].from_date, 'DD.MM.YYYY').isoWeekday();
                   let dayData = eventClassData.new[uid].day_data[day];
@@ -295,6 +314,9 @@
               const uid = ouid;
               const day = parseInt($field.data('day'));
               return function (e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
                 let dayData = eventClassData.new[uid].day_data[day];
                 if (dayData) {
                   dayData.from_time = e.target.value;
@@ -312,6 +334,9 @@
               const uid = ouid;
               const day = parseInt($field.data('day'));
               return function (e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
                 let dayData = eventClassData.new[uid].day_data[day];
                 if (dayData) {
                   dayData.to_time = e.target.value;
@@ -334,7 +359,8 @@
         });
       }
 
-      let uidCounter = 1;
+      const isUidForNew = {{ uidCounter }};
+      let uidCounter = {{ uidCounter }};
 
       /* Новые занятия */
       $('#id_location').select2({
@@ -357,6 +383,10 @@
         $this.parents('.day')
             .find(':not([type=checkbox])')
             .prop('disabled', !this.checked);
+
+        if (uid < isUidForNew) {
+            return;
+        }
 
         if (!this.checked) {
           delete eventClassData.new[uid].day_data[day];
@@ -386,20 +416,24 @@
       $('#addNewEvent').click(function() {
         $('#save-ec').addClass('disable').attr('disable','');
 
-        let template = $.templates("#calendarTemplate");
-        let htmlOutput = template.render({
-          uid: uidCounter,
-          isoweekdays: ISOWEEKDAYS
-        });
-        $("div.new_class div.addNewSection").before(htmlOutput);
-
-        eventClassData.new[uidCounter] = {
+        let sectionData = {
           section_id: uidCounter,
           singular_event: true,
           from_date: null,
           to_date: null,
           day_data: {}
         };
+
+        let template = $.templates("#calendarTemplate");
+        let htmlOutput = template.render({
+          uid: uidCounter,
+          section: sectionData,
+          isoweekdays: ISOWEEKDAYS,
+          existing: false
+        });
+        $("div.new_class div.addNewSection").before(htmlOutput);
+
+        eventClassData.new[uidCounter] = sectionData;
 
         setupDatePicker('div.newEvent[data-uid="' + uidCounter + '"]', uidCounter);
         setupTimePicker('div.newEvent[data-uid="' + uidCounter + '"]', uidCounter);
@@ -424,12 +458,133 @@
         uidCounter += 1;
       });
 
+      function resetExisting(uid, section) {
+        if (section.singular_event) {
+          let dayData = Object.values(section.day_data)[0];
+          $('input[type="text"][data-timepicker][data-from-timer][data-uid="' + uid + '"]').val(dayData.from_time);
+          $('input[type="text"][data-timepicker][data-to-timer][data-uid="' + uid + '"]').val(dayData.from_time);
+        } else {
+          for (let dayData of Object.values(section.day_data)) {
+            $('input[type="checkbox"][data-day="' + dayData.day_num + '"][data-uid="' + uid + '"]').prop('checked', true);
+            $('input[type="text"][data-day-from-timer][data-day="' + dayData.day_num + '"][data-uid="' + uid + '"]').val(dayData.from_time).prop('disabled', false);
+            $('input[type="text"][data-day-to-timer][data-day="' + dayData.day_num + '"][data-uid="' + uid + '"]').val(dayData.to_time).prop('disabled', false);
+          }
+          $('#many-tab-' + uid).tab('show');
+        }
+      }
+
+      for (let sectionKey in existingSections) {
+        let section = existingSections[sectionKey];
+
+        let template = $.templates("#calendarTemplate");
+        let htmlOutput = template.render({
+          uid: sectionKey,
+          section: section,
+          isoweekdays: ISOWEEKDAYS,
+          existing: true
+        });
+        $("div.new_class div.addNewSection").before(htmlOutput);
+
+        setupDatePicker('div.newEvent[data-uid="' + sectionKey + '"]', sectionKey);
+        setupTimePicker('div.newEvent[data-uid="' + sectionKey + '"]', sectionKey);
+
+        resetExisting(sectionKey, section);
+
+        $('a.delete-existing[data-uid="' + sectionKey + '"]').click(function() {
+           eventClassData.deleted[sectionKey] = existingSections[sectionKey];
+           $('div.newEvent[data-uid="' + sectionKey + '"]').remove();
+           $('div.greyline[data-uid="' + sectionKey + '"]').remove();
+        });
+
+        $('a.cancel_new[data-uid="' + sectionKey + '"]').click(function() {
+          const uid = sectionKey;
+          let section = existingSections[uid];
+          return function() {
+              if (uid in eventClassData.updated) {
+                delete eventClassData.updated[uid];
+              }
+
+              resetExisting(uid, section);
+          }
+        }());
+      }
+
       $('.cancel_new').click(function() {
         $('.new_event').slideDown();
         $('#add_new_event').slideUp();
       });
 
+      function buildExistingPeriodDict(uid) {
+          if (!(uid in existingSections)) {
+              return;
+          }
+
+          if (uid in existingSections && uid in eventClassData.deleted) {
+              return;
+          }
+
+          if (existingSections[uid].singular_event) {
+              return _buildExistingSingular(uid);
+          } else {
+              return _buildExistingMany(uid);
+          }
+      }
+
+      function _buildExistingSingular(uid) {
+          let copySection = _.cloneDeep(existingSections[uid]);
+
+          let fromDate = $('input[type="text"][data-data-datepicker][data-singular-date][data-uid="' + uid + '"]').datepicker().value();
+          let fromTime = $('input[type="text"][data-timepicker][data-from-timer][data-uid="' + uid + '"]').val();
+          let toTime = $('input[type="text"][data-timepicker][data-to-timer][data-uid="' + uid + '"]').val();
+          let day = moment(e.target.value, 'DD.MM.YYYY').isoWeekday();
+
+          copySection.from_date = fromDate;
+          copySection.day_data = {};
+          copySection.day_data[day] = {
+            day_num: String(day),
+            from_time: fromTime,
+            to_time: toTime
+          };
+
+          return copySection;
+      }
+
+
+
+      function _buildExistingMany(uid) {
+          let copySection = _.cloneDeep(existingSections[uid]);
+          let fromDate = $('input[type="text"][data-datepicker][data-many-from-date][data-uid="' + uid + '"]').datepicker().value();
+          let toDate = $('input[type="text"][data-datepicker][data-many-to-date][data-uid="' + uid + '"]').datepicker().value();
+          copySection.from_date = fromDate;
+          copySection.to_date = toDate;
+
+          copySection.day_data = {};
+
+          for (let day=1; day<=7; day++) {
+              if ($('input.day-of-week[type=checkbox][data-uid="' + uid + '"][data-day="' + day + '"]').prop('checked')) {
+                  copySection.day_data[day] = {
+                      day_num: String(day),
+                      from_time: $('input[type="text"][data-day-from-timer][data-day="' + day + '"][data-uid="' + uid + '"]').val(),
+                      to_time: $('input[type="text"][data-day-to-timer][data-day="' + day + '"][data-uid="' + uid + '"]').val()
+                  }
+              }
+          }
+
+          return copySection;
+      }
+
+      function fillUpdatedSections() {
+          for (let sectionKey in existingSections) {
+              let updatedDict = buildExistingPeriodDict(sectionKey);
+              if (updatedDict && !_.isEqual(updatedDict, existingSections[sectionKey])) {
+                  eventClassData.updated[sectionKey] = updatedDict;
+              }
+          }
+
+      }
+
       $('#save-ec').click(function(e) {
+        fillUpdatedSections();
         $('div.alert').alert('close');
         window.scroll(0, 0);
         e.preventDefault();
@@ -451,7 +606,10 @@
           hasError = true;
         }
 
-        if (Object.keys(eventClassData.new).length === 0) {
+        if (
+            Object.keys(eventClassData.new).length === 0 &&
+            Object.keys(existingSections).length === 0
+        ) {
           addAlert('Не создано ни одного расписания');
           hasError = true;
         }
@@ -516,13 +674,13 @@
           oneTimePrice: eventClassData.oneTimePrice,
           planedAttendance: eventClassData.planedAttendance,
           new: flatSection(eventClassData.new),
-          update: flatSection(eventClassData.update),
-          delete: flatSection(eventClassData.delete)
+          updated: flatSection(eventClassData.updated),
+          deleted: flatSection(eventClassData.deleted)
         };
 
         $.ajax({
-          method: 'post',
-          url: '{% url 'api-v1:manager:event-class:create' %}',
+          method: {% if object %}'put'{% else %}'post'{% endif %},
+          url: '{% if object %}{% url 'api-v1:manager:event-class:update' object.pk %}{% else %}{% url 'api-v1:manager:event-class:create' %}{% endif %}',
           dataType: 'json',
           processData: false,
           contentType: 'application/json',
@@ -533,8 +691,13 @@
           success: function() {
             window.location = "{% url 'crm:manager:event-class:list' %}";
           },
-          error: function(data) {
-            addAlert(data);
+          error: function(response) {
+              const data = response.responseJSON;
+              if ('detail' in data) {
+                  addAlert(data.detail);
+              } else {
+                  addAlert(String(data));
+              }
           }
         })
       });
@@ -556,8 +719,6 @@
           }
         }(), 30000);
       }
-
-      $.views.settings.delimiters("<%", "%>");
     });
   </script>
 
@@ -565,55 +726,127 @@
     <div class="newEvent" data-uid="<%: uid %>" class="col-12">
       <div class="new_event_info">
         <ul class="nav nav-pills row no-gutters" id="pills-tab-<%: uid %>" role="tablist">
+          <%if !existing || (existing && section.singular_event) %>
           <li class="nav-item">
-            <a class="nav-link active" id="one-tab" data-one data-toggle="tab" href="#one-<%: uid %>" role="tab" aria-controls="home" aria-selected="true">Разовая</a>
+            <a class="nav-link active" id="one-tab-<%: uid %>" data-one data-toggle="tab" href="#one-<%: uid %>" role="tab" aria-controls="home" aria-selected="<%:!section.singular_event%>">Разовая</a>
           </li>
+          <%/if%>
+          <%if !existing || (existing && !section.singular_event) %>
           <li class="nav-item">
-            <a class="nav-link" id="many-tab" data-toggle="tab" data-many href="#many-<%: uid %>" role="tab" aria-controls="profile" aria-selected="false">По расписанию</a>
+            <a class="nav-link" id="many-tab-<%: uid %>" data-toggle="tab" data-many href="#many-<%: uid %>" role="tab" aria-controls="profile" aria-selected="<%:!section.singular_event%>">По расписанию</a>
           </li>
+          <%/if%>
         </ul>
         <div class="greyline"></div>
         <div class="tab-content" id="myTabContent-<%: uid %>">
+            <%if !existing || (existing && section.singular_event) %>
           <div class="tab-pane fade show active" id="one-<%: uid %>" data-uid="<%: uid %>" data-one role="tabpanel" aria-labelledby="one-tab">
             <form>
               <div class="form-group row">
                 <div class="col-12 col-md-4 col-xl-2 datepick">
                   <div class="form-group">
                     <label for="id_date_from_single_<%: uid %>">День тренировки</label>
-                    <input type="text" name="date_from_single_<%: uid %>" placeholder="" class="form-control" data-datepicker data-event data-singular-date title="" id="id_date_from_single_<%: uid %>">
+                    <input
+                        type="text"
+                        name="date_from_single_<%: uid %>"
+                        placeholder=""
+                        class="form-control"
+                        data-datepicker
+                        data-event
+                        data-singular-date
+                        data-uid="<%: uid %>"
+                        title=""
+                        id="id_date_from_single_<%: uid %>"
+                        <%if section.singular_event%>
+                        value="<%: section.from_date %>"
+                        <%/if%>
+                       >
                   </div>
                 </div>
                 <div class="col-6 col-md-3 col-xl-2 timepick">
                   <div class="form-group">
                     <label for="id_start_time_single_<%: uid %>">Начало</label>
-                    <input type="text" name="start_time_single_<%: uid %>" class="form-control time" data-timepicker data-from-timer data-uid="<%: uid %>" placeholder=":" title="" required id="id_start_time_single_<%: uid %>">
+                    <input
+                        type="text"
+                        name="start_time_single_<%: uid %>"
+                        class="form-control time"
+                        data-timepicker
+                        data-from-timer
+                        data-uid="<%: uid %>"
+                        placeholder=":"
+                        title=""
+                        required
+                        id="id_start_time_single_<%: uid %>"
+                    >
                     </div>
                 </div>
                 <div class="col-6 col-md-3 col-xl-2 timepick">
                   <div class="form-group">
                   <label for="id_end_time_single_<%: uid %>">Окончание</label>
-                  <input type="text" name="end_time_single" class="form-control time" data-timepicker data-to-timer data-uid="<%: uid %>" placeholder=":" title="" required id="id_end_time_single_<%: uid %>">
+                  <input
+                    type="text"
+                    name="end_time_single"
+                    class="form-control time"
+                    data-timepicker
+                    data-to-timer
+                    data-uid="<%: uid %>"
+                    placeholder=":"
+                    title=""
+                    required
+                    id="id_end_time_single_<%: uid %>"
+                  >
                   </div>
                 </div>
               </div>
               <div class="form-group save_buttons">
-                <a class="btn cancel_new" data-uid="<%: uid %>" href="#">Отмена</a>
+                <%if existing %>
+                <a class="btn btn-outline-danger delete-existing" data-uid="<%: uid %>">Удалить</a>
+                <%/if%>
+                <a class="btn cancel_new" data-uid="<%: uid %>" href="#"><%if existing %>Отменить изменения<%else%>Отмена<%/if%></a>
               </div>
             </form>
           </div>
+          <%/if%>
+          <%if !existing || (existing && !section.singular_event) %>
           <div class="tab-pane fade" id="many-<%: uid %>" data-uid="<%: uid %>" data-many role="tabpanel" aria-labelledby="many-tab">
             <form>
               <div class="row">
                 <div class="form-group datepick col-12 col-sm-6 col-md-3">
                   <div class="form-group">
                     <label for="id_date_from_<%: uid %>">Начало тренировок</label>
-                    <input type="text" name="date_from_<%: uid %>" placeholder="" data-datepicker data-many-from-date class="form-control" title="" id="id_date_from_<%: uid %>">
+                    <input
+                        type="text"
+                        name="date_from_<%: uid %>"
+                        placeholder=""
+                        data-datepicker
+                        data-many-from-date
+                        data-uid="<%: uid %>"
+                        class="form-control"
+                        title=""
+                        id="id_date_from_<%: uid %>"
+                        <%if !section.singular_event %>
+                        value="<%: section.from_date %>"
+                        <%/if%>
+                    >
                   </div>
                 </div>
                 <div class="form-group datepick col-12 col-sm-6 col-md-3">
                   <div class="form-group">
                     <label for="id_date_to_<%: uid %>">Окончание тренировок</label>
-                    <input type="text" name="date_to_<%: uid %>" placeholder="" data-datepicker data-many-to-date class="form-control" title="" id="id_date_to_<%: uid %>">
+                    <input
+                        type="text"
+                        name="date_to_<%: uid %>"
+                        placeholder=""
+                        data-datepicker
+                        data-many-to-date
+                        data-uid="<%: uid %>"
+                        class="form-control"
+                        title=""
+                        id="id_date_to_<%: uid %>"
+                        <%if !section.singular_event %>
+                        value="<%: section.to_date %>"
+                        <%/if%>
+                    >
                   </div>
                 </div>
               </div>
@@ -641,10 +874,14 @@
 
               </div>
               <div class="form-group save_buttons">
-                <a class="btn cancel_new" data-uid="<%: uid %>" href="#">Отмена</a>
+                <%if existing %>
+                <a class="btn btn-outline-danger delete-existing" data-uid="<%: uid %>">Удалить</a>
+                <%/if%>
+                <a class="btn cancel_new" data-uid="<%: uid %>" href="#"><%if existing %>Отменить изменения<%else%>Отмена<%/if%></a>
               </div>
             </form>
           </div>
+          <%/if%>
         </div>
       </div>
     </div>

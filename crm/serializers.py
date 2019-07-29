@@ -145,8 +145,8 @@ class RegisterCompanySerializer(serializers.Serializer):
 class EventClassDaySerializer(serializers.Serializer):
     # ISO weekday format, not zero based
     day_num = serializers.IntegerField(min_value=1, max_value=7)
-    from_time = serializers.TimeField()
-    to_time = serializers.TimeField()
+    from_time = serializers.TimeField(format='%H:%M')
+    to_time = serializers.TimeField(format='%H:%M')
 
     def create(self, validated_data):
         return object()
@@ -167,15 +167,15 @@ class EventClassEditSerializer(serializers.ModelSerializer):
     class Meta:
         model = EventClass
         fields = (
-            'name', 'location', 'coach', 'new', 'update', 'delete',
+            'name', 'location', 'coach', 'new', 'updated', 'deleted',
             'oneTimePrice', 'planedAttendance'
         )
 
     new = EventClassSectionSerializer(
         allow_null=True, many=True, required=False)
-    update = EventClassSectionSerializer(
+    updated = EventClassSectionSerializer(
         allow_null=True, many=True, required=False)
-    delete = EventClassSectionSerializer(
+    deleted = EventClassSectionSerializer(
         allow_null=True, many=True, required=False)
     oneTimePrice = serializers.FloatField(allow_null=True)
     planedAttendance = serializers.IntegerField(allow_null=True)
@@ -183,8 +183,8 @@ class EventClassEditSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         attrs = super().validate(attrs)
         if (attrs['new'] is None or not len(attrs['new'])) and \
-                (attrs['update'] is None or not len(attrs['update'])) and \
-                (attrs['delete'] is None or not len(attrs['delete'])):
+                (attrs['updated'] is None or not len(attrs['updated'])) and \
+                (attrs['deleted'] is None or not len(attrs['deleted'])):
             raise serializers.ValidationError(
                 'Not data provided', code='no-data')
         return attrs
@@ -215,29 +215,52 @@ class EventClassEditSerializer(serializers.ModelSerializer):
             marked_att.subscription.visits_left += 1
             marked_att.subscription.save()
 
-        event.attendance_set.delete()
+        event.attendance_set.all().delete()
         event.delete()
 
     def _delete_singular(self, section):
         if section.from_date > datetime.today().date():
-            for event in EventClass.objects.filter(event_class_section=section):
+            events = Event.objects.filter(
+                event_class__in=list(
+                    EventClass.objects
+                    .filter(eventclasssection=section)
+                    .values_list('id', flat=True)
+                ),
+                date=section.from_date
+            )
+            for event in events:
                 self._delete_event(event)
 
-    def _delete_many(self, section):
-        weekdays = sorted(section.day_data.keys())
+            section.delete()
+
+    def _delete_many(self, section, possible_weekdays=None):
+        weekdays = sorted(possible_weekdays or section.day_data.keys())
         # Convert from iso to python zero based weekday
-        weekdays = [x - 1 for x in weekdays]
+        weekdays = [int(x) - 1 for x in weekdays]
         for day in next_day(section.from_date, section.to_date, weekdays):
             if day > datetime.today().date():
-                for event in EventClass.objects.filter(
-                        event_class_section=section):
+                events = Event.objects.filter(
+                    event_class__in=list(
+                        EventClass.objects
+                        .filter(eventclasssection=section)
+                        .values_list('id', flat=True)
+                    ),
+                    date=day
+                )
+                for event in events:
                     self._delete_event(event)
+
+        if possible_weekdays is None:
+            section.delete()
 
     def delete_events(
         self,
         period: EventClassSectionSerializer
     ):
-        section = EventClassSection.objects.get(id=period.section_id)
+        try:
+            section = EventClassSection.objects.get(id=period['section_id'])
+        except EventClassSection.DoesNotExist:
+            return
         if section.singular_event:
             self._delete_singular(section)
         else:
@@ -253,11 +276,10 @@ class EventClassEditSerializer(serializers.ModelSerializer):
                 date=section.from_date
             )
 
-    def _create_many(self, section: EventClassSection):
-        weekdays = sorted(section.day_data.keys())
+    def _create_many(self, section: EventClassSection, possible_weekdays=None):
+        weekdays = sorted(possible_weekdays or section.day_data.keys())
         # Convert from iso to python zero based weekday
-        weekdays = [x - 1 for x in weekdays]
-        self._delete_many(section)
+        weekdays = [int(x) - 1 for x in weekdays]
         for day in next_day(section.from_date, section.to_date, weekdays):
             if day > datetime.today().date():
                 Event.objects.create(
@@ -266,28 +288,37 @@ class EventClassEditSerializer(serializers.ModelSerializer):
                     date=day
                 )
 
-    def update_period(
+    def update_events(
         self,
-        period: EventClassSectionSerializer,
+        period: EventClassSectionSerializer
     ):
         days = {
             x['day_num']: (
                 x['from_time'], x['to_time']
             ) for x in period['day_data']
         }
-        section = EventClassSection.objects.get(id=period['section_id'])
-        section.singular_event = period['singular_event']
-        section.from_date = period['from_date']
-        section.to_date = period['to_date']
-        section.day_data = days
-        section.save()
+        try:
+            section = EventClassSection.objects.get(id=period['section_id'])
+        except EventClassSection.DoesNotExist:
+            return
 
         if section.singular_event:
-            self._delete_singular(section)
-            self._create_singular(section)
+            if section.from_date != period['from_date']:
+                self._delete_singular(section)
+                self._create_singular(section)
         else:
-            self._delete_many(section)
-            self._create_many(section)
+            new_days = set(days.keys())
+            old_days = set(section.day_data.keys())
+            if old_days - new_days:
+                self._delete_many(
+                    section, [int(x) for x in (old_days - new_days)])
+            if new_days - old_days:
+                self._create_many(
+                    section, [int(x) for x in (new_days - old_days)]
+                )
+
+        section.day_data = days
+        section.save()
 
     def modifyOneTimePrice(
         self, event_class: EventClass, price: Optional[float]
@@ -316,6 +347,19 @@ class EventClassEditSerializer(serializers.ModelSerializer):
                 sub.save()
                 sub.event_class.add(event_class)
 
+    def modify_events(self, event_class, validated_data):
+        for new_period in validated_data['new']:
+            self.create_events(new_period, event_class)
+
+        for update_period in validated_data['updated']:
+            self.update_events(update_period)
+
+        for delete_period in validated_data['deleted']:
+            self.delete_events(delete_period)
+
+        self.modifyOneTimePrice(
+            event_class, validated_data['oneTimePrice'])
+
     def create(self, validated_data):
         with transaction.atomic():
             event_class = EventClass.objects.create(
@@ -324,19 +368,21 @@ class EventClassEditSerializer(serializers.ModelSerializer):
                 coach=validated_data['coach']
             )
 
-            for new_period in validated_data['new']:
-                self.create_events(new_period, event_class)
+            self.modify_events(event_class, validated_data)
 
-            for update_period in validated_data['update']:
-                self.update_events(update_period, event_class)
+        return event_class
 
-            for delete_period in validated_data['delete']:
-                self.delete_events(delete_period)
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            instance.name = validated_data['name']
+            instance.location = validated_data['location']
+            instance.coach = validated_data['coach']
 
-            self.modifyOneTimePrice(
-                event_class, validated_data['oneTimePrice'])
+            instance.save()
 
-            return event_class
+            self.modify_events(instance, validated_data)
+
+        return instance
 
     def to_representation(self, instance):
         return {

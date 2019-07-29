@@ -1,3 +1,4 @@
+import datetime
 import json
 from datetime import date, timedelta
 from typing import Optional
@@ -494,6 +495,18 @@ class MarkClient (
             'crm:manager:event-class:event:event-by-date', kwargs=self.kwargs)
 
 
+class CreateEditEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime.datetime):
+            return o.isoformat()
+        elif isinstance(o, datetime.date):
+            return o.strftime('%d.%m.%Y')
+        elif isinstance(o, datetime.time):
+            return o.strftime('%H:%M')
+
+        return json.JSONEncoder.default(self, o)
+
+
 class CreateEdit(
     PermissionRequiredMixin,
     RevisionMixin,
@@ -511,6 +524,16 @@ class CreateEdit(
     def get_object(self):
         if 'pk' in self.kwargs:
             self.object = get_object_or_404(EventClass, pk=self.kwargs['pk'])
+
+    def _time_to_js(self, time_str):
+        try:
+            return datetime.datetime.strptime(time_str, '%H:%M:%S')\
+                .time().strftime('%H:%M')
+        except ValueError:
+            pass
+
+        return datetime.datetime.strptime(time_str, '%H:%M')\
+            .time().strftime('%H:%M')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -532,14 +555,17 @@ class CreateEdit(
                     'day_data': {
                         day_num: {
                             'day_num': day_num,
-                            'from_time': data[0],
-                            'to_time': data[1]
+                            'from_time': self._time_to_js(data[0]),
+                            'to_time': self._time_to_js(data[1])
                         } for day_num, data in x.day_data.items()
                     }
                 } for x in self.object.eventclasssection_set.all()
             }
-            context['existing_sections'] = json.dumps(existing_sections)
+            context['existing_sections'] = json.dumps(
+                existing_sections, cls=CreateEditEncoder)
+            context['uidCounter'] = max(existing_sections.keys()) + 1
         else:
+            context['uidCounter'] = 1
             context['existing_sections'] = json.dumps([])
 
             try:
@@ -670,3 +696,4 @@ class CreateEventClass(CreateAPIView):
 
 class UpdateEventClass(UpdateAPIView):
     serializer_class = EventClassEditSerializer
+    queryset = EventClass.objects.all()

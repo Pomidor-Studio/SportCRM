@@ -1672,11 +1672,20 @@ class Event(CompanyObjectModel):
 
         try:
             # Force str, as postgres won't save int as key
-            start_time = datetime.strptime(
-                self.event_class_section.day_data[str(self.date.isoweekday())][0],
-                '%H:%M:%S'
-            ).time()
-        except (KeyError, AttributeError):
+            start_time = None
+            for fmt in ('%H:%M', '%H:%M:%S'):
+                try:
+                    start_time = datetime.strptime(
+                        self.event_class_section.day_data[
+                            str(self.date.isoweekday())
+                        ][0],
+                        fmt
+                    ).time()
+                except ValueError:
+                    pass
+            if start_time is None:
+                raise ValueError
+        except (KeyError, AttributeError, ValueError):
             start_time = self.event_class.dayoftheweekclass_set.filter(
                 day=self.date.weekday()
             ).first().start_time
@@ -1692,11 +1701,19 @@ class Event(CompanyObjectModel):
             return self._end_time
 
         try:
-            # Force str, as postgres won't save int as key
-            end_time = datetime.strptime(
-                self.event_class_section.day_data[str(self.date.isoweekday())][1],
-                '%H:%M:%S'
-            ).time()
+            end_time = None
+            for fmt in ('%H:%M', '%H:%M:%S'):
+                try:
+                    end_time = datetime.strptime(
+                        self.event_class_section.day_data[
+                            str(self.date.isoweekday())
+                        ][1],
+                        fmt
+                    ).time()
+                except ValueError:
+                    pass
+            if end_time is None:
+                raise ValueError
         except (KeyError, AttributeError):
             end_time = self.event_class.dayoftheweekclass_set.filter(
                 day=self.date.weekday()
