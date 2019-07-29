@@ -11,7 +11,9 @@ import pendulum
 import reversion
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.contrib.postgres.fields import JSONField
 from django.core.exceptions import ValidationError
+from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models, transaction, utils
 from django.db.models import Q, Model, Count, F, Sum
@@ -496,41 +498,48 @@ class EventClass(CompanyObjectModel):
             self.event_set.filter(date__range=(start_date, end_date))
         }
 
-        if self.date_from and start_date < self.date_from:
-            start_date = self.date_from
-
-        if self.date_to and self.date_to < end_date:
-            end_date = self.date_to
-
-        days_time = {
-            x['day']: (x['start_time'], x['end_time'])
-            for x in
-            self.dayoftheweekclass_set
-                .all()
-                .values('day', 'start_time', 'end_time')
-        }
-
-        for event_date in next_day(start_date, end_date, Weekdays(self.days())):
-            if event_date not in events:
-                event = Event(
-                    date=event_date,
-                    event_class=self
-                )
-                events[event_date] = event
-            else:
-                event = events[event_date]
-
-            # Pre-set data to event can reduce response time in ten times
-            # For example non-optimized response of full calendar for one month
-            # is running for 929ms, after optimization only 80ms
-            event.event_class_name = self.name
-            try:
-                event.start_time = days_time[event_date.weekday()][0]
-                event.end_time = days_time[event_date.weekday()][1]
-            except KeyError:
-                pass
-
         return events
+
+        # DISABLE EVENT GENERATOR CODE
+        # Because new event class generation don't allow infinite events and
+        # all events are created/saved direct in database, so there is no
+        # need to calculate calendar for events
+
+        # if self.date_from and start_date < self.date_from:
+        #     start_date = self.date_from
+        #
+        # if self.date_to and self.date_to < end_date:
+        #     end_date = self.date_to
+        #
+        # days_time = {
+        #     x['day']: (x['start_time'], x['end_time'])
+        #     for x in
+        #     self.dayoftheweekclass_set
+        #         .all()
+        #         .values('day', 'start_time', 'end_time')
+        # }
+        #
+        # for event_date in next_day(start_date, end_date, Weekdays(self.days())):
+        #     if event_date not in events:
+        #         event = Event(
+        #             date=event_date,
+        #             event_class=self
+        #         )
+        #         events[event_date] = event
+        #     else:
+        #         event = events[event_date]
+        #
+        #     # Pre-set data to event can reduce response time in ten times
+        #     # For example non-optimized response of full calendar for one month
+        #     # is running for 929ms, after optimization only 80ms
+        #     event.event_class_name = self.name
+        #     try:
+        #         event.start_time = days_time[event_date.weekday()][0]
+        #         event.end_time = days_time[event_date.weekday()][1]
+        #     except KeyError:
+        #         pass
+        #
+        # return events
 
     # TODO: Нужны методы:
     #   - Создание нового event
@@ -548,6 +557,37 @@ class EventClass(CompanyObjectModel):
     @property
     def detailed_name(self):
         return f'{self.name} y {self.coach} в {self.location}'
+
+
+@reversion.register()
+class EventClassSection(CompanyObjectModel):
+    """
+    Сохранение информации о том какие периоды расписания были у группы,
+    и какие при этом были назначены дни
+    """
+    event_class = TenantForeignKey(
+        EventClass,
+        on_delete=models.CASCADE,
+        verbose_name='Мероприятие'
+    )
+    singular_event = models.BooleanField(
+        default=True,
+        verbose_name='Разовая тренировка?'
+    )
+    from_date = models.DateField(
+        verbose_name='Дата начала тренировки',
+        help_text='Если тренировка разовая - то это дата самой тренировки'
+    )
+    to_date = models.DateField(
+        null=True,
+        verbose_name='Дата окончания тренировки',
+        help_text='Если тренировка разовая - данные поля игнорируются'
+    )
+    day_data = JSONField(
+        verbose_name='Детальная информация по времени занятия и дня,'
+                     ' в виде словаря',
+        encoder=DjangoJSONEncoder
+    )
 
 
 @reversion.register()
@@ -1521,6 +1561,12 @@ class Event(CompanyObjectModel):
         on_delete=models.PROTECT,
         verbose_name="Тренировка"
     )
+    event_class_section = TenantForeignKey(
+        EventClassSection,
+        on_delete=models.PROTECT,
+        verbose_name='Период событий',
+        null=True
+    )
     canceled_at = models.DateField('Дата отмены тренировки', null=True)
     canceled_with_extending = models.BooleanField(
         'Отмена была с продленим абонемента?',
@@ -1624,10 +1670,25 @@ class Event(CompanyObjectModel):
         if self._start_time:
             return self._start_time
 
-        weekday = self.date.weekday()
-        start_time = self.event_class.dayoftheweekclass_set.filter(
-            day=weekday
-        ).first().start_time
+        try:
+            # Force str, as postgres won't save int as key
+            start_time = None
+            for fmt in ('%H:%M', '%H:%M:%S'):
+                try:
+                    start_time = datetime.strptime(
+                        self.event_class_section.day_data[
+                            str(self.date.isoweekday())
+                        ][0],
+                        fmt
+                    ).time()
+                except ValueError:
+                    pass
+            if start_time is None:
+                raise ValueError
+        except (KeyError, AttributeError, ValueError):
+            start_time = self.event_class.dayoftheweekclass_set.filter(
+                day=self.date.weekday()
+            ).first().start_time
         return start_time
 
     @start_time.setter
@@ -1639,10 +1700,24 @@ class Event(CompanyObjectModel):
         if self._end_time:
             return self._end_time
 
-        weekday = self.date.weekday()
-        end_time = self.event_class.dayoftheweekclass_set.filter(
-            day=weekday
-        ).first().end_time
+        try:
+            end_time = None
+            for fmt in ('%H:%M', '%H:%M:%S'):
+                try:
+                    end_time = datetime.strptime(
+                        self.event_class_section.day_data[
+                            str(self.date.isoweekday())
+                        ][1],
+                        fmt
+                    ).time()
+                except ValueError:
+                    pass
+            if end_time is None:
+                raise ValueError
+        except (KeyError, AttributeError):
+            end_time = self.event_class.dayoftheweekclass_set.filter(
+                day=self.date.weekday()
+            ).first().end_time
         return end_time
 
     @end_time.setter

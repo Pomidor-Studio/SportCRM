@@ -18,16 +18,6 @@ $('.nav .top').attr('style','padding-bottom:'+nav_bottom_height+'px;');
 
 
 
-/* Новые занятия */
-$('.day input:checkbox:checked > :not([type=checkbox])').prop('disabled',true);
-$('.day :checkbox').click(function(){
-    $(this).parents('.day')
-        .find(':not([type=checkbox])')
-        .prop('disabled', !this.checked);
-});
-$('.day:not(:first-child)').append( "<div class=greylineV></div>" );
-
-
 /* Для кнопки отметить */
 $('.workout_page .fio_name').each(function() {
     var fio_name_a = $(this).attr('href');
@@ -76,8 +66,8 @@ function buttons_middle () {
         })
     })
 }
-buttons_middle ()
-$('#pills-tab a').on('shown.bs.tab',buttons_middle)
+buttons_middle ();
+$('#pills-tab a').on('shown.bs.tab', buttons_middle);
 
 /* Живой поиск */
 $('#table_live_search').on('keyup', function() {

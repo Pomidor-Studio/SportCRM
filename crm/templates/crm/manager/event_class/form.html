@@ -1,72 +1,17 @@
 {% extends "crm/base_design.html" %}
 
-{% load bootstrap4 html_helper %}
+{% load bootstrap4 html_helper l10n %}
 
 {% block title %}Тренировка{% endblock %}
 {% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Группы" back_link=False current='groups' %}
+  {% comment %}
   {% url 'crm:manager:event-class:list' as back_link %}
   {% include 'crm/bars/_sidebar_design.html'  with name="Расписание" back_link=back_link current='event' %}
+  {% endcomment %}
+
 {% endblock %}
 
-
-{% block extrahead %}
-  {{ eventclass_form.media.css }}
-  {{ weekdays.media.css }}
-{% endblock %}
-
-
-{% block extrajs %}
-  {{ eventclass_form.media.js }}
-  <script type="text/javascript">
-    enquire.register("screen and (max-width: 720px)", {
-      match: function () {
-        $('.selectpicker').attr('data-mobile', 'true');
-      }
-    });
-    $(function () {
-
-        $('.time').toArray().forEach(function(field) {
-				  new Cleave(field, {
-				    time: true,
-				    timePattern: ['h', 'm']
-				  });
-			});
-
-      $('#{{ eventclass_form.date_from.id_for_label}}').datepicker({
-        uiLibrary: 'bootstrap4',
-        locale: 'ru-ru',
-        format: 'dd.mm.yyyy',
-        modal: false,
-        icons: {
-          rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
-        }
-      });
-      $('#{{ eventclass_form.date_to.id_for_label }}').datepicker({
-        uiLibrary: 'bootstrap4',
-        locale: 'ru-ru',
-        format: 'dd.mm.yyyy',
-        modal: false,
-        icons: {
-          rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
-        }
-      });
-
-      $('#save-ec').click(function(e) {
-        if ($('input:checkbox.day-of-week:checked').length === 0) {
-          $('div.messages').append(
-            '<div class="alert alert-danger alert-dismissible fade show" role="alert">\n' +
-            '  Не выбрано ни одного дня проведения тренировки!\n' +
-            '  <button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
-            '    <span aria-hidden="true">&times;</span>\n' +
-            '  </button>\n' +
-            '</div>');
-          window.scroll(0, 0);
-          e.preventDefault();
-        }
-      });
-    });
-  </script>
-{% endblock extrajs %}
 
 {% block content %}
   <div class="page new_class col-md-12 col-lg-9 col-xl-10">
@@ -84,12 +29,12 @@
         <li>
           <a href="{% url 'crm:manager:event:calendar' %}">Расписание</a>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M1 1L5.5 5.5L1 10" stroke="#C4C4C4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </li>
         <li>
           {% if object %}
-            {{ object.name }}
+          {{ object.name }}
           {% else %}
           Новая
           {% endif %}
@@ -100,52 +45,851 @@
 
     <div class="messages"></div>
 
-    <form action="" method="POST">
-      {% csrf_token %}
+    {% csrf_token %}
 
-      <div class="form-group row">
-        <div class="col-12 col-md-10 col-xl-6">
-          {% bootstrap_field eventclass_form.name %}
+    <div class="form-group row">
+      <div class="col-12 col-md-10 col-xl-6">
+        <div class="form-group">
+          <label for="id_name">Наименование</label>
+          <input type="text" name="name" maxlength="100" class="form-control" placeholder="Наименование" title="" required id="id_name" value="{% if object %}{{ object.name }}{% endif %}">
         </div>
       </div>
-      <div class="form-group row">
-        <div class="col-12 col-md-10 col-xl-6">
-          {% bootstrap_field eventclass_form.location %}
+    </div>
+    <div class="form-group row">
+      <div class="col-12 col-md-10 col-xl-6">
+        <div class="form-group">
+          <label for="id_location">Площадка</label>
+          <select name="location" class="form-control django-select2" title="" required id="id_location" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap">
+            <option value="" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if not object %}selected{% endif %}></option>
+            {% for location in locations %}
+              <option value="{{ location.id }}" class="form-control django-select2" title=""  data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if object and object.location_id == location.id%}selected{% endif %}>{{ location.name }}</option>
+            {% endfor %}
+          </select>
         </div>
       </div>
-      <div class="row">
-        <div class="form-group col-sm-6 col-md-6 col-xl-4">
-          {% bootstrap_field eventclass_form.coach %}
-        </div>
-        <div class="form-group col-sm-6 col-md-4 col-xl-2">
-          {% bootstrap_field eventclass_form.one_time_price %}
-        </div>
-      </div>
-      <div class="row">
-        <div class="form-group datepick col-12 col-sm-6 col-md-3">
-          {% bootstrap_field eventclass_form.date_from %}
-        </div>
-        <div class="form-group datepick col-12 col-sm-6 col-md-3">
-          {% bootstrap_field eventclass_form.date_to %}
+    </div>
+    <div class="row">
+      <div class="col-12 col-md-10 col-xl-6">
+        <div class="form-group">
+          <label for="id_coach">Тренер</label>
+          <select name="coach" class="form-control django-select2" title="" required id="id_coach" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap">
+            <option value="" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if not object %}selected{% endif %}></option>
+            {% for coach in coaches %}
+              <option value="{{ coach.id }}" class="form-control django-select2" title="" data-allow-clear="false" data-minimum-input-length="0" data-theme="bootstrap" {% if object and object.coach_id == coach.id %}selected{% endif %}>{{ coach }}</option>
+            {% endfor %}
+          </select>
         </div>
       </div>
-      <div class="form-group row days timepick">
-        {% for weekday in weekdays  %}
-        <div class="col-6 col-md-3 col-lg day">
-          {% bootstrap_dayofweek_render weekday.checked %}
-          {% bootstrap_field weekday.start_time show_label=False %}
-          —
-          {% bootstrap_field weekday.end_time show_label=False %}
-        </div>
-        {% endfor %}
+    </div>
+    <div class="row">
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="form-group"><label for="id_one_time_price">Стоимость посещения</label><input type="number" name="one_time_price" placeholder="500 ₽" min="0" class="form-control" title="" id="id_one_time_price" value="{% if object and one_time_price %}{{ one_time_price|unlocalize }}{% endif %}"></div>
       </div>
+      <!-- TODO: Сделать поле «Плановая посещаемость» -->
+      <div class="col-12 col-sm-6 col-md-3">
+        <div class="form-group"><label for="id_group_plan">Плановая посещаемость</label><input type="number" name="group_plan" placeholder="" min="0" class="form-control" title="" id="id_group_plan"></div>
+      </div>
+    </div>
+    <div class="greyline"></div>
+    <div class="form-group save_buttons">
+      <button id="save-ec" class="btn btn-primary">Сохранить</button>
+      <a id="cancel" class="btn" href="{% url 'crm:manager:event-class:list' %}">Отмена</a>
+    </div>
 
-      <div class="form-group save_buttons">
-        <button	id="save-ec" class="btn btn-primary" type="submit">Сохранить</button>
-        <a	id="cancel" class="btn" href="{% url 'crm:manager:event:calendar' %}">Отмена</a>
+    <div class="row addNewSection">
+      <div class="new_event col-12 col-md-10 col-xl-6">
+        <a href="#" id="addNewEvent" class="btn btn-primary w-100">Добавить</a>
       </div>
-    </form>
+    </div>
+
+{#    <div class="row">#}
+{#        <div class="event col-12 col-md-10 col-xl-6">#}
+{#          <a href="#" id="showEvent_1" class="btn btn-outline-primary w-100 show-event">#}
+{#            <!-- TODO: вывод дат и дней недели -->#}
+{#            Тренировки: <b>22.06.2019 - 31.08.2019</b> <span>(пн, ср, пт)</span>#}
+{#          </a>#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{#    <div class="row">#}
+{#        <div class="event col-12 col-md-10 col-xl-6">#}
+{#          <a href="#" id="showEvent_2" class="btn btn-outline-primary w-100 show-event">#}
+{#            <!-- TODO: вывод дат и дней недели -->#}
+{#            Тренировка: <b>30.06.2019</b> <span>(16:00 -17:30)</span>#}
+{#          </a>#}
+{#        </div>#}
+{#    </div>#}
+{##}
+{#    <div class="row">#}
+{#        <div class="event col-12 col-md-10 col-xl-6">#}
+{#          <a href="#" id="showEvent_3" class="btn btn-outline-secondary w-100 show-event">#}
+{#            <!-- TODO: вывод дат и дней недели -->#}
+{#            Тренировка: <b>30.06.2019</b> <span>(16:00 -17:30)</span>#}
+{#          </a>#}
+{#        </div>#}
+{#    </div>#}
 
   </div>
 
 {% endblock content %}
+
+{% block extrajs %}
+  <script type="text/javascript" src="{{ select2js }}"></script>
+  <link
+    href="{{ select2css }}"
+    rel="stylesheet"
+  >
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/select2-bootstrap-theme/0.1.0-beta.10/select2-bootstrap.min.css"
+    rel="stylesheet"
+  >
+  <script type="text/javascript">
+    enquire.register("screen and (max-width: 720px)", {
+      match: function() {
+        $('.selectpicker').attr('data-mobile', 'true');
+      }
+    });
+    $(function() {
+        $.views.settings.delimiters("<%", "%>");
+        $.views.settings.debugMode(true);
+
+      let existingSections = {{ existing_sections|safe }};
+
+      let eventClassData = {
+        name: {% if object %}'{{ object.name }}'{% else %}null{% endif %},
+        location: {% if object %}{{ object.location_id }}{% else %}null{% endif %},
+        coach: {% if object %}{{ object.coach_id }}{% else %}null{% endif %},
+        oneTimePrice: {% if object and one_time_price %}{{ one_time_price|unlocalize }}{% else %}null{% endif %},
+        planedAttendance: null,
+        new: {},
+        updated: {},
+        deleted: {}
+      };
+
+      const ISOWEEKDAYS = [
+        {
+          "num": 1,
+          "name": "Понедельник"
+        },
+        {
+          "num": 2,
+          "name": "Вторник"
+        },
+        {
+          "num": 3,
+          "name": "Среда"
+        },
+        {
+          "num": 4,
+          "name": "Четверг"
+        },
+        {
+          "num": 5,
+          "name": "Пятница"
+        },
+        {
+          "num": 6,
+          "name": "Суббота"
+        },
+        {
+          "num": 7,
+          "name": "Воскресенье"
+        }
+      ];
+
+      function setupDatePicker(parentSelector, ouid) {
+        $(parentSelector + ' input[type="text"][data-datepicker]').toArray().forEach(function(field) {
+          const $field = $(field);
+          const options = {
+            uiLibrary: 'bootstrap4',
+            locale: 'ru-ru',
+            format: 'dd.mm.yyyy',
+            modal: false,
+            icons: {
+              rightIcon: '<svg width="10" height="11" viewBox="0 0 10 11" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 4H0V11H10V4H9V10H1V4Z" fill="#76818F"/><rect y="1" width="10" height="2" fill="#76818F"/><rect x="1" width="2" height="1" fill="#76818F"/><rect x="7" width="2" height="1" fill="#76818F"/></svg>'
+            }
+          };
+
+          let onChange = null;
+
+          if ($field.data('singularDate') === '') {
+            onChange = function() {
+              const uid = ouid;
+              return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
+
+                let fromTime = $('input[type="text"][data-timepicker][data-from-timer][data-uid="' + uid + '"]').val();
+                let toTime = $('input[type="text"][data-timepicker][data-to-timer][data-uid="' + uid + '"]').val();
+                let day = moment(e.target.value, 'DD.MM.YYYY').isoWeekday();
+                eventClassData.new[uid].from_date = e.target.value;
+                eventClassData.new[uid].day_data = {};
+                eventClassData.new[uid].day_data[day] = {
+                    day_num: day,
+                    from_time: fromTime,
+                    to_time: toTime
+                };
+              }
+            }();
+          } else if ($field.data('manyFromDate') === '') {
+            onChange = function() {
+              const uid = ouid;
+              return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
+                eventClassData.new[uid].from_date = e.target.value;
+              }
+            }();
+          } else if ($field.data('manyToDate') === '') {
+            onChange = function() {
+              const uid = ouid;
+              return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
+                eventClassData.new[uid].to_date = e.target.value;
+              }
+            }();
+          }
+
+          if (onChange) {
+            options.change = onChange;
+          }
+          $field.datepicker(options);
+        });
+      }
+
+      function setupTimePicker(parentSelector, ouid) {
+        $(parentSelector + ' input[type="text"][data-timepicker]').toArray().forEach(function(field) {
+          const options = {
+            time: true,
+            timePattern: ['h', 'm']
+          };
+          const $field = $(field);
+          let onValueChanged = null;
+          if ($field.data('fromTimer') === "") {
+            onValueChanged = function() {
+              const uid = ouid;
+              return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
+                if (eventClassData.new[uid].from_date) {
+                  let day = moment(eventClassData.new[uid].from_date, 'DD.MM.YYYY').isoWeekday();
+                  let dayData = eventClassData.new[uid].day_data[day];
+                  if (dayData) {
+                    dayData.from_time = e.target.value;
+                  } else {
+                    dayData = {
+                      day_num: day,
+                      from_time: e.target.value
+                    };
+                  }
+                  eventClassData.new[uid].day_data[day] = dayData;
+                }
+              }
+            }();
+          } else if ($field.data('toTimer') === "") {
+            onValueChanged = function() {
+              const uid = ouid;
+              return function(e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
+                if (eventClassData.new[uid].from_date) {
+                  let day = moment(eventClassData.new[uid].from_date, 'DD.MM.YYYY').isoWeekday();
+                  let dayData = eventClassData.new[uid].day_data[day];
+                  if (dayData) {
+                    dayData.to_time = e.target.value;
+                  } else {
+                    dayData = {
+                      day_num: day,
+                      to_time: e.target.value
+                    };
+                  }
+                  eventClassData.new[uid].day_data[day] = dayData;
+                }
+              }
+            }();
+
+          } else if ($field.data('dayFromTimer') === "") {
+            onValueChanged = function() {
+              const uid = ouid;
+              const day = parseInt($field.data('day'));
+              return function (e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
+                let dayData = eventClassData.new[uid].day_data[day];
+                if (dayData) {
+                  dayData.from_time = e.target.value;
+                } else {
+                  dayData = {
+                    day_num: day,
+                    from_time: e.target.value
+                  };
+                }
+                eventClassData.new[uid].day_data[day] = dayData;
+              }
+            }();
+          } else if ($field.data('dayToTimer') === "") {
+            onValueChanged = function() {
+              const uid = ouid;
+              const day = parseInt($field.data('day'));
+              return function (e) {
+                if (uid < isUidForNew) {
+                  return;
+                }
+                let dayData = eventClassData.new[uid].day_data[day];
+                if (dayData) {
+                  dayData.to_time = e.target.value;
+                } else {
+                  dayData = {
+                    day_num: day,
+                    to_time: e.target.value
+                  };
+                }
+                eventClassData.new[uid].day_data[day] = dayData;
+              }
+            }();
+          }
+
+          if (onValueChanged) {
+            options['onValueChanged'] = onValueChanged;
+          }
+
+          new Cleave(field, options);
+        });
+      }
+
+      const isUidForNew = {{ uidCounter }};
+      let uidCounter = {{ uidCounter }};
+
+      /* Новые занятия */
+      $('#id_location').select2({
+        theme: 'bootstrap'
+      }).on('change', function(e) {
+        eventClassData.location = e.target.value;
+      });
+      $('#id_coach').select2({
+        theme: 'bootstrap'
+      }).on('change', function(e) {
+        eventClassData.coach = e.target.value;
+      });
+
+      $('div.day input:checkbox:checked > :not([type=checkbox])').prop('disabled',true);
+
+      $('div.new_class').on('click', 'div.day input[type=checkbox]', function() {
+        const $this = $(this);
+        const uid = parseInt($this.data('uid'));
+        const day = parseInt($this.data('day'));
+        $this.parents('.day')
+            .find(':not([type=checkbox])')
+            .prop('disabled', !this.checked);
+
+        if (uid < isUidForNew) {
+            return;
+        }
+
+        if (!this.checked) {
+          delete eventClassData.new[uid].day_data[day];
+        } else {
+          eventClassData.new[uid].day_data[day] = {
+            day_num: day,
+            from_time: $('input[type="text"][data-day-from-timer][data-day="' + day + '"][data-uid="' + uid + '"]').val(),
+            to_time: $('input[type="text"][data-day-to-timer][data-day="' + day + '"][data-uid="' + uid + '"]').val()
+          }
+        }
+      });
+
+      $('.day:not(:first-child)').append("<div class=greylineV></div>");
+
+      $('#id_name').on('input', function() {
+        eventClassData.name = $(this).val().trim();
+      });
+
+      $('#id_one_time_price').on('input', function() {
+        eventClassData.oneTimePrice = $(this).val().trim();
+      });
+
+      $('#id_group_plan').on('input', function() {
+        eventClassData.planedAttendance = $(this).val().trim();
+      });
+
+      $('#addNewEvent').click(function() {
+        $('#save-ec').addClass('disable').attr('disable','');
+
+        let sectionData = {
+          section_id: uidCounter,
+          singular_event: true,
+          from_date: null,
+          to_date: null,
+          day_data: {}
+        };
+
+        let template = $.templates("#calendarTemplate");
+        let htmlOutput = template.render({
+          uid: uidCounter,
+          section: sectionData,
+          isoweekdays: ISOWEEKDAYS,
+          existing: false
+        });
+        $("div.new_class div.addNewSection").before(htmlOutput);
+
+        eventClassData.new[uidCounter] = sectionData;
+
+        setupDatePicker('div.newEvent[data-uid="' + uidCounter + '"]', uidCounter);
+        setupTimePicker('div.newEvent[data-uid="' + uidCounter + '"]', uidCounter);
+
+
+        $('div.newEvent[data-uid="' + uidCounter + '"] a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+          const $target = $(e.target);
+          const uid = parseInt($target.parents('div.newEvent').data('uid'));
+
+          eventClassData.new[uid].singular_event = $target.data('one') !== undefined;
+        });
+
+        $('a.cancel_new[data-uid="' + uidCounter + '"]').click(function() {
+          const uid = uidCounter;
+          return function() {
+            delete eventClassData.new[uid];
+            $('div.newEvent[data-uid="' + uid + '"]').remove();
+            $('div.greyline[data-uid="' + uid + '"]').remove();
+          }
+        }());
+
+        uidCounter += 1;
+      });
+
+      function resetExisting(uid, section) {
+        if (section.singular_event) {
+          let dayData = Object.values(section.day_data)[0];
+          $('input[type="text"][data-timepicker][data-from-timer][data-uid="' + uid + '"]').val(dayData.from_time);
+          $('input[type="text"][data-timepicker][data-to-timer][data-uid="' + uid + '"]').val(dayData.from_time);
+        } else {
+          for (let dayData of Object.values(section.day_data)) {
+            $('input[type="checkbox"][data-day="' + dayData.day_num + '"][data-uid="' + uid + '"]').prop('checked', true);
+            $('input[type="text"][data-day-from-timer][data-day="' + dayData.day_num + '"][data-uid="' + uid + '"]').val(dayData.from_time).prop('disabled', false);
+            $('input[type="text"][data-day-to-timer][data-day="' + dayData.day_num + '"][data-uid="' + uid + '"]').val(dayData.to_time).prop('disabled', false);
+          }
+          $('#many-tab-' + uid).tab('show');
+        }
+      }
+
+      for (let sectionKey in existingSections) {
+        let section = existingSections[sectionKey];
+
+        let template = $.templates("#calendarTemplate");
+        let htmlOutput = template.render({
+          uid: sectionKey,
+          section: section,
+          isoweekdays: ISOWEEKDAYS,
+          existing: true
+        });
+        $("div.new_class div.addNewSection").before(htmlOutput);
+
+        setupDatePicker('div.newEvent[data-uid="' + sectionKey + '"]', sectionKey);
+        setupTimePicker('div.newEvent[data-uid="' + sectionKey + '"]', sectionKey);
+
+        resetExisting(sectionKey, section);
+
+        $('a.delete-existing[data-uid="' + sectionKey + '"]').click(function() {
+           eventClassData.deleted[sectionKey] = existingSections[sectionKey];
+           $('div.newEvent[data-uid="' + sectionKey + '"]').remove();
+           $('div.greyline[data-uid="' + sectionKey + '"]').remove();
+        });
+
+        $('a.cancel_new[data-uid="' + sectionKey + '"]').click(function() {
+          const uid = sectionKey;
+          let section = existingSections[uid];
+          return function() {
+              if (uid in eventClassData.updated) {
+                delete eventClassData.updated[uid];
+              }
+
+              resetExisting(uid, section);
+          }
+        }());
+      }
+
+      $('.cancel_new').click(function() {
+        $('.new_event').slideDown();
+        $('#add_new_event').slideUp();
+      });
+
+      function buildExistingPeriodDict(uid) {
+          if (!(uid in existingSections)) {
+              return;
+          }
+
+          if (uid in existingSections && uid in eventClassData.deleted) {
+              return;
+          }
+
+          if (existingSections[uid].singular_event) {
+              return _buildExistingSingular(uid);
+          } else {
+              return _buildExistingMany(uid);
+          }
+      }
+
+      function _buildExistingSingular(uid) {
+          let copySection = _.cloneDeep(existingSections[uid]);
+
+          let fromDate = $('input[type="text"][data-data-datepicker][data-singular-date][data-uid="' + uid + '"]').datepicker().value();
+          let fromTime = $('input[type="text"][data-timepicker][data-from-timer][data-uid="' + uid + '"]').val();
+          let toTime = $('input[type="text"][data-timepicker][data-to-timer][data-uid="' + uid + '"]').val();
+          let day = moment(e.target.value, 'DD.MM.YYYY').isoWeekday();
+
+          copySection.from_date = fromDate;
+          copySection.day_data = {};
+          copySection.day_data[day] = {
+            day_num: String(day),
+            from_time: fromTime,
+            to_time: toTime
+          };
+
+          return copySection;
+      }
+
+
+
+      function _buildExistingMany(uid) {
+          let copySection = _.cloneDeep(existingSections[uid]);
+          let fromDate = $('input[type="text"][data-datepicker][data-many-from-date][data-uid="' + uid + '"]').datepicker().value();
+          let toDate = $('input[type="text"][data-datepicker][data-many-to-date][data-uid="' + uid + '"]').datepicker().value();
+          copySection.from_date = fromDate;
+          copySection.to_date = toDate;
+
+          copySection.day_data = {};
+
+          for (let day=1; day<=7; day++) {
+              if ($('input.day-of-week[type=checkbox][data-uid="' + uid + '"][data-day="' + day + '"]').prop('checked')) {
+                  copySection.day_data[day] = {
+                      day_num: String(day),
+                      from_time: $('input[type="text"][data-day-from-timer][data-day="' + day + '"][data-uid="' + uid + '"]').val(),
+                      to_time: $('input[type="text"][data-day-to-timer][data-day="' + day + '"][data-uid="' + uid + '"]').val()
+                  }
+              }
+          }
+
+          return copySection;
+      }
+
+      function fillUpdatedSections() {
+          for (let sectionKey in existingSections) {
+              let updatedDict = buildExistingPeriodDict(sectionKey);
+              if (updatedDict && !_.isEqual(updatedDict, existingSections[sectionKey])) {
+                  eventClassData.updated[sectionKey] = updatedDict;
+              }
+          }
+
+      }
+
+      $('#save-ec').click(function(e) {
+        fillUpdatedSections();
+        $('div.alert').alert('close');
+        window.scroll(0, 0);
+        e.preventDefault();
+
+        let hasError = false;
+
+        if (!eventClassData.coach) {
+          addAlert('Не выбран тренер');
+          hasError = true;
+        }
+
+        if (!eventClassData.location) {
+          addAlert('Не выбрано место проведения');
+          hasError = true;
+        }
+
+        if (!eventClassData.name) {
+          addAlert('Не указано название группы');
+          hasError = true;
+        }
+
+        if (
+            Object.keys(eventClassData.new).length === 0 &&
+            Object.keys(existingSections).length === 0
+        ) {
+          addAlert('Не создано ни одного расписания');
+          hasError = true;
+        }
+
+        for (let newItem of Object.values(eventClassData.new)) {
+          if (newItem.singular_event && !newItem.from_date) {
+            addAlert('Есть разовое событие, для которого не выбрана дата');
+            hasError = true;
+          }
+          if (!newItem.singular_event && !newItem.from_date) {
+            addAlert('Есть расписание, для которого не выбрана дата начала');
+            hasError = true;
+          }
+          if (!newItem.singular_event && !newItem.to_date) {
+            addAlert('Есть расписание, для которого не выбрана дата окончания');
+            hasError = true;
+          }
+
+          if (Object.keys(newItem.day_data).length === 0) {
+            addAlert('Не выбрано время событий');
+            hasError = true;
+          }
+
+          for(let dayInfo of Object.values(newItem.day_data)) {
+            if (!dayInfo.from_time) {
+              addAlert('Для ' + dayInfo.day_num + ' дня недели, не указано время начала');
+              hasError = true;
+            }
+
+            if (!dayInfo.to_time) {
+              addAlert('Для ' + dayInfo.day_num + ' дня недели, не указано время окончания');
+              hasError = true;
+            }
+          }
+
+        }
+
+        if (hasError) {
+          return;
+        }
+
+        function flatSection(section) {
+          if (!section) {
+            return null;
+          }
+
+          return Object.values(section).map(function(item) {
+            return {
+              section_id: item.section_id,
+              singular_event: item.singular_event,
+              from_date: moment(item.from_date, 'DD.MM.YYYY').format('YYYY-MM-DD'),
+              to_date: item.to_date ? moment(item.to_date, 'DD.MM.YYYY').format('YYYY-MM-DD') : item.to_date,
+              day_data: Object.values(item.day_data)
+            }
+          });
+        }
+
+        let toSendData = {
+          name: eventClassData.name,
+          location: eventClassData.location,
+          coach: eventClassData.coach,
+          oneTimePrice: eventClassData.oneTimePrice,
+          planedAttendance: eventClassData.planedAttendance,
+          new: flatSection(eventClassData.new),
+          updated: flatSection(eventClassData.updated),
+          deleted: flatSection(eventClassData.deleted)
+        };
+
+        $.ajax({
+          method: {% if object %}'put'{% else %}'post'{% endif %},
+          url: '{% if object %}{% url 'api-v1:manager:event-class:update' object.pk %}{% else %}{% url 'api-v1:manager:event-class:create' %}{% endif %}',
+          dataType: 'json',
+          processData: false,
+          contentType: 'application/json',
+          data: JSON.stringify(toSendData),
+          headers: {
+            'X-CSRFToken': $('input[name="csrfmiddlewaretoken"]').val()
+          },
+          success: function() {
+            window.location = "{% url 'crm:manager:event-class:list' %}";
+          },
+          error: function(response) {
+              const data = response.responseJSON;
+              if ('detail' in data) {
+                  addAlert(data.detail);
+              } else {
+                  addAlert(String(data));
+              }
+          }
+        })
+      });
+
+      function addAlert(message) {
+        const id = Math.random();
+        $('div.messages').append(
+            '<div class="alert alert-danger alert-dismissible fade show" data-id="' + id + '" role="alert">\n' +
+            message +
+            '  <button type="button" class="close" data-dismiss="alert" aria-label="Close">\n' +
+            '    <span aria-hidden="true">&times;</span>\n' +
+            '  </button>\n' +
+            '</div>'
+        );
+        window.setTimeout(function() {
+          const oid = id;
+          return function() {
+            $('div.alert[data-id="' + oid + '"]').alert('close');
+          }
+        }(), 30000);
+      }
+    });
+  </script>
+
+  <script id="calendarTemplate" type="text/x-jsrender">
+    <div class="newEvent" data-uid="<%: uid %>" class="col-12">
+      <div class="new_event_info">
+        <ul class="nav nav-pills row no-gutters" id="pills-tab-<%: uid %>" role="tablist">
+          <%if !existing || (existing && section.singular_event) %>
+          <li class="nav-item">
+            <a class="nav-link active" id="one-tab-<%: uid %>" data-one data-toggle="tab" href="#one-<%: uid %>" role="tab" aria-controls="home" aria-selected="<%:!section.singular_event%>">Разовая</a>
+          </li>
+          <%/if%>
+          <%if !existing || (existing && !section.singular_event) %>
+          <li class="nav-item">
+            <a class="nav-link" id="many-tab-<%: uid %>" data-toggle="tab" data-many href="#many-<%: uid %>" role="tab" aria-controls="profile" aria-selected="<%:!section.singular_event%>">По расписанию</a>
+          </li>
+          <%/if%>
+        </ul>
+        <div class="greyline"></div>
+        <div class="tab-content" id="myTabContent-<%: uid %>">
+            <%if !existing || (existing && section.singular_event) %>
+          <div class="tab-pane fade show active" id="one-<%: uid %>" data-uid="<%: uid %>" data-one role="tabpanel" aria-labelledby="one-tab">
+            <form>
+              <div class="form-group row">
+                <div class="col-12 col-md-4 col-xl-2 datepick">
+                  <div class="form-group">
+                    <label for="id_date_from_single_<%: uid %>">День тренировки</label>
+                    <input
+                        type="text"
+                        name="date_from_single_<%: uid %>"
+                        placeholder=""
+                        class="form-control"
+                        data-datepicker
+                        data-event
+                        data-singular-date
+                        data-uid="<%: uid %>"
+                        title=""
+                        id="id_date_from_single_<%: uid %>"
+                        <%if section.singular_event%>
+                        value="<%: section.from_date %>"
+                        <%/if%>
+                       >
+                  </div>
+                </div>
+                <div class="col-6 col-md-3 col-xl-2 timepick">
+                  <div class="form-group">
+                    <label for="id_start_time_single_<%: uid %>">Начало</label>
+                    <input
+                        type="text"
+                        name="start_time_single_<%: uid %>"
+                        class="form-control time"
+                        data-timepicker
+                        data-from-timer
+                        data-uid="<%: uid %>"
+                        placeholder=":"
+                        title=""
+                        required
+                        id="id_start_time_single_<%: uid %>"
+                    >
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 col-xl-2 timepick">
+                  <div class="form-group">
+                  <label for="id_end_time_single_<%: uid %>">Окончание</label>
+                  <input
+                    type="text"
+                    name="end_time_single"
+                    class="form-control time"
+                    data-timepicker
+                    data-to-timer
+                    data-uid="<%: uid %>"
+                    placeholder=":"
+                    title=""
+                    required
+                    id="id_end_time_single_<%: uid %>"
+                  >
+                  </div>
+                </div>
+              </div>
+              <div class="form-group save_buttons">
+                <%if existing %>
+                <a class="btn btn-outline-danger delete-existing" data-uid="<%: uid %>">Удалить</a>
+                <%/if%>
+                <a class="btn cancel_new" data-uid="<%: uid %>" href="#"><%if existing %>Отменить изменения<%else%>Отмена<%/if%></a>
+              </div>
+            </form>
+          </div>
+          <%/if%>
+          <%if !existing || (existing && !section.singular_event) %>
+          <div class="tab-pane fade" id="many-<%: uid %>" data-uid="<%: uid %>" data-many role="tabpanel" aria-labelledby="many-tab">
+            <form>
+              <div class="row">
+                <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                  <div class="form-group">
+                    <label for="id_date_from_<%: uid %>">Начало тренировок</label>
+                    <input
+                        type="text"
+                        name="date_from_<%: uid %>"
+                        placeholder=""
+                        data-datepicker
+                        data-many-from-date
+                        data-uid="<%: uid %>"
+                        class="form-control"
+                        title=""
+                        id="id_date_from_<%: uid %>"
+                        <%if !section.singular_event %>
+                        value="<%: section.from_date %>"
+                        <%/if%>
+                    >
+                  </div>
+                </div>
+                <div class="form-group datepick col-12 col-sm-6 col-md-3">
+                  <div class="form-group">
+                    <label for="id_date_to_<%: uid %>">Окончание тренировок</label>
+                    <input
+                        type="text"
+                        name="date_to_<%: uid %>"
+                        placeholder=""
+                        data-datepicker
+                        data-many-to-date
+                        data-uid="<%: uid %>"
+                        class="form-control"
+                        title=""
+                        id="id_date_to_<%: uid %>"
+                        <%if !section.singular_event %>
+                        value="<%: section.to_date %>"
+                        <%/if%>
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="form-group row days timepick">
+                <%for isoweekdays ~uid=uid%>
+                <div class="col-6 col-md-3 col-lg day">
+                  <div class="form-group">
+                    <div class="form-check">
+                      <input type="checkbox" name="weekday-<%: num %>-checked-<%:~uid %>" class="form-check-input day-of-week" data-day=<%: num %> data-uid="<%:~uid %>" id="id_weekday_<%: num %>_checked_<%:~uid %>">
+                      <div class="form-check-input-div"></div>
+                      <label class="form-check-label" for="id_weekday_<%: num %>_checked_<%:~uid %>"><%: name %></label>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="sr-only" for="id_weekday_<%: num %>_start_time_<%:~uid %>">Время начала тренировки</label>
+                    <input type="text" name="weekday_<%: num %>_start_time_<%:~uid %>" data-day-from-timer data-day=<%: num %> data-uid="<%:~uid %>" class="form-control time" data-timepicker placeholder=":" disabled title="" id="id_weekday_<%: num %>_start_time_<%:~uid %>">
+                  </div>
+                  —
+                  <div class="form-group">
+                    <label class="sr-only" for="id_weekday_<%: num %>_end_time_<%:~uid %>">Время окнчания тренировки</label>
+                    <input type="text" name="weekday_<%: num %>_end_time_<%:~uid %>" data-day-to-timer data-day=<%: num %>  data-uid="<%:~uid %>" class="form-control time" data-timepicker placeholder=":" disabled title="" id="id_weekday_<%: num %>_end_time_<%:~uid %>">
+                  </div>
+                </div>
+                <%/for%>
+
+              </div>
+              <div class="form-group save_buttons">
+                <%if existing %>
+                <a class="btn btn-outline-danger delete-existing" data-uid="<%: uid %>">Удалить</a>
+                <%/if%>
+                <a class="btn cancel_new" data-uid="<%: uid %>" href="#"><%if existing %>Отменить изменения<%else%>Отмена<%/if%></a>
+              </div>
+            </form>
+          </div>
+          <%/if%>
+        </div>
+      </div>
+    </div>
+    <div class="greyline" data-uid="<%: uid %>"></div>
+  </script>
+{% endblock extrajs %}

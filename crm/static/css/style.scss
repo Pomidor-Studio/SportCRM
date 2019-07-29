@@ -185,6 +185,22 @@ small {
 		border: 1px solid $yellow !important;
 	}
 }
+.btn-outline-primary {
+	border: 1px solid $green;
+	color: $green;
+
+	&:hover , &:focus, &:active {
+		background: $green !important;
+	    outline: inherit !important;
+	    box-shadow: inherit !important;
+	    border: 1px solid $green !important;
+	    color: #fff;
+	}
+	&:active {
+		background: $yellow !important;
+		border: 1px solid $yellow !important;
+	}
+}
 .btn-danger {
 	background: $red;
 	border: 1px solid $red;
@@ -1367,6 +1383,31 @@ footer {
 
 
 /* Новая тренировка */
+.new_class {
+	.new_event {
+		padding-top: 10px;
+		padding-bottom: 10px;
+	}
+	#add_new_event {
+		display: none;
+	}
+	.event {
+		margin-top: 18px;
+	}
+	.btn-outline-primary {
+		text-align: left;
+		span {
+			color: $black;
+		}
+	}
+	.btn-outline-secondary {
+		text-align: left;
+		color: $footer_grey;
+	}
+	.tab-content {
+		margin-bottom: 0;
+	}
+}
 .days {
 	padding: 24px 0 0;
 	text-align: center;

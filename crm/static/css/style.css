@@ -126,6 +126,19 @@ small {
     background: #EAB701 !important;
     border: 1px solid #EAB701 !important; }
 
+.btn-outline-primary {
+  border: 1px solid #76BD1B;
+  color: #76BD1B; }
+  .btn-outline-primary:hover, .btn-outline-primary:focus, .btn-outline-primary:active {
+    background: #76BD1B !important;
+    outline: inherit !important;
+    box-shadow: inherit !important;
+    border: 1px solid #76BD1B !important;
+    color: #fff; }
+  .btn-outline-primary:active {
+    background: #EAB701 !important;
+    border: 1px solid #EAB701 !important; }
+
 .btn-danger {
   background: #CA2929;
   border: 1px solid #CA2929;
@@ -939,6 +952,23 @@ footer {
       display: none; } }
 /* Календарь занятий */
 /* Новая тренировка */
+.new_class .new_event {
+  padding-top: 10px;
+  padding-bottom: 10px; }
+.new_class #add_new_event {
+  display: none; }
+.new_class .event {
+  margin-top: 18px; }
+.new_class .btn-outline-primary {
+  text-align: left; }
+  .new_class .btn-outline-primary span {
+    color: #000; }
+.new_class .btn-outline-secondary {
+  text-align: left;
+  color: #636363; }
+.new_class .tab-content {
+  margin-bottom: 0; }
+
 .days {
   padding: 24px 0 0;
   text-align: center;
