@@ -289,6 +289,9 @@ header {
 .title_right .title, .title_right .subtitle {
   text-align: right; }
 
+.slideInUp_phone {
+  max-width: 344px; }
+
 .active .slideInUp {
   -webkit-animation-name: slideInUp;
   animation-name: slideInUp;
@@ -357,12 +360,17 @@ footer {
       font-size: 24px; }
 
 /* Подвал */
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 667px) {
   header .logo img {
     height: 30px; }
   header .button a {
-    font-size: 12px; } }
-@media screen and (max-width: 52em) {
+    font-size: 12px; }
+
+  .hero {
+    background: none; }
+    .hero .title {
+      width: 100% !important; } }
+@media screen and (max-width: 60em) {
   .button a, .button button {
     font-size: 14px; }
 
@@ -380,12 +388,12 @@ footer {
     padding: 0 !important;
     z-index: 10; }
 
-  .hero {
-    background: none; }
-    .hero .button_box .button {
-      margin: 0 0 10px 0; }
-    .hero .button_right {
-      width: 100%; }
+  .hero .title {
+    width: 70%; }
+  .hero .button_box .button {
+    margin: 0 0 10px 0; }
+  .hero .button_right {
+    width: 100%; }
 
   .display_xs, .onepage-pagination li:last-child {
     display: block; }
@@ -420,6 +428,7 @@ footer {
     .support img {
       width: 100%; }
 
+  /* Прайс */
   .price {
     padding-top: 30px;
     height: auto;
@@ -452,6 +461,7 @@ footer {
       position: relative;
       top: 10px; }
 
+  /* Заявка */
   #zayavka {
     position: fixed;
     top: 0;

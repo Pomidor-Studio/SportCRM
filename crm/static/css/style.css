@@ -195,6 +195,8 @@ small {
       left: 0;
       width: 15px;
       height: 15px; }
+    .btn-icon.btn-pay abbr {
+      padding-right: 8px; }
   .btn-icon.btn-more {
     border: none;
     padding: 0 4px !important;
@@ -238,8 +240,7 @@ small {
     border: none;
     padding: 0 !important;
     background: transparent;
-    min-width: inherit;
-    left: 3px; }
+    min-width: inherit; }
     .btn-icon.btn-down span {
       background: url(../img/icons.png) 0 -226px no-repeat;
       top: 1px;
@@ -373,7 +374,7 @@ tr.active .btn-down span {
 /* Таблицы */
 .table {
   font-size: 14px;
-  line-height: 19px;
+  line-height: 22px;
   position: relative;
   top: -5px;
   color: #000; }
@@ -388,7 +389,9 @@ tr.active .btn-down span {
   .table tbody tr.otbivka {
     background: #F4F4F4 !important; }
     .table tbody tr.otbivka td {
-      height: 0; }
+      height: 0;
+      padding-top: 5px;
+      padding-bottom: 5px; }
   .table tbody tr.minus_balance {
     background: #fdefe7 !important; }
   .table td, .table th {
@@ -407,14 +410,14 @@ tr.active .btn-down span {
   .table td {
     height: 55px; }
   .table .fio_name {
-    font-size: 16px;
-    color: #000;
+    font-weight: bold;
+    color: #76BD1B;
     margin-bottom: 4px;
     display: inline-block; }
   .table a.fio_name:hover {
-    color: #76BD1B; }
+    color: #000; }
   .table .active .fio_name {
-    color: #76BD1B; }
+    color: #000; }
   .table .form-check-input {
     margin-top: 3px; }
   .table .photo {
@@ -431,7 +434,7 @@ tr.active .btn-down span {
   .table .dropdown-menu {
     margin-right: -10px; }
   .table .archive {
-    opacity: 0.6; }
+    opacity: 0.4; }
     .table .archive:hover {
       opacity: 1; }
   .table.workout_time .d-flex div {
@@ -482,7 +485,11 @@ tr.active .btn-down span {
   .buy_subscriptions td {
     height: auto !important; }
   .buy_subscriptions .btn-down {
-    top: -8px; } }
+    top: -7px; }
+
+  .student_page .subscriptions_list .btn-down {
+    top: -10px !important;
+    display: block !important; } }
 @media (min-width: 768px) {
   thead.d-md-block {
     display: table-header-group !important; }
@@ -597,6 +604,8 @@ tr.active .btn-down span {
 @media (max-width: 992px) {
   .mobile_sidebar .workout_actions {
     display: none; }
+  .mobile_sidebar .back {
+    margin-left: 10px; }
 
   .page {
     height: 100vh;
@@ -608,6 +617,9 @@ tr.active .btn-down span {
 @media (max-width: 767px) {
   .mobile_sidebar .workout_actions {
     display: block; }
+
+  .students_page .btn-new {
+    right: 15px; }
 
   .page .bredcams {
     height: 46px; }
@@ -985,7 +997,7 @@ footer {
     margin-left: -2px; }
 
 /* Новая тренировка */
-/* Тренировка и  */
+/* Тренировка  */
 .workout_actions {
   font-size: 14px; }
   .workout_actions ul {
@@ -1145,11 +1157,8 @@ footer {
     position: relative;
     top: 1px; }
 
-.student_page #pills-journal table tr td:first-child {
-  text-align: right;
-  width: 100px; }
-.student_page #pills-journal table tr td:nth-child(2) {
-  max-width: 300px; }
+.student_page .subscriptions_list .btn-down {
+  display: none; }
 .student_page #pills-qr img {
   display: block; }
 .student_page #pills-comment {
@@ -1225,7 +1234,10 @@ footer {
 .help_page {
   font-size: 16px; }
   .help_page .card-link {
-    color: #76BD1B; }
+    color: #76BD1B;
+    text-decoration: underline; }
+  .help_page .card-link:hover {
+    text-decoration: none; }
 
 .video {
   padding: 8px 0; }

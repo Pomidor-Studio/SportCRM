@@ -290,7 +290,9 @@ header {
 	}
 }
 
-
+.slideInUp_phone {
+	max-width: 344px;
+}
 .active .slideInUp {
 	-webkit-animation-name: slideInUp;
 	animation-name: slideInUp;
@@ -388,7 +390,7 @@ footer {
 
 
 
-@media screen and (max-width: 767px) {
+@media screen and (max-width: 667px) {
 	header {
 		.logo img {
 			height: 30px;
@@ -397,9 +399,15 @@ footer {
 			font-size: 12px;
 		}
 	}
+	.hero {
+		background: none;
+		.title {
+			width: 100% !important;
+		}
+	}
 }
 
-@media screen and (max-width: 52em) {
+@media screen and (max-width: 60em) {
 	.button {
 		a, button {
 			font-size: 14px;
@@ -421,7 +429,9 @@ footer {
 	}
 
 	.hero {
-		background: none;
+		.title {
+			width: 70%;
+		}
 		.button_box .button {margin: 0 0 10px 0;}
 		.button_right {
 			width: 100%;
@@ -476,6 +486,7 @@ footer {
 		}
 	}
 
+/* Прайс */
 	.price {
 		padding-top: 30px;
 		height: auto;
@@ -513,7 +524,7 @@ footer {
 			top: 10px;
 		}
 	}
-
+/* Заявка */
 	#zayavka {
 		position: fixed;
 		top: 0;

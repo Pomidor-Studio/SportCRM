@@ -13,19 +13,17 @@
         <div class="bredcams">
           <ul>
             {% if back_link %}
-              <!--<li>
+              <li>
                 <a href="{{ back_link }}">
-                  <svg width="7" height="11" viewBox="0 0 7 11" fill="none"
-                       xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5.5 10L1 5.5L5.5 1" stroke="#76BD1B" stroke-width="2"
-                          stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  {% include 'crm/bars/_img_bredcams_str_back.html' %}
                 </a>
-              </li>-->
+                <a href="{{ back_link }}" class="back">Назад</a>
+              </li>
+            {% else %}
+              <li>
+                <span>{{ name|default_if_none:'Новая тренировка' | safe }}</span>
+              </li>
             {% endif %}
-            <li>
-              <span>{{ name|default_if_none:'Новая тренировка' | safe }}</span>
-            </li>
           </ul>
         </div>
         {% if mobile_menu %}

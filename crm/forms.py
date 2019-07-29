@@ -545,8 +545,8 @@ class ProfileCoachForm(MultiModelForm):
 
 
 class UploadExcelForm(forms.Form):
-    file = forms.FileField(label='Файл Excel', help_text="Файл в формате excel")
-    ignore_first_row = forms.BooleanField(label='Не учитывать первую строку', initial=False, required=False)
+    file = forms.FileField(label='Файл Excel', help_text="Файл в формате Excel. Первая строка в таблице не учитывается.")
+    #ignore_first_row = forms.BooleanField(label='Не учитывать первую строку', initial=False, required=False)
     name_col = forms.CharField(label='Столбец с ФИО', initial='A', help_text="Буква столбца с ФИО")
     phone_col = forms.CharField(label='Столбец с номером телефона', initial='B',
                                 help_text="Буква столбца с номером телефона. Номер телефона в русском формате")

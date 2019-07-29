@@ -509,7 +509,7 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
 
     def form_valid(self, form):
         file = form.cleaned_data['file']
-        ignore_first_row = form.cleaned_data['ignore_first_row']
+        #ignore_first_row = form.cleaned_data['ignore_first_row']
         name_col = form.cleaned_data['name_col']
         phone_col = form.cleaned_data['phone_col']
         birthday_col = form.cleaned_data['birthday_col']
@@ -526,8 +526,8 @@ class UploadExcel(PermissionRequiredMixin, RevisionMixin, FormView):
             return self.form_invalid(form)
 
         iter_rows = iter(ws.rows)
-        if ignore_first_row:
-            next(iter_rows)
+        #if ignore_first_row:
+        next(iter_rows)
 
         skipped = 0
         added = 0

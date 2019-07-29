@@ -269,6 +269,9 @@ small {
 			width: 15px;
 			height: 15px;
 		}
+		abbr {
+			padding-right: 8px;
+		}
 	}
 	&.btn-more {
 		border: none;
@@ -321,7 +324,6 @@ small {
 		padding: 0 !important;
 		background: transparent;
 		min-width: inherit;
-		left: 3px;
 		span {
 			background: url(../img/icons.png) 0 -226px no-repeat;
 			top: 1px;
@@ -499,7 +501,7 @@ tr.active .btn-down span {
 /* Таблицы */
 .table {
 	font-size: 14px;
-	line-height: 19px;
+	line-height: 22px;
 	position: relative;
 	top: -5px;
 	color: $grey;
@@ -519,6 +521,8 @@ tr.active .btn-down span {
 			background: #F4F4F4 !important;
 			td {
 				height: 0;
+				padding-top: 5px;
+				padding-bottom: 5px;
 			}
 		}
 		tr.minus_balance {
@@ -545,16 +549,16 @@ tr.active .btn-down span {
 	}
 
 	.fio_name {
-		font-size: 16px;
-		color: #000;
+		font-weight: bold;
+		color: $green;
 		margin-bottom: 4px;
 		display: inline-block;
 	}
 	a.fio_name:hover {
-		color: $green;
+		color: $black;
 	}
 	.active .fio_name {
-		color: $green;
+		color: $black;
 	}
 
 	.form-check-input {
@@ -584,7 +588,7 @@ tr.active .btn-down span {
 
 
 	.archive {
-		opacity: 0.6;
+		opacity: 0.4;
 
 		&:hover {
 			opacity: 1;
@@ -660,8 +664,12 @@ tr.active .btn-down span {
 			height: auto !important;
 		}
 		.btn-down {
-			top: -8px;
+			top: -7px;
 		}
+	}
+	.student_page .subscriptions_list .btn-down {
+		top: -10px !important;
+		display: block !important;
 	}
 }
 @media (min-width: 768px) {
@@ -824,8 +832,13 @@ tr.active .btn-down span {
 	}
 }
 @media (max-width: 992px) {
-	.mobile_sidebar .workout_actions {
-		display: none;
+	.mobile_sidebar {
+		.workout_actions {
+			display: none;
+		}
+		.back {
+			margin-left: 10px;
+		} 
 	}
 	.page {
 		height: 100vh;
@@ -842,6 +855,12 @@ tr.active .btn-down span {
 @media (max-width: 767px) {
 	.mobile_sidebar .workout_actions {
 		display: block;
+	}
+
+	.students_page {
+		.btn-new {
+			right: 15px;
+		}
 	}
 	.page {
 		.bredcams {
@@ -1432,7 +1451,7 @@ footer {
 
 
 
-/* Тренировка и  */
+/* Тренировка  */
 .workout_actions {
 	font-size: 14px;
 
@@ -1657,19 +1676,13 @@ footer {
 }
 
 .student_page {
-
-	#pills-journal {
-		table tr {
-			td:first-child {
-				text-align: right;
-				width: 100px;
-			}
-			td:nth-child(2) {
-				max-width: 300px;
-			}
-
+	.subscriptions_list {
+		.btn-down {
+			display: none;
 		}
 	}
+
+
 	#pills-qr img {
 		display: block;
 	}
@@ -1786,6 +1799,10 @@ footer {
 	font-size: 16px;
 	.card-link {
 		color: $green;
+		text-decoration: underline;
+	}
+	.card-link:hover {
+		text-decoration: none;
 	}
 }
 .video {
