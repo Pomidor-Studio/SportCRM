@@ -11,9 +11,13 @@
   {% endfor %}
 {% else %}
   {% for sub in active_sub %}
-    {% with  last_visited_event=sub.last_visited_event %}
+    {% with last_visited_event=sub.last_visited_event %}
         <span class="date">
-          {{ last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+            {% if last_visited_event %}
+            {{ last_visited_event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+            {% elif attendance %}
+                {{ attendance.event.date|date:"SHORT_DATE_FORMAT" }}&nbsp;
+            {% endif %}
         </span>
           {% if not forloop.last %}
             <div class="greyline"></div>
