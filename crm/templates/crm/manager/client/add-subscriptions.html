@@ -403,18 +403,20 @@
                   <td class="d-none d-md-block">
                   {% if not client.deleted %}
                       {% ifhasperm 'client_subscription.delete' user %}
-                        {% if sub.attendance_set.count == 0 %}
                           <a class="btn btn-icon btn-delete"
                          href="#confirm_popup"
                          data-action-text="Удалить"
                          data-title="Удаление абонемента"
-                         data-body-text="Удалить абонемент?"
+                         data-body-text="Удалить абонемент?
+{% if sub.attendance_set.count != 0 or sub.extensionhistory_set.count != 0 or sub.clientbalancechangehistory_set.count != 0 %}
+Будут удалены всё связанные данные: посещения по абонементу, исптория продления и история баланса!
+{% endif %}
+"
                          data-toggle="modal"
                          data-url="{% url 'crm:manager:client:subscription:delete' sub.id %}">
                         <span></span>
                         <abbr>Удалить</abbr>
                       </a>
-                        {% endif %}
                       {% endifhasperm %}
                   {% endif %}
                   </td>

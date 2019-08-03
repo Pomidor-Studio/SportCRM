@@ -10,7 +10,7 @@ from django.db import transaction
 from django.db.models import F
 from django.forms import forms
 from django.forms.utils import ErrorList
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.utils.http import is_safe_url
@@ -482,6 +482,18 @@ class SubscriptionDelete(PermissionRequiredMixin, RevisionMixin, DeleteView):
     def get_success_url(self):
         return reverse(
             'crm:manager:client:detail', args=[self.object.client.id])
+
+    def delete(self, request, *args, **kwargs):
+        self.object: ClientSubscriptions = self.get_object()
+        success_url = self.get_success_url()
+
+        # Delete dependent data
+        self.object.clientbalancechangehistory_set.all().delete()
+        self.object.extensionhistory_set.all().delete()
+        self.object.attendance_set.all().delete()
+
+        self.object.delete()
+        return HttpResponseRedirect(success_url)
 
 
 class ImportReport(PermissionRequiredMixin, RevisionMixin, TemplateView):
