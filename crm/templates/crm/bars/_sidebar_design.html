@@ -78,13 +78,13 @@
         {% endifhasperm %}
         {% ifhasperm 'report.list' user %}
           <div class="greyline"></div>
-          <a class="nav-link {% if current == 'event-report' %}active{% endif %}"
+          <!-- <a class="nav-link {% if current == 'event-report' %}active{% endif %}"
              href="{% url 'crm:manager:event:event-report' %}">
             Отчет по тренировкам
-          </a>
+          </a> -->
           <a class="nav-link  {% if current == 'visit-report' %}active{% endif %}"
              href="{% url 'crm:manager:event:visit-report' %}">
-            Отчет по посещениям
+            Отчет
           </a>
         {% endifhasperm %}
         {% ifhasperm 'manager' user %}
