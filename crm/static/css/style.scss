@@ -126,6 +126,9 @@ small {
 	    box-shadow: inherit;
 	    border: 1px solid $green;
 	}
+	&:disabled, &[readonly] {
+		background-color: #F9F9F9;
+	}
 }
 
 .form-group {
@@ -139,6 +142,9 @@ small {
 	img {
 		border-radius: 100px;
 		margin-bottom: 10px;
+	}
+	.dropdown-toggle {
+		padding: 8px 12px 7px;
 	}
 }
 
@@ -533,7 +539,6 @@ tr.active .btn-down span {
 		padding: 16px 8px;
 		vertical-align: middle;
 		border: none;
-		border-bottom: 1px solid $lines !important;
 		min-height: 55px;
 	}
 	th {
@@ -546,6 +551,7 @@ tr.active .btn-down span {
 	}
 	td {
 		height: 55px;
+		border-top: 1px solid $lines !important;
 	}
 
 	.fio_name {
@@ -838,7 +844,7 @@ tr.active .btn-down span {
 		}
 		.back {
 			margin-left: 10px;
-		} 
+		}
 	}
 	.page {
 		height: 100vh;
@@ -1730,9 +1736,6 @@ footer {
 	.date {
 		width: 135px;
 		margin-right: 8px;
-		input {
-			padding: 8px 0 8px 8px;
-		}
 	}
 	.select {
 		margin-right: 8px;
@@ -1741,8 +1744,13 @@ footer {
 		padding: .375rem;
 		width: 28px !important;
 	}
+	margin-bottom: 50px;
 }
 .report_page {
+	.canvas {
+		height: 250px;
+		margin-bottom: 100px;
+	}
 	th {
 		position: inherit !important;
 	}
@@ -1751,7 +1759,32 @@ footer {
 		position: relative;
 		left: -4px;
 	}
-	.red, .green, .grey {
+	.btn-primary {
+		margin-right: 0;
+		padding: 9px 20px 8px;
+	}
+	#report_cash {
+		color: $green !important;
+	}
+}
+.report_money {
+	margin-bottom: 100px;
+	.subtotal {
+		font-weight: bold;
+		td {
+			border-top: 2px solid $lines !important ;
+		}
+	}
+}
+.instruction_report {
+	div {
+		width: auto !important;
+		padding: 5px;
+		color: $grey;
+		float: left;
+		margin: 8px 0 10px 8px;
+		text-align: center;
+		white-space: nowrap;
 		min-width: 55px;
 		width: 55px;
 		border: 1px solid $lines;
@@ -1765,20 +1798,49 @@ footer {
 	.grey {
 		background: $lines;
 	}
-	.btn-primary {
-		margin-right: 0;
-		padding: 9px 20px 8px;
+	.checked {
+		background: #76BD1B;
 	}
+	.new {
+		background: #BAED28;
+	}
+	.trial , .single {
+		padding-left: 28px;
+		position: relative;
+		.icon {
+			position: absolute;
+		}
+	}
+	.trial .icon {left: 6px !important;}
+	.single .icon {left: 8px !important;}
 }
-.instruction_report_2 {
-	div {
-		width: auto !important;
-		padding: 5px;
-		color: $grey;
-		float: left;
-		margin: 8px 0 10px 8px;
-		text-align: center;
-		white-space: nowrap;
+.table_report_days, .instruction_report {
+	.icon {
+		background: url(../img/icons.png) 0 0 no-repeat;
+		display: inline-block;
+		margin: 0 auto;
+		padding: 0 !important;
+		left: 0 !important;
+	}
+	.green .icon {
+		width: 17px;
+		height: 13px;
+		background-position: 0 -265px;
+	}
+	.red .icon {
+		width: 12px;
+		height: 12px;
+		background-position: 0 -282px;
+	}
+	.trial .icon {
+		width: 17px;
+		height: 17px;
+		background-position: 0 -298px;
+	}
+	.single .icon {
+		width: 14px;
+		height: 18px;
+		background-position: 0 -320px;
 	}
 }
 @media (max-width: 1024px) {

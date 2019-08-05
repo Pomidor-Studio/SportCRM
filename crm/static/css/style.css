@@ -82,6 +82,8 @@ small {
     outline: inherit;
     box-shadow: inherit;
     border: 1px solid #76BD1B; }
+  .form-control:disabled, .form-control[readonly] {
+    background-color: #F9F9F9; }
 
 .form-group {
   margin-bottom: 16px;
@@ -91,6 +93,8 @@ small {
   .form-group img {
     border-radius: 100px;
     margin-bottom: 10px; }
+  .form-group .dropdown-toggle {
+    padding: 8px 12px 7px; }
 
 .save_buttons {
   margin-top: 24px;
@@ -398,7 +402,6 @@ tr.active .btn-down span {
     padding: 16px 8px;
     vertical-align: middle;
     border: none;
-    border-bottom: 1px solid #EEEEEE !important;
     min-height: 55px; }
   .table th {
     font-weight: bold;
@@ -408,7 +411,8 @@ tr.active .btn-down span {
     white-space: nowrap;
     color: #000; }
   .table td {
-    height: 55px; }
+    height: 55px;
+    border-top: 1px solid #EEEEEE !important; }
   .table .fio_name {
     font-weight: bold;
     color: #76BD1B;
@@ -1184,45 +1188,92 @@ footer {
     height: 50px; } }
 /* Ученик */
 /* Отчёты */
-.report_filter .date {
-  width: 135px;
-  margin-right: 8px; }
-  .report_filter .date input {
-    padding: 8px 0 8px 8px; }
-.report_filter .select {
-  margin-right: 8px; }
-.report_filter .input-group-append .btn {
-  padding: .375rem;
-  width: 28px !important; }
+.report_filter {
+  margin-bottom: 50px; }
+  .report_filter .date {
+    width: 135px;
+    margin-right: 8px; }
+  .report_filter .select {
+    margin-right: 8px; }
+  .report_filter .input-group-append .btn {
+    padding: .375rem;
+    width: 28px !important; }
 
+.report_page .canvas {
+  height: 250px;
+  margin-bottom: 100px; }
 .report_page th {
   position: inherit !important; }
 .report_page td span {
   padding: 2px 4px;
   position: relative;
   left: -4px; }
-.report_page .red, .report_page .green, .report_page .grey {
-  min-width: 55px;
-  width: 55px;
-  border: 1px solid #EEEEEE; }
-.report_page .red {
-  background: #F5D7C5; }
-.report_page .green {
-  background: #D5EFB7; }
-.report_page .grey {
-  background: #EEEEEE; }
 .report_page .btn-primary {
   margin-right: 0;
   padding: 9px 20px 8px; }
+.report_page #report_cash {
+  color: #76BD1B !important; }
 
-.instruction_report_2 div {
+.report_money {
+  margin-bottom: 100px; }
+  .report_money .subtotal {
+    font-weight: bold; }
+    .report_money .subtotal td {
+      border-top: 2px solid #EEEEEE !important; }
+
+.instruction_report div {
   width: auto !important;
   padding: 5px;
   color: #000;
   float: left;
   margin: 8px 0 10px 8px;
   text-align: center;
-  white-space: nowrap; }
+  white-space: nowrap;
+  min-width: 55px;
+  width: 55px;
+  border: 1px solid #EEEEEE; }
+.instruction_report .red {
+  background: #F5D7C5; }
+.instruction_report .green {
+  background: #D5EFB7; }
+.instruction_report .grey {
+  background: #EEEEEE; }
+.instruction_report .checked {
+  background: #76BD1B; }
+.instruction_report .new {
+  background: #BAED28; }
+.instruction_report .trial, .instruction_report .single {
+  padding-left: 28px;
+  position: relative; }
+  .instruction_report .trial .icon, .instruction_report .single .icon {
+    position: absolute; }
+.instruction_report .trial .icon {
+  left: 6px !important; }
+.instruction_report .single .icon {
+  left: 8px !important; }
+
+.table_report_days .icon, .instruction_report .icon {
+  background: url(../img/icons.png) 0 0 no-repeat;
+  display: inline-block;
+  margin: 0 auto;
+  padding: 0 !important;
+  left: 0 !important; }
+.table_report_days .green .icon, .instruction_report .green .icon {
+  width: 17px;
+  height: 13px;
+  background-position: 0 -265px; }
+.table_report_days .red .icon, .instruction_report .red .icon {
+  width: 12px;
+  height: 12px;
+  background-position: 0 -282px; }
+.table_report_days .trial .icon, .instruction_report .trial .icon {
+  width: 17px;
+  height: 17px;
+  background-position: 0 -298px; }
+.table_report_days .single .icon, .instruction_report .single .icon {
+  width: 14px;
+  height: 18px;
+  background-position: 0 -320px; }
 
 @media (max-width: 1024px) {
   .report_filter .date input {

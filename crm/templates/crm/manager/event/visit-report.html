@@ -4,7 +4,7 @@
 
 {% block title %}Отчет по посещениям{% endblock %}
 {% block sidbar %}
-  {% include 'crm/bars/_sidebar_design.html'  with name="Отчет по посещениям" back_link=False current='visit-report' %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Отчет" back_link=False current='visit-report' %}
 {% endblock %}
 
 {% block content %}
@@ -22,7 +22,7 @@
     <div class="bredcams clearfix">
       <ul>
         <li>
-          Отчет по посещениям
+          Отчет
         </li>
         <li>
           <svg width="7" height="11" viewBox="0 0 7 11" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -34,64 +34,241 @@
     </div>
 
     <div class="greyline"></div>
+
     <div class="report_filter">
       <form action="" method="GET">
-        <div class="d-flex flex-wrap flex-md-nowrap">
-          <div class="form-group select flex-grow-1">
-            <label for="id_event_class">{{ form.event_class.label }}</label>
-            {{ form.event_class }}
+        <div class="row">
+          <!-- По умолчаню показывает верхнюю группу и последний месяц, при смене группы показывает новые данные -->
+          <div class="col-6 col-md-3">
+            <div class="form-group select">
+              <label for="id_event_class">{{ form.event_class.label }}</label>
+              {{ form.event_class }}
+            </div>
           </div>
-          <div class="form-group select flex-shrink-1">
-            <label for="id_month">{{ form.month.label }}</label>
-            {{ form.month }}
+          <!-- Надо сделать месяц и год с момента создания группы, при смене месяца показывает новые данные -->
+          <div class="col-6 col-md-3">
+            <div class="form-group select">
+              <label for="id_month">{{ form.month.label }}</label>
+              {{ form.month }}
+            </div>
           </div>
-          <div class="form-group select flex-shrink-1">
-            <label for="id_year">{{ form.year.label }}</label>
-            {{ form.year }}
+          <!-- Тренер выбранной группы -->
+          <div class="col-6 col-md-3">
+            <div class="form-group select">
+              <label for="report_couch">Тренер:</label>
+              <input id="report_couch" class="form-control" type="text" name="report_couch" value="Иван Васильевич" disabled="">
+            </div>
           </div>
-          <div class="form-group button flex-shrink-1">
-            <label>&nbsp;</label><br/>
-            <input class="btn btn-primary" type="submit" value="Поиск"/>
+          <!-- Выручка в выбранные месяц -->
+          <div class="col-6 col-md-3">
+            <div class="form-group select">
+              <label for="report_cash">Выручка:</label>
+              <input id="report_cash" class="form-control" type="text" name="report_couch" value="28 540 ₽" disabled="">
+            </div>
           </div>
+
+          <!-- Это убрать потом -->
+          <div class="col-6 col-md-2">
+            <div class="form-group select">
+              <label for="id_year">{{ form.year.label }}</label>
+              {{ form.year }}
+            </div>
+          </div>
+          <div class="col-6 col-md-2">
+            <div class="form-group button">
+              <label>&nbsp;</label><br/>
+              <input class="btn btn-primary" type="submit" value="Поиск"/>
+            </div>
+          </div>
+
         </div>
       </form>
     </div>
 
-    <div class="instruction_report_2 d-flex flex-wrap justify-content-end">
-      <div class="green">На тренировке был</div>
-      <div class="red">На тренировке не был</div>
-      <div class="grey">Абонемента нет</div>
+    <table class="table table-hover report_money">
+      <thead class="d-none d-md-block">
+        <tr>
+          <th>
+            Дата
+          </th>
+          <th class="d-none d-md-block text-center">
+            Отмечены
+          </th>
+          <th class="d-none d-md-block text-center">
+            По пробному
+          </th>
+          <th class="d-none d-md-block text-center">
+            По разовому
+          </th>
+          <th class="d-none d-md-block text-center">
+            Продано абонементов
+          </th>
+          <th class="text-right">
+            Выручка
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            06.06
+          </td>
+          <td class="d-none d-md-block text-center">
+            12
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="d-none d-md-block text-center">
+            6
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="text-right">
+            <span class="green">4 500 ₽</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            06.06
+          </td>
+          <td class="d-none d-md-block text-center">
+            12
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="d-none d-md-block text-center">
+            6
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="text-right">
+            <span class="green">4 500 ₽</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            06.06
+          </td>
+          <td class="d-none d-md-block text-center">
+            12
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="d-none d-md-block text-center">
+            6
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="text-right">
+            <span class="green">4 500 ₽</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            06.06
+          </td>
+          <td class="d-none d-md-block text-center">
+            12
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="d-none d-md-block text-center">
+            6
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="text-right">
+            <span class="green">4 500 ₽</span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            06.06
+          </td>
+          <td class="d-none d-md-block text-center">
+            12
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="d-none d-md-block text-center">
+            6
+          </td>
+          <td class="d-none d-md-block text-center">
+            4
+          </td>
+          <td class="text-right">
+            <span class="green">4 500 ₽</span>
+          </td>
+        </tr>
+        <tr class="subtotal">
+          <td>
+            Итого:
+          </td>
+          <td class="d-none d-md-block text-center">
+            95
+          </td>
+          <td class="d-none d-md-block text-center">
+            11
+          </td>
+          <td class="d-none d-md-block text-center">
+            18
+          </td>
+          <td class="d-none d-md-block text-center">
+            27
+          </td>
+          <td class="text-right">
+            <span class="green">28 600 ₽</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="instruction_report d-flex flex-wrap justify-content-end">
+      <!-- Плановая посещаемость выбранной группы в выбранный месяц -->
+      <div class="green mr-auto">Плановая посещаемость: <b>38</b></div>
+      <div class="checked">Пришли</div>
+      <div class="new">Новые</div>
+      <div class="grey">Записались, не пришли</div>
+    </div>
+
+    <div class="canvas">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <div class="instruction_report d-flex flex-wrap justify-content-end">
+      <div class="checked">Абонемент</div>
+      <div class="trial"><span class="icon"></span> — Пробное</div>
+      <div class="single"><span class="icon"></span> — Разовое</div>
     </div>
 
     <div class="greyline"></div>
-    <div class="table-responsive tab-content">
+
+    <div class="table_report_days table-responsive tab-content">
       {% if table_data %}
         <table class="table table-hover">
           <thead>
           <tr>
-            <th colspan="3"></th>
-            <th class="text-center" colspan="{{ month_days|length }}">Даты занятий</th>
             <th></th>
+            <th class="text-center" colspan="{{ month_days|length }}">Даты занятий</th>
           </tr>
           <tr>
             <th>
-              Ученик
-            </th>
-            <th>
-              Абонемент
-            </th>
-            <th class="text-center">
-              Доступно в начале
+              Ученик / Абонемент
             </th>
             {% for i in month_days %}
               <th class="text-center">
                 {{ i|date:'d' }}
               </th>
             {% endfor %}
-
-            <th class="text-center">
-              Доступно в конце
-            </th>
           </tr>
           </thead>
           <tbody>
@@ -99,27 +276,22 @@
             <tr>
               <td>
                 {% ifhasperm 'client' user %}
-                  <a href="{% url "crm:manager:client:detail"  row.client.id %}">{{ row.client.name }}</a>
+                  <a href="{% url "crm:manager:client:detail"  row.client.id %}"><b class="green">{{ row.client.name }}</b></a>
                 {% else %}
-                  {{ row.client.name }}
+                  <b class="green">{{ row.client.name }}</b>
                 {% endifhasperm %}
-              </td>
-              <td>
+                <br />
                 {{ row.subscription }}
               </td>
-              <td class="text-center">
-                {% if row.visit_start > 0 %}
-                  {{ row.visit_start }}
-                {% endif %}
-              </td>
+              <!-- Классы для ячеек:
+                trial(пробный), single(разовый), green(был), red(не был),
+                subscriptions(абонемент есть), subscriptions_first(первый день абонемента), subscriptions_last(последний день абонемента)
+              -->
               {% for attendance in row.attendances %}
-                <td class="{{ attendance }}"></td>
+                <td class="{{ attendance }} text-center">
+                  <span class="icon"></span>
+                </td>
               {% endfor %}
-              <td class="text-center">
-                {% if row.visit_start > 0 %}
-                  {{ row.visit_end }}
-                {% endif %}
-              </td>
             </tr>
           {% endfor %}
           </tbody>
@@ -136,11 +308,118 @@
   </div>
 {% endblock content %}
 {% block extrajs %}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/combine/npm/chart.js@2.8.0,npm/chartjs-plugin-annotation@0.5.7/chartjs-plugin-annotation.min.js"></script>
   <script>
     enquire.register("screen and (max-width: 720px)", {
       match: function () {
         $('.selectpicker').attr('data-mobile', 'true');
       }
     });
+
+    Chart.defaults.global.defaultFontFamily = "Roboto";
+    Chart.defaults.global.defaultFontSize = 12;
+    var barChartData = {
+			labels: [
+        '06.06',
+        '11.06',
+        '15.06',
+        '20.06',
+        '24.06',
+        '27.06',
+        '29.06',
+        '31.06',
+      ],
+			datasets: [{
+				label: 'Пришли',
+				backgroundColor: '#76BD1B',
+				data: [
+					35,
+					20,
+					22,
+					32,
+					34,
+					31,
+					30,
+          25
+				]
+			}, {
+				label: 'Новые',
+				backgroundColor: '#BAED28',
+				data: [
+          10,
+          5,
+          3,
+          2,
+          4,
+          5,
+          2,
+          4
+				]
+			}, {
+				label: 'Записались, но не пришли',
+				backgroundColor: '#DEE2E6',
+				data: [
+          3,
+          3,
+          2,
+          2,
+          1,
+          1,
+          5,
+          3
+				]
+			}]
+
+		};
+		window.onload = function() {
+			var ctx = document.getElementById('canvas').getContext('2d');
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: barChartData,
+				options: {
+					tooltips: {
+						mode: 'index',
+						intersect: false
+					},
+          legend: {
+            display: false
+          },
+					responsive: true,
+          maintainAspectRatio: false,
+          lineWidth: 10,
+					scales: {
+						xAxes: [{
+							stacked: true,
+              barThickness : 30
+						}],
+						yAxes: [{
+							stacked: true,
+              ticks: {
+  							stepSize: 10
+  						}
+						}]
+					},
+          annotation: {
+            events: ["click"],
+            annotations: [
+              {
+                drawTime: "beforeDatasetsDraw",
+                type: "box",
+                xScaleID: "x-axis-0",
+                yScaleID: "y-axis-0",
+                yMin: 0,
+                yMax: 38,
+                backgroundColor: "rgba(118, 189, 27, 0.25)",
+                borderWidth: 0,
+                onClick: function(e) {
+                  console.log("Box", e.type, this);
+                }
+              }
+            ]
+          }
+				}
+			});
+		};
   </script>
 {% endblock %}

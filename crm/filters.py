@@ -29,7 +29,7 @@ class EventReportFilter(django_filters.FilterSet):
         required=False,
     )
     event_class = django_filters.ModelMultipleChoiceFilter(
-        label='Тип тренировки:',
+        label='Группа:',
         field_name='event_class',
         queryset=models.EventClass.objects,
         widget=forms.SelectMultiple(
@@ -66,7 +66,7 @@ class EventReportFilter(django_filters.FilterSet):
 
 class VisitReportFilter(TenantForm):
     event_class = forms.ModelChoiceField(
-        label='Тип тренировки:',
+        label='Группа:',
         queryset=models.EventClass.objects,
         empty_label=None,
         widget=forms.Select(
