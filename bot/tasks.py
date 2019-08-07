@@ -6,7 +6,9 @@ from django_multitenant.utils import set_current_tenant
 from bot.api import messages
 from crm.models import Client, ClientSubscriptions, Event, Manager, EventClass
 
+from sportcrm.celery import app
 
+@app.task
 def notify_event_cancellation(event_id: int):
     try:
         event = Event.objects.get(id=event_id)
@@ -18,6 +20,7 @@ def notify_event_cancellation(event_id: int):
     messages.CancelledEvent(clients, event=event).send_message()
 
 
+@app.task
 def notify_client_buy_subscription(subscription_id: int):
     try:
         client_sub = ClientSubscriptions.objects.get(id=subscription_id)
@@ -30,6 +33,7 @@ def notify_client_buy_subscription(subscription_id: int):
     ).send_message()
 
 
+@app.task
 def notify_client_subscription_visit(subscription_id: int):
     try:
         client_sub = ClientSubscriptions.objects.get(id=subscription_id)
@@ -42,6 +46,7 @@ def notify_client_subscription_visit(subscription_id: int):
     ).send_message()
 
 
+@app.task
 def notify_client_subscription_extend(subscription_id: int):
     try:
         client_sub = ClientSubscriptions.objects.get(id=subscription_id)
@@ -54,6 +59,7 @@ def notify_client_subscription_extend(subscription_id: int):
     ).send_message()
 
 
+@app.task
 def notify_client_balance(client_id: int):
     try:
         client = Client.objects.get(id=client_id)
@@ -64,6 +70,7 @@ def notify_client_balance(client_id: int):
     messages.ClientUpdateBalance(client, personalized=True).send_message()
 
 
+@app.task
 def notify_clients_about_future_event(dt):
     event_classes = EventClass.objects.in_range(
         dt, dt
@@ -108,6 +115,7 @@ def notify_clients_about_future_event(dt):
             messages.LastFutureEvent(last_visit_clients, date=dt, event_class=event_class).send_message()
 
 
+@app.task
 def notify_manager_event_closed(event_id: int):
     try:
         event = Event.objects.get(id=event_id)
@@ -119,6 +127,7 @@ def notify_manager_event_closed(event_id: int):
     messages.ClosedEvent(managers, event=event, personalized=True).send_message()
 
 
+@app.task
 def notify_manager_event_opened(event_id: int):
     try:
         event = Event.objects.get(id=event_id)
@@ -130,6 +139,7 @@ def notify_manager_event_opened(event_id: int):
     messages.OpenedEvent(managers, event=event, personalized=True).send_message()
 
 
+@app.task
 def notify_manager_about_signup(event_id: int, client_id: int):
     try:
         event = Event.objects.get(id=event_id)
@@ -142,6 +152,7 @@ def notify_manager_about_signup(event_id: int, client_id: int):
     messages.SignupClient(managers, event=event, client=client).send_message()
 
 
+@app.task
 def notify_manager_about_unsignup(event_id: int, client_id: int):
     try:
         event = Event.objects.get(id=event_id)
@@ -154,6 +165,7 @@ def notify_manager_about_unsignup(event_id: int, client_id: int):
     messages.UnsignupClient(managers, event=event, client=client).send_message()
 
 
+@app.task
 def send_registration_notification(user_id: int, password: str):
     user = get_user_model().objects.get(id=user_id)
     send_mail(

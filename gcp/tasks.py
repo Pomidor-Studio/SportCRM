@@ -79,8 +79,12 @@ def do(body_payload: bytes) -> str:
             method_to_call = getattr(module, method)
 
     if method_to_call:
-        method_to_call(*args, **kwargs)
-        return 'OK'
+        if settings.USE_CELERY_TASKS:
+            method_to_call.delay(*args, **kwargs)
+            return 'OK'
+        else:
+            method_to_call(*args, **kwargs)
+            return 'OK'
     else:
         return f'ERROR: no method "{method}" in modules'
 
