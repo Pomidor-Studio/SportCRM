@@ -16,7 +16,7 @@ ALLOWED_HOSTS = ['*']
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'HOST': '/cloudsql/sport-srm-test:us-east1:sport-crm-test',
+        'HOST': 'db',
         'USER': 'sport-test',
         'PASSWORD': 'sport-test',
         'NAME': 'sport-test-db',
@@ -38,10 +38,12 @@ CACHES = {
 
 QR_CODE_CACHE_ALIAS = 'default'
 
-USE_GOOGLE_TASKS: bool = True
+USE_GOOGLE_TASKS: bool = False
 GCP_TASK_PROJECT = 'sport-srm-test'
 GCP_TASK_QUEUE = 'sport-crm-test-queue'
 GCP_TASK_LOCATION = 'us-east1'
+
+USE_CELERY_TASKS: bool = True
 
 SOCIAL_AUTH_VK_OAUTH2_KEY = '6910281'
 SOCIAL_AUTH_VK_OAUTH2_SECRET = 'FlahTFK72JyNibzjWXhE'
