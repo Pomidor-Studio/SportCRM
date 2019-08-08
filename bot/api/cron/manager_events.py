@@ -5,11 +5,13 @@ from django_multitenant.utils import set_current_tenant
 
 from bot.api.messages import ClosedEvent
 from crm.models import DayOfTheWeekClass, Event, Manager, ClientSubscriptions
+from sportcrm.celery import app
 
 DIFF_START = datetime.timedelta(minutes=39, seconds=59)
 DIFF_END = datetime.timedelta(minutes=30)
 
 
+@app.task
 def event_closing():
     p_now: pendulum.DateTime = pendulum.DateTime.now()
     p_start = p_now - DIFF_START

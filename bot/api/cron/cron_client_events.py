@@ -10,8 +10,10 @@ from bot.api.messages import (
 )
 from bot.tasks import notify_clients_about_future_event
 from crm.models import Client, Company, INTERNAL_COMPANY, Manager
+from sportcrm.celery import app
 
 
+@app.task
 def receivables():
 
     for client in Client.objects.filter(balance__lt=0):
@@ -19,6 +21,7 @@ def receivables():
         ClientHaveNegativeBalance(client, personalized=False).send_message()
 
 
+@app.task
 def birthday():
     current_date = date.today()
     month = current_date.month
@@ -45,6 +48,7 @@ def birthday():
         ).send_message()
 
 
+@app.task
 def future_event():
     tomorrow = date.today() + timedelta(days=1)
     notify_clients_about_future_event(tomorrow)
