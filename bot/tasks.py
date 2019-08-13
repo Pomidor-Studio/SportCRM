@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from django.db.models import Prefetch
 from django_multitenant.utils import set_current_tenant
 
@@ -167,14 +169,44 @@ def notify_manager_about_unsignup(event_id: int, client_id: int):
 
 @app.task
 def send_registration_notification(user_id: int, password: str):
+
     user = get_user_model().objects.get(id=user_id)
+
+    msg_plain = render_to_string('bot/email/registration_notification.txt',
+                                 {'user': user, 'password': password})
+
+    msg_html = render_to_string('bot/email/registration_notification.html',
+                                {'user': user, 'password': password})
+
     send_mail(
         'Регистрация заявки',
-        f'Уважаемый клиент, вы зарегистрировались на сайте '
-        f'"Твой спортивный клуб", на пробный месяц использования.\n'
-        f'Ваш логин {user.username}\n'
-        f'Ваш пароль {password}',
-        'yourclubdev@gmail.com',
+        msg_plain,
+        settings.MAIL_FROM,
         [user.email],
+        html_message=msg_html,
         fail_silently=False,
     )
+
+
+@app.task
+def send_registration_notification_manager(user_id: int):
+
+    user = get_user_model().objects.get(id=user_id)
+    company = user.company
+    manager = user.manager
+
+    msg_plain = render_to_string('bot/email/registration_notification_manager.txt',
+                                 {'user': user, 'manager': manager, 'company': company})
+
+    msg_html = render_to_string('bot/email/registration_notification_manager.html',
+                                {'user': user, 'manager': manager, 'company': company})
+
+    send_mail(
+        'Регистрация заявки ' + company.name,
+        msg_plain,
+        settings.MAIL_FROM,
+        [settings.MAIL_MANAGER],
+        html_message=msg_html,
+        fail_silently=False,
+    )
+
