@@ -133,7 +133,7 @@ class RegisterCompanySerializer(serializers.Serializer):
             )
         if Manager.objects.filter(phone_number=attrs['phone']).exists():
             raise ValidationError(
-                'Заявка с таким телефонм уже была отправленна!',
+                'Заявка с таким телефоном уже была отправленна!',
                 code='email-error'
             )
         return attrs
