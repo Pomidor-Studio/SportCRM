@@ -1,0 +1,4 @@
+Зарегистрирован новый клуб!
+Название: {{company.name}}
+Телефон: {{user.manager.phone_number}}
+E-mail: {{user.email}}

@@ -122,6 +122,7 @@ class RegisterCompanySerializer(serializers.Serializer):
         )
         from gcp.tasks import enqueue
         enqueue('send_registration_notification', manager.user_id, password)
+        enqueue('send_registration_notification_manager', manager.user_id)
         return manager
 
     def validate(self, attrs):

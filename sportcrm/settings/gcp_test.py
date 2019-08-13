@@ -52,3 +52,6 @@ VK_GROUP_TOKEN = 'e8dd6e2ae8dd6e2ae8dd6e2ae8e8b41f63ee8dde8dd6e2ab4484ba9ce75ec7
 MAILJET_API_KEY = 'f12e8437bc88080e9c11caa779001d3d'
 MAILJET_API_SECRET = 'c377b8e432ebd17629c04487f07133d9'
 
+MAIL_FROM = 'yourclubdev@gmail.com'
+MAIL_MANAGER = 'yourclubdev@gmail.com'
+

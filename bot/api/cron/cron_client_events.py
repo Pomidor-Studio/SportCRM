@@ -20,6 +20,7 @@ def receivables():
         set_current_tenant(client.company)
         ClientHaveNegativeBalance(client, personalized=False).send_message()
 
+# TODO change Received unregistered task of type 'bot.background_views.birthday'.
 
 @app.task
 def birthday():
