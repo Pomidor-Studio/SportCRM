@@ -57,5 +57,7 @@ GOOGLE_ANALYTICS_SITE_SPEED_SAMPLE_RATE = 100
 
 DISABLE_MANAGER_PERMISSION_FOR_COMPANIES = (4,)
 
-MAIL_FROM = 'support@yoursport.club'
+MAIL_FROM = 'noreply@yoursport.club'
 MAIL_MANAGER = 'support@yoursport.club'
+
+HOST = 'yoursport.club'

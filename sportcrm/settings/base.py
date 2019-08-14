@@ -234,3 +234,8 @@ SUPPORT_GROUP_ID = '-178479449'
 EMAIL_BACKEND = 'django_mailjet.backends.MailjetBackend'
 MAILJET_API_KEY = 'API-KEY'
 MAILJET_API_SECRET = 'API-SECRET'
+
+MAIL_FROM = 'noreply@yoursport.club'
+MAIL_MANAGER = 'yourclubdev@gmail.com'
+
+HOST = 'localhost'
