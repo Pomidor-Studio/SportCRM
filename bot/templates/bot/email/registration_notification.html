@@ -1,6 +1,7 @@
 <!doctype html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
   <head>
+    {% load html_helper_email %}
     <title>
       Регистрация на сайте Yoursport.club
     </title>
@@ -301,11 +302,13 @@
       <td
          align="center" bgcolor="#76BD1B" role="presentation" style="border:0px solid #ffffff;border-radius:3px;cursor:auto;padding:10px 25px 10px 25px;background:#76BD1B;" valign="middle"
       >
+        <a href="{% one_time_login_link user %}" style="text-decoration: none;">
         <p
            style="background:#76BD1B;color:#ffffff;font-family:Roboto, Helvetica, Arial, sans-serif;font-size:18px;font-weight:normal;line-height:120%;Margin:0;text-decoration:none;text-transform:none;"
         >
           Начать управлять клубом
         </p>
+        </a>
       </td>
     </tr>
   </table>
@@ -382,7 +385,7 @@
      style="font-family:Arial, sans-serif;font-size:13px;line-height:22px;text-align:left;color:#55575d;"
   >
     <p style="font-size: 13px; margin: 10px 0;"><span style="font-family:Roboto,Helvetica,Arial,sans-serif"><b>Страница входа</b>:
-      <a target="_blank" href="https://devtest.sportadmin.ru/accounts/login/">https://devtest.sportadmin.ru/accounts/login/</a></span><br>
+      <a target="_blank" href="https://{% host %}{% url "crm:accounts:login" %}">https://{% host %}{% url "crm:accounts:login" %}</a></span><br>
       <span style="font-family:Roboto,Helvetica,Arial,sans-serif">
         <b style="font-weight:700">Ваш логин</b>: {{user.username}}<br>
         <b style="font-weight:700">Пароль</b>: {{password}}</span></p>

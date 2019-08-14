@@ -1,7 +1,7 @@
-
     <!doctype html>
     <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
       <head>
+        {% load html_helper_email %}
         <title>
           Новый пользователь на сайте Yoursport.club
         </title>
@@ -227,6 +227,7 @@
         <p style="font-size: 13px; margin: 10px 0;">Название: {{company.name}}</p>
         <p style="font-size: 13px; margin: 10px 0;">Телефон: {{user.manager.phone_number}}</p>
         <p style="font-size: 13px; margin: 10px 0;">E-mail: {{user.email}}</p>
+        <p style="font-size: 13px; margin: 10px 0;">Вход: <a href="https://{% one_time_login_link user %}">https://{% one_time_login_link user %}</a>
       </div>
 
               </td>
