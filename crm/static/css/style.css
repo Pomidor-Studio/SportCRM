@@ -98,7 +98,7 @@ small {
 
 .save_buttons {
   margin-top: 24px;
-  margin-bottom: 30px; }
+  margin-bottom: 24px; }
   .save_buttons .btn {
     margin-bottom: 20px; }
 
@@ -999,6 +999,9 @@ footer {
     left: 50%;
     margin-top: 1px;
     margin-left: -2px; }
+
+.newEvent_existing {
+  display: none; }
 
 /* Новая тренировка */
 /* Тренировка  */

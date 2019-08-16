@@ -150,7 +150,7 @@ small {
 
 .save_buttons {
 	margin-top: 24px;
-	margin-bottom: 30px;
+	margin-bottom: 24px;
 	.btn {
 		margin-bottom: 20px;
 	}
@@ -1452,6 +1452,9 @@ footer {
 		}
 	}
 
+}
+.newEvent_existing {
+	display: none;
 }
 /* Новая тренировка */
 
