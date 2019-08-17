@@ -183,11 +183,11 @@ class EventClassEditSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
-        if (attrs['new'] is None or not len(attrs['new'])) and \
-                (attrs['updated'] is None or not len(attrs['updated'])) and \
-                (attrs['deleted'] is None or not len(attrs['deleted'])):
-            raise serializers.ValidationError(
-                'Not data provided', code='no-data')
+        # if ( attrs['new'] is None or not len(attrs['new'])) and \
+        #         (attrs['updated'] is None or not len(attrs['updated'])) and \
+        #         (attrs['deleted'] is None or not len(attrs['deleted'])):
+        #     raise serializers.ValidationError(
+        #         'Not data provided', code='no-data')
         return attrs
 
     def create_events(

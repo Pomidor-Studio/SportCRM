@@ -563,7 +563,7 @@ class CreateEdit(
             }
             context['existing_sections'] = json.dumps(
                 existing_sections, cls=CreateEditEncoder)
-            context['uidCounter'] = max(existing_sections.keys()) + 1
+            context['uidCounter'] = max(existing_sections.keys(), default=0) + 1
         else:
             context['uidCounter'] = 1
             context['existing_sections'] = json.dumps([])
