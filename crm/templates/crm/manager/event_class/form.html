@@ -57,6 +57,7 @@
       <div class="col-12 col-md-10 col-xl-6">
         <label for="id_location">Площадка</label>
         <select name="location" class="selectpicker form-control" id="id_location">
+          <option data-hidden="true">Выбрать площадку</option>
           {% for location in locations %}
             <option value="{{ location.id }}" {% if object and object.location_id == location.id%}selected{% endif %}>{{ location.name }}</option>
           {% endfor %}
@@ -67,6 +68,7 @@
       <div class="col-12 col-md-10 col-xl-6">
         <label for="id_coach">Тренер</label>
         <select name="coach" class="selectpicker form-control" id="id_coach">
+          <option data-hidden="true">Выбрать тренера</option>
           {% for coach in coaches %}
             <option value="{{ coach.id }}" {% if object and object.coach_id == coach.id %}selected{% endif %}>{{ coach }}</option>
           {% endfor %}
@@ -518,8 +520,8 @@
 
             resetExisting(uid, section);
 
-            $('.show-event').attr('data-uid','' + e + '').show()
-            $('.newEvent_existing').attr('data-uid','' + e + '').hide()
+            $('.show-event').attr('data-uid','' + event + '').show()
+            $('.newEvent_existing').attr('data-uid','' + event + '').hide()
         }
       }());
     }
@@ -616,13 +618,6 @@
         hasError = true;
       }
 
-      if (
-          Object.keys(eventClassData.new).length === 0 &&
-          Object.keys(existingSections).length === 0
-      ) {
-        addAlert('Не создано ни одного расписания');
-        hasError = true;
-      }
 
       for (let newItem of Object.values(eventClassData.new)) {
         if (newItem.singular_event && !newItem.from_date) {
@@ -731,8 +726,8 @@
     }
 
     $('.show-event').click(function() {
-      e = $(this).attr('data-uid')
-      $('.newEvent_existing').attr('data-uid','' + e + '').show()
+      event = $(this).attr('data-uid')
+      $('.newEvent_existing').attr('data-uid','' + event + '').show()
       $(this).hide()
     })
 
