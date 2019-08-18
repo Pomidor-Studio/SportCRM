@@ -564,6 +564,15 @@ class CreateEdit(
             context['existing_sections'] = json.dumps(
                 existing_sections, cls=CreateEditEncoder)
             context['uidCounter'] = max(existing_sections.keys(), default=0) + 1
+            try:
+                one_time_sub = SubscriptionsType.objects.get(
+                    one_time=True, event_class=self.object)
+                context['one_time_price'] = one_time_sub.price
+            except (
+                SubscriptionsType.DoesNotExist,
+                SubscriptionsType.MultipleObjectsReturned
+            ):
+                context['one_time_price'] = None
         else:
             context['uidCounter'] = 1
             context['existing_sections'] = json.dumps([])

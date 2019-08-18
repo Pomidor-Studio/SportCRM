@@ -82,7 +82,9 @@
                               — {{ eventclass.date_to|date:"d.m.Y" }}
                             {% endif %}
                         </small><br>
-                        <small>Плановая посещаемость: 30</small><br>
+                        {% if eventclass.planned_attendance %}
+                        <small>Плановая посещаемость: {{ eventclass.planned_attendance }}</small><br>
+                        {% endif %}
                         {% if eventclass.get_one_time_visit_costs.price %}
                           <small>Разовое посещение: {{ eventclass.get_one_time_visit_costs.price|floatformat:"-2"|intcomma }}&nbsp;₽</small>
                         {% endif %}
@@ -106,7 +108,9 @@
                   {% endif %}
                 </td>
                 <td class="text-center d-none d-md-block">
-                    30
+                  {% if eventclass.planned_attendance %}
+                    {{ eventclass.planned_attendance }}
+                  {% endif %}
                 </td>
                 <td class="text-right d-none d-md-block">
                     {% if eventclass.get_one_time_visit_costs.price %}

@@ -406,6 +406,12 @@ class EventClass(CompanyObjectModel):
         verbose_name="Тренер")
     date_from = models.DateField("Начало тренировок", null=True, blank=True)
     date_to = models.DateField("Окончание тренировок", null=True, blank=True)
+    planned_attendance = models.PositiveSmallIntegerField(
+        "Плановая посещаемость",
+        null=True,
+        blank=True,
+        validators=[MinValueValidator(0)]
+    )
 
     objects = EventClassManager()
 

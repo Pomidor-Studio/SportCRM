@@ -79,9 +79,8 @@
       <div class="col-12 col-sm-6 col-md-3">
         <div class="form-group"><label for="id_one_time_price">Стоимость посещения</label><input type="number" name="one_time_price" placeholder="500 ₽" min="0" class="form-control" title="" id="id_one_time_price" value="{% if object and one_time_price %}{{ one_time_price|unlocalize }}{% endif %}"></div>
       </div>
-      <!-- TODO: Сделать поле «Плановая посещаемость» -->
       <div class="col-12 col-sm-6 col-md-3">
-        <div class="form-group"><label for="id_group_plan">Плановая посещаемость</label><input type="number" name="group_plan" placeholder="" min="0" class="form-control" title="" id="id_group_plan"></div>
+        <div class="form-group"><label for="id_planned_attendance">Плановая посещаемость</label><input type="number" name="planned_attendance" placeholder="" min="0" class="form-control" title="" id="id_planned_attendance" value="{% if object and object.planned_attendance %}{{ object.planned_attendance }}{% endif %}"></div>
       </div>
     </div>
     <div class="form-group save_buttons">
@@ -171,7 +170,7 @@
       location: {% if object %}{{ object.location_id }}{% else %}null{% endif %},
       coach: {% if object %}{{ object.coach_id }}{% else %}null{% endif %},
       oneTimePrice: {% if object and one_time_price %}{{ one_time_price|unlocalize }}{% else %}null{% endif %},
-      planedAttendance: null,
+      plannedAttendance: {% if object and object.planned_attendance %}{{ object.planned_attendance }}{% else %}null{% endif %},
       new: {},
       updated: {},
       deleted: {}
@@ -421,8 +420,8 @@
       eventClassData.oneTimePrice = $(this).val().trim();
     });
 
-    $('#id_group_plan').on('input', function() {
-      eventClassData.planedAttendance = $(this).val().trim();
+    $('#id_planned_attendance').on('input', function() {
+      eventClassData.plannedAttendance = $(this).val().trim();
     });
 
     $('#addNewEvent').click(function() {
@@ -677,7 +676,7 @@
         location: eventClassData.location,
         coach: eventClassData.coach,
         oneTimePrice: eventClassData.oneTimePrice,
-        planedAttendance: eventClassData.planedAttendance,
+        plannedAttendance: eventClassData.plannedAttendance,
         new: flatSection(eventClassData.new),
         updated: flatSection(eventClassData.updated),
         deleted: flatSection(eventClassData.deleted)

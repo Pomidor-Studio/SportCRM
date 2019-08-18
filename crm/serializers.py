@@ -169,7 +169,7 @@ class EventClassEditSerializer(serializers.ModelSerializer):
         model = EventClass
         fields = (
             'name', 'location', 'coach', 'new', 'updated', 'deleted',
-            'oneTimePrice', 'planedAttendance'
+            'oneTimePrice', 'plannedAttendance'
         )
 
     new = EventClassSectionSerializer(
@@ -179,7 +179,7 @@ class EventClassEditSerializer(serializers.ModelSerializer):
     deleted = EventClassSectionSerializer(
         allow_null=True, many=True, required=False)
     oneTimePrice = serializers.FloatField(allow_null=True)
-    planedAttendance = serializers.IntegerField(allow_null=True)
+    plannedAttendance = serializers.IntegerField(allow_null=True)
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
@@ -366,7 +366,8 @@ class EventClassEditSerializer(serializers.ModelSerializer):
             event_class = EventClass.objects.create(
                 name=validated_data['name'],
                 location=validated_data['location'],
-                coach=validated_data['coach']
+                coach=validated_data['coach'],
+                planned_attendance=validated_data['plannedAttendance']
             )
 
             self.modify_events(event_class, validated_data)
@@ -378,6 +379,7 @@ class EventClassEditSerializer(serializers.ModelSerializer):
             instance.name = validated_data['name']
             instance.location = validated_data['location']
             instance.coach = validated_data['coach']
+            instance.planned_attendance = validated_data['plannedAttendance']
 
             instance.save()
 
