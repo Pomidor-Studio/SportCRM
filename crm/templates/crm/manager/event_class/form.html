@@ -671,6 +671,12 @@
         });
       }
 
+      function camelToSake(string) {
+        return string.replace(/[\w]([A-Z])/g, function(m) {
+          return m[0] + "_" + m[1];
+        }).toLowerCase();
+       }
+
       let toSendData = {
         name: eventClassData.name,
         location: eventClassData.location,
@@ -700,7 +706,10 @@
             if ('detail' in data) {
                 addAlert(data.detail);
             } else {
-                addAlert(String(data));
+                for (var prop in data) {
+                    var fieldLabelText = $("label[for='id_" + camelToSake(prop)+ "']").text()
+                    addAlert(fieldLabelText + ": " + data[prop]);
+                }
             }
         }
       })
