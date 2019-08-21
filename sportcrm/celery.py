@@ -16,19 +16,19 @@ app.conf.beat_schedule = {
 
     # - description: "daily birthday job"
     "birthday": {
-        "task": "bot.background_views.birthday",
+        "task": "bot.api.cron.cron_client_events.birthday",
         "schedule": crontab(minute="0", hour="13")
     },
 
     # - description: "daily birthday job"
     "receivables": {
-        "task": "bot.background_views.receivables",
+        "task": "bot.api.cron.cron_client_events.receivables",
         "schedule": crontab(minute="0", hour="18")
     },
 
     # - description: "daily future event job"
     "future_event": {
-        "task": "bot.background_views.future_event",
+        "task": "bot.api.cron.cron_client_events.future_event",
         "schedule": crontab(minute="0", hour="20")
     },
 
