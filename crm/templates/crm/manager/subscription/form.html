@@ -66,7 +66,8 @@
         <div class="col-6 col-md-2 col-xl-2 offset-6 offset-md-0 d-flex align-items-end form-group">
             <div class="form-check d-flex skip_line">
                 <label class="form-check-label" for="no_visit_limit">
-                    <input id="no_visit_limit" name="no_visit_limit" type="checkbox" class="form-check-input">
+                    <input id="no_visit_limit" name="no_visit_limit" type="checkbox" class="form-check-input"
+                           {% if form.no_visit_limit.value %}checked="checked"{% endif %}>
                     <div class="form-check-input-div"></div>
                 </label>
                 <label class="form-check-label" for="no_visit_limit">Безлимит</label>
@@ -147,6 +148,12 @@
 {% endblock content %}
 {% block extrajs %}
    <script>
+    $(function(){
+      if ($("#no_visit_limit").attr("checked")) {
+        $('#id_visit_limit').prop('disabled', 'disabled');
+      }
+    })
+
     enquire.register("screen and (max-width: 720px)", {
       match: function () {
         $('.selectpicker').attr('data-mobile', 'true');

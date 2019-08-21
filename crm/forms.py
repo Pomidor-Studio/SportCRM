@@ -141,7 +141,7 @@ class DataAttributesSelect(forms.Select):
 
 class SubscriptionsTypeForm(TenantModelForm):
     duration = forms.IntegerField(label='Продолжительность', min_value=1)
-    visit_limit = forms.IntegerField(label='Количество посещений', min_value=1)
+    # visit_limit = forms.IntegerField(label='Количество посещений', min_value=1)
 
     class Meta:
         model = SubscriptionsType
@@ -149,6 +149,24 @@ class SubscriptionsTypeForm(TenantModelForm):
         widgets = {
             'event_class': CheckboxSelectMultiple(),
         }
+
+    def clean_visit_limit(self):
+        cleaned_data = super().clean()
+        visit_limit = cleaned_data.get("visit_limit")
+        no_visit_limit = cleaned_data.get("no_visit_limit")
+        if no_visit_limit:
+            return None
+        else:
+            return visit_limit
+
+    def clean(self):
+        cleaned_data = super().clean()
+        visit_limit = cleaned_data.get("visit_limit")
+        no_visit_limit = cleaned_data.get("no_visit_limit")
+
+        if not no_visit_limit and not visit_limit:
+                msg = "Укажите количество посещений"
+                self.add_error('visit_limit', msg)
 
 
 class SignUpClientWithoutSubscriptionForm(TenantForm):

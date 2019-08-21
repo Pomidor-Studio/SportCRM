@@ -83,7 +83,13 @@
                   {% endfor %}
                   <br>
                   <small>Продолжительность: {{ subscription.duration }} {{ subscription.duration_postfix }}</small><br>
-                  <small>Посещений: {{ subscription.visit_limit }}</small><br>
+                  <small>Посещений:
+                    {% if subscription.no_visit_limit %}
+                      Безлимит
+                    {% else %}
+                      {{ subscription.visit_limit }}
+                    {% endif %}
+                  </small><br>
                   <small>{{ subscription.price|floatformat:"-2"|intcomma }}&nbsp;₽</small>
                 </div>
               </td>
@@ -99,7 +105,11 @@
                   {{ subscription.duration }} {{ subscription.duration_postfix }}
               </td>
               <td class="d-none d-md-block">
-                {{ subscription.visit_limit }}
+                {% if subscription.no_visit_limit %}
+                  Безлимит
+                {% else %}
+                  {{ subscription.visit_limit }}
+                {% endif %}
               </td>
               <td class="d-none d-md-block">
                 {{ subscription.price|floatformat:"-2"|intcomma }}&nbsp;₽

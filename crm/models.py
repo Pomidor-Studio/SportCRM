@@ -657,7 +657,12 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         "Округление начала действия абонемента",
         default=False
     )
-    visit_limit = models.PositiveIntegerField("Количество посещений")
+    visit_limit = models.PositiveIntegerField(
+        "Количество посещений",
+        blank=True,
+        null=True,
+        default=None
+    )
     event_class = models.ManyToManyField(
         EventClass,
         verbose_name="Допустимые тренировки"
@@ -667,6 +672,16 @@ class SubscriptionsType(ScrmSafeDeleteModel, CompanyObjectModel):
         editable=False,
         default=False
     )
+    no_visit_limit = models.BooleanField(
+        "Безлимит",
+        default=False
+    )
+
+    def save(self, *args, **kwargs):
+        # если "безлимит", то чистим количество занятий
+        if self.no_visit_limit:
+            self.visit_limit = None
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
