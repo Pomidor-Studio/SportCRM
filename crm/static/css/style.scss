@@ -190,6 +190,11 @@ small {
 		background: $yellow !important;
 		border: 1px solid $yellow !important;
 	}
+	&:disabled {
+		background-color: $lightgrey !important;
+		border: 1px solid $bordergrey !important;
+		color: $grey !important;
+	}
 }
 .btn-outline-primary {
 	border: 1px solid $green;
@@ -1429,7 +1434,7 @@ footer {
 			position: absolute;
 			top: 0;
 			left: 1px;
-			height: 145px;
+			height: 160px;
 		}
 	}
 
@@ -1453,8 +1458,11 @@ footer {
 	}
 
 }
-.newEvent_existing {
+.newEventForm, .event_info {
 	display: none;
+}
+.event_info {
+	margin-top: 10px;
 }
 /* Новая тренировка */
 

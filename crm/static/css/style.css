@@ -129,6 +129,10 @@ small {
   .btn-primary:active {
     background: #EAB701 !important;
     border: 1px solid #EAB701 !important; }
+  .btn-primary:disabled {
+    background-color: #EEEEEE !important;
+    border: 1px solid #DEE2E6 !important;
+    color: #000 !important; }
 
 .btn-outline-primary {
   border: 1px solid #76BD1B;
@@ -986,7 +990,7 @@ footer {
       position: absolute;
       top: 0;
       left: 1px;
-      height: 145px; }
+      height: 160px; }
   .days .form-check .form-check-label {
     margin-bottom: 8px; }
   .days .form-check .form-check-input {
@@ -1000,8 +1004,11 @@ footer {
     margin-top: 1px;
     margin-left: -2px; }
 
-.newEvent_existing {
+.newEventForm, .event_info {
   display: none; }
+
+.event_info {
+  margin-top: 10px; }
 
 /* Новая тренировка */
 /* Тренировка  */

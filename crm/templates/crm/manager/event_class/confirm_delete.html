@@ -1,20 +1,44 @@
-{% extends "crm/base.html" %}
+{% extends "crm/base_design.html" %}
+{% load  bootstrap4 html_helper %}
 
-{% load bootstrap4 %}
+{% block title %}Расписание{% endblock %}
+{% block sidbar %}
+  {% include 'crm/bars/_sidebar_design.html'  with name="Удалить группу" back_link=False current='groups' %}
+{% endblock %}
+
 
 {% block content %}
-  <div class="content-section ml-4 mt-4">
-    <form method="POST">
-      {% csrf_token %}
-      <fieldset class="form-group">
-        <legend class="border-bottom mb-2">Тип тренировки</legend>
-        <h2>Вы уверены что хотие удалить тип тренировки "{{ object }}"?</h2>
-      </fieldset>
-      <div class="form-group">
-        <button class="btn btn-outline-danger" type="submit">Удалить</button>
-        <a class="btn btn-outline-info"
-           href="{% url 'crm:manager:event-class:list' %}">Отмена</a>
+  <!- Новое занятие -!>
+
+  <div class="page new_class col-md-12 col-lg-9 col-xl-10">
+    <div class="row">
+      <div class="col-12 alert-box">
+        {% if messages %}
+          {% for message in messages %}
+            {% bootstrap_alert_message message %}
+          {% endfor %}
+        {% endif %}
       </div>
-    </form>
+    </div>
+      <div class="bredcams clearfix">
+        <ul>
+          <li>
+            Удалить группу
+          </li>
+        </ul>
+      </div>
+      <div class="greyline"></div>
+
+      <form method="POST">
+        {% csrf_token %}
+        <fieldset class="form-group">
+          <h3>Вы уверены что хотие удалить группу «{{ object }}»?</h3>
+        </fieldset>
+        <div class="form-group save_buttons">
+          <button class="btn btn-danger" type="submit">Удалить</button>
+          <a class="btn" href="{% url 'crm:manager:event-class:list' %}">Отмена</a>
+        </div>
+      </form>
   </div>
-{% endblock content %}
+
+{% endblock %}
