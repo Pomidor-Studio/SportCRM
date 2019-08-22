@@ -45,48 +45,49 @@
 
     <div class="messages"></div>
 
-    {% csrf_token %}
-
-    <div class="form-group row">
-      <div class="col-12 col-md-10 col-xl-6">
-        <label for="id_name">Наименование</label>
-        <input type="text" name="name" maxlength="100" class="form-control" placeholder="Наименование" title="" required id="id_name" value="{% if object %}{{ object.name }}{% endif %}">
+    <form  method="POST">
+      {% csrf_token %}
+      <div class="form-group row">
+        <div class="col-12 col-md-10 col-xl-6">
+          <label for="id_name">Наименование</label>
+          <input type="text" name="name" maxlength="100" class="form-control" placeholder="Наименование" title="" required id="id_name" value="{% if object %}{{ object.name }}{% endif %}">
+        </div>
       </div>
-    </div>
-    <div class="form-group select row">
-      <div class="col-12 col-md-10 col-xl-6">
-        <label for="id_location">Площадка</label>
-        <select name="location" class="selectpicker form-control" id="id_location">
-          <option data-hidden="true">Выбрать площадку</option>
-          {% for location in locations %}
-            <option value="{{ location.id }}" {% if object and object.location_id == location.id%}selected{% endif %}>{{ location.name }}</option>
-          {% endfor %}
-  			</select>
+      <div class="form-group select row">
+        <div class="col-12 col-md-10 col-xl-6">
+          <label for="id_location">Площадка</label>
+          <select name="location" class="selectpicker form-control" id="id_location">
+            <option data-hidden="true">Выбрать площадку</option>
+            {% for location in locations %}
+              <option value="{{ location.id }}" {% if object and object.location_id == location.id%}selected{% endif %}>{{ location.name }}</option>
+            {% endfor %}
+    			</select>
+        </div>
       </div>
-    </div>
-    <div class="form-group select row">
-      <div class="col-12 col-md-10 col-xl-6">
-        <label for="id_coach">Тренер</label>
-        <select name="coach" class="selectpicker form-control" id="id_coach">
-          <option data-hidden="true">Выбрать тренера</option>
-          {% for coach in coaches %}
-            <option value="{{ coach.id }}" {% if object and object.coach_id == coach.id %}selected{% endif %}>{{ coach }}</option>
-          {% endfor %}
-  			</select>
+      <div class="form-group select row">
+        <div class="col-12 col-md-10 col-xl-6">
+          <label for="id_coach">Тренер</label>
+          <select name="coach" class="selectpicker form-control" id="id_coach">
+            <option data-hidden="true">Выбрать тренера</option>
+            {% for coach in coaches %}
+              <option value="{{ coach.id }}" {% if object and object.coach_id == coach.id %}selected{% endif %}>{{ coach }}</option>
+            {% endfor %}
+    			</select>
+        </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="form-group"><label for="id_one_time_price">Стоимость посещения</label><input type="number" name="one_time_price" placeholder="" min="0" class="form-control" title="" id="id_one_time_price" value="{% if object and one_time_price %}{{ one_time_price|unlocalize }}{% endif %}"></div>
+      <div class="row">
+        <div class="col-12 col-sm-6 col-md-5 col-xl-3">
+          <div class="form-group"><label for="id_one_time_price">Стоимость посещения</label><input type="number" name="one_time_price" placeholder="" min="0" class="form-control" title="" id="id_one_time_price" value="{% if object and one_time_price %}{{ one_time_price|unlocalize }}{% endif %}"></div>
+        </div>
+        <div class="col-12 col-sm-6 col-md-5 col-xl-3">
+          <div class="form-group"><label for="id_planned_attendance">Плановая посещаемость</label><input type="number" name="planned_attendance" placeholder="" min="0" class="form-control" title="" id="id_planned_attendance" value="{% if object and object.planned_attendance %}{{ object.planned_attendance }}{% endif %}"></div>
+        </div>
       </div>
-      <div class="col-12 col-sm-6 col-md-3">
-        <div class="form-group"><label for="id_planned_attendance">Плановая посещаемость</label><input type="number" name="planned_attendance" placeholder="" min="0" class="form-control" title="" id="id_planned_attendance" value="{% if object and object.planned_attendance %}{{ object.planned_attendance }}{% endif %}"></div>
+      <div class="form-group save_buttons">
+        <input id="save-gr" class="btn btn-primary" type="submit" value="Сохранить"/>
+        <a id="cancel" class="btn" href="{% url 'crm:manager:event-class:list' %}">Отмена</a>
       </div>
-    </div>
-    <div class="form-group save_buttons">
-      <button id="save-gr" class="btn btn-primary">Сохранить</button>
-      <a id="cancel" class="btn" href="{% url 'crm:manager:event-class:list' %}">Отмена</a>
-    </div>
+    </form>
 
 
     <div class="greyline"></div>
@@ -162,7 +163,7 @@
                   </div>
                 </div>
                 <div class="form-group save_buttons">
-                  <button id="save-ec" class="btn btn-primary">Добавить</button>
+                  <input type="submit" id="save-ec" class="btn btn-primary" value="Добавить" />
                   <a class="btn cancel_new" href="#">Отмена</a>
                 </div>
               </form>
@@ -322,7 +323,7 @@
                   </div>
                 </div>
                 <div class="form-group save_buttons">
-                  <button id="save-ec" class="btn btn-primary">Добавить</button>
+                  <input type="submit" id="save-ec" class="btn btn-primary" value="Добавить" />
                   <a class="btn cancel_new" href="#">Отмена</a>
                 </div>
               </form>
@@ -579,10 +580,9 @@
           </div>
         </div>
         <div class="form-group save_buttons">
-          <a class="btn cancel" href="#">Отмена</a>
+          <a class="btn cancel" href="#">Закрыть</a>
         </div>
       </form>
-      <div class="greyline"></div>
     </div>
 
 
@@ -594,15 +594,73 @@
 
     <!-- Расписание неактивное -->
     <div class="row">
-        <div class="event col-12 col-md-10 col-xl-6">
-          <a class="btn btn-outline-secondary w-100 show-event">
-            Тренировка: <b>30.06.2019</b> <span>(16:00 -17:30)</span>
-          </a>
-        </div>
+      <div class="event col-12 col-md-10 col-xl-6">
+        <a href="#" data-uid="<%: uid %>" class="btn btn-outline-secondary w-100 show-event">
+          Тренировка: <b>20.08.2019</b> <span>(11:00 - 12:00)</span>
+        </a>
+      </div>
     </div>
-
-
-
+    <div class="event_info">
+      <div class="greyline"></div>
+      <form>
+        <div class="form-group row">
+          <div class="col-12 col-md-4 col-xl-2 datepick">
+            <div class="form-group">
+              <label for="id_date_from_single_1">День тренировки</label>
+              <input
+                  type="text"
+                  name="date_from_single_new"
+                  placeholder=""
+                  class="form-control"
+                  data-datepicker
+                  title=""
+                  required
+                  id="id_date_from_single_new"
+                  value="20.08.2019"
+                 >
+            </div>
+          </div>
+          <div class="col-6 col-md-3 col-xl-2 timepick">
+            <div class="form-group">
+              <label for="id_start_time_single_<%: uid %>">Начало</label>
+              <input
+                  type="text"
+                  name="start_time_single_<%: uid %>"
+                  class="form-control time"
+                  data-timepicker
+                  data-from-timer
+                  data-uid="<%: uid %>"
+                  placeholder=":"
+                  title=""
+                  required
+                  id="id_start_time_single_1"
+                  value="11:00"
+              >
+              </div>
+          </div>
+          <div class="col-6 col-md-3 col-xl-2 timepick">
+            <div class="form-group">
+            <label for="id_end_time_single_1">Окончание</label>
+            <input
+              type="text"
+              name="end_time_single"
+              class="form-control time"
+              data-timepicker
+              placeholder=":"
+              title=""
+              required
+              id="id_end_time_single_1"
+              value="12:00"
+            >
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <a class="btn cancel" href="#">Закрыть</a>
+        </div>
+      </form>
+      <div class="greyline"></div>
+    </div>
 
 
 
@@ -641,24 +699,28 @@
 
   //Нажимаем добавить новое событие, отключаем сохранить для группы
   $('#addNewEvent').click(function() {
+    $('.event_info').slideUp();
+    $('.event').parent('.row').slideDown();
     $('#save-gr').attr('disabled','');
-    $('.addNewSection').hide();
-    $('.newEventForm').show();
+    $('.addNewSection').slideUp();
+    $('.newEventForm').slideDown();
   })
   $('.cancel_new').click(function() {
     $('#save-gr').removeAttr('disabled','');
-    $('.addNewSection').show();
-    $('.newEventForm').hide();
+    $('.addNewSection').slideDown();
+    $('.newEventForm').slideUp();
   })
 
   //Показываем активные расписания
   $('.event').click(function() {
-    $(this).parent('.row').hide();
-    $(this).parent('.row').next('.event_info').show();
+    $('.event_info').slideUp();
+    $('.event').parent('.row').slideDown();
+    $(this).parent('.row').slideUp();
+    $(this).parent('.row').next('.event_info').slideDown();
   })
   $('.cancel').click(function() {
-    $(this).parents('.event_info').prev('.row').show();
-    $(this).parents('.event_info').hide();
+    $(this).parents('.event_info').prev('.row').slideDown();
+    $(this).parents('.event_info').slideUp();
   })
 
   //Датапикер

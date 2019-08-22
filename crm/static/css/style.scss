@@ -1420,10 +1420,8 @@ footer {
 	}
 }
 .days {
-	padding: 24px 0 0;
+	padding: 0;
 	text-align: center;
-	border-top: 1px solid $lightgrey;
-	border-bottom: 1px solid $lightgrey;
 	position: relative;
 
 	.day {
@@ -1462,7 +1460,7 @@ footer {
 	display: none;
 }
 .event_info {
-	margin-top: 10px;
+	margin-top: 18px;
 }
 /* Новая тренировка */
 
