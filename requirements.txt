@@ -10,7 +10,7 @@ django-reversion==3.0.3
 django-safedelete==0.5.1
 django-sesame==1.4
 Django==2.1.7
-djangorestframework==3.9.1
+djangorestframework==3.11.2
 pendulum==2.0.4
 phonenumberslite==8.10.6
 psycopg2-binary==2.7.7
